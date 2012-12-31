@@ -4,11 +4,17 @@ import org.xenei.jdbc4sparql.iface.NamespacedObject;
 
 public abstract class MetaNamespace implements NamespacedObject
 {
-
+	public static final String NS="http://org.xenei.jdbc4sparql/meta#";
+	
 	@Override
 	public String getNamespace()
 	{
-		return "http://org.xenei.jdbc4sparql/meta#";
+		return NS;
+	}
+	
+	public String getFQName()
+	{
+		return getNamespace()+getLocalName();
 	}
 
 }

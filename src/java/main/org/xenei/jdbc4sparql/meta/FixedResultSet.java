@@ -30,6 +30,7 @@ import java.util.Map;
 
 import org.xenei.jdbc4sparql.AbstractResultSet;
 import org.xenei.jdbc4sparql.iface.Column;
+import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.TableDef;
 
 public class FixedResultSet extends AbstractResultSet
@@ -38,10 +39,10 @@ public class FixedResultSet extends AbstractResultSet
 
 	private int position;
 	
-	public FixedResultSet( Collection<Object[]> table, TableDef tableDef )
+	public FixedResultSet( Collection<Object[]> rows, Table table )
 	{
-		super( tableDef );
-		this.table = new ArrayList<Object[]>(table);
+		super( table );
+		this.table = new ArrayList<Object[]>(rows);
 		this.position = -1;
 	}
 
@@ -1418,6 +1419,22 @@ public class FixedResultSet extends AbstractResultSet
 	{
 		// TODO Auto-generated method stub
 		return false;
+	}
+
+	@Override
+	public <T> T getObject( int columnIndex, Class<T> type )
+			throws SQLException
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public <T> T getObject( String columnLabel, Class<T> type )
+			throws SQLException
+	{
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

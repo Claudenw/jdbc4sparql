@@ -39,14 +39,17 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 		CATALOGS_TABLE.addData( new Object[] { metaCatalog.getLocalName() });
 	}
 	
-	public J4SDatabaseMetaData(J4SConnection connection, J4SDriver driver, Catalog catalog)
+	public J4SDatabaseMetaData(J4SConnection connection, J4SDriver driver)
 	{
 		this.connection = connection;
 		this.driver = driver;
-		CATALOGS_TABLE.addData(new Object[] { catalog.getLocalName() });
 		this.catalogs= new ArrayList<Catalog>();
+	}
+	
+	public void addCatalog(Catalog catalog)
+	{
+		CATALOGS_TABLE.addData(new Object[] { catalog.getLocalName() });
 		catalogs.add( metaCatalog );
-		catalogs.add( catalog );
 	}
 
 	@Override
@@ -178,7 +181,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 			{
 				for (Table table : new NameFilter<Table>( tableNamePattern, schema.getTables()))
 				{
-					for (Column column : new NameFilter<Column>(columnNamePattern, table.getTableDef().getColumns()))
+					for (Column column : new NameFilter<Column>(columnNamePattern, table.getColumns()))
 					{
 						Object[] data = new Object[] {
 								catalog.getLocalName(), // TABLE_CAT
@@ -197,10 +200,11 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 								null, // SQL_DATA_TYPE
 								null, // SQL_DATETIME_SUB
 								1, // CHAR_OCTET_LENGTH
-								table.getTableDef().getColumnIndex(column)+1, //ORDINAL_POSITION
+								table.getColumnIndex(column)+1, //ORDINAL_POSITION
 								"", // IS_NULLABLE
 								null, // SCOPE_CATLOG
 								null, // SCOPE_SCHEMA
+								null, // SCOPE_TABLE
 								null, // SOURCE_DATA_TYPE
 								(column.isAutoIncrement()?"YES":"NO"), //IS_AUTOINCREMENT							
 						};
@@ -258,8 +262,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	@Override
 	public int getDefaultTransactionIsolation() throws SQLException
 	{
-		// TODO Auto-generated method stub
-		return 0;
+		return java.sql.Connection.TRANSACTION_NONE;
 	}
 
 	@Override
@@ -544,8 +547,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	@Override
 	public int getResultSetHoldability() throws SQLException
 	{
-		// TODO Auto-generated method stub
-		return 0;
+		return ResultSet.HOLD_CURSORS_OVER_COMMIT;
 	}
 
 	@Override
@@ -558,8 +560,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	@Override
 	public String getSQLKeywords() throws SQLException
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return "";
 	}
 
 	@Override
@@ -572,8 +573,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	@Override
 	public String getSchemaTerm() throws SQLException
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return "schema";
 	}
 
 	@Override
@@ -606,8 +606,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	@Override
 	public String getStringFunctions() throws SQLException
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return "";
 	}
 
 	@Override
@@ -631,16 +630,25 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	@Override
 	public String getSystemFunctions() throws SQLException
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return "";
 	}
 
 	@Override
-	public ResultSet getTablePrivileges( String arg0, String arg1, String arg2 )
+	public ResultSet getTablePrivileges( String catalogPattern, String schemaPattern, String tablePattern )
 			throws SQLException
 	{
 		MetaTable table = metaCatalog.getSchema().newTable(MetaSchema.TABLE_PRIVILEGES_TABLE);
-		// TODO populate table here.
+		for (Catalog catalog : new NameFilter<Catalog>( catalogPattern, catalogs ))
+		{
+			for (Schema schema : new NameFilter<Schema>( schemaPattern, catalog.getSchemas()))
+			{
+				for (Table tbl : new NameFilter<Table>( tablePattern, schema.getTables()))
+				{
+					// TODO populate table here.
+				}
+			}
+		}
+		
 		return table.getResultSet();
 	}
 
@@ -1385,6 +1393,21 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	{
 		// TODO Auto-generated method stub
 		return false;
+	}
+
+	@Override
+	public boolean generatedKeyAlwaysReturned() throws SQLException
+	{
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public ResultSet getPseudoColumns( String arg0, String arg1, String arg2,
+			String arg3 ) throws SQLException
+	{
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	

@@ -6,6 +6,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.xenei.jdbc4sparql.iface.Column;
+import org.xenei.jdbc4sparql.iface.ColumnDef;
 
 
 public class MetaTableDefTest
@@ -26,10 +27,10 @@ public class MetaTableDefTest
 	public void testAddColumns()
 	{
 		Assert.assertEquals( 4, def.getColumnCount() );
-		Assert.assertEquals( "NULLABLE_STRING", def.getColumn(0).getLocalName());
-		Assert.assertEquals( "STRING", def.getColumn(1).getLocalName());
-		Assert.assertEquals( "INT", def.getColumn(2).getLocalName());
-		Assert.assertEquals( "NULLABLE_INT", def.getColumn(3).getLocalName());
+		Assert.assertEquals( "NULLABLE_STRING", def.getColumnDef(0).getLabel());
+		Assert.assertEquals( "STRING", def.getColumnDef(1).getLabel());
+		Assert.assertEquals( "INT", def.getColumnDef(2).getLabel());
+		Assert.assertEquals( "NULLABLE_INT", def.getColumnDef(3).getLabel());
 		Assert.assertNull( def.getSortKey() );
 	}
 
@@ -46,8 +47,8 @@ public class MetaTableDefTest
 	@Test
 	public void testGetColumn()
 	{
-		Column col = def.getColumn( "STRING");
-		Assert.assertEquals( def.getColumn(1), col );
+		ColumnDef col = def.getColumnDef( "STRING");
+		Assert.assertEquals( def.getColumnDef(1), col );
 	}
 	
 	@Test

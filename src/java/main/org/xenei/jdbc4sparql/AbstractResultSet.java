@@ -6,20 +6,21 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.xenei.jdbc4sparql.iface.Column;
+import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.TableDef;
 
 public abstract class AbstractResultSet implements ResultSet
 {
-	private final TableDef tableDef;
+	private final Table table;
 	private final Map<String, Integer> columnNameIdx;
 
-	public AbstractResultSet( final TableDef tableDef )
+	public AbstractResultSet( final Table table )
 	{
-		this.tableDef = tableDef;
+		this.table = table;
 		columnNameIdx = new HashMap<String, Integer>();
-		for (int i = 0; i < tableDef.getColumns().size(); i++)
+		for (int i = 0; i < table.getColumnDefs().size(); i++)
 		{
-			columnNameIdx.put(tableDef.getColumn(i).getLocalName(), i);
+			columnNameIdx.put(table.getColumn(i).getLabel(), i);
 		}
 	}
 
@@ -56,16 +57,16 @@ public abstract class AbstractResultSet implements ResultSet
 	protected Column getColumn( final int idx ) throws SQLException
 	{
 		checkColumn(idx);
-		return tableDef.getColumn(idx - 1);
+		return table.getColumn(idx - 1);
 	}
 
 	protected Column getColumn( final String name ) throws SQLException
 	{
-		return tableDef.getColumn(name);
+		return table.getColumn(name);
 	}
 
 	protected boolean isValidColumn( final int idx )
 	{
-		return (idx > 0) && (idx <= tableDef.getColumnCount());
+		return (idx > 0) && (idx <= table.getColumnCount());
 	}
 }

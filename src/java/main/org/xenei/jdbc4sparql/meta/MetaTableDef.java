@@ -1,12 +1,16 @@
 package org.xenei.jdbc4sparql.meta;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.sql.DatabaseMetaData;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.xenei.jdbc4sparql.iface.Column;
+import org.xenei.jdbc4sparql.iface.ColumnDef;
 import org.xenei.jdbc4sparql.iface.KeySegment;
 import org.xenei.jdbc4sparql.iface.NameFilter;
+import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.SortKey;
 import org.xenei.jdbc4sparql.iface.TableDef;
 import org.xenei.jdbc4sparql.iface.TypeConverter;
@@ -14,13 +18,13 @@ import org.xenei.jdbc4sparql.iface.TypeConverter;
 public class MetaTableDef implements TableDef
 {
 	private String name;
-	private List<Column> columns;
+	private List<ColumnDef> columns;
 	private SortKey sortKey;
 	
 	public MetaTableDef(String name)
 	{
 		this.name =name;
-		this.columns = new ArrayList<Column>();
+		this.columns = new ArrayList<ColumnDef>();
 		this.sortKey = null;
 	}
 
@@ -31,7 +35,7 @@ public class MetaTableDef implements TableDef
 	}
 
 	@Override
-	public List<Column> getColumns()
+	public List<ColumnDef> getColumnDefs()
 	{
 		return columns;
 	}
@@ -51,17 +55,17 @@ public class MetaTableDef implements TableDef
 		sortKey.setUnique();
 	}
 	
-	public void add(Column column)
+	public void add(ColumnDef column)
 	{
 		columns.add(column);
 	}
 	
 	public void addKey(String columnName)
 	{
-		addKey( getColumn(columnName));
+		addKey( getColumnDef(columnName));
 	}
 	
-	public void addKey(Column column)
+	public void addKey(ColumnDef column)
 	{
 		int idx = columns.indexOf(column);
 		if (idx == -1)
@@ -83,7 +87,7 @@ public class MetaTableDef implements TableDef
 		}
 		for (int i=0;i<row.length;i++)
 		{
-			Column c = columns.get(i);
+			ColumnDef c = columns.get(i);
 			
 			if (row[i] == null)
 			{
@@ -108,7 +112,7 @@ public class MetaTableDef implements TableDef
 	{
 		for (int i=0;i<columns.size();i++)
 		{
-			if (columns.get(i).getLocalName().equals( columnName ))
+			if (columns.get(i).getLabel().equals( columnName ))
 			{
 				return i;
 			}
@@ -117,23 +121,26 @@ public class MetaTableDef implements TableDef
 	}
 
 	@Override
-	public int getColumnIndex( Column column )
+	public int getColumnIndex( ColumnDef column )
 	{
 		return columns.indexOf( column );
 	}
 
 	@Override
-	public Column getColumn( int idx )
+	public ColumnDef getColumnDef( int idx )
 	{
 		return columns.get(idx);
 	}
 
 	@Override
-	public Column getColumn( String name )
+	public ColumnDef getColumnDef( String name )
 	{
-		for (Column retval : new NameFilter<Column>( name, columns ))
+		for (ColumnDef retval : columns)
 		{
-			return retval;
+			if (retval.getLabel().equals(name))
+			{
+				return retval;
+			}
 		}
 		return null;
 	}

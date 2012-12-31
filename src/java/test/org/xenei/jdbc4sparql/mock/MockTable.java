@@ -1,18 +1,8 @@
-package org.xenei.jdbc4sparql.meta;
+package org.xenei.jdbc4sparql.mock;
 
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.PriorityQueue;
-import java.util.TreeSet;
 
-
-import org.apache.commons.collections.bag.TreeBag;
 import org.xenei.jdbc4sparql.ColumnImpl;
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.Column;
@@ -21,56 +11,30 @@ import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.SortKey;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.TableDef;
+import org.xenei.jdbc4sparql.meta.MetaTableDef;
+import org.xenei.jdbc4sparql.sparql.SparqlNamespace;
 
-public class MetaTable extends MetaNamespace implements Table
+public class MockTable extends SparqlNamespace implements Table
 {
-	private TableDef tableDef;
-	private Collection<Object[]>data;
 	private Schema schema;
+	private MetaTableDef tableDef;
 	
-	@SuppressWarnings( "unchecked" )
-	MetaTable( Schema schema, TableDef tableDef )
+	public MockTable( Schema schema, String name )
 	{
+		super(schema.getNamespace()+"Table/",name);
+		tableDef = new MetaTableDef( name );
 		this.schema = schema;
-		this.tableDef= tableDef;
-		if (tableDef.getSortKey() == null)
-		{
-			data = new ArrayList<Object[]>();
-		}
-		else
-		{
-			if (tableDef.getSortKey().isUnique())
-			{
-				data = new TreeSet<Object[]>( tableDef.getSortKey());
-			}
-			else
-			{	// 11 is the default priority queue capacity
-				data = new TreeBag( tableDef.getSortKey() );
-			}
-		}
+	}
+
+	public MetaTableDef getTableDef()
+	{
+		return tableDef;
 	}
 	
-	public void addData( Object[] args )
-	{
-		tableDef.verify( args );
-		data.add( args );
-	}
-
-	@Override
-	public String getLocalName()
-	{
-		return tableDef.getName();
-	}
-
 	@Override
 	public Schema getSchema()
 	{
 		return schema;
-	}
-	
-	public ResultSet getResultSet()
-	{
-		return new FixedResultSet( data, this );
 	}
 
 	@Override
@@ -79,20 +43,17 @@ public class MetaTable extends MetaNamespace implements Table
 		return schema.getCatalog();
 	}
 
-	public TableDef getTableDef()
-	{
-		return tableDef;
-	}
-	
+
+	@Override
 	public String getType()
 	{
-		return "TABLE";
+		return "MOCK TABLE";
 	}
 
 	@Override
 	public boolean isEmpty()
 	{
-		return data.isEmpty();
+		return true;
 	}
 
 	public String getName()
@@ -158,5 +119,4 @@ public class MetaTable extends MetaNamespace implements Table
 		return new ColumnImpl( this, getColumnDef(name));
 	}
 
-	
 }

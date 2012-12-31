@@ -1,18 +1,8 @@
-package org.xenei.jdbc4sparql.meta;
+package org.xenei.jdbc4sparql.sparql;
 
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.PriorityQueue;
-import java.util.TreeSet;
 
-
-import org.apache.commons.collections.bag.TreeBag;
 import org.xenei.jdbc4sparql.ColumnImpl;
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.Column;
@@ -22,55 +12,22 @@ import org.xenei.jdbc4sparql.iface.SortKey;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.TableDef;
 
-public class MetaTable extends MetaNamespace implements Table
+public class SparqlTable extends SparqlNamespace implements Table
 {
-	private TableDef tableDef;
-	private Collection<Object[]>data;
-	private Schema schema;
+	private SparqlSchema schema;
+	private SparqlTableDef tableDef;
 	
-	@SuppressWarnings( "unchecked" )
-	MetaTable( Schema schema, TableDef tableDef )
+	protected SparqlTable( SparqlSchema schema, SparqlTableDef tableDef )
 	{
+		super(schema.getNamespace(), tableDef.getName());
 		this.schema = schema;
-		this.tableDef= tableDef;
-		if (tableDef.getSortKey() == null)
-		{
-			data = new ArrayList<Object[]>();
-		}
-		else
-		{
-			if (tableDef.getSortKey().isUnique())
-			{
-				data = new TreeSet<Object[]>( tableDef.getSortKey());
-			}
-			else
-			{	// 11 is the default priority queue capacity
-				data = new TreeBag( tableDef.getSortKey() );
-			}
-		}
-	}
-	
-	public void addData( Object[] args )
-	{
-		tableDef.verify( args );
-		data.add( args );
-	}
-
-	@Override
-	public String getLocalName()
-	{
-		return tableDef.getName();
+		this.tableDef = tableDef;
 	}
 
 	@Override
 	public Schema getSchema()
 	{
 		return schema;
-	}
-	
-	public ResultSet getResultSet()
-	{
-		return new FixedResultSet( data, this );
 	}
 
 	@Override
@@ -79,20 +36,21 @@ public class MetaTable extends MetaNamespace implements Table
 		return schema.getCatalog();
 	}
 
-	public TableDef getTableDef()
-	{
-		return tableDef;
-	}
-	
+	@Override
 	public String getType()
 	{
-		return "TABLE";
+		return "VIRTUAL TABLE";
 	}
 
 	@Override
 	public boolean isEmpty()
 	{
-		return data.isEmpty();
+		return false;
+	}
+
+	public boolean equals( Object obj )
+	{
+		return tableDef.equals(obj);
 	}
 
 	public String getName()
@@ -100,7 +58,7 @@ public class MetaTable extends MetaNamespace implements Table
 		return tableDef.getName();
 	}
 
-	public List<? extends ColumnDef> getColumnDefs()
+	public List<ColumnDef> getColumnDefs()
 	{
 		return tableDef.getColumnDefs();
 	}
@@ -140,6 +98,16 @@ public class MetaTable extends MetaNamespace implements Table
 		return tableDef.getColumnIndex(columnName);
 	}
 
+	public int hashCode()
+	{
+		return tableDef.hashCode();
+	}
+
+	public String toString()
+	{
+		return tableDef.toString();
+	}
+
 	@Override
 	public Iterator<Column> getColumns()
 	{
@@ -158,5 +126,4 @@ public class MetaTable extends MetaNamespace implements Table
 		return new ColumnImpl( this, getColumnDef(name));
 	}
 
-	
 }

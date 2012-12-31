@@ -1,40 +1,47 @@
 package org.xenei.jdbc4sparql.mock;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.NameFilter;
 import org.xenei.jdbc4sparql.iface.Schema;
+import org.xenei.jdbc4sparql.sparql.SparqlNamespace;
 
-public class MockCatalog implements Catalog {
+public class MockCatalog extends SparqlNamespace implements Catalog {
 
-	@Override
-	public String getNamespace()
+	List<Schema> schemas = new ArrayList<Schema>();
+	
+	public MockCatalog()
 	{
-		return "http://examplec.com/namespace#";
-
-	}
-
-	@Override
-	public String getLocalName()
-	{
-		return "MockCatalog";
+		super( "http://examplec.com/namespace#", "MockCatalog");
+		schemas.add( new MockSchema( this ));
 	}
 
 	@Override
 	public Set<Schema> getSchemas()
 	{
-		return new HashSet<Schema>( Arrays.asList( new Schema[] { new MockSchema() } ));
+		return new HashSet<Schema>( schemas );
 	}
 
 	@Override
-	public Schema getSchema( String schema )
+	public Schema getSchema( String schemaName )
 	{
-		Iterator<Schema> iter = new NameFilter<Schema>( schema, getSchemas() );
-		return iter.hasNext()?iter.next():null;
+		Iterator<Schema> iter = new NameFilter<Schema>( schemaName, getSchemas() );
+		if (iter.hasNext())
+		{
+			return iter.next();
+		}
+		else
+		{
+			Schema schema = new MockSchema( this, schemaName );
+			schemas.add( schema );
+			return schema;
+		}
 	}
 	
 }

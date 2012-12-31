@@ -11,8 +11,13 @@ public class NameFilter<T extends NamespacedObject> implements Iterator<T>, Iter
 	
 	public NameFilter(String namePattern, Collection<T> objs)
 	{
+		this( namePattern, objs.iterator());
+	}
+
+	public NameFilter(String namePattern, Iterator<T> iter)
+	{
 		this.namePattern = namePattern;
-		iter = objs.iterator();
+		this.iter = iter;
 		next = null;
 	}
 

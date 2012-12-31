@@ -3,23 +3,18 @@ package org.xenei.jdbc4sparql.meta;
 import java.sql.DatabaseMetaData;
 import java.sql.Types;
 
+import org.xenei.jdbc4sparql.ColumnDefImpl;
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.Column;
+import org.xenei.jdbc4sparql.iface.ColumnDef;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
+import org.xenei.jdbc4sparql.iface.TableDef;
+import org.xenei.jdbc4sparql.iface.meta.ColumnsTableRow;
 
-public class MetaColumn implements Column
+public class MetaColumn extends ColumnDefImpl implements Column
 {
-	/**
-	 * 
-	 */
-	private String localName;
-	private int displaySize;
-	private int type;
-	private int precision;
-	private int scale;
-	private boolean signed;
-	private int nullable;
+	
 	private Table table;
 
 	public static MetaColumn getStringInstance( String localName ) {
@@ -35,34 +30,17 @@ public class MetaColumn implements Column
 		this(  localName, type, 0, 0, 0, true );
 	}
 
+	public MetaColumn( String localName, int type, javax.persistence.Column columnDef )
+	{
+		this( localName, type, 0, columnDef.precision(), columnDef.scale(), true );
+		setNullable(columnDef.nullable()?DatabaseMetaData.columnNullable:DatabaseMetaData.columnNoNulls);
+	}
+	
 	public MetaColumn( String localName, int type, int displaySize,  int precision, int scale, boolean signed )
 	{
-		this.localName=localName;
-		this.displaySize = displaySize;
-		this.type  = type;
-		this.precision = precision;
-		this.scale = scale;
-		this.signed = signed;
-		this.nullable = DatabaseMetaData.columnNullableUnknown;
+		super( MetaNamespace.NS, localName, type, displaySize, precision, scale, signed );
 	}
 	
-	public MetaColumn setNullable(int state)
-	{
-		nullable = state;
-		return this;
-	}
-	
-	@Override
-	public String getNamespace()
-	{
-		return "";
-	}
-
-	@Override
-	public String getLocalName()
-	{
-		return localName;
-	}
 
 	void setTable( Table table )
 	{
@@ -72,7 +50,7 @@ public class MetaColumn implements Column
 	@Override
 	public Catalog getCatalog()
 	{
-		return table.getCatalog();
+		return table.getSchema().getCatalog();
 	}
 
 	@Override
@@ -86,101 +64,4 @@ public class MetaColumn implements Column
 	{
 		return table;
 	}
-
-	@Override
-	public String getColumnClassName()
-	{
-		return "";
-	}
-
-	@Override
-	public int getDisplaySize()
-	{
-		return displaySize;
-	}
-
-	@Override
-	public String getLabel()
-	{
-		return getLocalName();
-	}
-
-	@Override
-	public int getType()
-	{
-		return type;
-	}
-
-	@Override
-	public String getTypeName()
-	{
-		return "";
-	}
-
-	@Override
-	public int getPrecision()
-	{
-		return precision;
-	}
-
-	@Override
-	public int getScale()
-	{
-		return scale;
-	}
-
-	@Override
-	public boolean isAutoIncrement()
-	{
-		return false;
-	}
-
-	@Override
-	public boolean isCaseSensitive()
-	{
-		return true;
-	}
-
-	@Override
-	public boolean isCurrency()
-	{
-		return false;
-	}
-
-	@Override
-	public boolean isDefinitelyWritable()
-	{
-		return false;
-	}
-
-	@Override
-	public int getNullable()
-	{
-		return nullable;
-	}
-
-	@Override
-	public boolean isReadOnly()
-	{
-		return true;
-	}
-
-	@Override
-	public boolean isSearchable()
-	{
-		return false;
-	}
-
-	@Override
-	public boolean isSigned()
-	{
-		return signed;
-	}
-
-	@Override
-	public boolean isWritable()
-	{
-		return false;
-	}
-	
 }

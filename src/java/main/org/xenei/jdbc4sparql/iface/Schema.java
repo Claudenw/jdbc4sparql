@@ -1,6 +1,9 @@
 package org.xenei.jdbc4sparql.iface;
 
+import java.util.Collection;
 import java.util.Set;
+
+import org.xenei.jdbc4sparql.iface.meta.ColumnsTableRow;
 
 public interface Schema extends NamespacedObject
 {
@@ -12,4 +15,6 @@ public interface Schema extends NamespacedObject
 	 * @return Catalog
 	 */
 	Catalog getCatalog();
+	
+	Table getTable(String tableName);
 }

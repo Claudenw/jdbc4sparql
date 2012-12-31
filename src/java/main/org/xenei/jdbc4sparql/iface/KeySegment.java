@@ -7,7 +7,7 @@ public class KeySegment implements Comparator<Object[]>
 	private int idx;
 	private boolean ascending;
 	
-	public KeySegment( int idx, Column column, boolean ascending)
+	public KeySegment( int idx, ColumnDef column, boolean ascending)
 	{
 		this.idx=idx;
 		this.ascending=ascending;
@@ -23,7 +23,7 @@ public class KeySegment implements Comparator<Object[]>
 		
 	}
 	
-	public KeySegment(int idx, Column column)
+	public KeySegment(int idx, ColumnDef column)
 	{
 		this( idx, column, true );
 	}

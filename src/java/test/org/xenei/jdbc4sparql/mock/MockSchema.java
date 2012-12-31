@@ -1,28 +1,35 @@
 package org.xenei.jdbc4sparql.mock;
 
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
+import org.xenei.jdbc4sparql.sparql.SparqlNamespace;
 
-public class MockSchema implements Schema
+public class MockSchema extends SparqlNamespace implements Schema
 {
+	private Catalog catalog;
+	private Map<String,Table> tables;
+	
 	public MockSchema()
 	{
-		
+		this( new MockCatalog() );
 	}
-	@Override
-	public String getNamespace()
+	
+	public MockSchema(Catalog catalog)
 	{
-		return "http://examplec.com/namespace#";
+		this(catalog, "mockSchema");
 	}
-
-	@Override
-	public String getLocalName()
+	
+	public MockSchema(Catalog catalog, String schema)
 	{
-		return "mockSchema";
+		super(catalog.getNamespace(), schema );
+		this.catalog = catalog;
+		this.tables = new HashMap<String,Table>();
 	}
 
 	@Override
@@ -34,7 +41,20 @@ public class MockSchema implements Schema
 	@Override
 	public Catalog getCatalog()
 	{
-		return new MockCatalog();
+		return catalog;
+	}
+	
+
+	@Override
+	public Table getTable( String tableName )
+	{
+		Table t = tables.get(tableName);
+		if (t == null)
+		{
+			t = new MockTable( this, tableName );
+			tables.put( tableName, t );
+		}
+		return  t;
 	}
 	
 }

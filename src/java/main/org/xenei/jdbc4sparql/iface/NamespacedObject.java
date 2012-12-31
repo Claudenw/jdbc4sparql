@@ -4,4 +4,5 @@ public interface NamespacedObject
 {
 	String getNamespace();
 	String getLocalName();
+	String getFQName();
 }

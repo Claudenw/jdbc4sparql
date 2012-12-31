@@ -10,6 +10,7 @@ import java.sql.NClob;
 import java.sql.PreparedStatement;
 import java.sql.SQLClientInfoException;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.sql.SQLWarning;
 import java.sql.SQLXML;
 import java.sql.Savepoint;
@@ -17,12 +18,13 @@ import java.sql.Statement;
 import java.sql.Struct;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.Executor;
 
 import org.xenei.jdbc4sparql.iface.Catalog;
 
 public class J4SConnection implements Connection
 {
-	private Catalog catalog;
+	private String catalog;
 	private J4SDriver driver;
 	
 	public J4SConnection(J4SDriver driver, String url, Properties props)
@@ -70,37 +72,28 @@ public class J4SConnection implements Connection
 	public Array createArrayOf( String arg0, Object[] arg1 )
 			throws SQLException
 	{
-		// TODO Auto-generated method stub
-		return null;
-	}
+		throw new SQLFeatureNotSupportedException();	}
 
 	@Override
 	public Blob createBlob() throws SQLException
 	{
-		// TODO Auto-generated method stub
-		return null;
+		throw new SQLFeatureNotSupportedException();
 	}
 
 	@Override
 	public Clob createClob() throws SQLException
 	{
-		// TODO Auto-generated method stub
-		return null;
-	}
+		throw new SQLFeatureNotSupportedException();	}
 
 	@Override
 	public NClob createNClob() throws SQLException
 	{
-		// TODO Auto-generated method stub
-		return null;
-	}
+		throw new SQLFeatureNotSupportedException();	}
 
 	@Override
 	public SQLXML createSQLXML() throws SQLException
 	{
-		// TODO Auto-generated method stub
-		return null;
-	}
+		throw new SQLFeatureNotSupportedException();	}
 
 	@Override
 	public Statement createStatement() throws SQLException
@@ -142,8 +135,7 @@ public class J4SConnection implements Connection
 	@Override
 	public String getCatalog() throws SQLException
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return catalog;
 	}
 
 	@Override
@@ -170,14 +162,13 @@ public class J4SConnection implements Connection
 	@Override
 	public DatabaseMetaData getMetaData() throws SQLException
 	{
-		return new J4SDatabaseMetaData( this, driver, catalog );
+		return new J4SDatabaseMetaData( this, driver );
 	}
 
 	@Override
 	public int getTransactionIsolation() throws SQLException
 	{
-		// TODO Auto-generated method stub
-		return 0;
+		return Connection.TRANSACTION_NONE;
 	}
 
 	@Override
@@ -197,15 +188,13 @@ public class J4SConnection implements Connection
 	@Override
 	public boolean isClosed() throws SQLException
 	{
-		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
 	public boolean isReadOnly() throws SQLException
 	{
-		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
 
 	@Override
@@ -322,10 +311,9 @@ public class J4SConnection implements Connection
 	}
 
 	@Override
-	public void setCatalog( String arg0 ) throws SQLException
+	public void setCatalog( String catalog ) throws SQLException
 	{
-		// TODO Auto-generated method stub
-		
+		this.catalog = catalog;
 	}
 
 	@Override
@@ -380,6 +368,42 @@ public class J4SConnection implements Connection
 
 	@Override
 	public void setTypeMap( Map<String, Class<?>> arg0 ) throws SQLException
+	{
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void abort( Executor arg0 ) throws SQLException
+	{
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public int getNetworkTimeout() throws SQLException
+	{
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public String getSchema() throws SQLException
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setNetworkTimeout( Executor arg0, int arg1 )
+			throws SQLException
+	{
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setSchema( String arg0 ) throws SQLException
 	{
 		// TODO Auto-generated method stub
 		

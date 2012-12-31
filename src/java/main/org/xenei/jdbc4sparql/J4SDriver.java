@@ -4,7 +4,9 @@ import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.util.Properties;
+import java.util.logging.Logger;
 
 public class J4SDriver implements Driver
 {
@@ -61,6 +63,13 @@ public class J4SDriver implements Driver
 	{
 		// TODO Auto-generated method stub
 		return false;
+	}
+
+	@Override
+	public Logger getParentLogger() throws SQLFeatureNotSupportedException
+	{
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

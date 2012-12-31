@@ -19,7 +19,6 @@ public class MetaCatalog extends MetaNamespace implements Catalog
 		this.schema = new MetaSchema( this );
 	}
 	
-
 	@Override
 	public String getLocalName()
 	{

@@ -14,13 +14,11 @@ public interface TableDef
 	 * Get the list of columns in the table
 	 * @return
 	 */
-	List<Column> getColumns();
+	List<? extends ColumnDef> getColumnDefs();
 	
-	Column getColumn(int idx);
+	ColumnDef getColumnDef(int idx);
 	
-	Column getColumn(String name);
-	
-	
+	ColumnDef getColumnDef(String name);
 	
 	int getColumnCount();
 	
@@ -38,5 +36,7 @@ public interface TableDef
 	 */
 	void verify( Object[] row );
 	
-	int getColumnIndex( Column column );
+	int getColumnIndex( ColumnDef column );
+	
+	int getColumnIndex( String columnName );
 }
