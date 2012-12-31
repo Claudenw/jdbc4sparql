@@ -6,12 +6,13 @@ import java.sql.Types;
 
 import javax.persistence.Column;
 
+import org.xenei.jdbc4sparql.impl.NamespaceImpl;
 import org.xenei.jdbc4sparql.meta.MetaColumn;
 
 public class SparqlColumn extends MetaColumn
 {
 
-	private SparqlNamespace sparqlNamespace;
+	private NamespaceImpl sparqlNamespace;
 	private SparqlTableDef tableDef;
 	private Resource resource;
 	

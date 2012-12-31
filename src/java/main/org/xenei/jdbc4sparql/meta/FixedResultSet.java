@@ -28,10 +28,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import org.xenei.jdbc4sparql.AbstractResultSet;
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.TableDef;
+import org.xenei.jdbc4sparql.impl.AbstractResultSet;
 
 public class FixedResultSet extends AbstractResultSet
 {
@@ -352,13 +352,6 @@ public class FixedResultSet extends AbstractResultSet
 	public double getDouble( String col ) throws SQLException
 	{
 		return getDouble( findColumn( col ));
-	}
-
-	@Override
-	public int getFetchDirection() throws SQLException
-	{
-		// TODO Auto-generated method stub
-		return 0;
 	}
 
 	@Override

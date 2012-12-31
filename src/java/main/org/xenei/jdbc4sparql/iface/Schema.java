@@ -17,4 +17,6 @@ public interface Schema extends NamespacedObject
 	Catalog getCatalog();
 	
 	Table getTable(String tableName);
+	
+	NameFilter<Table> findTables( String tableNamePattern );
 }

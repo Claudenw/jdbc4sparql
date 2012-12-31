@@ -1,16 +1,15 @@
-package org.xenei.jdbc4sparql;
+package org.xenei.jdbc4sparql.impl;
 
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.ColumnDef;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
-import org.xenei.jdbc4sparql.sparql.SparqlNamespace;
 
-public class ColumnImpl extends SparqlNamespace implements Column
+public class ColumnImpl extends NamespaceImpl implements Column
 {
-	Table table;
-	ColumnDef columnDef;
+	private Table table;
+	private ColumnDef columnDef;
 	
 	public ColumnImpl( Table table, ColumnDef columnDef)
 	{

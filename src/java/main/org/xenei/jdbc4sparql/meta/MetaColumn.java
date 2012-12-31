@@ -3,7 +3,6 @@ package org.xenei.jdbc4sparql.meta;
 import java.sql.DatabaseMetaData;
 import java.sql.Types;
 
-import org.xenei.jdbc4sparql.ColumnDefImpl;
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.ColumnDef;
@@ -11,6 +10,7 @@ import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.TableDef;
 import org.xenei.jdbc4sparql.iface.meta.ColumnsTableRow;
+import org.xenei.jdbc4sparql.impl.ColumnDefImpl;
 
 public class MetaColumn extends ColumnDefImpl implements Column
 {

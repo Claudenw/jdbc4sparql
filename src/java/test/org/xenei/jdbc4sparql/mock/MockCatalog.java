@@ -8,17 +8,20 @@ import java.util.List;
 import java.util.Set;
 
 import org.xenei.jdbc4sparql.iface.Catalog;
+import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.NameFilter;
 import org.xenei.jdbc4sparql.iface.Schema;
-import org.xenei.jdbc4sparql.sparql.SparqlNamespace;
+import org.xenei.jdbc4sparql.impl.NamespaceImpl;
 
-public class MockCatalog extends SparqlNamespace implements Catalog {
+public class MockCatalog extends NamespaceImpl implements Catalog {
 
+	public static final String NS = "http://examplec.com/namespace#";
+	public static final String LOCAL_NAME="MockCatalog";
 	List<Schema> schemas = new ArrayList<Schema>();
 	
 	public MockCatalog()
 	{
-		super( "http://examplec.com/namespace#", "MockCatalog");
+		super( NS, LOCAL_NAME);
 		schemas.add( new MockSchema( this ));
 	}
 
@@ -44,4 +47,9 @@ public class MockCatalog extends SparqlNamespace implements Catalog {
 		}
 	}
 	
+	@Override
+	public NameFilter<Schema> findSchemas( String schemaNamePattern )
+	{
+		return new NameFilter<Schema>( schemaNamePattern, getSchemas());
+	}
 }

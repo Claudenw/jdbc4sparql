@@ -1,4 +1,4 @@
-package org.xenei.jdbc4sparql.meta;
+package org.xenei.jdbc4sparql.impl;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -15,13 +15,13 @@ import org.xenei.jdbc4sparql.iface.SortKey;
 import org.xenei.jdbc4sparql.iface.TableDef;
 import org.xenei.jdbc4sparql.iface.TypeConverter;
 
-public class MetaTableDef implements TableDef
+public class TableDefImpl implements TableDef
 {
 	private String name;
 	private List<ColumnDef> columns;
 	private SortKey sortKey;
 	
-	public MetaTableDef(String name)
+	public TableDefImpl(String name)
 	{
 		this.name =name;
 		this.columns = new ArrayList<ColumnDef>();

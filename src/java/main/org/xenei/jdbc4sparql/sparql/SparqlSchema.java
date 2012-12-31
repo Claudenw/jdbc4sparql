@@ -8,13 +8,15 @@ import java.util.Map;
 import java.util.Set;
 
 import org.xenei.jdbc4sparql.iface.Catalog;
+import org.xenei.jdbc4sparql.iface.NameFilter;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.TableDef;
+import org.xenei.jdbc4sparql.impl.NamespaceImpl;
 
 
 
-public class SparqlSchema extends SparqlNamespace implements Schema
+public class SparqlSchema extends NamespaceImpl implements Schema
 {
 	private static final String tableNames="prefix afn: <http://jena.hpl.hp.com/ARQ/function#>. " +
 			"SELECT ?tName WHERE { ?tName a rdfs:class ; " +
@@ -61,4 +63,11 @@ public class SparqlSchema extends SparqlNamespace implements Schema
 		}
 		return new SparqlTable( this, tblDef );
 	}
+	
+	@Override
+	public NameFilter<Table> findTables( String tableNamePattern )
+	{
+		return new NameFilter<Table>( tableNamePattern, getTables());
+	}
+
 }

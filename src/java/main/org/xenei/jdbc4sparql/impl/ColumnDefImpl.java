@@ -1,4 +1,4 @@
-package org.xenei.jdbc4sparql;
+package org.xenei.jdbc4sparql.impl;
 
 import java.sql.DatabaseMetaData;
 import java.sql.Types;
@@ -11,9 +11,8 @@ import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.TableDef;
 import org.xenei.jdbc4sparql.iface.meta.ColumnsTableRow;
 import org.xenei.jdbc4sparql.meta.MetaColumn;
-import org.xenei.jdbc4sparql.sparql.SparqlNamespace;
 
-public class ColumnDefImpl extends SparqlNamespace implements ColumnDef
+public class ColumnDefImpl extends NamespaceImpl implements ColumnDef
 {
 
 	private int displaySize;

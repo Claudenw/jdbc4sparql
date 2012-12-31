@@ -22,37 +22,39 @@ import com.hp.hpl.jena.sparql.syntax.ElementTriplesBlock;
 import com.hp.hpl.jena.vocabulary.RDF;
 
 import java.sql.DatabaseMetaData;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.ColumnDef;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
+import org.xenei.jdbc4sparql.iface.TableDef;
+import org.xenei.jdbc4sparql.impl.TableDefImpl;
 
 public class SparqlQueryBuilder
 {
 	private Query query;
-	/*
-	private boolean distinct;
-	private Set<String> vars;
-	private Set<Triple> bgp;
-	private Set<String> filters;
-	*/
 	private Catalog catalog;
+	private Set<Table> tablesInQuery;
+	private Map<Var,Column> columnsInQuery;
 
 	public SparqlQueryBuilder( Catalog catalog )
 	{
 		this.catalog = catalog;
 		this.query = new Query();
-		query.setQuerySelectType();
-//		distinct = false;
-//		vars = new HashSet<String>();
-//		bgp = new HashSet<Triple>();
-//		filters = new HashSet<String>();	
+		this.tablesInQuery = new HashSet<Table>();
+		this.columnsInQuery = new HashMap<Var, Column>();
+		query.setQuerySelectType();	
 	}
 	
 	public Catalog getCatalog()
@@ -68,6 +70,10 @@ public class SparqlQueryBuilder
 	public void setAllColumns()
 	{
 		query.setQueryResultStar(true);
+		for (Table t : tablesInQuery)
+		{
+			addVars(t.getColumns());
+		}
 	}
 	
 	public boolean isAllColumns()
@@ -118,7 +124,19 @@ public class SparqlQueryBuilder
 	
 	public void addBGP( Node s, Node p, Node o )
 	{
-		getElementGroup().addTriplePattern(new Triple( s, p, o ));
+		ElementGroup eg = getElementGroup();
+		Triple t = new Triple( s, p, o );
+		for (Element el : eg.getElements())
+		{
+			if (el instanceof ElementTriplesBlock)
+			{
+				if (((ElementTriplesBlock)el).getPattern().getList().contains(t))
+				{
+					return;
+				}
+			}
+		}
+		eg.addTriplePattern(t);
 	}
 	
 	public void addFilter( Expr filter)
@@ -135,34 +153,67 @@ public class SparqlQueryBuilder
 
 	/**
 	 * Returns the variable for the table.
-	 * @param schemaName
-	 * @param tableName
+	 * @param schemaName The schema name to find (null = any)
+	 * @param tableName The table name to find (null = any)
 	 * @return
+	 * @throws SQLException 
 	 */
-	public Node addTable( String schemaName, String tableName )
+	public Node addTable( String schemaName, String tableName ) throws SQLException
 	{
-		Schema schema =catalog.getSchema( schemaName );
-		Table table = schema.getTable( tableName );
+		Collection<Table> tables = findTables(schemaName, tableName);
+		if (tables.size() > 1)
+		{
+			throw new SQLException( tableName+" is found in multiple schemas");
+		}
+		if (tables.isEmpty())
+		{
+			throw new SQLException( tableName+" is not found in any schema");
+		}
+		Table table = tables.iterator().next();
+		tablesInQuery.add( table );
 		Node tableVar = Node.createVariable( getTableVar( table ));
 		addBGP( tableVar, RDF.type.asNode(), Node.createURI(table.getFQName()));
 		return tableVar;
 	}
 	
-	/**
-	 * Returns the URI for the column.
-	 * @param schemaName
-	 * @param tableName
-	 * @param columnName
-	 * @return
-	 */
-	public Node getColumnURI(String schemaName, String tableName, String columnName)
+	public Node addColumn(net.sf.jsqlparser.schema.Column tableColumn)
 	{
-		Schema schema =catalog.getSchema( schemaName );
-		Table table = schema.getTable( tableName );
-		Column column = table.getColumn( columnName );
-		return Node.createURI( column.getFQName() );
+		/*
+		 * Add bgp triples
+		 */
+		
+		Node tableVar;
+		Node columnURI;
+		Column column;
+		try
+		{
+			tableVar = addTable( tableColumn.getTable().getSchemaName(), tableColumn.getTable().getName() );
+			
+			
+			Collection<Column> columns = findColumns( tableColumn.getTable().getSchemaName(), 
+					tableColumn.getTable().getName(), tableColumn.getColumnName() );
+			if (columns.size() > 1)
+			{
+				throw new SQLException( tableColumn.getColumnName()+" is found in multiple tables");
+			}
+			if (columns.isEmpty())
+			{
+				throw new SQLException( tableColumn.getColumnName()+" is not found in any table");
+			}
+			column = columns.iterator().next();
+			columnURI = Node.createURI( column.getFQName() );
+		}
+		catch (SQLException e)
+		{
+			throw new RuntimeException ( e );
+		} 
+		Node columnVar = Node.createVariable( tableColumn.getColumnName() );
+		columnsInQuery.put( Var.alloc(columnVar), column);
+		// ?tableVar columnURI ?columnVar
+		addBGP( tableVar, columnURI, columnVar );
+		return columnVar;
 	}
-	
+
 	public Query build()
 	{
 		return query;
@@ -175,7 +226,7 @@ public class SparqlQueryBuilder
 
 	public void addVars( Iterator<? extends Column> cols )
 	{
-		ElementGroup eg = new ElementGroup();
+		ElementGroup eg = getElementGroup();
 		while (cols.hasNext())
 		{
 			Column col = cols.next();
@@ -190,6 +241,60 @@ public class SparqlQueryBuilder
 			}
 			eg.addElement(e);
 		}
-		getElementGroup().addElement(eg);
+	}
+	
+	private Collection<Table> findTables( String schemaName, String tableName )
+	{
+		List<Table> tables = new ArrayList<Table>();
+		for (Schema schema : catalog.findSchemas(schemaName))
+		{
+			for (Table table : schema.findTables(tableName))
+			{
+				tables.add( table );
+			}
+		}
+		return tables;
+	}
+	
+	private Collection<Schema> findSchemas( String schemaName )
+	{
+		List<Schema> schemas = new ArrayList<Schema>();
+		for (Schema schema : catalog.findSchemas(schemaName))
+		{
+			schemas.add( schema );
+			
+		}
+		return schemas;
+	}
+	
+	private Collection<Column> findColumns( String schemaName, String tableName, String columnName )
+	{
+		List<Column> columns = new ArrayList<Column>();
+		for (Schema schema : catalog.findSchemas(schemaName))
+		{
+			for (Table table : schema.findTables(tableName))
+			{
+				for (Column column : table.findColumns(columnName))
+				{
+					columns.add( column );
+				}
+			}
+		}
+		return columns;
+	}
+	
+	public TableDef getTableDef( String name )
+	{
+		TableDefImpl tableDef = new TableDefImpl( name );
+		for (Var var : query.getProjectVars())
+		{
+			Column c = columnsInQuery.get( var );
+			if (c == null)
+			{
+				throw new IllegalStateException( var+" was not found in the solution");
+			}
+			tableDef.add( columnsInQuery.get( var ));
+		}
+		return tableDef;
 	}
 }

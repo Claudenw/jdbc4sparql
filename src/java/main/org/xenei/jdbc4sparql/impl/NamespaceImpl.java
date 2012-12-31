@@ -1,13 +1,13 @@
-package org.xenei.jdbc4sparql.sparql;
+package org.xenei.jdbc4sparql.impl;
 
 import org.xenei.jdbc4sparql.iface.NamespacedObject;
 
-public class SparqlNamespace implements NamespacedObject
+public class NamespaceImpl implements NamespacedObject
 {
 	private String namespace;
 	private String localName;
 
-	protected SparqlNamespace( String namespace, String localName)
+	protected NamespaceImpl( String namespace, String localName)
 	{
 		this.namespace = namespace;
 		this.localName=localName;

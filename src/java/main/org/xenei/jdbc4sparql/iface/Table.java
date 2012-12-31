@@ -4,7 +4,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import org.xenei.jdbc4sparql.ColumnImpl;
+import org.xenei.jdbc4sparql.impl.ColumnImpl;
 
 public interface Table extends NamespacedObject, TableDef
 {
@@ -23,13 +23,13 @@ public interface Table extends NamespacedObject, TableDef
 	 */
 	String getType();  
 	
-	boolean isEmpty();
-	
 	Iterator<Column> getColumns();
 	
 	Column getColumn(int idx);
 	
 	Column getColumn(String name);
+	
+	NameFilter<Column> findColumns(String columnNamePattern);
 	
 	public static class ColumnIterator implements Iterator<Column> {
 		private Table table;

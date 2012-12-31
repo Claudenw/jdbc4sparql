@@ -1,4 +1,4 @@
-package org.xenei.jdbc4sparql.meta;
+package org.xenei.jdbc4sparql.impl;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -13,47 +13,27 @@ import java.util.TreeSet;
 
 
 import org.apache.commons.collections.bag.TreeBag;
-import org.xenei.jdbc4sparql.ColumnImpl;
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.ColumnDef;
+import org.xenei.jdbc4sparql.iface.NameFilter;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.SortKey;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.TableDef;
+import org.xenei.jdbc4sparql.meta.FixedResultSet;
+import org.xenei.jdbc4sparql.meta.MetaNamespace;
 
-public class MetaTable extends MetaNamespace implements Table
+public abstract class AbstractTable extends MetaNamespace implements Table
 {
 	private TableDef tableDef;
-	private Collection<Object[]>data;
 	private Schema schema;
 	
 	@SuppressWarnings( "unchecked" )
-	MetaTable( Schema schema, TableDef tableDef )
+	public 	AbstractTable( Schema schema, TableDef tableDef )
 	{
 		this.schema = schema;
 		this.tableDef= tableDef;
-		if (tableDef.getSortKey() == null)
-		{
-			data = new ArrayList<Object[]>();
-		}
-		else
-		{
-			if (tableDef.getSortKey().isUnique())
-			{
-				data = new TreeSet<Object[]>( tableDef.getSortKey());
-			}
-			else
-			{	// 11 is the default priority queue capacity
-				data = new TreeBag( tableDef.getSortKey() );
-			}
-		}
-	}
-	
-	public void addData( Object[] args )
-	{
-		tableDef.verify( args );
-		data.add( args );
 	}
 
 	@Override
@@ -68,10 +48,7 @@ public class MetaTable extends MetaNamespace implements Table
 		return schema;
 	}
 	
-	public ResultSet getResultSet()
-	{
-		return new FixedResultSet( data, this );
-	}
+	abstract public ResultSet getResultSet();
 
 	@Override
 	public Catalog getCatalog()
@@ -89,11 +66,11 @@ public class MetaTable extends MetaNamespace implements Table
 		return "TABLE";
 	}
 
-	@Override
-	public boolean isEmpty()
-	{
-		return data.isEmpty();
-	}
+//	@Override
+//	public boolean isEmpty()
+//	{
+//		return data.isEmpty();
+//	}
 
 	public String getName()
 	{
@@ -158,5 +135,10 @@ public class MetaTable extends MetaNamespace implements Table
 		return new ColumnImpl( this, getColumnDef(name));
 	}
 
+	@Override
+	public NameFilter<Column> findColumns( String columnNamePattern )
+	{
+		return new NameFilter<Column>( columnNamePattern, getColumns());
+	}
 	
 }

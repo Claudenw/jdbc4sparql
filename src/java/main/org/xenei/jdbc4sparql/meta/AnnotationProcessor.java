@@ -11,6 +11,7 @@ import javax.persistence.Entity;
 import org.apache.commons.lang3.StringUtils;
 import org.xenei.jdbc4sparql.iface.TableDef;
 import org.xenei.jdbc4sparql.iface.TypeConverter;
+import org.xenei.jdbc4sparql.impl.TableDefImpl;
 
 public class AnnotationProcessor
 {
@@ -61,7 +62,7 @@ public class AnnotationProcessor
 	
 		String tableName = getTableName( tableClass, entity );
 
-		MetaTableDef tableDef = new MetaTableDef( tableName );
+		TableDefImpl tableDef = new TableDefImpl( tableName );
 		for (Method method : tableClass.getMethods())
 		{
 			if (method.getName().startsWith("get") || method.getName().startsWith("is"))

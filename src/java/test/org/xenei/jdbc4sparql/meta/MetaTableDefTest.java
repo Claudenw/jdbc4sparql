@@ -7,16 +7,17 @@ import org.junit.Before;
 import org.junit.Test;
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.ColumnDef;
+import org.xenei.jdbc4sparql.impl.TableDefImpl;
 
 
 public class MetaTableDefTest
 {
-	private MetaTableDef def;
+	private TableDefImpl def;
 	
 	@Before
 	public void setUp()
 	{
-		def = new MetaTableDef( "TestDef" );
+		def = new TableDefImpl( "TestDef" );
 		def.add( MetaColumn.getStringInstance( "NULLABLE_STRING" ).setNullable( DatabaseMetaData.columnNullable) );
 		def.add( MetaColumn.getStringInstance( "STRING" ) );
 		def.add( MetaColumn.getIntInstance( "INT"));

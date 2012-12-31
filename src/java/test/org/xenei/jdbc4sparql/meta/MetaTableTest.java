@@ -10,17 +10,19 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.xenei.jdbc4sparql.iface.TableDef;
+import org.xenei.jdbc4sparql.impl.DataTable;
+import org.xenei.jdbc4sparql.impl.TableDefImpl;
 import org.xenei.jdbc4sparql.mock.MockSchema;
 
 public class MetaTableTest
 {
-	private MetaTableDef def;
+	private TableDefImpl def;
 	private Object[][] rows;
 	
 	@Before
 	public void setUp()
 	{
-		def = new MetaTableDef( "TestDef" );
+		def = new TableDefImpl( "TestDef" );
 		def.add( MetaColumn.getStringInstance( "NULLABLE_STRING" ).setNullable( DatabaseMetaData.columnNullable) );
 		def.add( MetaColumn.getStringInstance( "STRING" ) );
 		def.add( MetaColumn.getIntInstance( "INT"));
@@ -34,7 +36,7 @@ public class MetaTableTest
 	@Test
 	public void testTable() throws Exception
 	{
-		MetaTable table = new MetaTable(new MockSchema(), def);
+		DataTable table = new DataTable(new MockSchema(), def);
 		for (Object[] row : rows )
 		{
 			table.addData(row);
@@ -86,7 +88,7 @@ public class MetaTableTest
 	public void testSortedTable() throws Exception
 	{
 		def.addKey( "STRING" );	
-		MetaTable table = new MetaTable(new MockSchema(), def);
+		DataTable table = new DataTable(new MockSchema(), def);
 		for (Object[] row : rows )
 		{
 			table.addData(row);
@@ -113,7 +115,7 @@ public class MetaTableTest
 	{
 		def.addKey( "STRING" );
 		def.setUnique();
-		MetaTable table = new MetaTable(new MockSchema(), def);
+		DataTable table = new DataTable(new MockSchema(), def);
 		for (Object[] row : rows )
 		{
 			table.addData(row);

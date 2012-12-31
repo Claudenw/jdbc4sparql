@@ -1,6 +1,11 @@
 package org.xenei.jdbc4sparql.sparql.visitors;
 
 import com.hp.hpl.jena.query.Query;
+import com.hp.hpl.jena.query.QueryExecution;
+import com.hp.hpl.jena.query.QueryExecutionFactory;
+
+import java.net.URI;
+import java.sql.ResultSet;
 
 import org.xenei.jdbc4sparql.iface.Catalog;
 
@@ -116,6 +121,10 @@ public class SparqlVisitor implements StatementVisitor
 		throw new UnsupportedOperationException( "CREATE TABLE" ); 
 	}
 	
-	
+	ResultSet getResultSet( URI uri)
+	{
+		
+		new SparqlView( uri, sparqlQueryBuilder ).getResultSet();
+	}
 
 }

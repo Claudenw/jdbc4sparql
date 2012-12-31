@@ -2,18 +2,20 @@ package org.xenei.jdbc4sparql.mock;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 import org.xenei.jdbc4sparql.iface.Catalog;
+import org.xenei.jdbc4sparql.iface.NameFilter;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
-import org.xenei.jdbc4sparql.sparql.SparqlNamespace;
+import org.xenei.jdbc4sparql.impl.SchemaImpl;
+import org.xenei.jdbc4sparql.impl.NamespaceImpl;
 
-public class MockSchema extends SparqlNamespace implements Schema
+public class MockSchema extends SchemaImpl
 {
-	private Catalog catalog;
-	private Map<String,Table> tables;
+	public static final String LOCAL_NAME="MockSchema";
 	
 	public MockSchema()
 	{
@@ -22,39 +24,13 @@ public class MockSchema extends SparqlNamespace implements Schema
 	
 	public MockSchema(Catalog catalog)
 	{
-		this(catalog, "mockSchema");
+		this(catalog, LOCAL_NAME);
 	}
 	
 	public MockSchema(Catalog catalog, String schema)
 	{
-		super(catalog.getNamespace(), schema );
-		this.catalog = catalog;
-		this.tables = new HashMap<String,Table>();
+		super(catalog, MockCatalog.NS, schema );
 	}
 
-	@Override
-	public Set<Table> getTables()
-	{
-		return Collections.emptySet();
-	}
 
-	@Override
-	public Catalog getCatalog()
-	{
-		return catalog;
-	}
-	
-
-	@Override
-	public Table getTable( String tableName )
-	{
-		Table t = tables.get(tableName);
-		if (t == null)
-		{
-			t = new MockTable( this, tableName );
-			tables.put( tableName, t );
-		}
-		return  t;
-	}
-	
 }

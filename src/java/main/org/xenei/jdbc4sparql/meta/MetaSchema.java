@@ -11,15 +11,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.xenei.jdbc4sparql.ColumnDefImpl;
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.Column;
+import org.xenei.jdbc4sparql.iface.NameFilter;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.TableDef;
+import org.xenei.jdbc4sparql.impl.ColumnDefImpl;
+import org.xenei.jdbc4sparql.impl.TableDefImpl;
+import org.xenei.jdbc4sparql.impl.SchemaImpl;
 
-public class MetaSchema extends MetaNamespace implements Schema 
+public class MetaSchema extends SchemaImpl
 {
+	public static final String LOCAL_NAME = "Schema";
+	
 	public static final String CATALOGS_TABLE="Catalogs";
 	public static final String COLUMNS_TABLE="Columns";
 	public static final String COLUMN_PRIVILIGES_TABLE = "ColumnPriviliges";
@@ -45,84 +50,26 @@ public class MetaSchema extends MetaNamespace implements Schema
 	public static final String TABLES_TABLE = "Tables";
 	public static final String BEST_ROW_TABLE = "BestRow";
 
-
-	private Catalog catalog;
-	private Map<String,Table> tables;
-	private static Map<String,TableDef> tableDefs;
-
-	static {
-		init();
-	}
+	
 	
 	MetaSchema( Catalog catalog )
 	{
-		this.catalog = catalog;
-		this.tables = new HashMap<String,Table>();
-	}
-
-
-	@Override
-	public String getLocalName()
-	{
-		return "Jdbc4Sparql_SCHEMA";
-	}
-
-	@Override
-	public Catalog getCatalog()
-	{
-		return catalog;
+		super( catalog, LOCAL_NAME );
+		init();
 	}
 	
-	public void addTableDef(TableDef tableDef)
+	private void init()
 	{
-		tableDefs.put( tableDef.getName(),  tableDef );
-	}
-	
-	public MetaTable newTable( String name )
-	{
-		TableDef tableDef = tableDefs.get(name);
-		if (tableDef == null)
-		{
-			throw new IllegalArgumentException( name+" is not a table in this schema");
-		}
-		return new MetaTable( this, tableDef );	
-	}
-	
-	public Set<Table> getTables()
-	{
-		HashSet<Table> retval = new HashSet<Table>(tables.values());
-		for (String tableName : tableDefs.keySet())
-		{
-			if (!tables.containsKey(tableName))
-			{
-				retval.add( new MetaTable( this, tableDefs.get(tableName)));
-			}
-		}
-		return retval;
-	}
-	
-	public MetaTable getTable( String name ) {
-		MetaTable retval = null;
-		if (tables.get(name) == null)
-		{
-			retval = newTable( name );
-			tables.put( name,  retval );
-		}
-		return retval;
-	}
-
-	private static void init()
-	{
-		tableDefs = new HashMap<String,TableDef>();
-		MetaTableDef tableDef;
+		TableDefImpl tableDef = null;
 		
-		tableDef = new MetaTableDef( CATALOGS_TABLE );
+		tableDef = new TableDefImpl( CATALOGS_TABLE );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "TABLE_CAT" ) );
 		tableDef.addKey( "TABLE_CAT");
-		tableDef.setUnique();
-		tableDefs.put( tableDef.getName(), tableDef);
+		tableDef.setUnique();	
+		addTableDef( tableDef );
 		
-		tableDef = new MetaTableDef( COLUMNS_TABLE );
+		
+		tableDef = new TableDefImpl( COLUMNS_TABLE );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "TABLE_CAT" ).setNullable( DatabaseMetaData.columnNullable) );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "TABLE_SCHEM" ).setNullable(DatabaseMetaData.columnNullable) );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "TABLE_NAME" ));
@@ -150,24 +97,24 @@ public class MetaSchema extends MetaNamespace implements Schema
 		tableDef.addKey( "TABLE_SCHEM");
 		tableDef.addKey( "TABLE_NAME");
 		tableDef.addKey( "ORDINAL_POSITION");
-		tableDefs.put( tableDef.getName(), tableDef);
+		addTableDef( tableDef );
 		
-		tableDef = new MetaTableDef( SCHEMAS_TABLE );
+		tableDef = new TableDefImpl( SCHEMAS_TABLE );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "TABLE_SCHEM" ) );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "TABLE_CATALOG" ).setNullable(DatabaseMetaData.columnNullable) );
 		tableDef.addKey( "TABLE_CATALOG");
 		tableDef.addKey( "TABLE_SCHEM");
-		tableDefs.put( tableDef.getName(), tableDef);
+		addTableDef( tableDef );
 
-		tableDef = new MetaTableDef( CLIENT_INFO_TABLE );
+		tableDef = new TableDefImpl( CLIENT_INFO_TABLE );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "NAME" ) );
 		tableDef.add( ColumnDefImpl.getIntInstance( MetaNamespace.NS, "MAX_LEN" ) );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "DEFAULT_VALUE" ) );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "DESCRIPTION" ) );
 		tableDef.addKey( "NAME");
-		tableDefs.put( tableDef.getName(), tableDef);
+		addTableDef( tableDef );
 		
-		tableDef = new MetaTableDef( FUNCTIONS_TABLE );
+		tableDef = new TableDefImpl( FUNCTIONS_TABLE );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "FUNCTION_CAT" ).setNullable(DatabaseMetaData.columnNullable) );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "FUNCTION_SCHEM" ).setNullable(DatabaseMetaData.columnNullable) );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "FUNCTION_NAME" ) );
@@ -178,9 +125,9 @@ public class MetaSchema extends MetaNamespace implements Schema
 		tableDef.addKey( "FUNCTION_SCHEM");
 		tableDef.addKey( "FUNCTION_NAME");
 		tableDef.addKey( "SPECIFIC_NAME");
-		tableDefs.put( tableDef.getName(), tableDef);
+		addTableDef( tableDef );
 		
-		tableDef = new MetaTableDef( TABLE_PRIVILEGES_TABLE );
+		tableDef = new TableDefImpl( TABLE_PRIVILEGES_TABLE );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "TABLE_CAT" ).setNullable(DatabaseMetaData.columnNullable) );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "TABLE_SCHEM" ).setNullable(DatabaseMetaData.columnNullable) );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "TABLE_NAME" ) );
@@ -192,9 +139,9 @@ public class MetaSchema extends MetaNamespace implements Schema
 		tableDef.addKey( "TABLE_SCHEM");
 		tableDef.addKey( "TABLE_NAME");
 		tableDef.addKey( "PRIVILEGE");
-		tableDefs.put( tableDef.getName(), tableDef);
+		addTableDef( tableDef );
 		
-		tableDef = new MetaTableDef( BEST_ROW_TABLE );
+		tableDef = new TableDefImpl( BEST_ROW_TABLE );
 		tableDef.add( ColumnDefImpl.getIntInstance( MetaNamespace.NS, "SCOPE" ) );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "COLUMN_NAME" ) );
 		tableDef.add( ColumnDefImpl.getIntInstance( MetaNamespace.NS, "DATA_TYPE" ) );
@@ -204,9 +151,9 @@ public class MetaSchema extends MetaNamespace implements Schema
 		tableDef.add( ColumnDefImpl.getIntInstance( MetaNamespace.NS, "DECIMAL_DIGITS" ) );
 		tableDef.add( ColumnDefImpl.getIntInstance( MetaNamespace.NS, "PSEUDO_COLUMN" ) );
 		tableDef.addKey( "SCOPE");
-		tableDefs.put( tableDef.getName(), tableDef);
+		addTableDef( tableDef );
 
-		tableDef = new MetaTableDef( PROCEDURES_TABLE );		
+		tableDef = new TableDefImpl( PROCEDURES_TABLE );		
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "PROCEDURE_CAT" ).setNullable(DatabaseMetaData.columnNullable) );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "PROCEDURE_SCHEM" ).setNullable(DatabaseMetaData.columnNullable) );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "PROCEDURE_NAME" ) );
@@ -220,9 +167,9 @@ public class MetaSchema extends MetaNamespace implements Schema
 		tableDef.addKey( "PROCEDURE_SCHEM");
 		tableDef.addKey( "PROCEDURE_NAME");
 		tableDef.addKey( "SPECIFIC_NAME");
-		tableDefs.put( tableDef.getName(), tableDef);
+		addTableDef( tableDef );
 
-		tableDef = new MetaTableDef( PROCEDURE_COLUMNS_TABLE );		
+		tableDef = new TableDefImpl( PROCEDURE_COLUMNS_TABLE );		
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "PROCEDURE_CAT" ).setNullable(DatabaseMetaData.columnNullable) );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "PROCEDURE_SCHEM" ).setNullable(DatabaseMetaData.columnNullable) );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "PROCEDURE_NAME" ) );
@@ -247,9 +194,9 @@ public class MetaSchema extends MetaNamespace implements Schema
 		tableDef.addKey( "PROCEDURE_SCHEM");
 		tableDef.addKey( "PROCEDURE_NAME");
 		tableDef.addKey( "SPECIFIC_NAME");
-		tableDefs.put( tableDef.getName(), tableDef);
+		addTableDef( tableDef );
 		
-		tableDef = new MetaTableDef( TABLES_TABLE );		
+		tableDef = new TableDefImpl( TABLES_TABLE );		
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "TABLE_CAT" ).setNullable(DatabaseMetaData.columnNullable) );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "TABLE_SCHEM" ).setNullable(DatabaseMetaData.columnNullable) );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "TABLE_NAME" ) );
@@ -264,15 +211,15 @@ public class MetaSchema extends MetaNamespace implements Schema
 		tableDef.addKey( "TABLE_CAT");
 		tableDef.addKey( "TABLE_SCHEM");
 		tableDef.addKey( "TABLE_NAME");
-		tableDefs.put( tableDef.getName(), tableDef);
+		addTableDef( tableDef );
 		
-		tableDef = new MetaTableDef( TABLE_TYPES_TABLE );
+		tableDef = new TableDefImpl( TABLE_TYPES_TABLE );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "TABLE_TYPE" ) );
 		tableDef.addKey( "TABLE_TYPE" );
 		tableDef.setUnique();
-		tableDefs.put( tableDef.getName(), tableDef);
+		addTableDef( tableDef );
 		
-		tableDef = new MetaTableDef( COLUMN_PRIVILIGES_TABLE );		
+		tableDef = new TableDefImpl( COLUMN_PRIVILIGES_TABLE );		
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "TABLE_CAT" ).setNullable(DatabaseMetaData.columnNullable) );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "TABLE_SCHEM" ).setNullable(DatabaseMetaData.columnNullable) );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "TABLE_NAME" ) );
@@ -283,9 +230,9 @@ public class MetaSchema extends MetaNamespace implements Schema
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "IS_GRANTABLE" ));
 		tableDef.addKey( "COLUMN_NAME");
 		tableDef.addKey( "PRIVILEGE");
-		tableDefs.put( tableDef.getName(), tableDef);
+		addTableDef( tableDef );
 
-		tableDef = new MetaTableDef( VERSION_COLUMNS_TABLE );
+		tableDef = new TableDefImpl( VERSION_COLUMNS_TABLE );
 		tableDef.add( new MetaColumn( "SCOPE", Types.SMALLINT ));
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "COLUMN_NAME" ));
 		tableDef.add( ColumnDefImpl.getIntInstance( MetaNamespace.NS, "DATA_TYPE" ) );
@@ -294,9 +241,9 @@ public class MetaSchema extends MetaNamespace implements Schema
 		tableDef.add( ColumnDefImpl.getIntInstance( MetaNamespace.NS, "BUFFER_LENGTH" ) );
 		tableDef.add( new MetaColumn( "DECIMAL_DIGITS", Types.SMALLINT ));
 		tableDef.add( new MetaColumn( "PSEUDO_COLUMN", Types.SMALLINT ));
-		tableDefs.put( tableDef.getName(), tableDef);
+		addTableDef( tableDef );
 		
-		tableDef = new MetaTableDef( PRIMARY_KEY_TABLE );
+		tableDef = new TableDefImpl( PRIMARY_KEY_TABLE );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "TABLE_CAT" ).setNullable(DatabaseMetaData.columnNullable) );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "TABLE_SCHEM" ).setNullable(DatabaseMetaData.columnNullable) );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "TABLE_NAME" ) );
@@ -304,9 +251,9 @@ public class MetaSchema extends MetaNamespace implements Schema
 		tableDef.add( new MetaColumn( "KEY_SEQ", Types.SMALLINT ));
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "PK_NAME" ).setNullable(DatabaseMetaData.columnNullable) );
 		tableDef.addKey( "COLUMN_NAME");
-		tableDefs.put( tableDef.getName(), tableDef);
+		addTableDef( tableDef );
 		
-		tableDef = new MetaTableDef( IMPORTED_KEYS_TABLE );
+		tableDef = new TableDefImpl( IMPORTED_KEYS_TABLE );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "PKTABLE_CAT" ).setNullable(DatabaseMetaData.columnNullable) );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "PKTABLE_SCHEM" ).setNullable(DatabaseMetaData.columnNullable) );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "PKTABLE_NAME" ) );
@@ -325,9 +272,9 @@ public class MetaSchema extends MetaNamespace implements Schema
 		tableDef.addKey( "PKTABLE_SCHEM");
 		tableDef.addKey( "PKTABLE_NAME");
 		tableDef.addKey( "KEY_SEQ");
-		tableDefs.put( tableDef.getName(), tableDef);
+		addTableDef( tableDef );
 		
-		tableDef = new MetaTableDef( EXPORTED_KEYS_TABLE );
+		tableDef = new TableDefImpl( EXPORTED_KEYS_TABLE );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "PKTABLE_CAT" ).setNullable(DatabaseMetaData.columnNullable) );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "PKTABLE_SCHEM" ).setNullable(DatabaseMetaData.columnNullable) );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "PKTABLE_NAME" ) );
@@ -346,9 +293,9 @@ public class MetaSchema extends MetaNamespace implements Schema
 		tableDef.addKey( "FKTABLE_SCHEM");
 		tableDef.addKey( "FKTABLE_NAME");
 		tableDef.addKey( "KEY_SEQ");
-		tableDefs.put( tableDef.getName(), tableDef);
+		addTableDef( tableDef );
 		
-		tableDef = new MetaTableDef( XREF_TABLE );
+		tableDef = new TableDefImpl( XREF_TABLE );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "PKTABLE_CAT" ).setNullable(DatabaseMetaData.columnNullable) );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "PKTABLE_SCHEM" ).setNullable(DatabaseMetaData.columnNullable) );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "PKTABLE_NAME" ) );
@@ -367,9 +314,9 @@ public class MetaSchema extends MetaNamespace implements Schema
 		tableDef.addKey( "FKTABLE_SCHEM");
 		tableDef.addKey( "FKTABLE_NAME");
 		tableDef.addKey( "KEY_SEQ");
-		tableDefs.put( tableDef.getName(), tableDef);
+		addTableDef( tableDef );
 		
-		tableDef = new MetaTableDef( TYPEINFO_TABLE );
+		tableDef = new TableDefImpl( TYPEINFO_TABLE );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "TYPE_NAME" ) );
 		tableDef.add( ColumnDefImpl.getIntInstance( MetaNamespace.NS, "DATA_TYPE" ) );
 		tableDef.add( ColumnDefImpl.getIntInstance( MetaNamespace.NS, "PRECISION" ) );
@@ -388,9 +335,9 @@ public class MetaSchema extends MetaNamespace implements Schema
 		tableDef.add( ColumnDefImpl.getIntInstance( MetaNamespace.NS, "SQL_DATA_TYPE" ) );
 		tableDef.add( ColumnDefImpl.getIntInstance( MetaNamespace.NS, "SQL_DATETIME_SUB" ) );
 		tableDef.add( ColumnDefImpl.getIntInstance( MetaNamespace.NS, "NUM_PREC_RADIX" ) );
-		tableDefs.put( tableDef.getName(), tableDef);
+		addTableDef( tableDef );
 		
-		tableDef = new MetaTableDef( INDEXINFO_TABLE );
+		tableDef = new TableDefImpl( INDEXINFO_TABLE );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "TABLE_CAT" ).setNullable(DatabaseMetaData.columnNullable) );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "TABLE_SCHEM" ).setNullable(DatabaseMetaData.columnNullable) );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "TABLE_NAME" ) );
@@ -407,9 +354,9 @@ public class MetaSchema extends MetaNamespace implements Schema
 		tableDef.addKey( "NON_UNIQUE");
 		tableDef.addKey( "TYPE");
 		tableDef.addKey( "INDEX_NAME");
-		tableDefs.put( tableDef.getName(), tableDef );	
+		addTableDef( tableDef );
 		
-		tableDef = new MetaTableDef( UDT_TABLES );
+		tableDef = new TableDefImpl( UDT_TABLES );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "TYPE_CAT" ).setNullable(DatabaseMetaData.columnNullable) );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "TYPE_SCHEM" ).setNullable(DatabaseMetaData.columnNullable) );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "TYPE_NAME" ) );
@@ -421,25 +368,25 @@ public class MetaSchema extends MetaNamespace implements Schema
 		tableDef.addKey( "TYPE_CAT");
 		tableDef.addKey( "TYPE_SCHEM");
 		tableDef.addKey( "TYPE_NAME");
-		tableDefs.put( tableDef.getName(), tableDef );
+		addTableDef( tableDef );
 	
-		tableDef = new MetaTableDef( SUPER_TYPES_TABLE );
+		tableDef = new TableDefImpl( SUPER_TYPES_TABLE );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "TYPE_CAT" ).setNullable(DatabaseMetaData.columnNullable) );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "TYPE_SCHEM" ).setNullable(DatabaseMetaData.columnNullable) );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "TYPE_NAME" ) );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "SUPERTYPE_CAT" ).setNullable(DatabaseMetaData.columnNullable) );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "SUPERTYPE_SCHEM" ).setNullable(DatabaseMetaData.columnNullable) );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "SUPERTYPE_NAME" ) );
-		tableDefs.put( tableDef.getName(), tableDef );
+		addTableDef( tableDef );
 		
-		tableDef = new MetaTableDef( SUPER_TABLES_TABLE );
+		tableDef = new TableDefImpl( SUPER_TABLES_TABLE );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "TABLE_CAT" ).setNullable(DatabaseMetaData.columnNullable) );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "TABLE_SCHEM" ).setNullable(DatabaseMetaData.columnNullable) );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "TABLE_NAME" ) );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "SUPERTABLE_NAME" ) );
-		tableDefs.put( tableDef.getName(), tableDef );
+		addTableDef( tableDef );
 	
-		tableDef = new MetaTableDef( ATTRIBUTES_TABLE );
+		tableDef = new TableDefImpl( ATTRIBUTES_TABLE );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "TYPE_CAT" ).setNullable(DatabaseMetaData.columnNullable) );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "TYPE_SCHEM" ).setNullable(DatabaseMetaData.columnNullable) );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "TYPE_NAME" ) );
@@ -461,9 +408,9 @@ public class MetaSchema extends MetaNamespace implements Schema
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "SCOPE_SCHEMA" ).setNullable(DatabaseMetaData.columnNullable) );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "SCOPE_TABLE" ).setNullable(DatabaseMetaData.columnNullable) );
 		tableDef.add( new MetaColumn( "SOURCE_DATA_TYPE", Types.SMALLINT ).setNullable(DatabaseMetaData.columnNullable) );
-		tableDefs.put( tableDef.getName(), tableDef );
+		addTableDef( tableDef );
 			
-		tableDef = new MetaTableDef( FUNCTION_COLUMNS_TABLE );
+		tableDef = new TableDefImpl( FUNCTION_COLUMNS_TABLE );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "FUNCTION_CAT" ).setNullable(DatabaseMetaData.columnNullable) );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "FUNCTION_SCHEM" ).setNullable(DatabaseMetaData.columnNullable) );
 		tableDef.add( ColumnDefImpl.getStringInstance( MetaNamespace.NS, "FUNCTION_NAME" ) );
@@ -485,6 +432,6 @@ public class MetaSchema extends MetaNamespace implements Schema
 		tableDef.addKey( "FUNCTION_SCHEM");
 		tableDef.addKey( "FUNCTION_NAME");
 		tableDef.addKey( "SPECIFIC_NAME");
-		tableDefs.put( tableDef.getName(), tableDef);
+		addTableDef( tableDef );
 	}
 }

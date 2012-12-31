@@ -44,6 +44,13 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 		SparqlExprVisitor expressionVisitor = new SparqlExprVisitor( queryBuilder );
 		SparqlSelectItemVisitor selectItemVisitor = new SparqlSelectItemVisitor( queryBuilder );
 		
+
+		// Process FROM first so we get table names to check against if columns do not have
+		// table names specified.
+		if (plainSelect.getFromItem() != null) {
+			plainSelect.getFromItem().accept(fromVisitor);
+		}
+		
 		if (plainSelect.getDistinct() != null) {
 			queryBuilder.setDistinct();
 			if (plainSelect.getDistinct().getOnSelectItems() != null) {
@@ -57,9 +64,6 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 		}
 
 		
-		if (plainSelect.getFromItem() != null) {
-			plainSelect.getFromItem().accept(fromVisitor);
-		}
 
 		if (plainSelect.getJoins() != null) {
 			throw new UnsupportedOperationException( "JOIN is not supported");
@@ -71,6 +75,7 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 
 		if (plainSelect.getWhere() != null) {
 			plainSelect.getWhere().accept(expressionVisitor);
+			queryBuilder.addFilter( expressionVisitor.getResult() );
 		}
 
 		if (plainSelect.getGroupByColumnReferences() != null) {

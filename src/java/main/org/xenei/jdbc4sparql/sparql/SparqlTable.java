@@ -3,16 +3,18 @@ package org.xenei.jdbc4sparql.sparql;
 import java.util.Iterator;
 import java.util.List;
 
-import org.xenei.jdbc4sparql.ColumnImpl;
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.ColumnDef;
+import org.xenei.jdbc4sparql.iface.NameFilter;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.SortKey;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.TableDef;
+import org.xenei.jdbc4sparql.impl.ColumnImpl;
+import org.xenei.jdbc4sparql.impl.NamespaceImpl;
 
-public class SparqlTable extends SparqlNamespace implements Table
+public class SparqlTable extends NamespaceImpl implements Table
 {
 	private SparqlSchema schema;
 	private SparqlTableDef tableDef;
@@ -42,11 +44,6 @@ public class SparqlTable extends SparqlNamespace implements Table
 		return "VIRTUAL TABLE";
 	}
 
-	@Override
-	public boolean isEmpty()
-	{
-		return false;
-	}
 
 	public boolean equals( Object obj )
 	{
@@ -126,4 +123,9 @@ public class SparqlTable extends SparqlNamespace implements Table
 		return new ColumnImpl( this, getColumnDef(name));
 	}
 
+	@Override
+	public NameFilter<Column> findColumns( String columnNamePattern )
+	{
+		return new NameFilter<Column>( columnNamePattern, getColumns());
+	}
 }

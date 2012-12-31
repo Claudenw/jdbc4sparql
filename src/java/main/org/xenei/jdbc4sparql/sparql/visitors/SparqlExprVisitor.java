@@ -27,6 +27,7 @@ import com.hp.hpl.jena.sparql.expr.nodevalue.NodeValueNode;
 import com.hp.hpl.jena.sparql.expr.nodevalue.NodeValueString;
 import com.hp.hpl.jena.vocabulary.RDF;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
@@ -83,8 +84,7 @@ class SparqlExprVisitor implements ExpressionVisitor
 	{
 		private SparqlQueryBuilder builder;
 		private Stack<Expr> stack;
-
-		
+	
 		SparqlExprVisitor(SparqlQueryBuilder builder)
 		{
 			this.builder = builder;
@@ -303,17 +303,8 @@ class SparqlExprVisitor implements ExpressionVisitor
 		@Override
 		public void visit( Column tableColumn )
 		{
-			/*
-			 * Add bgp triples
-			 */
+			Node columnVar = builder.addColumn( tableColumn );
 			
-			Node tableVar = builder.addTable( tableColumn.getTable().getSchemaName(), tableColumn.getTable().getName() );
-			Node columnURI = builder.getColumnURI(tableColumn.getTable().getSchemaName(), 
-					tableColumn.getTable().getName(), tableColumn.getColumnName() );
-			Node columnVar = Node.createVariable( tableColumn.getColumnName()); 
-			// ?tableVar columnURI ?columnVar
-			
-			builder.addBGP( tableVar, columnURI, columnVar );
 			
 			/**
 			 * Add column to expression

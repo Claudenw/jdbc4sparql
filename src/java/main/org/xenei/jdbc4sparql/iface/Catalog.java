@@ -1,5 +1,6 @@
 package org.xenei.jdbc4sparql.iface;
 
+import java.util.Collection;
 import java.util.Set;
 
 public interface Catalog extends NamespacedObject
@@ -18,7 +19,16 @@ public interface Catalog extends NamespacedObject
 	 * @param schema
 	 * @return
 	 */
-	Schema getSchema(String schema);
+	Schema getSchema(String schemaName);
 	
+	/**
+	 * Return the list of schemas that have names matching the pattern
+	 * if name pattern == null return all the schemas
+	 * if name pattern == "" return only unamed schemas.
+	 * if name is anything else match the string.
+	 * @param schemaNamePattern
+	 * @return
+	 */
+	NameFilter<Schema> findSchemas( String schemaNamePattern );
 	
 }

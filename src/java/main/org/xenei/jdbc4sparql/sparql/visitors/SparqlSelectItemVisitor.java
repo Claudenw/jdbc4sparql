@@ -42,7 +42,9 @@ class SparqlSelectItemVisitor implements SelectItemVisitor
 			buffer.append( "(");
 		}
 		
-		selectExpressionItem.getExpression().accept( new SparqlExprVisitor( queryBuilder ));
+		SparqlExprVisitor v = new SparqlExprVisitor( queryBuilder );
+		selectExpressionItem.getExpression().accept( v);
+		buffer.append( v.getResult());
 		if (selectExpressionItem.getAlias() != null) {
 			buffer.append(" AS " ).append( selectExpressionItem.getAlias()).append(")");
 		}

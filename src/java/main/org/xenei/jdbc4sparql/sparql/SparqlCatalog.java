@@ -11,9 +11,12 @@ import java.util.List;
 import java.util.Set;
 
 import org.xenei.jdbc4sparql.iface.Catalog;
+import org.xenei.jdbc4sparql.iface.Column;
+import org.xenei.jdbc4sparql.iface.NameFilter;
 import org.xenei.jdbc4sparql.iface.Schema;
+import org.xenei.jdbc4sparql.impl.NamespaceImpl;
 
-public class SparqlCatalog extends SparqlNamespace implements Catalog
+public class SparqlCatalog extends NamespaceImpl implements Catalog
 {
 
 	private URL sparqlEndpoint; 
@@ -46,5 +49,10 @@ public class SparqlCatalog extends SparqlNamespace implements Catalog
 		  } finally { qexec.close() ; }
 	}
 
-	
+
+	@Override
+	public NameFilter<Schema> findSchemas( String schemaNamePattern )
+	{
+		return new NameFilter<Schema>( schemaNamePattern, getSchemas());
+	}
 }
