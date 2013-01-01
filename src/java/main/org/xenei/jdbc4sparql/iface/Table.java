@@ -31,6 +31,8 @@ public interface Table extends NamespacedObject, TableDef
 	
 	NameFilter<Column> findColumns(String columnNamePattern);
 	
+	String getDBName();
+	
 	public static class ColumnIterator implements Iterator<Column> {
 		private Table table;
 		private String namespace;

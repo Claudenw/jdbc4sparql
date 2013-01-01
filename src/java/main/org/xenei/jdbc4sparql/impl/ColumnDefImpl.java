@@ -50,8 +50,9 @@ public class ColumnDefImpl extends NamespaceImpl implements ColumnDef
 		this.precision = precision;
 		this.scale = scale;
 		this.signed = signed;
-		this.nullable = DatabaseMetaData.columnNullableUnknown;
+		this.nullable = DatabaseMetaData.columnNoNulls;
 	}
+	
 	
 	public ColumnDefImpl setNullable(int state)
 	{

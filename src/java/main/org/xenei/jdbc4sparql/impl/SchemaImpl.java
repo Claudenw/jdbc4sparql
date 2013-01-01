@@ -91,6 +91,20 @@ public class SchemaImpl extends NamespaceImpl implements Schema
 	
 	public void addTable( Table table )
 	{
+		for (Schema schema : getCatalog().findSchemas(null))
+		{
+			if (!schema.getLocalName().equals( getLocalName()))
+			{
+				for (Table tbl : schema.findTables( table.getLocalName()))
+				{
+					if (tbl.getFQName().equals(table.getFQName()))
+					{
+						throw new IllegalArgumentException( String.format( "Name conflict tables %s and %s have FQName of %s",
+								table.getDBName(), tbl.getDBName(), table.getFQName() ));
+					}
+				}
+			}
+		}
 		tables.put( table.getLocalName(), table );
 	}
 	

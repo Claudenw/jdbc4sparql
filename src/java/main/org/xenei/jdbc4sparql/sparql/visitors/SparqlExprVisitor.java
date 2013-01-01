@@ -35,6 +35,7 @@ import java.util.Stack;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.sparql.SparqlCatalog;
+import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 import org.xenei.jdbc4sparql.sparql.SparqlSchema;
 
 import net.sf.jsqlparser.expression.AllComparisonExpression;
@@ -240,7 +241,19 @@ class SparqlExprVisitor implements ExpressionVisitor
 		public void visit( EqualsTo equalsTo )
 		{
 			process( equalsTo );
-			stack.push( new E_Equals(stack.pop(),stack.pop()));
+			Expr left = stack.pop();
+			Expr right = stack.pop();
+			// if 2 vars then add to the SPARQL where to select and as a Filter
+			if ((left instanceof NodeValueNode) && (right instanceof NodeValueNode))
+			{
+				NodeValueNode nLeft = (NodeValueNode)left;
+				NodeValueNode nRight = (NodeValueNode)right;
+				if (nLeft.getNode().isVariable() && nRight.getNode().isVariable())
+				{
+					builder.addEquals( nLeft.getNode(), nRight.getNode() );
+				}
+			}
+			stack.push( new E_Equals(left,right));
 		}
 
 		@Override
@@ -303,13 +316,18 @@ class SparqlExprVisitor implements ExpressionVisitor
 		@Override
 		public void visit( Column tableColumn )
 		{
-			Node columnVar = builder.addColumn( tableColumn );
-			
-			
+			try {
+			Node columnVar = builder.addColumn( tableColumn.getTable().getSchemaName(),
+					tableColumn.getTable().getName(), tableColumn.getColumnName());
 			/**
 			 * Add column to expression
 			 */
 			stack.push( new NodeValueNode( columnVar ));
+			}
+			catch (SQLException e)
+			{
+				throw new RuntimeException( e );
+			}
 		}
 
 		@Override

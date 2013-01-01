@@ -8,6 +8,7 @@ import java.net.URI;
 import java.sql.ResultSet;
 
 import org.xenei.jdbc4sparql.iface.Catalog;
+import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 
 import net.sf.jsqlparser.expression.AllComparisonExpression;
 import net.sf.jsqlparser.expression.AnyComparisonExpression;

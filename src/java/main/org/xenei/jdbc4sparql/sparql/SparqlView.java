@@ -31,7 +31,6 @@ import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.TableDef;
 import org.xenei.jdbc4sparql.impl.AbstractTable;
 import org.xenei.jdbc4sparql.impl.SchemaImpl;
-import org.xenei.jdbc4sparql.sparql.visitors.SparqlQueryBuilder;
 
 public class SparqlView extends AbstractTable
 {

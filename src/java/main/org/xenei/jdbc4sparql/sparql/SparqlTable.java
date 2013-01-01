@@ -44,6 +44,10 @@ public class SparqlTable extends NamespaceImpl implements Table
 		return "VIRTUAL TABLE";
 	}
 
+	public String getDBName()
+	{
+		return String.format( "%s.%s", getSchema().getLocalName(), getLocalName());
+	}
 
 	public boolean equals( Object obj )
 	{

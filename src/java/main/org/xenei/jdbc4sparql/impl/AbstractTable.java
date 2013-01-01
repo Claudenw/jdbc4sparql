@@ -35,6 +35,11 @@ public abstract class AbstractTable extends MetaNamespace implements Table
 		this.schema = schema;
 		this.tableDef= tableDef;
 	}
+	
+	public String toString()
+	{
+		return String.format( "Table[ %s.%s ]", getCatalog().getLocalName(), getDBName() );
+	}
 
 	@Override
 	public String getLocalName()
@@ -46,6 +51,12 @@ public abstract class AbstractTable extends MetaNamespace implements Table
 	public Schema getSchema()
 	{
 		return schema;
+	}
+	
+	@Override
+	public String getDBName()
+	{
+		return String.format( "%s.%s", schema.getLocalName(), getLocalName() );
 	}
 	
 	abstract public ResultSet getResultSet();
@@ -65,12 +76,6 @@ public abstract class AbstractTable extends MetaNamespace implements Table
 	{
 		return "TABLE";
 	}
-
-//	@Override
-//	public boolean isEmpty()
-//	{
-//		return data.isEmpty();
-//	}
 
 	public String getName()
 	{

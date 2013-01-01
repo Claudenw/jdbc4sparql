@@ -1,7 +1,15 @@
 package org.xenei.jdbc4sparql.sparql.visitors;
 
+import com.hp.hpl.jena.sparql.expr.Expr;
+
+import java.sql.SQLException;
+
 import org.xenei.jdbc4sparql.iface.Catalog;
+import org.xenei.jdbc4sparql.iface.Column;
+import org.xenei.jdbc4sparql.iface.Schema;
+import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.sparql.SparqlCatalog;
+import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.AllTableColumns;
@@ -22,33 +30,77 @@ class SparqlSelectItemVisitor implements SelectItemVisitor
 	@Override
 	public void visit( AllColumns allColumns )
 	{
-		queryBuilder.setAllColumns();
+		try {
+			queryBuilder.setAllColumns();
+		}
+		catch (SQLException e)
+		{
+			throw new RuntimeException( e );
+		}
 	}
 
 	@Override
 	public void visit( AllTableColumns allTableColumns )
 	{
-		// FIXME this should insert variables into the variable list and 
-		// insert triples into the select ot get them selected.
-		// buffer.append(allTableColumns.getTable().getWholeTableName() + ".*");
-		throw new UnsupportedOperationException( "AllTableColumns is not supported");
+		Table tbl = null;
+	
+			for (Schema s : queryBuilder.getCatalog().findSchemas(allTableColumns.getTable().getSchemaName()))
+			{
+				for (Table t : s.findTables(allTableColumns.getTable().getName()))
+				{
+					if (tbl == null)
+					{
+						tbl = t;
+					}
+					else
+					{
+						throw new IllegalStateException( "Duplicate table names "+allTableColumns.getTable().getWholeTableName());
+					}
+				}
+			}
+			if (tbl == null)
+			{
+				throw new IllegalStateException( "Table "+allTableColumns.getTable().getWholeTableName()+" not found");
+			}
+			for (Column c : tbl.findColumns(null))
+			{
+				try
+				{
+					queryBuilder.addVar(c, null );
+				}
+				catch (SQLException e)
+				{
+					throw new RuntimeException( e );
+				}
+			}
+
 	}
 
 	@Override
 	public void visit( SelectExpressionItem selectExpressionItem )
 	{
-		StringBuilder buffer = new StringBuilder();
-		if (selectExpressionItem.getAlias() != null) {
-			buffer.append( "(");
-		}
 		
 		SparqlExprVisitor v = new SparqlExprVisitor( queryBuilder );
-		selectExpressionItem.getExpression().accept( v);
-		buffer.append( v.getResult());
-		if (selectExpressionItem.getAlias() != null) {
-			buffer.append(" AS " ).append( selectExpressionItem.getAlias()).append(")");
+		selectExpressionItem.getExpression().accept( v );
+		// handle explicit name mapping
+		if (selectExpressionItem.getAlias() != null)
+		{
+			queryBuilder.addVar( v.getResult(), selectExpressionItem.getAlias() );
 		}
-		queryBuilder.addVar( buffer.toString());
+		else
+		{
+			// handle implicit name mapping
+			if (selectExpressionItem.getExpression() instanceof net.sf.jsqlparser.schema.Column)
+			{
+				queryBuilder.addVar( v.getResult(), selectExpressionItem.getExpression().toString() );
+			}
+			else
+			{
+				// handle no name mapping
+				queryBuilder.addVar( v.getResult(), null );
+			}
+		}
+			
 	}
 
 	

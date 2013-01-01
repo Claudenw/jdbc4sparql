@@ -3,6 +3,8 @@ package org.xenei.jdbc4sparql.sparql.visitors;
 import java.sql.SQLException;
 import java.util.List;
 
+import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
+
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.FromItemVisitor;
 import net.sf.jsqlparser.statement.select.SubJoin;

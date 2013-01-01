@@ -22,6 +22,16 @@ public class ColumnImpl extends NamespaceImpl implements Column
 		this.table = table;
 		this.columnDef = columnDef;
 	}
+	
+	public String getDBName()
+	{
+		return String.format( "%s.%s.%s", getSchema().getLocalName(), getTable().getLocalName(), getLocalName() );
+	}
+	public String toString()
+	{
+		return String.format( "Column[%s.%s]", getCatalog().getLocalName(), getDBName() );
+	}
+	
 	public String getColumnClassName()
 	{
 		return columnDef.getColumnClassName();

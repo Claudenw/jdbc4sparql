@@ -40,7 +40,10 @@ public class MetaColumn extends ColumnDefImpl implements Column
 	{
 		super( MetaNamespace.NS, localName, type, displaySize, precision, scale, signed );
 	}
-	
+
+	public String getDBName() {
+		return getTable().getDBName()+"."+getLocalName();
+	}
 
 	void setTable( Table table )
 	{

@@ -28,6 +28,11 @@ public class TableDefImpl implements TableDef
 		this.sortKey = null;
 	}
 
+	public String toString()
+	{
+		return String.format("TableDef[ %s : %s columns ]", getName(), columns.size());
+	}
+	
 	@Override
 	public String getName()
 	{
