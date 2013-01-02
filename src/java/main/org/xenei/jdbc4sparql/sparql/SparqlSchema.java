@@ -24,13 +24,17 @@ public class SparqlSchema extends SchemaImpl
 {
 	
 
-	private SchemaBuilder builder;
+	//private SchemaBuilder builder;
 
 	public SparqlSchema( SparqlCatalog catalog, String namespace, String localName, SchemaBuilder builder )
 	{
 		super( catalog, namespace, localName );
-		this.builder = builder;
-		addTableDefs( builder.getTableDefs(catalog));
+		addTableDefs( builder.getTableDefs());
+	}
+	
+	public SparqlSchema( SparqlCatalog catalog, String namespace, String localName )
+	{
+		super( catalog, namespace, localName );
 	}
 
 	private SparqlTableDef verifySparqlTableDef( TableDef tableDef )

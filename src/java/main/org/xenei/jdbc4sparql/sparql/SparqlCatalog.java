@@ -4,6 +4,7 @@ import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.query.QueryExecution;
 import com.hp.hpl.jena.query.QueryExecutionFactory;
+import com.hp.hpl.jena.query.QueryFactory;
 import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.rdf.model.Model;
@@ -38,6 +39,16 @@ public class SparqlCatalog extends CatalogImpl
 		this.localModel = localModel;
 	}
 
+	public SparqlSchema getViewSchema()
+	{
+		return new SparqlSchema( this, SparqlView.NAME_SPACE, "" );
+	}
+	
+	public List<QuerySolution> executeQuery( String queryStr )
+	{
+		return executeQuery( QueryFactory.create(queryStr));
+	}
+	
 	public List<QuerySolution> executeQuery( Query query )
 	{
 		QueryExecution qexec = null;

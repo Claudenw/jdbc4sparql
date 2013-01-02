@@ -74,11 +74,11 @@ public abstract class AbstractResultSet implements ResultSet
 		return table;
 	}
 	
-	protected void checkColumn( final int idx ) throws SQLException
+	protected void checkColumn( final int columnOrdinal ) throws SQLException
 	{
-		if (!isValidColumn(idx))
+		if (!isValidColumn(columnOrdinal))
 		{
-			throw new SQLException("Invalid column idex: " + idx);
+			throw new SQLException("Invalid column ordinal: " + columnOrdinal);
 		}
 	}
 
@@ -718,7 +718,7 @@ public abstract class AbstractResultSet implements ResultSet
 	@Override
 	public Object getObject( final int columnOrdinal ) throws SQLException
 	{
-		final Object retval = readObject(columnOrdinal - 1);
+		final Object retval = readObject(columnOrdinal);
 		lastReadWasNull = retval == null;
 		return retval;
 	}
@@ -916,9 +916,9 @@ public abstract class AbstractResultSet implements ResultSet
 		throw new SQLException("not an updatable result set");
 	}
 
-	protected boolean isValidColumn( final int idx )
+	protected boolean isValidColumn( final int columnOrdinal )
 	{
-		return (idx > 0) && (idx <= table.getColumnCount());
+		return (columnOrdinal > 0) && (columnOrdinal <= table.getColumnCount());
 	}
 
 	@Override
@@ -933,7 +933,7 @@ public abstract class AbstractResultSet implements ResultSet
 		throw new SQLException("not an updatable result set");
 	}
 
-	abstract protected Object readObject( int idx ) throws SQLException;
+	abstract protected Object readObject( int columnOrdinal ) throws SQLException;
 
 	@Override
 	public void refreshRow() throws SQLException

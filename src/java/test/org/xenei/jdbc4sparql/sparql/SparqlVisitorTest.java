@@ -36,9 +36,9 @@ public class SparqlVisitorTest
 	@Before
 	public void setUp() throws Exception
 	{
-		final MockCatalog catalog = new MockCatalog();
-		final MockSchema schema = (MockSchema) catalog
-				.getSchema(MockSchema.LOCAL_NAME);
+		final SparqlCatalog catalog = new SparqlCatalog(MockCatalog.NS, null, MockCatalog.LOCAL_NAME);
+		final MockSchema schema = new MockSchema(catalog);
+		catalog.addSchema(schema);
 		// create the foo table
 		TableDefImpl tableDef = new TableDefImpl("foo");
 		tableDef.add(MetaColumn.getStringInstance("StringCol"));

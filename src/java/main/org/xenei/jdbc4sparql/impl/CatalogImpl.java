@@ -20,6 +20,11 @@ public class CatalogImpl extends NamespaceImpl implements Catalog
 		this.schemas = new HashMap<String, Schema>();
 	}
 
+	public String toString()
+	{
+		return String.format( "Catalog[%s]",  getLocalName());
+	}
+	
 	@Override
 	public NameFilter<Schema> findSchemas( final String schemaNamePattern )
 	{

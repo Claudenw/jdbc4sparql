@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.xenei.jdbc4sparql.meta.MetaCatalog;
 import org.xenei.jdbc4sparql.meta.MetaSchema;
 import org.xenei.jdbc4sparql.mock.MockCatalog;
 import org.xenei.jdbc4sparql.mock.MockConnection;
@@ -20,19 +21,18 @@ public class J4SDatabaseMetaDataTest
 			final String[] columnNames ) throws SQLException
 	{
 		final ResultSet rs = metadata.getColumns(null, null, tableName, null);
-		rs.first();
 		for (int i = 0; i < columnNames.length; i++)
 		{
-			Assert.assertEquals("Jdbc4Sparql_METADATA", rs.getString(1)); // TABLE_CAT
-			Assert.assertEquals("Jdbc4Sparql_SCHEMA", rs.getString(2)); // TABLE_SCHEM
+			Assert.assertTrue( rs.next() );
+			Assert.assertEquals(MetaCatalog.LOCAL_NAME, rs.getString(1)); // TABLE_CAT
+			Assert.assertEquals(MetaSchema.LOCAL_NAME, rs.getString(2)); // TABLE_SCHEM
 			Assert.assertEquals(tableName, rs.getString(3)); // TABLE_NAME
 			if (!columnNames[i].equals("reserved"))
 			{
 				Assert.assertEquals(columnNames[i], rs.getString(4)); // COLUMN_NAME
 			}
-			rs.next();
 		}
-		Assert.assertTrue(rs.isAfterLast());
+		Assert.assertFalse(rs.next());
 	}
 
 	@Before
@@ -41,7 +41,8 @@ public class J4SDatabaseMetaDataTest
 		final MockDriver driver = new MockDriver();
 		metadata = new J4SDatabaseMetaData(new MockConnection(driver, null,
 				null), driver );
-		metadata.addCatalog(new MockCatalog());
+		metadata.addCatalog(new MetaCatalog());
+
 	}
 
 	@Test
@@ -161,18 +162,17 @@ public class J4SDatabaseMetaDataTest
 				"Tables", "TypeInfo", "UDTs", "Version", "XrefKeys" };
 
 		final ResultSet rs = metadata.getTables(null, null, null, null);
-		rs.first();
 
 		for (final String name : names)
 		{
-			Assert.assertEquals("Jdbc4Sparql_METADATA", rs.getString(1)); // TABLE_CAT
-			Assert.assertEquals("Jdbc4Sparql_SCHEMA", rs.getString(2)); // TABLE_SCHEM
+			Assert.assertTrue( rs.next() );
+			Assert.assertEquals(MetaCatalog.LOCAL_NAME, rs.getString(1)); // TABLE_CAT
+			Assert.assertEquals(MetaSchema.LOCAL_NAME, rs.getString(2)); // TABLE_SCHEM
 			Assert.assertEquals(name, rs.getString(3)); // TABLE_NAME
 			Assert.assertEquals("TABLE", rs.getString(4)); // TABLE_TYPE
 			Assert.assertEquals("", rs.getString(5)); // REMARKS
-			rs.next();
 		}
-		Assert.assertTrue(rs.isAfterLast());
+		Assert.assertFalse(rs.next());
 
 	}
 
@@ -202,14 +202,13 @@ public class J4SDatabaseMetaDataTest
 	{
 		final ResultSet rs = metadata.getTables(null, null,
 				MetaSchema.COLUMNS_TABLE, null);
-		rs.first();
-		Assert.assertEquals("Jdbc4Sparql_METADATA", rs.getString(1)); // TABLE_CAT
-		Assert.assertEquals("Jdbc4Sparql_SCHEMA", rs.getString(2)); // TABLE_SCHEM
+		Assert.assertTrue(rs.next());
+		Assert.assertEquals(MetaCatalog.LOCAL_NAME, rs.getString(1)); // TABLE_CAT
+		Assert.assertEquals(MetaSchema.LOCAL_NAME, rs.getString(2)); // TABLE_SCHEM
 		Assert.assertEquals(MetaSchema.COLUMNS_TABLE, rs.getString(3)); // TABLE_NAME
 		Assert.assertEquals("TABLE", rs.getString(4)); // TABLE_TYPE
 		Assert.assertEquals("", rs.getString(5)); // REMARKS
-		rs.next();
-		Assert.assertTrue(rs.isAfterLast());
+		Assert.assertFalse(rs.next());
 	}
 
 	@Test

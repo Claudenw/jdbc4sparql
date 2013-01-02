@@ -5,7 +5,7 @@ import org.xenei.jdbc4sparql.impl.CatalogImpl;
 public class MetaCatalog extends CatalogImpl
 {
 
-	public static final String LOCAL_NAME = "Catalog";
+	public static final String LOCAL_NAME = "METADATA";
 
 	public MetaCatalog()
 	{

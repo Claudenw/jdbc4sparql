@@ -2,6 +2,7 @@ package org.xenei.jdbc4sparql.meta;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
 
@@ -97,7 +98,8 @@ public class MetaTableTest
 		
 
 		ResultSet rs = table.getResultSet();
-		rs.first();
+		Assert.assertEquals( ResultSet.TYPE_FORWARD_ONLY, rs.getType() );
+		rs.next();
 		compare( rows[0], rs );
 		
 		rs.next();
@@ -106,7 +108,7 @@ public class MetaTableTest
 		rs.next();
 		compare( rows[1], rs );
 		
-		Assert.assertTrue( rs.isLast() );
+		Assert.assertFalse( rs.next() );
 	}
 
 	

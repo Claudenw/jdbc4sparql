@@ -8,18 +8,17 @@ import java.util.List;
 
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.TableDef;
+import org.xenei.jdbc4sparql.iface.TypeConverter;
 import org.xenei.jdbc4sparql.impl.AbstractCollectionResultSet;
 import org.xenei.jdbc4sparql.impl.AbstractResultSet;
 import org.xenei.jdbc4sparql.impl.ListResultSet;
 
 public class SparqlResultSet extends ListResultSet
 {
-	SparqlTable table;
 	
 	public SparqlResultSet(SparqlTable table) throws SQLException
 	{
 		super( table.getCatalog().executeQuery( table.getTableDef().getQuery()), table );
-		this.table = table;
 	}
 
 	@Override
@@ -31,14 +30,8 @@ public class SparqlResultSet extends ListResultSet
 		RDFNode node = soln.get( getTable().getColumn(idx).getLabel());
 		if (node.isLiteral())
 		{
-			// convert type here
-			node.asLiteral().
+			return TypeConverter.getJavaValue( node.asLiteral() );
 		}
-		return node.toString(); 
-			
+		return node.toString();
 	}
-}
-
-	
-
 }

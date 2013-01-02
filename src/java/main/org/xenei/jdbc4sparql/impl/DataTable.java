@@ -68,7 +68,7 @@ public class DataTable extends AbstractTable
 			else
 			{	
 				// supress warning is for this conversion as TreeBag is not generic.
-				data = new TreeBag( tableDef.getSortKey() );
+				data = new SortedBag<Object[]>( tableDef.getSortKey() );
 			}
 		}
 		
@@ -98,22 +98,23 @@ public class DataTable extends AbstractTable
 			retval = new NavigableSetResultSet(ns, this){
 
 				@Override
-				protected Object readObject( int idx ) throws SQLException
+				protected Object readObject( int columnOrdinal ) throws SQLException
 				{
-					checkColumn( idx);
+					checkColumn( columnOrdinal);
 					Object[] rowData = (Object[]) getRowObject();
-					return rowData[idx];
+					return rowData[columnOrdinal-1];
 				}};
 		}
-		else if (data instanceof TreeBag)
+		else if (data instanceof SortedBag)
 		{
 			retval = new IteratorResultSet( data.iterator(), this ){
 
 				@Override
-				protected Object readObject( int idx ) throws SQLException
+				protected Object readObject( int columnOrdinal ) throws SQLException
 				{
+					checkColumn( columnOrdinal);
 					Object[] rowData = (Object[]) getRowObject();
-					return rowData[idx];
+					return rowData[columnOrdinal-1];
 				}};
 		}
 		else
@@ -121,11 +122,11 @@ public class DataTable extends AbstractTable
 			retval = new ListResultSet( (List<?>)data, this ){
 
 				@Override
-				protected Object readObject( int idx ) throws SQLException
+				protected Object readObject( int columnOrdinal ) throws SQLException
 				{
-					checkColumn( idx);
+					checkColumn( columnOrdinal);
 					Object[] rowData = (Object[]) getRowObject();
-					return rowData[idx];
+					return rowData[columnOrdinal-1];
 				}};
 		}
 		return retval;

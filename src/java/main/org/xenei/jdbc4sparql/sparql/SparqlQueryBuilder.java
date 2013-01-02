@@ -43,12 +43,12 @@ public class SparqlQueryBuilder
 	private static final String TABLE_NAME_FMT = "%s.%s";
 
 	private final Query query;
-	private final Catalog catalog;
+	private final SparqlCatalog catalog;
 	private final Map<String, Table> tablesInQuery;
 	private final Map<String, Node> nodesInQuery;
 	private final Map<String, Column> columnsInQuery;
 
-	public SparqlQueryBuilder( final Catalog catalog )
+	public SparqlQueryBuilder( final SparqlCatalog catalog )
 	{
 		this.catalog = catalog;
 		this.query = new Query();
@@ -297,7 +297,7 @@ public class SparqlQueryBuilder
 		return tables;
 	}
 
-	public Catalog getCatalog()
+	public SparqlCatalog getCatalog()
 	{
 		return catalog;
 	}
@@ -369,9 +369,9 @@ public class SparqlQueryBuilder
 		return n;
 	}
 
-	public TableDef getTableDef( final String name )
+	public SparqlTableDef getTableDef( final String name )
 	{
-		final TableDefImpl tableDef = new TableDefImpl(name);
+		final SparqlTableDef tableDef = new SparqlTableDef(name, query);
 		for (final Var var : query.getProjectVars())
 		{
 			final Column c = columnsInQuery.get(var);

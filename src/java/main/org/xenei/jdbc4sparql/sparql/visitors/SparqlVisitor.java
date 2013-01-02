@@ -8,6 +8,7 @@ import java.net.URI;
 import java.sql.ResultSet;
 
 import org.xenei.jdbc4sparql.iface.Catalog;
+import org.xenei.jdbc4sparql.sparql.SparqlCatalog;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 
 import net.sf.jsqlparser.expression.AllComparisonExpression;
@@ -64,7 +65,7 @@ public class SparqlVisitor implements StatementVisitor
 {
 	private SparqlQueryBuilder sparqlQueryBuilder;
 	
-	public SparqlVisitor(Catalog catalog)
+	public SparqlVisitor(SparqlCatalog catalog)
 	{
 		sparqlQueryBuilder = new SparqlQueryBuilder( catalog );
 	}
@@ -121,11 +122,4 @@ public class SparqlVisitor implements StatementVisitor
 	{
 		throw new UnsupportedOperationException( "CREATE TABLE" ); 
 	}
-	
-	ResultSet getResultSet( URI uri)
-	{
-		
-		new SparqlView( uri, sparqlQueryBuilder ).getResultSet();
-	}
-
 }

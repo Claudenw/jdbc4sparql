@@ -48,11 +48,9 @@ public class MetaSchema extends SchemaImpl
 	public static final String TABLE_PRIVILEGES_TABLE = "TablePriv";
 	public static final String TABLE_TYPES_TABLE = "TableTypes";
 	public static final String TABLES_TABLE = "Tables";
-	public static final String BEST_ROW_TABLE = "BestRow";
-
+	public static final String BEST_ROW_TABLE = "BestRow";	
 	
-	
-	MetaSchema( Catalog catalog )
+	public MetaSchema( Catalog catalog )
 	{
 		super( catalog, LOCAL_NAME );
 		init();

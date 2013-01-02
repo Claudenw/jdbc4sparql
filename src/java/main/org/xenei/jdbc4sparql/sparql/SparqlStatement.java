@@ -15,12 +15,13 @@ import net.sf.jsqlparser.parser.CCJSqlParserManager;
 
 public class SparqlStatement implements Statement
 {
-	private Catalog catalog;
-	private CCJSqlParserManager parserManager = new CCJSqlParserManager();
+	private SparqlCatalog catalog;
+	private SparqlParser parser;
 	
-	SparqlStatement( Catalog catalog )
+	SparqlStatement( SparqlCatalog catalog, SparqlParser parser )
 	{
 		this.catalog = catalog;
+		this.parser = parser;
 	}
 	
 	@Override
@@ -117,18 +118,8 @@ public class SparqlStatement implements Statement
 	@Override
 	public ResultSet executeQuery( String query ) throws SQLException
 	{
-		try
-		{
-			net.sf.jsqlparser.statement.Statement stmt =parserManager.parse(new StringReader(query));
-			SparqlVisitor sv = new SparqlVisitor( catalog );
-			stmt.accept(sv);
-			return sv.getResultSet();
-			
-		}
-		catch (JSQLParserException e)
-		{
-			throw new SQLException( e );
-		}
+		SparqlQueryBuilder builder = parser.parse( query );
+		return new SparqlView(builder).getResultSet();
 	}
 
 	@Override

@@ -1,5 +1,8 @@
 package org.xenei.jdbc4sparql.iface;
 
+import com.hp.hpl.jena.datatypes.RDFDatatype;
+import com.hp.hpl.jena.rdf.model.Literal;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Types;
@@ -55,6 +58,16 @@ public abstract class TypeConverter
 			}
 		}
 		return null;
+	}
+	
+	public static Object getJavaValue( Literal literal )
+	{
+		RDFDatatype dataType = literal.getDatatype();
+		if (dataType == null)
+		{
+			return literal.toString();
+		}
+		return dataType.parse(literal.getLexicalForm());
 	}
 
 }

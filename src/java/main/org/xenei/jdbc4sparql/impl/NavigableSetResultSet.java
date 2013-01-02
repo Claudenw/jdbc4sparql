@@ -39,15 +39,18 @@ import org.xenei.jdbc4sparql.iface.TableDef;
 
 public abstract class NavigableSetResultSet extends AbstractCollectionResultSet
 {
-	private NavigableSet<Object> rows;
-
 	private Object currentObject;
-	private Integer lastPosition = null;
+	private Integer lastPosition;
 	
 	public NavigableSetResultSet( NavigableSet<? extends Object> rows, Table table ) throws SQLException
 	{
 		super( rows, table );
-		this.rows = (NavigableSet<Object>)rows;
+	}
+	
+	@Override
+	public NavigableSet<Object> getDataCollection()
+	{
+		return (NavigableSet<Object>)super.getDataCollection();
 	}
 
 	@Override
@@ -60,39 +63,39 @@ public abstract class NavigableSetResultSet extends AbstractCollectionResultSet
 			currentObject = null;
 			return;
 		}
-		if (first())
+		if (isFirst())
 		{
 			lastPosition = getPosition();
-			currentObject = rows.first();
+			currentObject = getDataCollection().first();
 			return;
 		}
-		if (last())
+		if (isLast())
 		{
 			lastPosition = getPosition();
-			currentObject = rows.last();
+			currentObject = getDataCollection().last();
 			return;
 		}
 		if (lastPosition == null)
 		{
-			if ((rows.size()/2) > getPosition())
+			if ((getDataCollection().size()/2) > getPosition())
 			{
 				lastPosition = 0;
-				currentObject = rows.first();
+				currentObject = getDataCollection().first();
 			}
 			else
 			{
-				lastPosition = rows.size()-1;
-				currentObject = rows.last();
+				lastPosition = getDataCollection().size()-1;
+				currentObject = getDataCollection().last();
 			}
 		}
 		while (lastPosition>getPosition())
 		{
-			currentObject = rows.lower(currentObject);
+			currentObject = getDataCollection().lower(currentObject);
 			lastPosition--;
 		}
 		while (lastPosition<getPosition())
 		{
-			currentObject = rows.higher(currentObject);
+			currentObject = getDataCollection().higher(currentObject);
 			lastPosition++;
 		}
 	}

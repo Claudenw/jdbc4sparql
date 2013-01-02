@@ -25,6 +25,10 @@ public class MockCatalog extends NamespaceImpl implements Catalog {
 		schemas.add( new MockSchema( this ));
 	}
 
+	public void addSchema(Schema schema)
+	{
+		schemas.add( schema );
+	}
 	@Override
 	public Set<Schema> getSchemas()
 	{

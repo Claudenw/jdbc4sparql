@@ -42,12 +42,15 @@ public abstract class AbstractCollectionResultSet extends AbstractResultSet
 	public AbstractCollectionResultSet( Collection<?> rows, Table table ) throws SQLException
 	{
 		super( table );
+		position = -1;
 		setTableData( rows );
 	}
 
 	protected void setTableData(Collection<?> tableData) throws SQLException
 	{
 		this.data = tableData;
+		fixupPosition();
+		/*
 		switch (getFetchDirection())
 		{
 			case ResultSet.FETCH_REVERSE:
@@ -58,6 +61,7 @@ public abstract class AbstractCollectionResultSet extends AbstractResultSet
 				first();
 				break;
 		}
+		*/
 	}
 	
 	protected int getPosition()
