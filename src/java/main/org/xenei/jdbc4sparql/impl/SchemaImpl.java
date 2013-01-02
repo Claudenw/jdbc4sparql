@@ -4,6 +4,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -30,7 +31,6 @@ public class SchemaImpl extends NamespaceImpl implements Schema
 		this( catalog, catalog.getNamespace(), localName );
 	}
 
-	
 	public SchemaImpl( Catalog catalog, String namespace, String localName )
 	{
 		super(namespace, localName);
@@ -50,6 +50,19 @@ public class SchemaImpl extends NamespaceImpl implements Schema
 		tableDefs.put( tableDef.getName(),  tableDef );
 	}
 	
+	public void addTableDefs(Collection<TableDef> tableDefs)
+	{
+		for (TableDef t : tableDefs)
+		{
+			addTableDef( t );
+		}
+	}
+	
+	public TableDef getTableDef(String localName )
+	{
+		return tableDefs.get( localName );
+	}
+	
 	/** Returns a table with no data
 	 * 
 	 * @param name
@@ -57,7 +70,7 @@ public class SchemaImpl extends NamespaceImpl implements Schema
 	 */
 	public Table newTable( String name )
 	{
-		TableDef tableDef = tableDefs.get(name);
+		TableDef tableDef = getTableDef(name);
 		if (tableDef == null)
 		{
 			throw new IllegalArgumentException( name+" is not a table in this schema");

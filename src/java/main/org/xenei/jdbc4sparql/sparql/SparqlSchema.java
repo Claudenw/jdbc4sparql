@@ -2,6 +2,7 @@ package org.xenei.jdbc4sparql.sparql;
 
 import com.hp.hpl.jena.query.QuerySolution;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,62 +13,52 @@ import org.xenei.jdbc4sparql.iface.NameFilter;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.TableDef;
+import org.xenei.jdbc4sparql.impl.AbstractTable;
+import org.xenei.jdbc4sparql.impl.DataTable;
 import org.xenei.jdbc4sparql.impl.NamespaceImpl;
+import org.xenei.jdbc4sparql.impl.SchemaImpl;
 
 
 
-public class SparqlSchema extends NamespaceImpl implements Schema
+public class SparqlSchema extends SchemaImpl
 {
-	private static final String tableNames="prefix afn: <http://jena.hpl.hp.com/ARQ/function#>. " +
-			"SELECT ?tName WHERE { ?tName a rdfs:class ; " +
-			"FILTER( afn:namespace(?Name) == '%s') }";
+	
 
-	private SparqlCatalog catalog;
-	private Map<String,SparqlTableDef> tables;
+	private SchemaBuilder builder;
 
-	public SparqlSchema( SparqlCatalog catalog, String namespace, String localName )
+	public SparqlSchema( SparqlCatalog catalog, String namespace, String localName, SchemaBuilder builder )
 	{
-		super( namespace, localName );
-		this.catalog=catalog;
-		tables = new HashMap<String,SparqlTableDef>();
-		List<QuerySolution> solns = catalog.executeQuery( String.format( tableNames, namespace ));
-		for (QuerySolution soln : solns )
+		super( catalog, namespace, localName );
+		this.builder = builder;
+		addTableDefs( builder.getTableDefs(catalog));
+	}
+
+	private SparqlTableDef verifySparqlTableDef( TableDef tableDef )
+	{
+		if (tableDef == null)
 		{
-			SparqlTableDef tableDef = new SparqlTableDef( this, soln.getResource("tName") ); 
-			tables.put( tableDef.getName(), tableDef); 
+			throw new IllegalArgumentException( "table def may not be a null");
 		}
-		
+		if (! (tableDef instanceof SparqlTableDef))
+		{
+			throw new IllegalStateException( tableDef.getName()+" is not a SPARQL table definition.");
+		}
+		return (SparqlTableDef)tableDef;
 	}
 	
-	@Override
-	public Set<Table> getTables()
+	/** Returns a table with no data
+	 * 
+	 * @param name
+	 * @return
+	 */
+	public Table newTable( String name )
 	{
-		
-		// TODO Auto-generated method stub
-		return null;
+		return new SparqlTable( this, verifySparqlTableDef(getTableDef(name)) );
 	}
 
 	@Override
-	public SparqlCatalog getCatalog()
+	public void addTableDef( TableDef tableDef )
 	{
-		return catalog;
+		super.addTableDef(verifySparqlTableDef( tableDef ));
 	}
-
-	@Override
-	public Table getTable( String tableName )
-	{
-		SparqlTableDef tblDef = tables.get( tableName );
-		if (tblDef == null)
-		{
-			throw new IllegalArgumentException( String.format("Table %s not found in schema %s", tableName, getLocalName()));
-		}
-		return new SparqlTable( this, tblDef );
-	}
-	
-	@Override
-	public NameFilter<Table> findTables( String tableNamePattern )
-	{
-		return new NameFilter<Table>( tableNamePattern, getTables());
-	}
-
 }

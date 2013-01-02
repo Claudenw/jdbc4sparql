@@ -188,7 +188,6 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 		{
 			SparqlFromVisitor fromVisitor = new SparqlFromVisitor( queryBuilder );
 			join.getRightItem().accept(fromVisitor);
-			System.out.println( fromVisitor );
 		}
 		else
 		{

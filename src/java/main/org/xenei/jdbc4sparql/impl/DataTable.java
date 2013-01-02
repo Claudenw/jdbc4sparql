@@ -2,12 +2,14 @@ package org.xenei.jdbc4sparql.impl;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NavigableSet;
 import java.util.PriorityQueue;
 import java.util.TreeSet;
 
@@ -21,7 +23,6 @@ import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.SortKey;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.TableDef;
-import org.xenei.jdbc4sparql.meta.FixedResultSet;
 import org.xenei.jdbc4sparql.meta.MetaNamespace;
 
 /**
@@ -70,6 +71,7 @@ public class DataTable extends AbstractTable
 				data = new TreeBag( tableDef.getSortKey() );
 			}
 		}
+		
 	}
 	
 	/**
@@ -80,16 +82,54 @@ public class DataTable extends AbstractTable
 	public void addData( Object[] args )
 	{
 		getTableDef().verify( args );
-		data.add( args );
+		((Collection<Object[]>)data).add( args );
 	}
 	
 	/**
 	 * Get a result set that iterates over this table.
 	 * @return
 	 */
-	public ResultSet getResultSet()
+	public ResultSet getResultSet() throws SQLException
 	{
-		return new FixedResultSet( data, this );
+		ResultSet retval = null;;
+		if (data instanceof TreeSet)
+		{
+			NavigableSet<Object[]> ns = (TreeSet<Object[]>)data;
+			retval = new NavigableSetResultSet(ns, this){
+
+				@Override
+				protected Object readObject( int idx ) throws SQLException
+				{
+					checkColumn( idx);
+					Object[] rowData = (Object[]) getRowObject();
+					return rowData[idx];
+				}};
+		}
+		else if (data instanceof TreeBag)
+		{
+			retval = new IteratorResultSet( data.iterator(), this ){
+
+				@Override
+				protected Object readObject( int idx ) throws SQLException
+				{
+					Object[] rowData = (Object[]) getRowObject();
+					return rowData[idx];
+				}};
+		}
+		else
+		{
+			retval = new ListResultSet( (List<?>)data, this ){
+
+				@Override
+				protected Object readObject( int idx ) throws SQLException
+				{
+					checkColumn( idx);
+					Object[] rowData = (Object[]) getRowObject();
+					return rowData[idx];
+				}};
+		}
+		return retval;
+		
 	}
 
 	public boolean isEmpty()

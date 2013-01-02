@@ -2,6 +2,7 @@ package org.xenei.jdbc4sparql.impl;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -21,7 +22,6 @@ import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.SortKey;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.TableDef;
-import org.xenei.jdbc4sparql.meta.FixedResultSet;
 import org.xenei.jdbc4sparql.meta.MetaNamespace;
 
 public abstract class AbstractTable extends MetaNamespace implements Table
@@ -59,7 +59,7 @@ public abstract class AbstractTable extends MetaNamespace implements Table
 		return String.format( "%s.%s", schema.getLocalName(), getLocalName() );
 	}
 	
-	abstract public ResultSet getResultSet();
+	abstract public ResultSet getResultSet() throws SQLException;
 
 	@Override
 	public Catalog getCatalog()
