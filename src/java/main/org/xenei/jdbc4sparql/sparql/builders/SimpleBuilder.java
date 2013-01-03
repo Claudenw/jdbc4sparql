@@ -2,71 +2,78 @@ package org.xenei.jdbc4sparql.sparql.builders;
 
 import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.sparql.core.Var;
 
-import java.util.ArrayList;
+import java.sql.DatabaseMetaData;
+import java.sql.Types;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.xenei.jdbc4sparql.iface.Catalog;
-import org.xenei.jdbc4sparql.iface.ColumnDef;
 import org.xenei.jdbc4sparql.iface.TableDef;
-import org.xenei.jdbc4sparql.impl.ColumnDefImpl;
-import org.xenei.jdbc4sparql.sparql.SchemaBuilder;
 import org.xenei.jdbc4sparql.sparql.SparqlCatalog;
-import org.xenei.jdbc4sparql.sparql.SparqlColumn;
+import org.xenei.jdbc4sparql.sparql.SparqlColumnDef;
 import org.xenei.jdbc4sparql.sparql.SparqlTableDef;
 
 public class SimpleBuilder implements SchemaBuilder
 {
 
 	// Params: namespace.
-	private static final String TABLE_QUERY="prefix afn: <http://jena.hpl.hp.com/ARQ/function#>. " +
-			"SELECT ?tName WHERE { ?tName a rdfs:class ; " +
-			"FILTER( afn:namespace(?tName) == '%s') }";
-	
+	private static final String TABLE_QUERY = "prefix afn: <http://jena.hpl.hp.com/ARQ/function#>  "
+			+ " prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>"
+			+ " SELECT ?tName WHERE { ?tName a rdfs:Class ; "
+			+ " FILTER( afn:namespace(?tName) = '%s') }";
+
 	// Params: class resource, namespace
-	private static final String COLUMN_QUERY="prefix afn: <http://jena.hpl.hp.com/ARQ/function#> . " +
-			"SELECT DISTINCT ?cName " +
-			"WHERE { " +
-			"[] rdfs:domain <%s> ; " +
-			" ?cname [] ;" +
-			" FILTER( afn:namespace(?cName) == '%s') }";	
-	
-	private SparqlCatalog catalog;
-	private String namespace;
-	
-	public SimpleBuilder(SparqlCatalog catalog, String namespace)
+	private static final String COLUMN_QUERY = "prefix afn: <http://jena.hpl.hp.com/ARQ/function#>  "
+			+ " SELECT DISTINCT ?cName "
+			+ " WHERE { "
+			+ " ?instance a <%s> ; "
+			+ " ?cName [] ;" + " FILTER( afn:namespace(?cName) = '%s') }";
+
+	private static final String TABLE_SEGMENT = "%1$s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> %2$s";
+	private static final String COLUMN_SEGMENT = "%1$s %3$s %2$s";
+
+	private final SparqlCatalog catalog;
+	private final String namespace;
+
+	public SimpleBuilder( final SparqlCatalog catalog, final String namespace )
 	{
 		this.catalog = catalog;
+		this.namespace = namespace;
+	}
+
+	private void addColumnDefs( final SparqlTableDef tableDef,
+			final Resource tName )
+	{
+		final List<QuerySolution> solns = catalog.executeQuery(String.format(
+				SimpleBuilder.COLUMN_QUERY, tName, namespace));
+		for (final QuerySolution soln : solns)
+		{
+			final Resource cName = soln.getResource("cName");
+			final SparqlColumnDef colDef = new SparqlColumnDef(
+					cName.getNameSpace(), cName.getLocalName(), Types.VARCHAR,
+					SimpleBuilder.COLUMN_SEGMENT);
+			colDef.setNullable(DatabaseMetaData.columnNullable);
+			tableDef.add(colDef);
+		}
 	}
 
 	@Override
 	public Set<TableDef> getTableDefs()
 	{
-		HashSet<TableDef> retval = new HashSet<TableDef>();
-		List<QuerySolution> solns = catalog.executeQuery( String.format( TABLE_QUERY, namespace ));
-		for (QuerySolution soln : solns )
+		final HashSet<TableDef> retval = new HashSet<TableDef>();
+		final List<QuerySolution> solns = catalog.executeQuery(String.format(
+				SimpleBuilder.TABLE_QUERY, namespace));
+		for (final QuerySolution soln : solns)
 		{
-			Resource tName = soln.getResource("tName");
-			SparqlTableDef tableDef = new SparqlTableDef(  tName.getLocalName(), null );
-			addColumnDefs( tableDef, tName );
-			
-			retval.add( tableDef); 
+			final Resource tName = soln.getResource("tName");
+			final SparqlTableDef tableDef = new SparqlTableDef(
+					tName.getNameSpace(), tName.getLocalName(),
+					SimpleBuilder.TABLE_SEGMENT);
+			addColumnDefs(tableDef, tName);
+			retval.add(tableDef);
 		}
 		return retval;
-	}
-	
-	private void addColumnDefs( SparqlTableDef tableDef, Resource tName )
-	{
-		List<QuerySolution> solns = catalog.executeQuery( String.format( COLUMN_QUERY, tName, namespace ));
-		for (QuerySolution soln : solns )
-		{
-			Resource cName = soln.getResource("cName");
-			tableDef.add( ColumnDefImpl.getStringInstance(namespace, cName.getLocalName()));
-		}
-		
 	}
 
 }

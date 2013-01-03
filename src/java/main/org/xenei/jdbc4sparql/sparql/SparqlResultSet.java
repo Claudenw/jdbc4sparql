@@ -4,33 +4,33 @@ import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.rdf.model.RDFNode;
 
 import java.sql.SQLException;
-import java.util.List;
 
-import org.xenei.jdbc4sparql.iface.Catalog;
-import org.xenei.jdbc4sparql.iface.TableDef;
 import org.xenei.jdbc4sparql.iface.TypeConverter;
-import org.xenei.jdbc4sparql.impl.AbstractCollectionResultSet;
-import org.xenei.jdbc4sparql.impl.AbstractResultSet;
 import org.xenei.jdbc4sparql.impl.ListResultSet;
 
 public class SparqlResultSet extends ListResultSet
 {
-	
-	public SparqlResultSet(SparqlTable table) throws SQLException
+
+	public SparqlResultSet( final SparqlTable table ) throws SQLException
 	{
-		super( table.getCatalog().executeQuery( table.getTableDef().getQuery()), table );
+		super(table.getCatalog().executeQuery(table.getQuery()), table);
 	}
 
 	@Override
-	protected Object readObject( int idx ) throws SQLException
+	protected Object readObject( final int columnOrdinal ) throws SQLException
 	{
 		checkPosition();
-		checkColumn( idx );
-		QuerySolution soln = (QuerySolution) getRowObject();
-		RDFNode node = soln.get( getTable().getColumn(idx).getLabel());
+		checkColumn(columnOrdinal);
+		final QuerySolution soln = (QuerySolution) getRowObject();
+		final RDFNode node = soln.get(getTable().getColumn(columnOrdinal - 1)
+				.getLabel());
+		if (node == null)
+		{
+			return null;
+		}
 		if (node.isLiteral())
 		{
-			return TypeConverter.getJavaValue( node.asLiteral() );
+			return TypeConverter.getJavaValue(node.asLiteral());
 		}
 		return node.toString();
 	}

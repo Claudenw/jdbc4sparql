@@ -4,23 +4,23 @@ import org.xenei.jdbc4sparql.iface.NamespacedObject;
 
 public class NamespaceImpl implements NamespacedObject
 {
-	private String namespace;
-	private String localName;
+	private final String namespace;
+	private final String localName;
 
-	protected NamespaceImpl( String namespace, String localName)
+	protected NamespaceImpl( String namespace, final String localName )
 	{
 		this.namespace = namespace;
-		this.localName=localName;
-		if (! (namespace.endsWith("#") || namespace.endsWith( "/" )  ))
+		this.localName = localName;
+		if (!(namespace.endsWith("#") || namespace.endsWith("/")))
 		{
-			namespace+=namespace.contains("#")?"/":"#";
+			namespace += namespace.contains("#") ? "/" : "#";
 		}
 	}
-	
+
 	@Override
-	public String getNamespace()
+	public String getFQName()
 	{
-		return namespace;
+		return namespace + localName;
 	}
 
 	@Override
@@ -30,9 +30,9 @@ public class NamespaceImpl implements NamespacedObject
 	}
 
 	@Override
-	public String getFQName()
+	public String getNamespace()
 	{
-		return namespace+localName;
+		return namespace;
 	}
 
 }

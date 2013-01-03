@@ -1,19 +1,18 @@
-package org.xenei.jdbc4sparql.sparql.visitors;
+package org.xenei.jdbc4sparql.sparql.parser.jsqlparser;
 
 import java.sql.SQLException;
-import java.util.List;
-
-import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.FromItemVisitor;
 import net.sf.jsqlparser.statement.select.SubJoin;
 import net.sf.jsqlparser.statement.select.SubSelect;
 
+import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
+
 class SparqlFromVisitor implements FromItemVisitor
 {
-	private SparqlQueryBuilder builder;
-	
+	private final SparqlQueryBuilder builder;
+
 	SparqlFromVisitor( final SparqlQueryBuilder builder )
 	{
 		this.builder = builder;
@@ -39,9 +38,9 @@ class SparqlFromVisitor implements FromItemVisitor
 		{
 			builder.addTable(tableName.getSchemaName(), tableName.getName());
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
-			throw new RuntimeException( e );
+			throw new RuntimeException(e);
 		}
 	}
 

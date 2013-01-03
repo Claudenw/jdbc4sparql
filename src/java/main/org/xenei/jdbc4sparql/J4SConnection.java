@@ -20,59 +20,52 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
 
-import org.xenei.jdbc4sparql.iface.Catalog;
-
 public class J4SConnection implements Connection
 {
 	private String catalog;
-	private J4SDriver driver;
-	
-	public J4SConnection(J4SDriver driver, String url, Properties props)
+	private final J4SDriver driver;
+
+	public J4SConnection( final J4SDriver driver, final String url,
+			final Properties props )
 	{
 		this.driver = driver;
 		// TODO Auto-generated constructor stub
 	}
 
 	@Override
-	public boolean isWrapperFor( Class<?> arg0 ) throws SQLException
+	public void abort( final Executor arg0 ) throws SQLException
 	{
 		// TODO Auto-generated method stub
-		return false;
-	}
 
-	@Override
-	public <T> T unwrap( Class<T> arg0 ) throws SQLException
-	{
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	@Override
 	public void clearWarnings() throws SQLException
 	{
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void close() throws SQLException
 	{
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void commit() throws SQLException
 	{
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
-	public Array createArrayOf( String arg0, Object[] arg1 )
+	public Array createArrayOf( final String arg0, final Object[] arg1 )
 			throws SQLException
 	{
-		throw new SQLFeatureNotSupportedException();	}
+		throw new SQLFeatureNotSupportedException();
+	}
 
 	@Override
 	public Blob createBlob() throws SQLException
@@ -83,17 +76,20 @@ public class J4SConnection implements Connection
 	@Override
 	public Clob createClob() throws SQLException
 	{
-		throw new SQLFeatureNotSupportedException();	}
+		throw new SQLFeatureNotSupportedException();
+	}
 
 	@Override
 	public NClob createNClob() throws SQLException
 	{
-		throw new SQLFeatureNotSupportedException();	}
+		throw new SQLFeatureNotSupportedException();
+	}
 
 	@Override
 	public SQLXML createSQLXML() throws SQLException
 	{
-		throw new SQLFeatureNotSupportedException();	}
+		throw new SQLFeatureNotSupportedException();
+	}
 
 	@Override
 	public Statement createStatement() throws SQLException
@@ -103,14 +99,7 @@ public class J4SConnection implements Connection
 	}
 
 	@Override
-	public Statement createStatement( int arg0, int arg1 ) throws SQLException
-	{
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Statement createStatement( int arg0, int arg1, int arg2 )
+	public Statement createStatement( final int arg0, final int arg1 )
 			throws SQLException
 	{
 		// TODO Auto-generated method stub
@@ -118,7 +107,15 @@ public class J4SConnection implements Connection
 	}
 
 	@Override
-	public Struct createStruct( String arg0, Object[] arg1 )
+	public Statement createStatement( final int arg0, final int arg1,
+			final int arg2 ) throws SQLException
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Struct createStruct( final String arg0, final Object[] arg1 )
 			throws SQLException
 	{
 		// TODO Auto-generated method stub
@@ -146,7 +143,7 @@ public class J4SConnection implements Connection
 	}
 
 	@Override
-	public String getClientInfo( String arg0 ) throws SQLException
+	public String getClientInfo( final String arg0 ) throws SQLException
 	{
 		// TODO Auto-generated method stub
 		return null;
@@ -162,7 +159,21 @@ public class J4SConnection implements Connection
 	@Override
 	public DatabaseMetaData getMetaData() throws SQLException
 	{
-		return new J4SDatabaseMetaData( this, driver );
+		return new J4SDatabaseMetaData(this, driver);
+	}
+
+	@Override
+	public int getNetworkTimeout() throws SQLException
+	{
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public String getSchema() throws SQLException
+	{
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
@@ -198,28 +209,28 @@ public class J4SConnection implements Connection
 	}
 
 	@Override
-	public boolean isValid( int arg0 ) throws SQLException
+	public boolean isValid( final int arg0 ) throws SQLException
 	{
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public String nativeSQL( String arg0 ) throws SQLException
+	public boolean isWrapperFor( final Class<?> arg0 ) throws SQLException
+	{
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public String nativeSQL( final String arg0 ) throws SQLException
 	{
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public CallableStatement prepareCall( String arg0 ) throws SQLException
-	{
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public CallableStatement prepareCall( String arg0, int arg1, int arg2 )
+	public CallableStatement prepareCall( final String arg0 )
 			throws SQLException
 	{
 		// TODO Auto-generated method stub
@@ -227,15 +238,23 @@ public class J4SConnection implements Connection
 	}
 
 	@Override
-	public CallableStatement prepareCall( String arg0, int arg1, int arg2,
-			int arg3 ) throws SQLException
+	public CallableStatement prepareCall( final String arg0, final int arg1,
+			final int arg2 ) throws SQLException
 	{
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public PreparedStatement prepareStatement( String arg0 )
+	public CallableStatement prepareCall( final String arg0, final int arg1,
+			final int arg2, final int arg3 ) throws SQLException
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public PreparedStatement prepareStatement( final String arg0 )
 			throws SQLException
 	{
 		// TODO Auto-generated method stub
@@ -243,7 +262,7 @@ public class J4SConnection implements Connection
 	}
 
 	@Override
-	public PreparedStatement prepareStatement( String arg0, int arg1 )
+	public PreparedStatement prepareStatement( final String arg0, final int arg1 )
 			throws SQLException
 	{
 		// TODO Auto-generated method stub
@@ -251,7 +270,16 @@ public class J4SConnection implements Connection
 	}
 
 	@Override
-	public PreparedStatement prepareStatement( String arg0, int[] arg1 )
+	public PreparedStatement prepareStatement( final String arg0,
+			final int arg1, final int arg2 ) throws SQLException
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public PreparedStatement prepareStatement( final String arg0,
+			final int arg1, final int arg2, final int arg3 )
 			throws SQLException
 	{
 		// TODO Auto-generated method stub
@@ -259,90 +287,91 @@ public class J4SConnection implements Connection
 	}
 
 	@Override
-	public PreparedStatement prepareStatement( String arg0, String[] arg1 )
-			throws SQLException
+	public PreparedStatement prepareStatement( final String arg0,
+			final int[] arg1 ) throws SQLException
 	{
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public PreparedStatement prepareStatement( String arg0, int arg1, int arg2 )
-			throws SQLException
+	public PreparedStatement prepareStatement( final String arg0,
+			final String[] arg1 ) throws SQLException
 	{
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public PreparedStatement prepareStatement( String arg0, int arg1, int arg2,
-			int arg3 ) throws SQLException
+	public void releaseSavepoint( final Savepoint arg0 ) throws SQLException
 	{
 		// TODO Auto-generated method stub
-		return null;
-	}
 
-	@Override
-	public void releaseSavepoint( Savepoint arg0 ) throws SQLException
-	{
-		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
 	public void rollback() throws SQLException
 	{
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
-	public void rollback( Savepoint arg0 ) throws SQLException
+	public void rollback( final Savepoint arg0 ) throws SQLException
 	{
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
-	public void setAutoCommit( boolean arg0 ) throws SQLException
+	public void setAutoCommit( final boolean arg0 ) throws SQLException
 	{
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
-	public void setCatalog( String catalog ) throws SQLException
+	public void setCatalog( final String catalog ) throws SQLException
 	{
 		this.catalog = catalog;
 	}
 
 	@Override
-	public void setClientInfo( Properties arg0 ) throws SQLClientInfoException
-	{
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void setClientInfo( String arg0, String arg1 )
+	public void setClientInfo( final Properties arg0 )
 			throws SQLClientInfoException
 	{
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
-	public void setHoldability( int arg0 ) throws SQLException
+	public void setClientInfo( final String arg0, final String arg1 )
+			throws SQLClientInfoException
 	{
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
-	public void setReadOnly( boolean arg0 ) throws SQLException
+	public void setHoldability( final int arg0 ) throws SQLException
 	{
 		// TODO Auto-generated method stub
-		
+
+	}
+
+	@Override
+	public void setNetworkTimeout( final Executor arg0, final int arg1 )
+			throws SQLException
+	{
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void setReadOnly( final boolean arg0 ) throws SQLException
+	{
+		// TODO Auto-generated method stub
+
 	}
 
 	@Override
@@ -353,60 +382,39 @@ public class J4SConnection implements Connection
 	}
 
 	@Override
-	public Savepoint setSavepoint( String arg0 ) throws SQLException
+	public Savepoint setSavepoint( final String arg0 ) throws SQLException
 	{
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public void setTransactionIsolation( int arg0 ) throws SQLException
+	public void setSchema( final String arg0 ) throws SQLException
 	{
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
-	public void setTypeMap( Map<String, Class<?>> arg0 ) throws SQLException
+	public void setTransactionIsolation( final int arg0 ) throws SQLException
 	{
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
-	public void abort( Executor arg0 ) throws SQLException
-	{
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public int getNetworkTimeout() throws SQLException
-	{
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public String getSchema() throws SQLException
-	{
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void setNetworkTimeout( Executor arg0, int arg1 )
+	public void setTypeMap( final Map<String, Class<?>> arg0 )
 			throws SQLException
 	{
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
-	public void setSchema( String arg0 ) throws SQLException
+	public <T> T unwrap( final Class<T> arg0 ) throws SQLException
 	{
 		// TODO Auto-generated method stub
-		
+		return null;
 	}
 
 }

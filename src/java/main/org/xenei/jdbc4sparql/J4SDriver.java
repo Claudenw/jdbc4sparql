@@ -11,21 +11,20 @@ import java.util.logging.Logger;
 public class J4SDriver implements Driver
 {
 
-	
 	public J4SDriver()
 	{
 		// TODO Auto-generated constructor stub
 	}
 
 	@Override
-	public boolean acceptsURL( String arg0 ) throws SQLException
+	public boolean acceptsURL( final String arg0 ) throws SQLException
 	{
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public Connection connect( String url, Properties props )
+	public Connection connect( final String url, final Properties props )
 			throws SQLException
 	{
 		return new J4SConnection(this, url, props);
@@ -44,15 +43,22 @@ public class J4SDriver implements Driver
 		// TODO Auto-generated method stub
 		return 1;
 	}
-	
+
 	public String getName()
 	{
 		return "JDBC4SPARQL Driver";
 	}
 
 	@Override
-	public DriverPropertyInfo[] getPropertyInfo( String arg0, Properties arg1 )
-			throws SQLException
+	public Logger getParentLogger() throws SQLFeatureNotSupportedException
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public DriverPropertyInfo[] getPropertyInfo( final String arg0,
+			final Properties arg1 ) throws SQLException
 	{
 		// TODO Auto-generated method stub
 		return null;
@@ -63,13 +69,6 @@ public class J4SDriver implements Driver
 	{
 		// TODO Auto-generated method stub
 		return false;
-	}
-
-	@Override
-	public Logger getParentLogger() throws SQLFeatureNotSupportedException
-	{
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 }

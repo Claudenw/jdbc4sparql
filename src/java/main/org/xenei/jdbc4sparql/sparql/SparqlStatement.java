@@ -1,45 +1,24 @@
 package org.xenei.jdbc4sparql.sparql;
 
-import java.io.StringReader;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
 
-import org.xenei.jdbc4sparql.iface.Catalog;
-import org.xenei.jdbc4sparql.sparql.visitors.SparqlVisitor;
-
-import net.sf.jsqlparser.JSQLParserException;
-import net.sf.jsqlparser.parser.CCJSqlParserManager;
+import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 
 public class SparqlStatement implements Statement
 {
-	private SparqlCatalog catalog;
-	private SparqlParser parser;
-	
-	SparqlStatement( SparqlCatalog catalog, SparqlParser parser )
+	private final SparqlParser parser;
+
+	SparqlStatement( final SparqlCatalog catalog, final SparqlParser parser )
 	{
-		this.catalog = catalog;
 		this.parser = parser;
 	}
-	
-	@Override
-	public boolean isWrapperFor( Class<?> arg0 ) throws SQLException
-	{
-		// TODO Auto-generated method stub
-		return false;
-	}
 
 	@Override
-	public <T> T unwrap( Class<T> arg0 ) throws SQLException
-	{
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void addBatch( String arg0 ) throws SQLException
+	public void addBatch( final String arg0 ) throws SQLException
 	{
 		// TODO Auto-generated method stub
 
@@ -81,28 +60,31 @@ public class SparqlStatement implements Statement
 	}
 
 	@Override
-	public boolean execute( String arg0 ) throws SQLException
+	public boolean execute( final String arg0 ) throws SQLException
 	{
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean execute( String arg0, int arg1 ) throws SQLException
+	public boolean execute( final String arg0, final int arg1 )
+			throws SQLException
 	{
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean execute( String arg0, int[] arg1 ) throws SQLException
+	public boolean execute( final String arg0, final int[] arg1 )
+			throws SQLException
 	{
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean execute( String arg0, String[] arg1 ) throws SQLException
+	public boolean execute( final String arg0, final String[] arg1 )
+			throws SQLException
 	{
 		// TODO Auto-generated method stub
 		return false;
@@ -116,35 +98,38 @@ public class SparqlStatement implements Statement
 	}
 
 	@Override
-	public ResultSet executeQuery( String query ) throws SQLException
+	public ResultSet executeQuery( final String query ) throws SQLException
 	{
-		SparqlQueryBuilder builder = parser.parse( query );
+		final SparqlQueryBuilder builder = parser.parse(query);
 		return new SparqlView(builder).getResultSet();
 	}
 
 	@Override
-	public int executeUpdate( String arg0 ) throws SQLException
+	public int executeUpdate( final String arg0 ) throws SQLException
 	{
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public int executeUpdate( String arg0, int arg1 ) throws SQLException
+	public int executeUpdate( final String arg0, final int arg1 )
+			throws SQLException
 	{
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public int executeUpdate( String arg0, int[] arg1 ) throws SQLException
+	public int executeUpdate( final String arg0, final int[] arg1 )
+			throws SQLException
 	{
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public int executeUpdate( String arg0, String[] arg1 ) throws SQLException
+	public int executeUpdate( final String arg0, final String[] arg1 )
+			throws SQLException
 	{
 		// TODO Auto-generated method stub
 		return 0;
@@ -200,7 +185,7 @@ public class SparqlStatement implements Statement
 	}
 
 	@Override
-	public boolean getMoreResults( int arg0 ) throws SQLException
+	public boolean getMoreResults( final int arg0 ) throws SQLException
 	{
 		// TODO Auto-generated method stub
 		return false;
@@ -256,14 +241,14 @@ public class SparqlStatement implements Statement
 	}
 
 	@Override
-	public boolean isCloseOnCompletion() throws SQLException
+	public boolean isClosed() throws SQLException
 	{
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean isClosed() throws SQLException
+	public boolean isCloseOnCompletion() throws SQLException
 	{
 		// TODO Auto-generated method stub
 		return false;
@@ -277,59 +262,73 @@ public class SparqlStatement implements Statement
 	}
 
 	@Override
-	public void setCursorName( String arg0 ) throws SQLException
+	public boolean isWrapperFor( final Class<?> arg0 ) throws SQLException
+	{
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void setCursorName( final String arg0 ) throws SQLException
 	{
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void setEscapeProcessing( boolean arg0 ) throws SQLException
+	public void setEscapeProcessing( final boolean arg0 ) throws SQLException
 	{
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void setFetchDirection( int arg0 ) throws SQLException
+	public void setFetchDirection( final int arg0 ) throws SQLException
 	{
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void setFetchSize( int arg0 ) throws SQLException
+	public void setFetchSize( final int arg0 ) throws SQLException
 	{
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void setMaxFieldSize( int arg0 ) throws SQLException
+	public void setMaxFieldSize( final int arg0 ) throws SQLException
 	{
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void setMaxRows( int arg0 ) throws SQLException
+	public void setMaxRows( final int arg0 ) throws SQLException
 	{
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void setPoolable( boolean arg0 ) throws SQLException
+	public void setPoolable( final boolean arg0 ) throws SQLException
 	{
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void setQueryTimeout( int arg0 ) throws SQLException
+	public void setQueryTimeout( final int arg0 ) throws SQLException
 	{
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public <T> T unwrap( final Class<T> arg0 ) throws SQLException
+	{
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

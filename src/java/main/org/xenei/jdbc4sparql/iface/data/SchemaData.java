@@ -7,11 +7,11 @@ import org.xenei.jdbc4sparql.iface.meta.ColumnsTableRow;
 public interface SchemaData
 {
 
-	String getName();
-	
 	Collection<ColumnsTableRow> getColumnsTableData( String tablePattern );
-	
-	Collection<String> getTableNames();
-	
+
+	String getName();
+
 	TableData getTableData( String tableName );
+
+	Collection<String> getTableNames();
 }

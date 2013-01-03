@@ -1,63 +1,27 @@
 package org.xenei.jdbc4sparql.impl;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.io.Reader;
-import java.math.BigDecimal;
-import java.net.URL;
-import java.sql.Array;
-import java.sql.Blob;
-import java.sql.Clob;
-import java.sql.Date;
-import java.sql.NClob;
-import java.sql.Ref;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.RowId;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
-import java.sql.SQLWarning;
-import java.sql.SQLXML;
-import java.sql.Statement;
-import java.sql.Time;
-import java.sql.Timestamp;
-import java.sql.Types;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 
-import org.apache.commons.collections.bag.AbstractMapBag;
-import org.apache.commons.collections.bag.TreeBag;
-import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.Table;
-import org.xenei.jdbc4sparql.iface.TableDef;
 
 public abstract class IteratorResultSet extends AbstractResultSet
 {
 	Iterator<Object> rows;
 	Object row = null;
 	int position = 0;
-	
-	public IteratorResultSet( Iterator<?> rows, Table table ) throws SQLException
-	{
-		super( table );
-		this.rows = (Iterator<Object>)rows;
-	}
 
-	protected Object getRowObject() throws SQLException
+	public IteratorResultSet( final Iterator<?> rows, final Table table )
+			throws SQLException
 	{
-		if (row == null)
-		{
-			throw new SQLException( "Cursor not positioned on a result");
-		}
-		return row;
+		super(table);
+		this.rows = (Iterator<Object>) rows;
 	}
 
 	@Override
-	public boolean absolute( int arg0 ) throws SQLException
+	public boolean absolute( final int arg0 ) throws SQLException
 	{
 		throw new SQLFeatureNotSupportedException();
 	}
@@ -84,7 +48,7 @@ public abstract class IteratorResultSet extends AbstractResultSet
 	public void clearWarnings() throws SQLException
 	{
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -111,10 +75,19 @@ public abstract class IteratorResultSet extends AbstractResultSet
 		return position;
 	}
 
+	protected Object getRowObject() throws SQLException
+	{
+		if (row == null)
+		{
+			throw new SQLException("Cursor not positioned on a result");
+		}
+		return row;
+	}
+
 	@Override
 	public int getType() throws SQLException
 	{
-		return 	ResultSet.TYPE_FORWARD_ONLY;
+		return ResultSet.TYPE_FORWARD_ONLY;
 	}
 
 	@Override
@@ -179,7 +152,7 @@ public abstract class IteratorResultSet extends AbstractResultSet
 	}
 
 	@Override
-	public boolean relative( int arg0 ) throws SQLException
+	public boolean relative( final int arg0 ) throws SQLException
 	{
 		throw new SQLFeatureNotSupportedException();
 	}

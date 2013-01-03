@@ -4,38 +4,42 @@ import java.util.Comparator;
 
 public class KeySegment implements Comparator<Object[]>
 {
-	private int idx;
-	private boolean ascending;
-	
-	public KeySegment( int idx, ColumnDef column, boolean ascending)
+	private final int idx;
+	private final boolean ascending;
+
+	public KeySegment( final int idx, final ColumnDef columnDef )
 	{
-		this.idx=idx;
-		this.ascending=ascending;
-		Class<?> type=TypeConverter.getJavaType(column.getType());
+		this(idx, columnDef, true);
+	}
+
+	public KeySegment( final int idx, final ColumnDef columnDef,
+			final boolean ascending )
+	{
+		this.idx = idx;
+		this.ascending = ascending;
+		final Class<?> type = TypeConverter.getJavaType(columnDef.getType());
 		if (type == null)
 		{
-			throw new IllegalArgumentException( column.getLabel()+" uses an unsupported data type: "+column.getType());
+			throw new IllegalArgumentException(columnDef.getLabel()
+					+ " uses an unsupported data type: " + columnDef.getType());
 		}
-		if (type == null || !Comparable.class.isAssignableFrom(type))
+		if ((type == null) || !Comparable.class.isAssignableFrom(type))
 		{
-			throw new IllegalArgumentException( column.getLabel()+" is not a comparable object type");
+			throw new IllegalArgumentException(columnDef.getLabel()
+					+ " is not a comparable object type");
 		}
-		
+
 	}
-	
-	public KeySegment(int idx, ColumnDef column)
+
+	@Override
+	public int compare( final Object[] data1, final Object[] data2 )
 	{
-		this( idx, column, true );
-	}
-	
-	public int compare( Object[] data1, Object[] data2)
-	{
-		Object o1 = data1[idx];
-		Object o2 = data2[idx];
+		final Object o1 = data1[idx];
+		final Object o2 = data2[idx];
 		int retval;
 		if (o1 == null)
 		{
-			retval= o2==null?0:-1;
+			retval = o2 == null ? 0 : -1;
 		}
 		else if (o2 == null)
 		{
@@ -43,10 +47,9 @@ public class KeySegment implements Comparator<Object[]>
 		}
 		else
 		{
-			retval = Comparable.class.cast(data1[idx]).compareTo( data2[idx] );
+			retval = Comparable.class.cast(data1[idx]).compareTo(data2[idx]);
 		}
-		return ascending?retval:-1*retval;
+		return ascending ? retval : -1 * retval;
 	}
-	
-	
+
 }

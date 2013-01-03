@@ -7,39 +7,40 @@ import java.util.List;
 public class SortKey implements Comparator<Object[]>
 {
 	private boolean unique;
-	private List<KeySegment> segments;
-	
-	public void setUnique()
-	{
-		unique = true;
-	}
-	
-	public boolean isUnique()
-	{
-		return unique;
-	}
-	
+	private final List<KeySegment> segments;
+
 	public SortKey()
 	{
 		segments = new ArrayList<KeySegment>();
 	}
-	
-	public SortKey addSegment(KeySegment segment) {
+
+	public SortKey addSegment( final KeySegment segment )
+	{
 		segments.add(segment);
 		return this;
 	}
 
 	@Override
-	public int compare( Object[] data1, Object[] data2 )
+	public int compare( final Object[] data1, final Object[] data2 )
 	{
-		for (KeySegment segment : segments)
+		for (final KeySegment segment : segments)
 		{
-			int retval =segment.compare(data1, data2);
+			final int retval = segment.compare(data1, data2);
 			if (retval != 0)
 			{
 				return retval;
 			}
 		}
 		return 0;
+	}
+
+	public boolean isUnique()
+	{
+		return unique;
+	}
+
+	public void setUnique()
+	{
+		unique = true;
 	}
 }

@@ -1,7 +1,6 @@
 package org.xenei.jdbc4sparql.mock;
 
 import java.sql.Connection;
-import java.sql.Driver;
 import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
 import java.util.Properties;
@@ -17,13 +16,13 @@ public class MockDriver extends J4SDriver
 	}
 
 	@Override
-	public boolean acceptsURL( String arg0 ) throws SQLException
+	public boolean acceptsURL( final String arg0 ) throws SQLException
 	{
 		return true;
 	}
 
 	@Override
-	public Connection connect( String arg0, Properties arg1 )
+	public Connection connect( final String arg0, final Properties arg1 )
 			throws SQLException
 	{
 		// TODO Auto-generated method stub
@@ -43,8 +42,8 @@ public class MockDriver extends J4SDriver
 	}
 
 	@Override
-	public DriverPropertyInfo[] getPropertyInfo( String arg0, Properties arg1 )
-			throws SQLException
+	public DriverPropertyInfo[] getPropertyInfo( final String arg0,
+			final Properties arg1 ) throws SQLException
 	{
 		return new DriverPropertyInfo[0];
 	}

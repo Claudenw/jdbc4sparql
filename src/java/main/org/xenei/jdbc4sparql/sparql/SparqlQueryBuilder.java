@@ -14,7 +14,6 @@ import com.hp.hpl.jena.sparql.syntax.ElementFilter;
 import com.hp.hpl.jena.sparql.syntax.ElementGroup;
 import com.hp.hpl.jena.sparql.syntax.ElementOptional;
 import com.hp.hpl.jena.sparql.syntax.ElementTriplesBlock;
-import com.hp.hpl.jena.vocabulary.RDF;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
@@ -25,13 +24,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.Column;
-import org.xenei.jdbc4sparql.iface.NamespacedObject;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
-import org.xenei.jdbc4sparql.iface.TableDef;
-import org.xenei.jdbc4sparql.impl.TableDefImpl;
 
 public class SparqlQueryBuilder
 {
@@ -39,29 +34,30 @@ public class SparqlQueryBuilder
 	private static final String FOUND_IN_MULTIPLE_ = "%s was found in multiple %s";
 	private static final String NOT_FOUND_IN_ANY_ = "%s was not found in any %s";
 
-	private static final String COLUMN_NAME_FMT = "%s.%s.%s";
-	private static final String TABLE_NAME_FMT = "%s.%s";
+	private static final String COLUMN_NAME_FMT = "%s\u00B7%s\u00B7%s";
+	private static final String TABLE_NAME_FMT = "%s\u00B7%s";
 
 	private final Query query;
 	private final SparqlCatalog catalog;
-	private final Map<String, Table> tablesInQuery;
+	private final Map<String, SparqlTable> tablesInQuery;
 	private final Map<String, Node> nodesInQuery;
-	private final Map<String, Column> columnsInQuery;
+	private final Map<String, SparqlColumn> columnsInQuery;
 
 	public SparqlQueryBuilder( final SparqlCatalog catalog )
 	{
 		this.catalog = catalog;
 		this.query = new Query();
-		this.tablesInQuery = new HashMap<String, Table>();
+		this.tablesInQuery = new HashMap<String, SparqlTable>();
 		this.nodesInQuery = new HashMap<String, Node>();
-		this.columnsInQuery = new HashMap<String, Column>();
+		this.columnsInQuery = new HashMap<String, SparqlColumn>();
 		query.setQuerySelectType();
 	}
 
-	public void addBGP( final Node s, final Node p, final Node o )
+	// public void addBGP( final Node s, final Node p, final Node o )
+	public void addBGP( final Triple t )
 	{
 		final ElementGroup eg = getElementGroup();
-		final Triple t = new Triple(s, p, o);
+		// final Triple t = new Triple(s, p, o);
 		for (final Element el : eg.getElements())
 		{
 			if (el instanceof ElementTriplesBlock)
@@ -76,34 +72,36 @@ public class SparqlQueryBuilder
 		eg.addTriplePattern(t);
 	}
 
-	public Node addColumn( final Column column ) throws SQLException
+	public Node addColumn( final SparqlColumn column ) throws SQLException
 	{
-		/*
-		 * Add bgp triples
-		 */
-
 		Node tableVar;
-		Node columnURI;
 
-		columnURI = Node.createURI(column.getFQName());
 		if (!columnsInQuery.containsKey(column.getDBName()))
 		{
 			columnsInQuery.put(column.getDBName(), column);
 			tableVar = addTable(column.getSchema().getLocalName(), column
 					.getTable().getLocalName());
 			final Node columnVar = Node.createVariable(getDBName(column));
-			nodesInQuery.put( column.getDBName(), columnVar);
+			nodesInQuery.put(column.getDBName(), columnVar);
 			// ?tableVar columnURI ?columnVar
 			if (column.getNullable() == DatabaseMetaData.columnNoNulls)
 			{
-				addBGP(tableVar, columnURI, columnVar);
+				for (final Triple t : column.getQuerySegments(tableVar,
+						columnVar))
+				{
+					addBGP(t);
+				}
 			}
 			else
 			{
 				final ElementGroup eg = getElementGroup();
-				ElementTriplesBlock etb = new ElementTriplesBlock();
-				etb.addTriple( new Triple( tableVar, columnURI, columnVar ));
-				eg.addElement(new ElementOptional( etb ));
+				final ElementTriplesBlock etb = new ElementTriplesBlock();
+				for (final Triple t : column.getQuerySegments(tableVar,
+						columnVar))
+				{
+					etb.addTriple(t);
+				}
+				eg.addElement(new ElementOptional(etb));
 			}
 			return columnVar;
 		}
@@ -114,23 +112,22 @@ public class SparqlQueryBuilder
 
 	}
 
-	public Node addColumn( String schemaName, String tableName, String columnName)
-			throws SQLException
+	public Node addColumn( final String schemaName, final String tableName,
+			final String columnName ) throws SQLException
 	{
-		final Collection<Column> columns = findColumns(schemaName,
-				tableName,columnName);
+		final Collection<SparqlColumn> columns = findColumns(schemaName,
+				tableName, columnName);
 
 		if (columns.size() > 1)
 		{
-			throw new SQLException(String.format(
-					SparqlQueryBuilder.FOUND_IN_MULTIPLE_,
-					columnName, "tables"));
+			throw new SQLException(
+					String.format(SparqlQueryBuilder.FOUND_IN_MULTIPLE_,
+							columnName, "tables"));
 		}
 		if (columns.isEmpty())
 		{
 			throw new SQLException(String.format(
-					SparqlQueryBuilder.NOT_FOUND_IN_ANY_,
-					columnName, "table"));
+					SparqlQueryBuilder.NOT_FOUND_IN_ANY_, columnName, "table"));
 		}
 		return addColumn(columns.iterator().next());
 	}
@@ -155,8 +152,8 @@ public class SparqlQueryBuilder
 		final Node tnLeft = getDBNode(cLeft.getTable().getDBName());
 		final Node tnRight = getDBNode(cRight.getTable().getDBName());
 		final Node anon = Node.createAnon(new AnonId());
-		addBGP(tnLeft, Node.createURI(cLeft.getFQName()), anon);
-		addBGP(tnRight, Node.createURI(cRight.getFQName()), anon);
+		addBGP(new Triple(tnLeft, Node.createURI(cLeft.getFQName()), anon));
+		addBGP(new Triple(tnRight, Node.createURI(cRight.getFQName()), anon));
 	}
 
 	public void addFilter( final Expr filter )
@@ -184,7 +181,8 @@ public class SparqlQueryBuilder
 	public Node addTable( final String schemaName, final String tableName )
 			throws SQLException
 	{
-		final Collection<Table> tables = findTables(schemaName, tableName);
+		final Collection<SparqlTable> tables = findTables(schemaName, tableName);
+
 		if (tables.size() > 1)
 		{
 			throw new SQLException(
@@ -196,39 +194,22 @@ public class SparqlQueryBuilder
 			throw new SQLException(String.format(
 					SparqlQueryBuilder.NOT_FOUND_IN_ANY_, tableName, "schema"));
 		}
-		final Table table = tables.iterator().next();
+		final SparqlTable table = tables.iterator().next();
 		if (!tablesInQuery.containsKey(table.getDBName()))
 		{
 			final Node tableVar = Node.createVariable(getDBName(table));
 			tablesInQuery.put(table.getDBName(), table);
-			nodesInQuery.put( table.getDBName(), tableVar );
-			addBGP(tableVar, RDF.type.asNode(),
-					Node.createURI(table.getFQName()));
+			nodesInQuery.put(table.getDBName(), tableVar);
+			for (final Triple t : table.getQuerySegments(tableVar))
+			{
+				addBGP(t);
+			}
 			return tableVar;
 		}
 		else
 		{
 			return getDBNode(table.getDBName());
 		}
-	}
-
-	public void addVar( final Column col, final String name )
-			throws SQLException
-	{
-		final String realName = name == null ? getDBName(col) : name;
-		final Var v = Var.alloc(realName);
-		if (!query.getResultVars().contains(v.toString()))
-		{
-			if (realName.equalsIgnoreCase(name))
-			{
-
-				final Node n = addColumn(col);
-				final ElementBind bind = new ElementBind(v, new ExprVar(n));
-				getElementGroup().addElement(bind);
-			}
-			query.addResultVar(v);
-		}
-
 	}
 
 	public void addVar( final Expr expr, final String name )
@@ -251,12 +232,31 @@ public class SparqlQueryBuilder
 		}
 	}
 
-	public void addVars( final Iterator<? extends Column> cols )
+	public void addVar( final SparqlColumn col, final String name )
+			throws SQLException
+	{
+		final String realName = name == null ? getDBName(col) : name;
+		final Var v = Var.alloc(realName);
+		if (!query.getResultVars().contains(v.toString()))
+		{
+			if (realName.equalsIgnoreCase(name))
+			{
+
+				final Node n = addColumn(col);
+				final ElementBind bind = new ElementBind(v, new ExprVar(n));
+				getElementGroup().addElement(bind);
+			}
+			query.addResultVar(v);
+		}
+
+	}
+
+	public void addVars( final Iterator<SparqlColumn> cols )
 			throws SQLException
 	{
 		while (cols.hasNext())
 		{
-			final Column col = cols.next();
+			final SparqlColumn col = cols.next();
 			addVar(col, (getColCount(col) > 1 ? null : col.getLocalName()));
 		}
 	}
@@ -266,32 +266,38 @@ public class SparqlQueryBuilder
 		return query;
 	}
 
-	private Collection<Column> findColumns( final String schemaName,
+	private Collection<SparqlColumn> findColumns( final String schemaName,
 			final String tableName, final String columnName )
 	{
-		final List<Column> columns = new ArrayList<Column>();
+		final List<SparqlColumn> columns = new ArrayList<SparqlColumn>();
 		for (final Schema schema : catalog.findSchemas(schemaName))
 		{
 			for (final Table table : schema.findTables(tableName))
 			{
 				for (final Column column : table.findColumns(columnName))
 				{
-					columns.add(column);
+					if (column instanceof SparqlColumn)
+					{
+						columns.add((SparqlColumn) column);
+					}
 				}
 			}
 		}
 		return columns;
 	}
 
-	private Collection<Table> findTables( final String schemaName,
+	private Collection<SparqlTable> findTables( final String schemaName,
 			final String tableName )
 	{
-		final List<Table> tables = new ArrayList<Table>();
+		final List<SparqlTable> tables = new ArrayList<SparqlTable>();
 		for (final Schema schema : catalog.findSchemas(schemaName))
 		{
 			for (final Table table : schema.findTables(tableName))
 			{
-				tables.add(table);
+				if (table instanceof SparqlTable)
+				{
+					tables.add((SparqlTable) table);
+				}
 			}
 		}
 		return tables;
@@ -329,6 +335,25 @@ public class SparqlQueryBuilder
 				.getSchema().getLocalName(), table.getLocalName());
 	}
 
+	/*
+	 * private String getTableVar( Table table )
+	 * {
+	 * return String.format( "TABLE_%s_%s_%s",
+	 * table.getCatalog().getLocalName(),
+	 * table.getSchema().getLocalName(), table.getLocalName() );
+	 * }
+	 */
+	private Node getDBNode( final String dbName )
+	{
+		final Node n = nodesInQuery.get(dbName);
+		if (n == null)
+		{
+			throw new IllegalStateException(String.format(
+					SparqlQueryBuilder.NOT_FOUND_IN_QUERY, dbName));
+		}
+		return n;
+	}
+
 	private ElementGroup getElementGroup()
 	{
 		ElementGroup retval;
@@ -350,28 +375,9 @@ public class SparqlQueryBuilder
 		return retval;
 	}
 
-	/*
-	 * private String getTableVar( Table table )
-	 * {
-	 * return String.format( "TABLE_%s_%s_%s",
-	 * table.getCatalog().getLocalName(),
-	 * table.getSchema().getLocalName(), table.getLocalName() );
-	 * }
-	 */
-	private Node getDBNode( String dbName )
+	public SparqlTableDef getTableDef( final String namespace, final String name )
 	{
-		final Node n = nodesInQuery.get(dbName);
-		if (n == null)
-		{
-			throw new IllegalStateException(String.format(
-					SparqlQueryBuilder.NOT_FOUND_IN_QUERY, dbName ));
-		}
-		return n;
-	}
-
-	public SparqlTableDef getTableDef( final String name )
-	{
-		final SparqlTableDef tableDef = new SparqlTableDef(name, query);
+		final SparqlTableDef tableDef = new SparqlTableDef(namespace, name, "");
 		for (final Var var : query.getProjectVars())
 		{
 			final Column c = columnsInQuery.get(var);
@@ -393,9 +399,9 @@ public class SparqlQueryBuilder
 	public void setAllColumns() throws SQLException
 	{
 		// query.setQueryResultStar(true);
-		for (final Table t : tablesInQuery.values())
+		for (final SparqlTable t : tablesInQuery.values())
 		{
-			final Iterator<Column> iter = t.getColumns();
+			final Iterator<SparqlColumn> iter = t.getColumns();
 			while (iter.hasNext())
 			{
 				addColumn(iter.next());
@@ -424,4 +430,5 @@ public class SparqlQueryBuilder
 	{
 		return "QueryBuilder[" + query.toString() + "]";
 	}
+
 }

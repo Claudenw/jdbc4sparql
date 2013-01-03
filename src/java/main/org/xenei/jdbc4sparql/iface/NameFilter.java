@@ -3,18 +3,20 @@ package org.xenei.jdbc4sparql.iface;
 import java.util.Collection;
 import java.util.Iterator;
 
-public class NameFilter<T extends NamespacedObject> implements Iterator<T>, Iterable<T>
+public class NameFilter<T extends NamespacedObject> implements Iterator<T>,
+		Iterable<T>
 {
 	String namePattern;
-	Iterator<T> iter;
+	Iterator<? extends T> iter;
 	T next;
-	
-	public NameFilter(String namePattern, Collection<T> objs)
+
+	public NameFilter( final String namePattern, final Collection<T> objs )
 	{
-		this( namePattern, objs.iterator());
+		this(namePattern, objs.iterator());
 	}
 
-	public NameFilter(String namePattern, Iterator<T> iter)
+	public NameFilter( final String namePattern,
+			final Iterator<? extends T> iter )
 	{
 		this.namePattern = namePattern;
 		this.iter = iter;
@@ -28,16 +30,22 @@ public class NameFilter<T extends NamespacedObject> implements Iterator<T>, Iter
 		{
 			return iter.hasNext();
 		}
-	
-		while (next == null && iter.hasNext())
+
+		while ((next == null) && iter.hasNext())
 		{
 			next = iter.next();
-			if (!next.getLocalName().equals( namePattern ))
+			if (!next.getLocalName().equals(namePattern))
 			{
 				next = null;
 			}
 		}
 		return next != null;
+	}
+
+	@Override
+	public Iterator<T> iterator()
+	{
+		return this;
 	}
 
 	@Override
@@ -50,7 +58,7 @@ public class NameFilter<T extends NamespacedObject> implements Iterator<T>, Iter
 		}
 		else
 		{
-			T retval = next;
+			final T retval = next;
 			next = null;
 			return retval;
 		}
@@ -62,11 +70,4 @@ public class NameFilter<T extends NamespacedObject> implements Iterator<T>, Iter
 		throw new UnsupportedOperationException();
 	}
 
-	@Override
-	public Iterator<T> iterator()
-	{
-		return this;
-	}
-	
-	
 }

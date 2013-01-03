@@ -20,11 +20,11 @@ public class CatalogImpl extends NamespaceImpl implements Catalog
 		this.schemas = new HashMap<String, Schema>();
 	}
 
-	public String toString()
+	public void addSchema( final Schema schema )
 	{
-		return String.format( "Catalog[%s]",  getLocalName());
+		schemas.put(schema.getLocalName(), schema);
 	}
-	
+
 	@Override
 	public NameFilter<Schema> findSchemas( final String schemaNamePattern )
 	{
@@ -42,10 +42,11 @@ public class CatalogImpl extends NamespaceImpl implements Catalog
 	{
 		return new HashSet<Schema>(schemas.values());
 	}
-	
-	public void addSchema(Schema schema)
+
+	@Override
+	public String toString()
 	{
-		schemas.put(schema.getLocalName(), schema);
+		return String.format("Catalog[%s]", getLocalName());
 	}
 
 }

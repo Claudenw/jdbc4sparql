@@ -8,7 +8,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.xenei.jdbc4sparql.meta.MetaCatalog;
 import org.xenei.jdbc4sparql.meta.MetaSchema;
-import org.xenei.jdbc4sparql.mock.MockCatalog;
 import org.xenei.jdbc4sparql.mock.MockConnection;
 import org.xenei.jdbc4sparql.mock.MockDriver;
 
@@ -23,7 +22,7 @@ public class J4SDatabaseMetaDataTest
 		final ResultSet rs = metadata.getColumns(null, null, tableName, null);
 		for (int i = 0; i < columnNames.length; i++)
 		{
-			Assert.assertTrue( rs.next() );
+			Assert.assertTrue(rs.next());
 			Assert.assertEquals(MetaCatalog.LOCAL_NAME, rs.getString(1)); // TABLE_CAT
 			Assert.assertEquals(MetaSchema.LOCAL_NAME, rs.getString(2)); // TABLE_SCHEM
 			Assert.assertEquals(tableName, rs.getString(3)); // TABLE_NAME
@@ -40,7 +39,7 @@ public class J4SDatabaseMetaDataTest
 	{
 		final MockDriver driver = new MockDriver();
 		metadata = new J4SDatabaseMetaData(new MockConnection(driver, null,
-				null), driver );
+				null), driver);
 		metadata.addCatalog(new MetaCatalog());
 
 	}
@@ -165,7 +164,7 @@ public class J4SDatabaseMetaDataTest
 
 		for (final String name : names)
 		{
-			Assert.assertTrue( rs.next() );
+			Assert.assertTrue(rs.next());
 			Assert.assertEquals(MetaCatalog.LOCAL_NAME, rs.getString(1)); // TABLE_CAT
 			Assert.assertEquals(MetaSchema.LOCAL_NAME, rs.getString(2)); // TABLE_SCHEM
 			Assert.assertEquals(name, rs.getString(3)); // TABLE_NAME

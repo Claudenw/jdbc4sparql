@@ -5,14 +5,9 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.RowIdLifetime;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
-import java.util.Set;
-
-import javax.sql.DataSource;
 
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.Column;
@@ -21,51 +16,42 @@ import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.impl.DataTable;
 import org.xenei.jdbc4sparql.meta.MetaCatalog;
-import org.xenei.jdbc4sparql.meta.MetaColumn;
 import org.xenei.jdbc4sparql.meta.MetaSchema;
 
 public class J4SDatabaseMetaData implements DatabaseMetaData
 {
-	private J4SConnection connection;
-	private J4SDriver driver;
+	private final J4SConnection connection;
+	private final J4SDriver driver;
 	private static MetaCatalog metaCatalog;
 	private static MetaSchema metaSchema;
-	private List<Catalog> catalogs;
+	private final List<Catalog> catalogs;
 	private static DataTable CATALOGS_TABLE;
 
-	
-	static {
-		metaCatalog = new MetaCatalog();
-		metaSchema = (MetaSchema) metaCatalog.getSchema( MetaSchema.LOCAL_NAME);
-		CATALOGS_TABLE = (DataTable) metaSchema.newTable( MetaSchema.CATALOGS_TABLE );
-		CATALOGS_TABLE.addData( new Object[] { metaCatalog.getLocalName() });
+	static
+	{
+		J4SDatabaseMetaData.metaCatalog = new MetaCatalog();
+		J4SDatabaseMetaData.metaSchema = (MetaSchema) J4SDatabaseMetaData.metaCatalog
+				.getSchema(MetaSchema.LOCAL_NAME);
+		J4SDatabaseMetaData.CATALOGS_TABLE = (DataTable) J4SDatabaseMetaData.metaSchema
+				.newTable(MetaSchema.CATALOGS_TABLE);
+		J4SDatabaseMetaData.CATALOGS_TABLE
+				.addData(new Object[] { J4SDatabaseMetaData.metaCatalog
+						.getLocalName() });
 	}
-	
-	public J4SDatabaseMetaData(J4SConnection connection, J4SDriver driver)
+
+	public J4SDatabaseMetaData( final J4SConnection connection,
+			final J4SDriver driver )
 	{
 		this.connection = connection;
 		this.driver = driver;
-		this.catalogs= new ArrayList<Catalog>();
-	}
-	
-	public void addCatalog(Catalog catalog)
-	{
-		CATALOGS_TABLE.addData(new Object[] { catalog.getLocalName() });
-		catalogs.add( metaCatalog );
+		this.catalogs = new ArrayList<Catalog>();
 	}
 
-	@Override
-	public boolean isWrapperFor( Class<?> iface ) throws SQLException
+	public void addCatalog( final Catalog catalog )
 	{
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public <T> T unwrap( Class<T> iface ) throws SQLException
-	{
-		// TODO Auto-generated method stub
-		return null;
+		J4SDatabaseMetaData.CATALOGS_TABLE.addData(new Object[] { catalog
+				.getLocalName() });
+		catalogs.add(J4SDatabaseMetaData.metaCatalog);
 	}
 
 	@Override
@@ -104,7 +90,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	}
 
 	@Override
-	public boolean deletesAreDetected( int arg0 ) throws SQLException
+	public boolean deletesAreDetected( final int arg0 ) throws SQLException
 	{
 		// TODO Auto-generated method stub
 		return false;
@@ -118,21 +104,38 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	}
 
 	@Override
-	public ResultSet getAttributes( String catalog, String schemaPattern, String typePattern,
-			String attributeNamePattern ) throws SQLException
+	public boolean generatedKeyAlwaysReturned() throws SQLException
 	{
-		DataTable table = (DataTable) metaSchema.newTable(MetaSchema.ATTRIBUTES_TABLE);
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public ResultSet getAttributes( final String catalog,
+			final String schemaPattern, final String typePattern,
+			final String attributeNamePattern ) throws SQLException
+	{
+		final DataTable table = (DataTable) J4SDatabaseMetaData.metaSchema
+				.newTable(MetaSchema.ATTRIBUTES_TABLE);
 		// TODO populate table here.
 		return table.getResultSet();
 	}
 
 	@Override
-	public ResultSet getBestRowIdentifier( String arg0, String arg1,
-			String arg2, int arg3, boolean arg4 ) throws SQLException
+	public ResultSet getBestRowIdentifier( final String arg0,
+			final String arg1, final String arg2, final int arg3,
+			final boolean arg4 ) throws SQLException
 	{
-		DataTable table = (DataTable) metaSchema.newTable(MetaSchema.BEST_ROW_TABLE);
+		final DataTable table = (DataTable) J4SDatabaseMetaData.metaSchema
+				.newTable(MetaSchema.BEST_ROW_TABLE);
 		// TODO populate table here.
 		return table.getResultSet();
+	}
+
+	@Override
+	public ResultSet getCatalogs() throws SQLException
+	{
+		return J4SDatabaseMetaData.CATALOGS_TABLE.getResultSet();
 	}
 
 	@Override
@@ -148,67 +151,69 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	}
 
 	@Override
-	public ResultSet getCatalogs() throws SQLException
-	{
-		return CATALOGS_TABLE.getResultSet();
-	}
-
-	@Override
 	public ResultSet getClientInfoProperties() throws SQLException
 	{
-		DataTable table = (DataTable) metaSchema.newTable(MetaSchema.CLIENT_INFO_TABLE);
+		final DataTable table = (DataTable) J4SDatabaseMetaData.metaSchema
+				.newTable(MetaSchema.CLIENT_INFO_TABLE);
 		// TODO populate table here.
 		return table.getResultSet();
 	}
 
 	@Override
-	public ResultSet getColumnPrivileges( String arg0, String arg1,
-			String arg2, String arg3 ) throws SQLException
+	public ResultSet getColumnPrivileges( final String arg0, final String arg1,
+			final String arg2, final String arg3 ) throws SQLException
 	{
-		DataTable table = (DataTable) metaSchema.newTable(MetaSchema.COLUMN_PRIVILIGES_TABLE);
+		final DataTable table = (DataTable) J4SDatabaseMetaData.metaSchema
+				.newTable(MetaSchema.COLUMN_PRIVILIGES_TABLE);
 		// TODO populate table here.
 		return table.getResultSet();
 	}
-	
+
 	@Override
-	public ResultSet getColumns( String catalogPattern, String schemaPattern, String tableNamePattern,
-			String columnNamePattern ) throws SQLException
+	public ResultSet getColumns( final String catalogPattern,
+			final String schemaPattern, final String tableNamePattern,
+			final String columnNamePattern ) throws SQLException
 	{
-		
-		DataTable colTbl = (DataTable) metaSchema.newTable(MetaSchema.COLUMNS_TABLE);
-		
-		for (Catalog catalog : new NameFilter<Catalog>( catalogPattern, catalogs ))
+
+		final DataTable colTbl = (DataTable) J4SDatabaseMetaData.metaSchema
+				.newTable(MetaSchema.COLUMNS_TABLE);
+
+		for (final Catalog catalog : new NameFilter<Catalog>(catalogPattern,
+				catalogs))
 		{
-			for (Schema schema : new NameFilter<Schema>( schemaPattern, catalog.getSchemas()))
+			for (final Schema schema : new NameFilter<Schema>(schemaPattern,
+					catalog.getSchemas()))
 			{
-				for (Table table : new NameFilter<Table>( tableNamePattern, schema.getTables()))
+				for (final Table table : new NameFilter<Table>(
+						tableNamePattern, schema.getTables()))
 				{
-					for (Column column : new NameFilter<Column>(columnNamePattern, table.getColumns()))
+					for (final Column column : new NameFilter<Column>(
+							columnNamePattern, table.getColumns()))
 					{
-						Object[] data = new Object[] {
+						final Object[] data = new Object[] {
 								catalog.getLocalName(), // TABLE_CAT
 								schema.getLocalName(), // TABLE_SCHEMA
 								table.getLocalName(), // TABLE_NAME
 								column.getLocalName(), // COLUMN_NAME
-								column.getType(), //DATA_TYPE
+								column.getType(), // DATA_TYPE
 								null, // TYPE_NAME
-								column.getDisplaySize(), //COLUMN_SIZE
+								column.getDisplaySize(), // COLUMN_SIZE
 								null, // BUFFER_LENGTH
-								column.getPrecision(), //DECIMAL_DIGITS
+								column.getPrecision(), // DECIMAL_DIGITS
 								10, // NUM_PREC_RADIX
 								column.getNullable(), // NULLABLE
-								null, //REMARKS
+								null, // REMARKS
 								null, // COLUMN_DEF
 								null, // SQL_DATA_TYPE
 								null, // SQL_DATETIME_SUB
 								1, // CHAR_OCTET_LENGTH
-								table.getColumnIndex(column)+1, //ORDINAL_POSITION
+								table.getColumnIndex(column) + 1, // ORDINAL_POSITION
 								"", // IS_NULLABLE
 								null, // SCOPE_CATLOG
 								null, // SCOPE_SCHEMA
 								null, // SCOPE_TABLE
 								null, // SOURCE_DATA_TYPE
-								(column.isAutoIncrement()?"YES":"NO"), //IS_AUTOINCREMENT							
+								(column.isAutoIncrement() ? "YES" : "NO"), // IS_AUTOINCREMENT
 						};
 						colTbl.addData(data);
 					}
@@ -225,13 +230,14 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	}
 
 	@Override
-	public ResultSet getCrossReference( String parentCatalog, String parentSchema, 
-			String parentTable,
-			String foreignCatalog, String foreignSchema, String foreignTable ) throws SQLException
+	public ResultSet getCrossReference( final String parentCatalog,
+			final String parentSchema, final String parentTable,
+			final String foreignCatalog, final String foreignSchema,
+			final String foreignTable ) throws SQLException
 	{
-		DataTable table = (DataTable) metaSchema.newTable(MetaSchema.XREF_TABLE);
+		final DataTable table = (DataTable) J4SDatabaseMetaData.metaSchema
+				.newTable(MetaSchema.XREF_TABLE);
 
-		
 		// TODO populate table here.
 		return table.getResultSet();
 
@@ -288,14 +294,16 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	@Override
 	public String getDriverVersion() throws SQLException
 	{
-		return String.format( "%s v%s.%s", driver.getName(), driver.getMajorVersion(), driver.getMinorVersion() );
+		return String.format("%s v%s.%s", driver.getName(),
+				driver.getMajorVersion(), driver.getMinorVersion());
 	}
 
 	@Override
-	public ResultSet getExportedKeys( String arg0, String arg1, String arg2 )
-			throws SQLException
+	public ResultSet getExportedKeys( final String arg0, final String arg1,
+			final String arg2 ) throws SQLException
 	{
-		DataTable table = (DataTable) metaSchema.newTable(MetaSchema.EXPORTED_KEYS_TABLE);
+		final DataTable table = (DataTable) J4SDatabaseMetaData.metaSchema
+				.newTable(MetaSchema.EXPORTED_KEYS_TABLE);
 		// TODO populate table here.
 		return table.getResultSet();
 
@@ -308,20 +316,22 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	}
 
 	@Override
-	public ResultSet getFunctionColumns( String arg0, String arg1, String arg2,
-			String arg3 ) throws SQLException
+	public ResultSet getFunctionColumns( final String arg0, final String arg1,
+			final String arg2, final String arg3 ) throws SQLException
 	{
-		DataTable table = (DataTable) metaSchema.newTable(MetaSchema.FUNCTION_COLUMNS_TABLE);
+		final DataTable table = (DataTable) J4SDatabaseMetaData.metaSchema
+				.newTable(MetaSchema.FUNCTION_COLUMNS_TABLE);
 		// TODO populate table here.
 		return table.getResultSet();
 
 	}
 
 	@Override
-	public ResultSet getFunctions( String arg0, String arg1, String arg2 )
-			throws SQLException
+	public ResultSet getFunctions( final String arg0, final String arg1,
+			final String arg2 ) throws SQLException
 	{
-		DataTable table = (DataTable) metaSchema.newTable(MetaSchema.FUNCTIONS_TABLE);
+		final DataTable table = (DataTable) J4SDatabaseMetaData.metaSchema
+				.newTable(MetaSchema.FUNCTIONS_TABLE);
 		// TODO populate table here.
 		return table.getResultSet();
 
@@ -334,19 +344,22 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	}
 
 	@Override
-	public ResultSet getImportedKeys( String arg0, String arg1, String arg2 )
-			throws SQLException
+	public ResultSet getImportedKeys( final String arg0, final String arg1,
+			final String arg2 ) throws SQLException
 	{
-		DataTable table = (DataTable) metaSchema.newTable(MetaSchema.IMPORTED_KEYS_TABLE);
+		final DataTable table = (DataTable) J4SDatabaseMetaData.metaSchema
+				.newTable(MetaSchema.IMPORTED_KEYS_TABLE);
 		// TODO populate table here.
 		return table.getResultSet();
 	}
 
 	@Override
-	public ResultSet getIndexInfo( String arg0, String arg1, String arg2,
-			boolean arg3, boolean arg4 ) throws SQLException
+	public ResultSet getIndexInfo( final String arg0, final String arg1,
+			final String arg2, final boolean arg3, final boolean arg4 )
+			throws SQLException
 	{
-		DataTable table = (DataTable) metaSchema.newTable(MetaSchema.INDEXINFO_TABLE);
+		final DataTable table = (DataTable) J4SDatabaseMetaData.metaSchema
+				.newTable(MetaSchema.INDEXINFO_TABLE);
 		// TODO populate table here.
 		return table.getResultSet();
 	}
@@ -513,19 +526,31 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	}
 
 	@Override
-	public ResultSet getPrimaryKeys( String arg0, String arg1, String arg2 )
-			throws SQLException
+	public ResultSet getPrimaryKeys( final String arg0, final String arg1,
+			final String arg2 ) throws SQLException
 	{
-		DataTable table = (DataTable) metaSchema.newTable(MetaSchema.PRIMARY_KEY_TABLE);
+		final DataTable table = (DataTable) J4SDatabaseMetaData.metaSchema
+				.newTable(MetaSchema.PRIMARY_KEY_TABLE);
 		// TODO populate table here.
 		return table.getResultSet();
 	}
 
 	@Override
-	public ResultSet getProcedureColumns( String arg0, String arg1,
-			String arg2, String arg3 ) throws SQLException
+	public ResultSet getProcedureColumns( final String arg0, final String arg1,
+			final String arg2, final String arg3 ) throws SQLException
 	{
-		DataTable table = (DataTable) metaSchema.newTable(MetaSchema.PROCEDURE_COLUMNS_TABLE);
+		final DataTable table = (DataTable) J4SDatabaseMetaData.metaSchema
+				.newTable(MetaSchema.PROCEDURE_COLUMNS_TABLE);
+		// TODO populate table here.
+		return table.getResultSet();
+	}
+
+	@Override
+	public ResultSet getProcedures( final String arg0, final String arg1,
+			final String arg2 ) throws SQLException
+	{
+		final DataTable table = (DataTable) J4SDatabaseMetaData.metaSchema
+				.newTable(MetaSchema.PROCEDURES_TABLE);
 		// TODO populate table here.
 		return table.getResultSet();
 	}
@@ -538,12 +563,11 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	}
 
 	@Override
-	public ResultSet getProcedures( String arg0, String arg1, String arg2 )
-			throws SQLException
+	public ResultSet getPseudoColumns( final String arg0, final String arg1,
+			final String arg2, final String arg3 ) throws SQLException
 	{
-		DataTable table = (DataTable) metaSchema.newTable(MetaSchema.PROCEDURES_TABLE);
-		// TODO populate table here.
-		return table.getResultSet();
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
@@ -554,6 +578,44 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 
 	@Override
 	public RowIdLifetime getRowIdLifetime() throws SQLException
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public ResultSet getSchemas() throws SQLException
+	{
+		return getSchemas(null, null);
+	}
+
+	@Override
+	public ResultSet getSchemas( final String catalogPattern,
+			final String schemaPattern ) throws SQLException
+	{
+		final DataTable table = (DataTable) J4SDatabaseMetaData.metaSchema
+				.newTable(MetaSchema.SCHEMAS_TABLE);
+		for (final Catalog catalog : new NameFilter<Catalog>(catalogPattern,
+				catalogs))
+		{
+			for (final Schema schema : new NameFilter<Schema>(schemaPattern,
+					catalog.getSchemas()))
+			{
+				table.addData(new Object[] { schema.getLocalName(),
+						catalog.getLocalName() });
+			}
+		}
+		return table.getResultSet();
+	}
+
+	@Override
+	public String getSchemaTerm() throws SQLException
+	{
+		return "schema";
+	}
+
+	@Override
+	public String getSearchStringEscape() throws SQLException
 	{
 		// TODO Auto-generated method stub
 		return null;
@@ -573,58 +635,27 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	}
 
 	@Override
-	public String getSchemaTerm() throws SQLException
-	{
-		return "schema";
-	}
-
-	@Override
-	public ResultSet getSchemas() throws SQLException
-	{
-		return getSchemas(null,null);
-	}
-
-	@Override
-	public ResultSet getSchemas( String catalogPattern, String schemaPattern ) throws SQLException
-	{
-		DataTable table = (DataTable) metaSchema.newTable( MetaSchema.SCHEMAS_TABLE );
-		for (Catalog catalog : new NameFilter<Catalog>( catalogPattern, catalogs ))
-		{
-			for (Schema schema : new NameFilter<Schema>(schemaPattern, catalog.getSchemas()))
-			{
-				table.addData( new Object[] { schema.getLocalName(), catalog.getLocalName() } );
-			}
-		}
-		return table.getResultSet();
-	}
-
-	@Override
-	public String getSearchStringEscape() throws SQLException
-	{
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public String getStringFunctions() throws SQLException
 	{
 		return "";
 	}
 
 	@Override
-	public ResultSet getSuperTables( String arg0, String arg1, String arg2 )
-			throws SQLException
+	public ResultSet getSuperTables( final String arg0, final String arg1,
+			final String arg2 ) throws SQLException
 	{
-		DataTable table = (DataTable) metaSchema.newTable(MetaSchema.SUPER_TABLES_TABLE);
+		final DataTable table = (DataTable) J4SDatabaseMetaData.metaSchema
+				.newTable(MetaSchema.SUPER_TABLES_TABLE);
 		// TODO populate table here.
 		return table.getResultSet();
 	}
 
 	@Override
-	public ResultSet getSuperTypes( String arg0, String arg1, String arg2 )
-			throws SQLException
+	public ResultSet getSuperTypes( final String arg0, final String arg1,
+			final String arg2 ) throws SQLException
 	{
-		DataTable table = (DataTable) metaSchema.newTable(MetaSchema.SUPER_TYPES_TABLE);
+		final DataTable table = (DataTable) J4SDatabaseMetaData.metaSchema
+				.newTable(MetaSchema.SUPER_TYPES_TABLE);
 		// TODO populate table here.
 		return table.getResultSet();
 	}
@@ -636,37 +667,68 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	}
 
 	@Override
-	public ResultSet getTablePrivileges( String catalogPattern, String schemaPattern, String tablePattern )
+	public ResultSet getTablePrivileges( final String catalogPattern,
+			final String schemaPattern, final String tablePattern )
 			throws SQLException
 	{
-		DataTable table = (DataTable) metaSchema.newTable(MetaSchema.TABLE_PRIVILEGES_TABLE);
-		for (Catalog catalog : new NameFilter<Catalog>( catalogPattern, catalogs ))
+		final DataTable table = (DataTable) J4SDatabaseMetaData.metaSchema
+				.newTable(MetaSchema.TABLE_PRIVILEGES_TABLE);
+		for (final Catalog catalog : new NameFilter<Catalog>(catalogPattern,
+				catalogs))
 		{
-			for (Schema schema : new NameFilter<Schema>( schemaPattern, catalog.getSchemas()))
+			for (final Schema schema : new NameFilter<Schema>(schemaPattern,
+					catalog.getSchemas()))
 			{
-				for (Table tbl : new NameFilter<Table>( tablePattern, schema.getTables()))
+				for (final Table tbl : new NameFilter<Table>(tablePattern,
+						schema.getTables()))
 				{
 					// TODO populate table here.
 				}
 			}
 		}
-		
+
 		return table.getResultSet();
 	}
 
 	@Override
-	public ResultSet getTableTypes() throws SQLException
+	public ResultSet getTables( final String catalogPattern,
+			final String schemaPattern, final String tableNamePattern,
+			final String[] types ) throws SQLException
 	{
-		DataTable table = (DataTable) metaSchema.getTable(MetaSchema.TABLE_TYPES_TABLE);
-		if (table.isEmpty())
+		final List<String> typeList = types == null ? null : Arrays
+				.asList(types);
+
+		final DataTable table = (DataTable) J4SDatabaseMetaData.metaSchema
+				.newTable(MetaSchema.TABLES_TABLE);
+		for (final Catalog catalog : new NameFilter<Catalog>(catalogPattern,
+				catalogs))
 		{
-			for (Catalog catalog : catalogs )
+			for (final Schema schema : new NameFilter<Schema>(schemaPattern,
+					catalog.getSchemas()))
 			{
-				for (Schema schema : catalog.getSchemas())
+				for (final Table tbl : new NameFilter<Table>(tableNamePattern,
+						schema.getTables()))
 				{
-					for (Table tbl :schema.getTables())
+					if ((typeList == null) || typeList.contains(tbl.getType()))
 					{
-						table.addData( new Object[] { tbl.getType() } );
+						final Object[] data = { catalog.getLocalName(), // TABLE_CAT
+								schema.getLocalName(), // TABLE_SCHEM
+								tbl.getLocalName(), // TABLE_NAME
+								tbl.getType(), // TABLE_TYPE String => table
+												// type. Typical types are
+												// "TABLE", "VIEW",
+												// "SYSTEM TABLE",
+												// "GLOBAL TEMPORARY",
+												// "LOCAL TEMPORARY", "ALIAS",
+												// "SYNONYM".
+								"", // REMARKS
+								null, // TYPE_CAT
+								null, // TYPE_SCHEM
+								null, // TYPE_NAME
+								null, // SELF_REFERENCING_COL_NAME
+								null, // REF_GENERATION String
+						};
+						table.addData(data);
 					}
 				}
 			}
@@ -675,33 +737,19 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	}
 
 	@Override
-	public ResultSet getTables( String catalogPattern, String schemaPattern, String tableNamePattern,
-			String[] types ) throws SQLException
+	public ResultSet getTableTypes() throws SQLException
 	{
-		List<String> typeList = types==null?null:Arrays.asList(types);
-		
-		DataTable table = (DataTable) metaSchema.newTable(MetaSchema.TABLES_TABLE);
-		for (Catalog catalog : new NameFilter<Catalog>( catalogPattern, catalogs ))
+		final DataTable table = (DataTable) J4SDatabaseMetaData.metaSchema
+				.getTable(MetaSchema.TABLE_TYPES_TABLE);
+		if (table.isEmpty())
 		{
-			for (Schema schema : new NameFilter<Schema>( schemaPattern, catalog.getSchemas()))
+			for (final Catalog catalog : catalogs)
 			{
-				for (Table tbl : new NameFilter<Table>( tableNamePattern, schema.getTables()))
+				for (final Schema schema : catalog.getSchemas())
 				{
-					if (typeList==null || typeList.contains(tbl.getType()))
+					for (final Table tbl : schema.getTables())
 					{
-						Object[] data = {
-								catalog.getLocalName(), //TABLE_CAT
-								schema.getLocalName(), // TABLE_SCHEM
-								tbl.getLocalName(), // TABLE_NAME
-								tbl.getType(), //	TABLE_TYPE String => table type. Typical types are "TABLE", "VIEW", "SYSTEM TABLE", "GLOBAL TEMPORARY", "LOCAL TEMPORARY", "ALIAS", "SYNONYM".
-								"", //REMARKS
-								null, //TYPE_CAT
-								null, // TYPE_SCHEM 
-								null, //TYPE_NAME
-								null, //SELF_REFERENCING_COL_NAME
-								null, // REF_GENERATION String	
-						};
-						table.addData( data );
+						table.addData(new Object[] { tbl.getType() });
 					}
 				}
 			}
@@ -719,16 +767,18 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	@Override
 	public ResultSet getTypeInfo() throws SQLException
 	{
-		DataTable table = (DataTable) metaSchema.newTable(MetaSchema.TYPEINFO_TABLE);
+		final DataTable table = (DataTable) J4SDatabaseMetaData.metaSchema
+				.newTable(MetaSchema.TYPEINFO_TABLE);
 		// TODO populate table here.
 		return table.getResultSet();
 	}
 
 	@Override
-	public ResultSet getUDTs( String arg0, String arg1, String arg2, int[] arg3 )
-			throws SQLException
+	public ResultSet getUDTs( final String arg0, final String arg1,
+			final String arg2, final int[] arg3 ) throws SQLException
 	{
-		DataTable table = (DataTable) metaSchema.newTable(MetaSchema.UDT_TABLES);
+		final DataTable table = (DataTable) J4SDatabaseMetaData.metaSchema
+				.newTable(MetaSchema.UDT_TABLES);
 		// TODO populate table here.
 		return table.getResultSet();
 	}
@@ -748,16 +798,17 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	}
 
 	@Override
-	public ResultSet getVersionColumns( String arg0, String arg1, String arg2 )
-			throws SQLException
+	public ResultSet getVersionColumns( final String arg0, final String arg1,
+			final String arg2 ) throws SQLException
 	{
-		DataTable table = (DataTable) metaSchema.newTable(MetaSchema.VERSION_COLUMNS_TABLE);
+		final DataTable table = (DataTable) J4SDatabaseMetaData.metaSchema
+				.newTable(MetaSchema.VERSION_COLUMNS_TABLE);
 		// TODO populate table here.
 		return table.getResultSet();
 	}
 
 	@Override
-	public boolean insertsAreDetected( int arg0 ) throws SQLException
+	public boolean insertsAreDetected( final int arg0 ) throws SQLException
 	{
 		// TODO Auto-generated method stub
 		return false;
@@ -772,6 +823,13 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 
 	@Override
 	public boolean isReadOnly() throws SQLException
+	{
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean isWrapperFor( final Class<?> iface ) throws SQLException
 	{
 		// TODO Auto-generated method stub
 		return false;
@@ -820,42 +878,45 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	}
 
 	@Override
-	public boolean othersDeletesAreVisible( int arg0 ) throws SQLException
+	public boolean othersDeletesAreVisible( final int arg0 )
+			throws SQLException
 	{
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean othersInsertsAreVisible( int arg0 ) throws SQLException
+	public boolean othersInsertsAreVisible( final int arg0 )
+			throws SQLException
 	{
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean othersUpdatesAreVisible( int arg0 ) throws SQLException
+	public boolean othersUpdatesAreVisible( final int arg0 )
+			throws SQLException
 	{
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean ownDeletesAreVisible( int arg0 ) throws SQLException
+	public boolean ownDeletesAreVisible( final int arg0 ) throws SQLException
 	{
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean ownInsertsAreVisible( int arg0 ) throws SQLException
+	public boolean ownInsertsAreVisible( final int arg0 ) throws SQLException
 	{
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean ownUpdatesAreVisible( int arg0 ) throws SQLException
+	public boolean ownUpdatesAreVisible( final int arg0 ) throws SQLException
 	{
 		// TODO Auto-generated method stub
 		return false;
@@ -904,6 +965,20 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	}
 
 	@Override
+	public boolean supportsAlterTableWithAddColumn() throws SQLException
+	{
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean supportsAlterTableWithDropColumn() throws SQLException
+	{
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
 	public boolean supportsANSI92EntryLevelSQL() throws SQLException
 	{
 		// TODO Auto-generated method stub
@@ -919,20 +994,6 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 
 	@Override
 	public boolean supportsANSI92IntermediateSQL() throws SQLException
-	{
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean supportsAlterTableWithAddColumn() throws SQLException
-	{
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean supportsAlterTableWithDropColumn() throws SQLException
 	{
 		// TODO Auto-generated method stub
 		return false;
@@ -995,7 +1056,8 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	}
 
 	@Override
-	public boolean supportsConvert( int arg0, int arg1 ) throws SQLException
+	public boolean supportsConvert( final int arg0, final int arg1 )
+			throws SQLException
 	{
 		// TODO Auto-generated method stub
 		return false;
@@ -1221,7 +1283,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	}
 
 	@Override
-	public boolean supportsResultSetConcurrency( int arg0, int arg1 )
+	public boolean supportsResultSetConcurrency( final int arg0, final int arg1 )
 			throws SQLException
 	{
 		// TODO Auto-generated method stub
@@ -1229,14 +1291,15 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	}
 
 	@Override
-	public boolean supportsResultSetHoldability( int arg0 ) throws SQLException
+	public boolean supportsResultSetHoldability( final int arg0 )
+			throws SQLException
 	{
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsResultSetType( int arg0 ) throws SQLException
+	public boolean supportsResultSetType( final int arg0 ) throws SQLException
 	{
 		// TODO Auto-generated method stub
 		return false;
@@ -1348,7 +1411,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	}
 
 	@Override
-	public boolean supportsTransactionIsolationLevel( int arg0 )
+	public boolean supportsTransactionIsolationLevel( final int arg0 )
 			throws SQLException
 	{
 		// TODO Auto-generated method stub
@@ -1377,7 +1440,14 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	}
 
 	@Override
-	public boolean updatesAreDetected( int arg0 ) throws SQLException
+	public <T> T unwrap( final Class<T> iface ) throws SQLException
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean updatesAreDetected( final int arg0 ) throws SQLException
 	{
 		// TODO Auto-generated method stub
 		return false;
@@ -1397,20 +1467,4 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 		return false;
 	}
 
-	@Override
-	public boolean generatedKeyAlwaysReturned() throws SQLException
-	{
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public ResultSet getPseudoColumns( String arg0, String arg1, String arg2,
-			String arg3 ) throws SQLException
-	{
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	
 }

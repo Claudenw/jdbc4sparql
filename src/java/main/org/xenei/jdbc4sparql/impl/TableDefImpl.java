@@ -1,146 +1,69 @@
 package org.xenei.jdbc4sparql.impl;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.sql.DatabaseMetaData;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.ColumnDef;
 import org.xenei.jdbc4sparql.iface.KeySegment;
-import org.xenei.jdbc4sparql.iface.NameFilter;
-import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.SortKey;
 import org.xenei.jdbc4sparql.iface.TableDef;
 import org.xenei.jdbc4sparql.iface.TypeConverter;
 
-public class TableDefImpl implements TableDef
+public class TableDefImpl extends NamespaceImpl implements TableDef
 {
-	private String name;
-	private List<ColumnDef> columns;
+	// private String name;
+	private final List<ColumnDef> columns;
 	private SortKey sortKey;
-	
-	public TableDefImpl(String name)
+
+	public TableDefImpl( final String namespace, final String name )
 	{
-		this.name =name;
+		super(namespace, name);
 		this.columns = new ArrayList<ColumnDef>();
 		this.sortKey = null;
 	}
 
-	public String toString()
-	{
-		return String.format("TableDef[ %s : %s columns ]", getName(), columns.size());
-	}
-	
-	@Override
-	public String getName()
-	{
-		return name;
-	}
-
-	@Override
-	public List<ColumnDef> getColumnDefs()
-	{
-		return columns;
-	}
-
-	@Override
-	public SortKey getSortKey()
-	{
-		return sortKey;
-	}
-	
-	public void setUnique()
-	{
-		if (sortKey == null)
-		{
-			sortKey = new SortKey();
-		}
-		sortKey.setUnique();
-	}
-	
-	public void add(ColumnDef column)
+	public void add( final ColumnDef column )
 	{
 		columns.add(column);
 	}
-	
-	public void addKey(String columnName)
+
+	public void addKey( final ColumnDef columnDef )
 	{
-		addKey( getColumnDef(columnName));
-	}
-	
-	public void addKey(ColumnDef column)
-	{
-		int idx = columns.indexOf(column);
+		final int idx = columns.indexOf(columnDef);
 		if (idx == -1)
 		{
-			throw new IllegalArgumentException( column.getLabel()+" is not in table");
+			throw new IllegalArgumentException(columnDef.getLabel()
+					+ " is not in table");
 		}
 		if (sortKey == null)
 		{
 			sortKey = new SortKey();
 		}
-		sortKey.addSegment( new KeySegment( idx, column ));
+		sortKey.addSegment(new KeySegment(idx, columnDef));
 	}
 
-	public void verify( Object[] row )
+	public void addKey( final String columnName )
 	{
-		if (row.length != columns.size())
-		{
-			throw new IllegalArgumentException( String.format( "Expected %s columns but got %s", columns.size(), row.length ));
-		}
-		for (int i=0;i<row.length;i++)
-		{
-			ColumnDef c = columns.get(i);
-			
-			if (row[i] == null)
-			{
-				if (c.getNullable() == DatabaseMetaData.columnNoNulls)
-				{
-					throw new IllegalArgumentException( String.format( "Column %s may not be null", c.getLabel()));
-				}
-			}
-			else
-			{
-				Class<?> clazz = TypeConverter.getJavaType( c.getType() );
-				if (! clazz.isAssignableFrom( row[i].getClass() )) 
-				{
-					throw new IllegalArgumentException( String.format( "Column %s can not recieve values of class %s", c.getLabel(), row[i].getClass()));
-				}
-			}
-		}
-		
-	}
-
-	public int getColumnIndex( String columnName )
-	{
-		for (int i=0;i<columns.size();i++)
-		{
-			if (columns.get(i).getLabel().equals( columnName ))
-			{
-				return i;
-			}
-		}
-		return -1;
+		addKey(getColumnDef(columnName));
 	}
 
 	@Override
-	public int getColumnIndex( ColumnDef column )
+	public int getColumnCount()
 	{
-		return columns.indexOf( column );
+		return columns.size();
 	}
 
 	@Override
-	public ColumnDef getColumnDef( int idx )
+	public ColumnDef getColumnDef( final int idx )
 	{
 		return columns.get(idx);
 	}
 
 	@Override
-	public ColumnDef getColumnDef( String name )
+	public ColumnDef getColumnDef( final String name )
 	{
-		for (ColumnDef retval : columns)
+		for (final ColumnDef retval : columns)
 		{
 			if (retval.getLabel().equals(name))
 			{
@@ -151,9 +74,85 @@ public class TableDefImpl implements TableDef
 	}
 
 	@Override
-	public int getColumnCount()
+	public List<ColumnDef> getColumnDefs()
 	{
-		return columns.size();
+		return columns;
+	}
+
+	@Override
+	public int getColumnIndex( final ColumnDef column )
+	{
+		return columns.indexOf(column);
+	}
+
+	@Override
+	public int getColumnIndex( final String columnName )
+	{
+		for (int i = 0; i < columns.size(); i++)
+		{
+			if (columns.get(i).getLabel().equals(columnName))
+			{
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	@Override
+	public SortKey getSortKey()
+	{
+		return sortKey;
+	}
+
+	public void setUnique()
+	{
+		if (sortKey == null)
+		{
+			sortKey = new SortKey();
+		}
+		sortKey.setUnique();
+	}
+
+	@Override
+	public String toString()
+	{
+		return String.format("TableDef[ %s : %s columns ]", getLocalName(),
+				columns.size());
+	}
+
+	@Override
+	public void verify( final Object[] row )
+	{
+		if (row.length != columns.size())
+		{
+			throw new IllegalArgumentException(String.format(
+					"Expected %s columns but got %s", columns.size(),
+					row.length));
+		}
+		for (int i = 0; i < row.length; i++)
+		{
+			final ColumnDef c = columns.get(i);
+
+			if (row[i] == null)
+			{
+				if (c.getNullable() == DatabaseMetaData.columnNoNulls)
+				{
+					throw new IllegalArgumentException(String.format(
+							"Column %s may not be null", c.getLabel()));
+				}
+			}
+			else
+			{
+				final Class<?> clazz = TypeConverter.getJavaType(c.getType());
+				if (!clazz.isAssignableFrom(row[i].getClass()))
+				{
+					throw new IllegalArgumentException(String.format(
+							"Column %s can not recieve values of class %s",
+							c.getLabel(), row[i].getClass()));
+				}
+			}
+		}
+
 	}
 
 }

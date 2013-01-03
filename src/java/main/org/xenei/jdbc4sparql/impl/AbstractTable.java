@@ -1,19 +1,10 @@
 package org.xenei.jdbc4sparql.impl;
 
-import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.PriorityQueue;
-import java.util.TreeSet;
 
-
-import org.apache.commons.collections.bag.TreeBag;
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.ColumnDef;
@@ -22,44 +13,31 @@ import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.SortKey;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.TableDef;
-import org.xenei.jdbc4sparql.meta.MetaNamespace;
 
-public abstract class AbstractTable extends MetaNamespace implements Table
+public abstract class AbstractTable extends NamespaceImpl implements Table
 {
-	private TableDef tableDef;
-	private Schema schema;
-	
+	private final TableDef tableDef;
+	private final Schema schema;
+
 	@SuppressWarnings( "unchecked" )
-	public 	AbstractTable( Schema schema, TableDef tableDef )
+	public AbstractTable( final Schema schema, final TableDef tableDef )
 	{
+		this(schema.getNamespace(), schema, tableDef);
+	}
+
+	public AbstractTable( final String namespace, final Schema schema,
+			final TableDef tableDef )
+	{
+		super(namespace, tableDef.getLocalName());
 		this.schema = schema;
-		this.tableDef= tableDef;
-	}
-	
-	public String toString()
-	{
-		return String.format( "Table[ %s.%s ]", getCatalog().getLocalName(), getDBName() );
+		this.tableDef = tableDef;
 	}
 
 	@Override
-	public String getLocalName()
+	public NameFilter<Column> findColumns( final String columnNamePattern )
 	{
-		return tableDef.getName();
+		return new NameFilter<Column>(columnNamePattern, getColumns());
 	}
-
-	@Override
-	public Schema getSchema()
-	{
-		return schema;
-	}
-	
-	@Override
-	public String getDBName()
-	{
-		return String.format( "%s.%s", schema.getLocalName(), getLocalName() );
-	}
-	
-	abstract public ResultSet getResultSet() throws SQLException;
 
 	@Override
 	public Catalog getCatalog()
@@ -67,83 +45,108 @@ public abstract class AbstractTable extends MetaNamespace implements Table
 		return schema.getCatalog();
 	}
 
-	public TableDef getTableDef()
+	@Override
+	public Column getColumn( final int idx )
 	{
-		return tableDef;
-	}
-	
-	public String getType()
-	{
-		return "TABLE";
+		return new ColumnImpl(this, getColumnDef(idx));
 	}
 
-	public String getName()
+	@Override
+	public Column getColumn( final String name )
 	{
-		return tableDef.getName();
+		return new ColumnImpl(this, getColumnDef(name));
 	}
 
-	public List<? extends ColumnDef> getColumnDefs()
-	{
-		return tableDef.getColumnDefs();
-	}
-
-	public ColumnDef getColumnDef( int idx )
-	{
-		return tableDef.getColumnDef(idx);
-	}
-
-	public ColumnDef getColumnDef( String name )
-	{
-		return tableDef.getColumnDef(name);
-	}
-
+	@Override
 	public int getColumnCount()
 	{
 		return tableDef.getColumnCount();
 	}
 
-	public SortKey getSortKey()
+	@Override
+	public ColumnDef getColumnDef( final int idx )
 	{
-		return tableDef.getSortKey();
+		return tableDef.getColumnDef(idx);
 	}
 
-	public void verify( Object[] row )
+	@Override
+	public ColumnDef getColumnDef( final String name )
 	{
-		tableDef.verify(row);
+		return tableDef.getColumnDef(name);
 	}
 
-	public int getColumnIndex( ColumnDef column )
+	@Override
+	public List<? extends ColumnDef> getColumnDefs()
+	{
+		return tableDef.getColumnDefs();
+	}
+
+	@Override
+	public int getColumnIndex( final ColumnDef column )
 	{
 		return tableDef.getColumnIndex(column);
 	}
 
-	public int getColumnIndex( String columnName )
+	@Override
+	public int getColumnIndex( final String columnName )
 	{
 		return tableDef.getColumnIndex(columnName);
 	}
 
 	@Override
-	public Iterator<Column> getColumns()
+	public Iterator<? extends Column> getColumns()
 	{
 		return new Table.ColumnIterator(this, getColumnDefs());
 	}
 
 	@Override
-	public Column getColumn( int idx )
+	public String getDBName()
 	{
-		return new ColumnImpl( this, getColumnDef(idx));
+		return String.format("%s.%s", schema.getLocalName(), getLocalName());
 	}
 
 	@Override
-	public Column getColumn( String name )
+	public String getLocalName()
 	{
-		return new ColumnImpl( this, getColumnDef(name));
+		return tableDef.getLocalName();
+	}
+
+	abstract public ResultSet getResultSet() throws SQLException;
+
+	@Override
+	public Schema getSchema()
+	{
+		return schema;
 	}
 
 	@Override
-	public NameFilter<Column> findColumns( String columnNamePattern )
+	public SortKey getSortKey()
 	{
-		return new NameFilter<Column>( columnNamePattern, getColumns());
+		return tableDef.getSortKey();
 	}
-	
+
+	public TableDef getTableDef()
+	{
+		return tableDef;
+	}
+
+	@Override
+	public String getType()
+	{
+		return "TABLE";
+	}
+
+	@Override
+	public String toString()
+	{
+		return String.format("Table[ %s.%s ]", getCatalog().getLocalName(),
+				getDBName());
+	}
+
+	@Override
+	public void verify( final Object[] row )
+	{
+		tableDef.verify(row);
+	}
+
 }

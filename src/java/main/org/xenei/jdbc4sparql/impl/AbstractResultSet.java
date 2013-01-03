@@ -44,7 +44,19 @@ public abstract class AbstractResultSet implements ResultSet
 	protected int concurrency;
 	private final Statement statement;
 	private Boolean lastReadWasNull;
-	private int resultSetType;
+	private static Map<Class<?>, Object> nullValueMap;
+
+	static
+	{
+		AbstractResultSet.nullValueMap = new HashMap<Class<?>, Object>();
+		AbstractResultSet.nullValueMap.put(Boolean.class, Boolean.FALSE);
+		AbstractResultSet.nullValueMap.put(Byte.class, new Byte((byte) 0));
+		AbstractResultSet.nullValueMap.put(Short.class, new Short((short) 0));
+		AbstractResultSet.nullValueMap.put(Integer.class, new Integer(0));
+		AbstractResultSet.nullValueMap.put(Long.class, new Long(0L));
+		AbstractResultSet.nullValueMap.put(Float.class, new Float(0.0F));
+		AbstractResultSet.nullValueMap.put(Double.class, new Double(0.0));
+	}
 
 	public AbstractResultSet( final Table table )
 	{
@@ -69,11 +81,6 @@ public abstract class AbstractResultSet implements ResultSet
 		}
 	}
 
-	protected Table getTable()
-	{
-		return table;
-	}
-	
 	protected void checkColumn( final int columnOrdinal ) throws SQLException
 	{
 		if (!isValidColumn(columnOrdinal))
@@ -97,6 +104,11 @@ public abstract class AbstractResultSet implements ResultSet
 			final Class<T> resultingClass ) throws SQLException
 	{
 		final Object columnObject = getObject(columnIdx + 1);
+
+		if (columnObject == null)
+		{
+			return (T) AbstractResultSet.nullValueMap.get(resultingClass);
+		}
 		T retval = null;
 
 		// try the simple case
@@ -613,13 +625,7 @@ public abstract class AbstractResultSet implements ResultSet
 	{
 		return fetchDirection;
 	}
-	
-	@Override
-	public void setFetchSize( int rows ) throws SQLException
-	{
-		// does nothing
-	}
-	
+
 	@Override
 	public int getFetchSize() throws SQLException
 	{
@@ -823,6 +829,11 @@ public abstract class AbstractResultSet implements ResultSet
 		return extractData(table.getColumnIndex(columnLabel), String.class);
 	}
 
+	protected Table getTable()
+	{
+		return table;
+	}
+
 	@Override
 	public Time getTime( final int columnOrdinal ) throws SQLException
 	{
@@ -933,7 +944,8 @@ public abstract class AbstractResultSet implements ResultSet
 		throw new SQLException("not an updatable result set");
 	}
 
-	abstract protected Object readObject( int columnOrdinal ) throws SQLException;
+	abstract protected Object readObject( int columnOrdinal )
+			throws SQLException;
 
 	@Override
 	public void refreshRow() throws SQLException
@@ -972,6 +984,12 @@ public abstract class AbstractResultSet implements ResultSet
 			default:
 				fetchDirection = ResultSet.FETCH_FORWARD;
 		}
+	}
+
+	@Override
+	public void setFetchSize( final int rows ) throws SQLException
+	{
+		// does nothing
 	}
 
 	@Override

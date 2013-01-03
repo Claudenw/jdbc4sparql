@@ -1,4 +1,4 @@
-package org.xenei.jdbc4sparql.sparql;
+package org.xenei.jdbc4sparql.sparql.visitor;
 
 import com.hp.hpl.jena.graph.Node;
 import com.hp.hpl.jena.graph.Triple;
@@ -25,7 +25,8 @@ import org.xenei.jdbc4sparql.impl.TableDefImpl;
 import org.xenei.jdbc4sparql.meta.MetaColumn;
 import org.xenei.jdbc4sparql.mock.MockCatalog;
 import org.xenei.jdbc4sparql.mock.MockSchema;
-import org.xenei.jdbc4sparql.sparql.visitors.SparqlVisitor;
+import org.xenei.jdbc4sparql.sparql.SparqlCatalog;
+import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlVisitor;
 
 public class SparqlVisitorTest
 {
@@ -36,11 +37,12 @@ public class SparqlVisitorTest
 	@Before
 	public void setUp() throws Exception
 	{
-		final SparqlCatalog catalog = new SparqlCatalog(MockCatalog.NS, null, MockCatalog.LOCAL_NAME);
+		final SparqlCatalog catalog = new SparqlCatalog(MockCatalog.NS, null,
+				MockCatalog.LOCAL_NAME);
 		final MockSchema schema = new MockSchema(catalog);
 		catalog.addSchema(schema);
 		// create the foo table
-		TableDefImpl tableDef = new TableDefImpl("foo");
+		TableDefImpl tableDef = new TableDefImpl(MockCatalog.NS, "foo");
 		tableDef.add(MetaColumn.getStringInstance("StringCol"));
 		tableDef.add(MetaColumn.getStringInstance("NullableStringCol")
 				.setNullable(DatabaseMetaData.columnNullable));
@@ -48,17 +50,17 @@ public class SparqlVisitorTest
 		tableDef.add(MetaColumn.getIntInstance("NullableIntCol").setNullable(
 				DatabaseMetaData.columnNullable));
 		schema.addTableDef(tableDef);
-		
+
 		// creae the var table
-		tableDef = new TableDefImpl("bar");
+		tableDef = new TableDefImpl(MockCatalog.NS, "bar");
 		tableDef.add(MetaColumn.getStringInstance("BarStringCol"));
 		tableDef.add(MetaColumn.getStringInstance("BarNullableStringCol")
 				.setNullable(DatabaseMetaData.columnNullable));
 		tableDef.add(MetaColumn.getIntInstance("IntCol"));
-		tableDef.add(MetaColumn.getIntInstance("BarNullableIntCol").setNullable(
-				DatabaseMetaData.columnNullable));
-		schema.addTableDef(tableDef);		
-		
+		tableDef.add(MetaColumn.getIntInstance("BarNullableIntCol")
+				.setNullable(DatabaseMetaData.columnNullable));
+		schema.addTableDef(tableDef);
+
 		sv = new SparqlVisitor(catalog);
 
 	}
@@ -71,21 +73,21 @@ public class SparqlVisitorTest
 		stmt.accept(sv);
 		final Query q = sv.getBuilder().build();
 
-		List<Var> vLst = q.getProjectVars();
-		Assert.assertEquals( 4,  vLst.size() );
+		final List<Var> vLst = q.getProjectVars();
+		Assert.assertEquals(4, vLst.size());
 		Assert.assertTrue(q.getQueryPattern() instanceof ElementGroup);
 		final ElementGroup eg = (ElementGroup) q.getQueryPattern();
 		final List<Element> eLst = eg.getElements();
 		Assert.assertEquals(8, eLst.size());
 		int i = 0;
-		for (Element e : eLst)
+		for (final Element e : eLst)
 		{
 			if (e instanceof ElementBind)
 			{
 				i++;
 			}
 		}
-		Assert.assertEquals( 4, i );
+		Assert.assertEquals(4, i);
 	}
 
 	@Test
@@ -95,7 +97,7 @@ public class SparqlVisitorTest
 		final Statement stmt = parserManager.parse(new StringReader(query));
 		stmt.accept(sv);
 		final Query q = sv.getBuilder().build();
-		
+
 		final Element e = q.getQueryPattern();
 		Assert.assertTrue(e instanceof ElementGroup);
 		final ElementGroup eg = (ElementGroup) e;
@@ -105,19 +107,18 @@ public class SparqlVisitorTest
 		final ElementTriplesBlock etb = (ElementTriplesBlock) eLst.get(0);
 		final List<Triple> tLst = etb.getPattern().getList();
 		Assert.assertTrue(tLst.contains(new Triple(Node
-				.createVariable("MockSchema.foo"), RDF.type
-				.asNode(), Node
+				.createVariable("MockSchema.foo"), RDF.type.asNode(), Node
 				.createURI("http://org.xenei.jdbc4sparql/meta#foo"))));
 		Assert.assertTrue(tLst.contains(new Triple(Node
 				.createVariable("MockSchema.foo"), Node
 				.createURI("http://org.xenei.jdbc4sparql/meta#StringCol"), Node
 				.createVariable("MockSchema.foo.StringCol"))));
-		List<Var> vLst = q.getProjectVars();
-		Assert.assertEquals( 1,  vLst.size() );
-		Assert.assertEquals( Var.alloc("StringCol"), vLst.get(0));
+		final List<Var> vLst = q.getProjectVars();
+		Assert.assertEquals(1, vLst.size());
+		Assert.assertEquals(Var.alloc("StringCol"), vLst.get(0));
 
 	}
-	
+
 	@Test
 	public void testSpecColWithEqnParse() throws Exception
 	{
@@ -125,7 +126,7 @@ public class SparqlVisitorTest
 		final Statement stmt = parserManager.parse(new StringReader(query));
 		stmt.accept(sv);
 		final Query q = sv.getBuilder().build();
-		
+
 		final Element e = q.getQueryPattern();
 		Assert.assertTrue(e instanceof ElementGroup);
 		final ElementGroup eg = (ElementGroup) e;
@@ -135,21 +136,21 @@ public class SparqlVisitorTest
 		final ElementTriplesBlock etb = (ElementTriplesBlock) eLst.get(0);
 		final List<Triple> tLst = etb.getPattern().getList();
 		Assert.assertTrue(tLst.contains(new Triple(Node
-				.createVariable("MockSchema.foo"), RDF.type
-				.asNode(), Node
+				.createVariable("MockSchema.foo"), RDF.type.asNode(), Node
 				.createURI("http://org.xenei.jdbc4sparql/meta#foo"))));
 		Assert.assertTrue(tLst.contains(new Triple(Node
 				.createVariable("MockSchema.foo"), Node
 				.createURI("http://org.xenei.jdbc4sparql/meta#StringCol"), Node
 				.createVariable("MockSchema.foo.StringCol"))));
 		Assert.assertTrue(eLst.get(1) instanceof ElementFilter);
-		Assert.assertEquals( "FILTER ( ?MockSchema.foo.StringCol != \"baz\" )", eLst.get(1).toString());
-		List<Var> vLst = q.getProjectVars();
-		Assert.assertEquals( 1,  vLst.size() );
-		Assert.assertEquals( Var.alloc("StringCol"), vLst.get(0));
+		Assert.assertEquals("FILTER ( ?MockSchema.foo.StringCol != \"baz\" )",
+				eLst.get(1).toString());
+		final List<Var> vLst = q.getProjectVars();
+		Assert.assertEquals(1, vLst.size());
+		Assert.assertEquals(Var.alloc("StringCol"), vLst.get(0));
 
 	}
-	
+
 	@Test
 	public void testTwoTableJoin() throws Exception
 	{
@@ -163,7 +164,7 @@ public class SparqlVisitorTest
 		final ElementGroup eg = (ElementGroup) e;
 		final List<Element> eLst = eg.getElements();
 		Assert.assertEquals(17, eLst.size());
-		List<Var> vLst = q.getProjectVars();
-		Assert.assertEquals( 8,  vLst.size() );
+		final List<Var> vLst = q.getProjectVars();
+		Assert.assertEquals(8, vLst.size());
 	}
 }

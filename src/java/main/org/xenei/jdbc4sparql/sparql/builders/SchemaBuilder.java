@@ -1,4 +1,4 @@
-package org.xenei.jdbc4sparql.sparql;
+package org.xenei.jdbc4sparql.sparql.builders;
 
 import java.util.Set;
 
