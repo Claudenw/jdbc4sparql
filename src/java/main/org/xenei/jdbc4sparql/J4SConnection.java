@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership. The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.xenei.jdbc4sparql;
 
 import java.net.MalformedURLException;
@@ -29,82 +46,62 @@ import org.xenei.jdbc4sparql.sparql.SparqlCatalog;
 import org.xenei.jdbc4sparql.sparql.SparqlSchema;
 import org.xenei.jdbc4sparql.sparql.builders.SchemaBuilder;
 import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
-import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlParserImpl;
 
 public class J4SConnection implements Connection
 {
 	private Properties clientInfo;
-	private J4SURL url;
-	private Map<String,Catalog> catalogMap;
+	private final J4SUrl url;
+	private final Map<String, Catalog> catalogMap;
 	private String currentCatalog;
 	private String currentSchema;
 	private final J4SDriver driver;
 	private int networkTimeout;
 	private boolean closed = false;
 	private boolean autoCommit = true;
-	private SparqlParser sparqlParser;
+	private final SparqlParser sparqlParser;
 	private SQLWarning sqlWarnings;
 	private int holdability;
 
-	public J4SConnection( final J4SDriver driver, J4SURL url,
+	public J4SConnection( final J4SDriver driver, final J4SUrl url,
 			final Properties properties ) throws MalformedURLException
 	{
-		this.catalogMap = new HashMap<String,Catalog>();
-		
+		this.catalogMap = new HashMap<String, Catalog>();
+
 		this.sqlWarnings = null;
 		this.driver = driver;
 		this.url = url;
 		this.currentCatalog = url.getCatalog();
 		this.currentSchema = null;
-		
+
 		this.clientInfo = null;
-		
+
 		this.holdability = ResultSet.HOLD_CURSORS_OVER_COMMIT;
-		
-		configureCatalogMap( properties );
-		
-		Catalog c = new MetaCatalog();
-		catalogMap.put( c.getLocalName(), c);
-		if (currentCatalog != null && catalogMap.get(currentCatalog)==null)
+
+		configureCatalogMap(properties);
+
+		final Catalog c = new MetaCatalog();
+		catalogMap.put(c.getLocalName(), c);
+		if ((currentCatalog != null)
+				&& (catalogMap.get(currentCatalog) == null))
 		{
-			throw new IllegalArgumentException( "Catalog "+currentCatalog+" not found in catalog map");
+			throw new IllegalArgumentException("Catalog " + currentCatalog
+					+ " not found in catalog map");
 		}
 		this.sparqlParser = SparqlParser.Util.getDefaultParser();
-	}
-	
-	private void configureCatalogMap( Properties properties ) throws MalformedURLException
-	{
-		if (url.getBuilder() != null)
-		{
-			SparqlCatalog catalog = new SparqlCatalog( url.getEndpoint().toURL(), currentCatalog );
-			SchemaBuilder builder = SchemaBuilder.Util.getBuilder( url.getBuilder() );
-			SparqlSchema schema = new SparqlSchema(catalog, SparqlSchema.DEFAULT_NAMESPACE, "");
-			catalog.addSchema(schema);
-			schema.addTableDefs(builder.getTableDefs(catalog));
-			currentSchema = schema.getLocalName();
-			catalogMap.put( catalog.getLocalName(), catalog);
-		}
-		else
-		{
-			// TODO future read from configuration
-		}
-	}
-	
-	public String getConfiguration()
-	{
-		// TODO create config serialization
-		return "";
-	}
-	
-	SparqlParser getSparqlParser()
-	{
-		return sparqlParser;
 	}
 
 	@Override
 	public void abort( final Executor arg0 ) throws SQLException
 	{
 		close();
+	}
+
+	private void checkClosed() throws SQLException
+	{
+		if (closed)
+		{
+			throw new SQLException("Connection closed");
+		}
 	}
 
 	@Override
@@ -119,21 +116,35 @@ public class J4SConnection implements Connection
 		closed = true;
 	}
 
-	private void checkClosed() throws SQLException
-	{
-		if (closed)
-		{
-			throw new SQLException( "Connection closed"); 
-		}
-	}
-	
 	@Override
 	public void commit() throws SQLException
 	{
 		checkClosed();
 		if (autoCommit)
 		{
-			throw new SQLException( "commit called on autoCommit connection");
+			throw new SQLException("commit called on autoCommit connection");
+		}
+	}
+
+	private void configureCatalogMap( final Properties properties )
+			throws MalformedURLException
+	{
+		if (url.getBuilder() != null)
+		{
+			final SparqlCatalog catalog = new SparqlCatalog(url.getEndpoint()
+					.toURL(), currentCatalog);
+			final SchemaBuilder builder = SchemaBuilder.Util.getBuilder(url
+					.getBuilder());
+			final SparqlSchema schema = new SparqlSchema(catalog,
+					SparqlSchema.DEFAULT_NAMESPACE, "");
+			catalog.addSchema(schema);
+			schema.addTableDefs(builder.getTableDefs(catalog));
+			currentSchema = schema.getLocalName();
+			catalogMap.put(catalog.getLocalName(), catalog);
+		}
+		else
+		{
+			// TODO future read from configuration
 		}
 	}
 
@@ -171,28 +182,33 @@ public class J4SConnection implements Connection
 	@Override
 	public Statement createStatement() throws SQLException
 	{
-		return createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+		return createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
+				ResultSet.CONCUR_READ_ONLY);
 	}
 
 	@Override
-	public Statement createStatement( final int resultSetType, final int resultSetConcurrency )
+	public Statement createStatement( final int resultSetType,
+			final int resultSetConcurrency ) throws SQLException
+	{
+		return createStatement(resultSetType, resultSetConcurrency,
+				this.getHoldability());
+	}
+
+	@Override
+	public Statement createStatement( final int resultSetType,
+			final int resultSetConcurrency, final int resultSetHoldability )
 			throws SQLException
 	{
-		return  createStatement( resultSetType, resultSetConcurrency, this.getHoldability());
-	}
-
-	@Override
-	public Statement createStatement( final int resultSetType, final int resultSetConcurrency,
-			final int resultSetHoldability ) throws SQLException
-	{
-		Catalog catalog = catalogMap.get(currentCatalog);
+		final Catalog catalog = catalogMap.get(currentCatalog);
 		if (catalog instanceof SparqlCatalog)
 		{
-			return new J4SStatement(this, (SparqlCatalog)catalog, resultSetType, resultSetConcurrency, resultSetHoldability);
+			return new J4SStatement(this, (SparqlCatalog) catalog,
+					resultSetType, resultSetConcurrency, resultSetHoldability);
 		}
 		else
 		{
-			throw new SQLException( "Catalog "+currentCatalog+" does not support statements");
+			throw new SQLException("Catalog " + currentCatalog
+					+ " does not support statements");
 		}
 	}
 
@@ -227,6 +243,12 @@ public class J4SConnection implements Connection
 		return clientInfo.getProperty(key);
 	}
 
+	public String getConfiguration()
+	{
+		// TODO create config serialization
+		return "";
+	}
+
 	@Override
 	public int getHoldability() throws SQLException
 	{
@@ -249,6 +271,11 @@ public class J4SConnection implements Connection
 	public String getSchema() throws SQLException
 	{
 		return currentSchema;
+	}
+
+	SparqlParser getSparqlParser()
+	{
+		return sparqlParser;
 	}
 
 	@Override
@@ -286,7 +313,7 @@ public class J4SConnection implements Connection
 	{
 		if (timeout < 0)
 		{
-			throw new SQLException( "Timeout must not be less than zero");
+			throw new SQLException("Timeout must not be less than zero");
 		}
 		// TODO figure out how to do thos
 		return true;
@@ -397,7 +424,7 @@ public class J4SConnection implements Connection
 	{
 		if (catalogMap.get(catalog) == null)
 		{
-			throw new SQLException( "Catalog "+catalog+" was not found");
+			throw new SQLException("Catalog " + catalog + " was not found");
 		}
 		this.currentCatalog = catalog;
 	}
@@ -413,16 +440,16 @@ public class J4SConnection implements Connection
 	public void setClientInfo( final String param, final String value )
 			throws SQLClientInfoException
 	{
-		this.clientInfo.setProperty( param, value);
+		this.clientInfo.setProperty(param, value);
 	}
 
 	@Override
 	public void setHoldability( final int holdability ) throws SQLException
 	{
-		if (holdability !=  ResultSet.HOLD_CURSORS_OVER_COMMIT && 
-				holdability != ResultSet.CLOSE_CURSORS_AT_COMMIT)
+		if ((holdability != ResultSet.HOLD_CURSORS_OVER_COMMIT)
+				&& (holdability != ResultSet.CLOSE_CURSORS_AT_COMMIT))
 		{
-			throw new SQLException( "Invalid holdability value");
+			throw new SQLException("Invalid holdability value");
 		}
 		this.holdability = holdability;
 	}

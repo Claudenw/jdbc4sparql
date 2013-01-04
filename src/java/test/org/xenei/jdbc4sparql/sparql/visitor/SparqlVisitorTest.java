@@ -1,17 +1,31 @@
+/*
+ * This file is part of jdbc4sparql jsqlparser implementation.
+ * 
+ * jdbc4sparql jsqlparser implementation is free software: you can redistribute
+ * it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * jdbc4sparql jsqlparser implementation is distributed in the hope that it will
+ * be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with jdbc4sparql jsqlparser implementation. If not, see
+ * <http://www.gnu.org/licenses/>.
+ */
 package org.xenei.jdbc4sparql.sparql.visitor;
 
-import com.hp.hpl.jena.graph.Node;
-import com.hp.hpl.jena.graph.Triple;
 import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.sparql.core.Var;
 import com.hp.hpl.jena.sparql.syntax.Element;
 import com.hp.hpl.jena.sparql.syntax.ElementBind;
 import com.hp.hpl.jena.sparql.syntax.ElementFilter;
 import com.hp.hpl.jena.sparql.syntax.ElementGroup;
-import com.hp.hpl.jena.sparql.syntax.ElementTriplesBlock;
-import com.hp.hpl.jena.vocabulary.RDF;
 
-import java.awt.Window.Type;
 import java.io.StringReader;
 import java.sql.DatabaseMetaData;
 import java.sql.Types;
@@ -25,16 +39,11 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.xenei.jdbc4sparql.impl.TableDefImpl;
-import org.xenei.jdbc4sparql.meta.MetaColumn;
 import org.xenei.jdbc4sparql.mock.MockCatalog;
 import org.xenei.jdbc4sparql.mock.MockColumn;
 import org.xenei.jdbc4sparql.mock.MockSchema;
-import org.xenei.jdbc4sparql.mock.MockTable;
 import org.xenei.jdbc4sparql.mock.MockTableDef;
 import org.xenei.jdbc4sparql.sparql.SparqlCatalog;
-import org.xenei.jdbc4sparql.sparql.SparqlSchema;
-import org.xenei.jdbc4sparql.sparql.SparqlTableDef;
 import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlVisitor;
 
@@ -53,12 +62,12 @@ public class SparqlVisitorTest
 		catalog.addSchema(schema);
 		// create the foo table
 		MockTableDef tableDef = new MockTableDef("foo");
-		tableDef.add(new MockColumn("StringCol", Types.VARCHAR ));
+		tableDef.add(new MockColumn("StringCol", Types.VARCHAR));
 		tableDef.add(new MockColumn("NullableStringCol", Types.VARCHAR)
 				.setNullable(DatabaseMetaData.columnNullable));
 		tableDef.add(new MockColumn("IntCol", Types.INTEGER));
-		tableDef.add(new MockColumn("NullableIntCol", Types.INTEGER).setNullable(
-				DatabaseMetaData.columnNullable));
+		tableDef.add(new MockColumn("NullableIntCol", Types.INTEGER)
+				.setNullable(DatabaseMetaData.columnNullable));
 		schema.addTableDef(tableDef);
 
 		// creae the var table
@@ -89,20 +98,27 @@ public class SparqlVisitorTest
 		final ElementGroup eg = (ElementGroup) q.getQueryPattern();
 		final List<Element> eLst = eg.getElements();
 		Assert.assertEquals(6, eLst.size());
-		int i = 0;
-		List<String> bindElements = new ArrayList<String>();
+		final List<String> bindElements = new ArrayList<String>();
 		for (final Element e : eLst)
 		{
 			if (e instanceof ElementBind)
 			{
-				bindElements.add( e.toString());
+				bindElements.add(e.toString());
 			}
 		}
 		Assert.assertEquals(4, bindElements.size());
-		Assert.assertTrue( bindElements.contains( String.format( "BIND(?MockSchema%1$sfoo%1$s%2$s AS ?%2$s)", SparqlParser.SPARQL_DOT, "StringCol") ));
-		Assert.assertTrue( bindElements.contains( String.format( "BIND(?MockSchema%1$sfoo%1$s%2$s AS ?%2$s)", SparqlParser.SPARQL_DOT, "NullableStringCol") ));
-		Assert.assertTrue( bindElements.contains( String.format( "BIND(?MockSchema%1$sfoo%1$s%2$s AS ?%2$s)", SparqlParser.SPARQL_DOT, "IntCol") ));
-		Assert.assertTrue( bindElements.contains( String.format( "BIND(?MockSchema%1$sfoo%1$s%2$s AS ?%2$s)", SparqlParser.SPARQL_DOT, "NullableIntCol") ));
+		Assert.assertTrue(bindElements.contains(String.format(
+				"BIND(?MockSchema%1$sfoo%1$s%2$s AS ?%2$s)",
+				SparqlParser.SPARQL_DOT, "StringCol")));
+		Assert.assertTrue(bindElements.contains(String.format(
+				"BIND(?MockSchema%1$sfoo%1$s%2$s AS ?%2$s)",
+				SparqlParser.SPARQL_DOT, "NullableStringCol")));
+		Assert.assertTrue(bindElements.contains(String.format(
+				"BIND(?MockSchema%1$sfoo%1$s%2$s AS ?%2$s)",
+				SparqlParser.SPARQL_DOT, "IntCol")));
+		Assert.assertTrue(bindElements.contains(String.format(
+				"BIND(?MockSchema%1$sfoo%1$s%2$s AS ?%2$s)",
+				SparqlParser.SPARQL_DOT, "NullableIntCol")));
 	}
 
 	@Test
@@ -133,7 +149,8 @@ public class SparqlVisitorTest
 		final List<Element> eLst = eg.getElements();
 		Assert.assertEquals(1, eLst.size());
 		Assert.assertTrue(eLst.get(0) instanceof ElementFilter);
-		Assert.assertEquals("FILTER ( ?MockSchema"+SparqlParser.SPARQL_DOT+"foo"+SparqlParser.SPARQL_DOT+"StringCol != \"baz\" )",
+		Assert.assertEquals("FILTER ( ?MockSchema" + SparqlParser.SPARQL_DOT
+				+ "foo" + SparqlParser.SPARQL_DOT + "StringCol != \"baz\" )",
 				eLst.get(0).toString());
 		final List<Var> vLst = q.getProjectVars();
 		Assert.assertEquals(1, vLst.size());
@@ -142,7 +159,7 @@ public class SparqlVisitorTest
 	}
 
 	@Test
-	@Ignore( "This only remains as a pattern for a complete test -- Mock can not support this test")
+	@Ignore( "This only remains as a pattern for a complete test -- Mock can not support this test" )
 	public void testTwoTableJoin() throws Exception
 	{
 		final String query = "SELECT * FROM foo, bar WHERE foo.IntCol = bar.IntCol";
