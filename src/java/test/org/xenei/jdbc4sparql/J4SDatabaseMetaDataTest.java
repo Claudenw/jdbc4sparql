@@ -1,5 +1,6 @@
 package org.xenei.jdbc4sparql;
 
+import java.net.MalformedURLException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -35,10 +36,11 @@ public class J4SDatabaseMetaDataTest
 	}
 
 	@Before
-	public void setup()
+	public void setup() throws MalformedURLException
 	{
+		J4SURL url = new J4SURL( "jdbc:J4S:http://example.com");
 		final MockDriver driver = new MockDriver();
-		metadata = new J4SDatabaseMetaData(new MockConnection(driver, null,
+		metadata = new J4SDatabaseMetaData(new MockConnection(driver, url,
 				null), driver);
 		metadata.addCatalog(new MetaCatalog());
 

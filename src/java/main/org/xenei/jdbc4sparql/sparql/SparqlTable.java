@@ -16,7 +16,7 @@ import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 
 public class SparqlTable extends AbstractTable
 {
-	public class ColumnIterator implements Iterator<SparqlColumn>
+	private class ColumnIterator implements Iterator<SparqlColumn>
 	{
 
 		private final Iterator<? extends ColumnDef> iter;
@@ -99,16 +99,19 @@ public class SparqlTable extends AbstractTable
 		final String fqName = "<" + getFQName() + ">";
 		for (final String segment : getTableDef().getQuerySegments())
 		{
-			final List<String> parts = SparqlParser.Util
-					.parseQuerySegment(String.format(segment, tableVar, fqName));
-			if (parts.size() != 3)
+			if (!segment.trim().startsWith("#")) // skip comments
 			{
-				throw new IllegalStateException(getFQName() + " query segment "
-						+ segment + " does not parse into 3 components");
+				final List<String> parts = SparqlParser.Util
+						.parseQuerySegment(String.format(segment, tableVar, fqName));
+				if (parts.size() != 3)
+				{
+					throw new IllegalStateException(getFQName() + " query segment "
+							+ segment + " does not parse into 3 components");
+				}
+				retval.add(new Triple(SparqlParser.Util.parseNode(parts.get(0)),
+						SparqlParser.Util.parseNode(parts.get(1)),
+						SparqlParser.Util.parseNode(parts.get(2))));
 			}
-			retval.add(new Triple(SparqlParser.Util.parseNode(parts.get(0)),
-					SparqlParser.Util.parseNode(parts.get(1)),
-					SparqlParser.Util.parseNode(parts.get(2))));
 		}
 		return retval;
 	}

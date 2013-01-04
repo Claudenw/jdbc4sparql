@@ -16,37 +16,33 @@ import org.xenei.jdbc4sparql.sparql.SparqlTableDef;
 
 public class SimpleBuilder implements SchemaBuilder
 {
+	public static final String BUILDER_NAME="Simple_Builder";
+	public static final String DESCRIPTION="A simple schema builder that builds tables based on RDFS Class names";
+	
 
 	// Params: namespace.
-	private static final String TABLE_QUERY = "prefix afn: <http://jena.hpl.hp.com/ARQ/function#>  "
-			+ " prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>"
+	private static final String TABLE_QUERY = " prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>"
 			+ " SELECT ?tName WHERE { ?tName a rdfs:Class ; "
-			+ " FILTER( afn:namespace(?tName) = '%s') }";
+			+ " }";
 
 	// Params: class resource, namespace
-	private static final String COLUMN_QUERY = "prefix afn: <http://jena.hpl.hp.com/ARQ/function#>  "
-			+ " SELECT DISTINCT ?cName "
+	private static final String COLUMN_QUERY = "SELECT DISTINCT ?cName "
 			+ " WHERE { "
 			+ " ?instance a <%s> ; "
-			+ " ?cName [] ;" + " FILTER( afn:namespace(?cName) = '%s') }";
+			+ " ?cName [] ; }";
 
 	private static final String TABLE_SEGMENT = "%1$s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> %2$s";
 	private static final String COLUMN_SEGMENT = "%1$s %3$s %2$s";
 
-	private final SparqlCatalog catalog;
-	private final String namespace;
-
-	public SimpleBuilder( final SparqlCatalog catalog, final String namespace )
+	public SimpleBuilder()
 	{
-		this.catalog = catalog;
-		this.namespace = namespace;
 	}
 
-	private void addColumnDefs( final SparqlTableDef tableDef,
+	private void addColumnDefs( final SparqlCatalog catalog, final SparqlTableDef tableDef,
 			final Resource tName )
 	{
 		final List<QuerySolution> solns = catalog.executeQuery(String.format(
-				SimpleBuilder.COLUMN_QUERY, tName, namespace));
+				SimpleBuilder.COLUMN_QUERY, tName));
 		for (final QuerySolution soln : solns)
 		{
 			final Resource cName = soln.getResource("cName");
@@ -57,23 +53,23 @@ public class SimpleBuilder implements SchemaBuilder
 			tableDef.add(colDef);
 		}
 	}
-
-	@Override
-	public Set<TableDef> getTableDefs()
+	
+	
+	public Set<TableDef> getTableDefs( final SparqlCatalog catalog )
 	{
 		final HashSet<TableDef> retval = new HashSet<TableDef>();
-		final List<QuerySolution> solns = catalog.executeQuery(String.format(
-				SimpleBuilder.TABLE_QUERY, namespace));
+		final List<QuerySolution> solns = catalog.executeQuery(SimpleBuilder.TABLE_QUERY);
 		for (final QuerySolution soln : solns)
 		{
 			final Resource tName = soln.getResource("tName");
 			final SparqlTableDef tableDef = new SparqlTableDef(
 					tName.getNameSpace(), tName.getLocalName(),
 					SimpleBuilder.TABLE_SEGMENT);
-			addColumnDefs(tableDef, tName);
+			addColumnDefs(catalog, tableDef, tName);
 			retval.add(tableDef);
 		}
 		return retval;
 	}
+	
 
 }

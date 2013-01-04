@@ -81,7 +81,7 @@ public class SimpleBuilderTest
 		final SparqlSchema schema = new SparqlSchema(catalog,
 				SimpleBuilderTest.NS, "builderTest");
 		catalog.addSchema(schema);
-		final Set<TableDef> tableDefs = builder.getTableDefs();
+		final Set<TableDef> tableDefs = builder.getTableDefs(catalog);
 		final Map<String, Integer> counter = new HashMap<String, Integer>();
 		final String[] columnNames = { "StringCol", "NullableStringCol",
 				"IntCol", "NullableIntCol" };
@@ -129,7 +129,7 @@ public class SimpleBuilderTest
 		final SparqlSchema schema = new SparqlSchema(catalog,
 				SimpleBuilderTest.NS, "builderTest");
 		catalog.addSchema(schema);
-		final Set<TableDef> tableDefs = builder.getTableDefs();
+		final Set<TableDef> tableDefs = builder.getTableDefs(catalog);
 		for (final TableDef td : tableDefs)
 		{
 			schema.addTableDef(td);
@@ -181,7 +181,7 @@ public class SimpleBuilderTest
 		addModelData();
 		catalog = new SparqlCatalog(SimpleBuilderTest.CAT_NS, model,
 				"SimpleSparql");
-		builder = new SimpleBuilder(catalog, SimpleBuilderTest.NS);
+		builder = new SimpleBuilder();
 	}
 
 }

@@ -16,7 +16,7 @@ public class SchemaImpl extends NamespaceImpl implements Schema
 {
 	private final Catalog catalog;
 	private final Map<String, Table> tables;
-	private static Map<String, TableDef> tableDefs;
+	private Map<String, TableDef> tableDefs;
 
 	public SchemaImpl( final Catalog catalog, final String localName )
 	{
@@ -29,7 +29,7 @@ public class SchemaImpl extends NamespaceImpl implements Schema
 		super(namespace, localName);
 		this.catalog = catalog;
 		this.tables = new HashMap<String, Table>();
-		SchemaImpl.tableDefs = new HashMap<String, TableDef>();
+		tableDefs = new HashMap<String, TableDef>();
 	}
 
 	public void addTable( final Table table )
@@ -56,7 +56,7 @@ public class SchemaImpl extends NamespaceImpl implements Schema
 
 	public void addTableDef( final TableDef tableDef )
 	{
-		SchemaImpl.tableDefs.put(tableDef.getLocalName(), tableDef);
+		tableDefs.put(tableDef.getLocalName(), tableDef);
 	}
 
 	public void addTableDefs( final Collection<TableDef> tableDefs )
@@ -93,19 +93,18 @@ public class SchemaImpl extends NamespaceImpl implements Schema
 
 	public TableDef getTableDef( final String localName )
 	{
-		return SchemaImpl.tableDefs.get(localName);
+		return tableDefs.get(localName);
 	}
 
 	@Override
 	public Set<Table> getTables()
 	{
 		final HashSet<Table> retval = new HashSet<Table>(tables.values());
-		for (final String tableName : SchemaImpl.tableDefs.keySet())
+		for (final String tableName : tableDefs.keySet())
 		{
 			if (!tables.containsKey(tableName))
 			{
-				retval.add(new DataTable(this, SchemaImpl.tableDefs
-						.get(tableName)));
+				retval.add(newTable(tableName));
 			}
 		}
 		return retval;

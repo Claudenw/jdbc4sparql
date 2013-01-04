@@ -15,7 +15,6 @@ import org.xenei.jdbc4sparql.impl.CatalogImpl;
 
 public class SparqlCatalog extends CatalogImpl
 {
-
 	private URL sparqlEndpoint;
 	private Model localModel;
 

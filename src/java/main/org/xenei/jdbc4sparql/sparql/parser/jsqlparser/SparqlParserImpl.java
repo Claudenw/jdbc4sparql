@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.util.deparser.StatementDeParser;
 
 import org.xenei.jdbc4sparql.sparql.SparqlCatalog;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
@@ -13,16 +14,17 @@ import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 
 public class SparqlParserImpl implements SparqlParser
 {
+	public static final String PARSER_NAME="JSqlParser";
+	public static final String DESCRIPTION="Parser based on JSqlParser (http://jsqlparser.sourceforge.net/). Under LGPL V2 license";
 	private final CCJSqlParserManager parserManager = new CCJSqlParserManager();
-	private final SparqlCatalog catalog;
 
-	public SparqlParserImpl( final SparqlCatalog catalog )
+
+	public SparqlParserImpl()
 	{
-		this.catalog = catalog;
 	}
 
 	@Override
-	public SparqlQueryBuilder parse( final String sqlQuery )
+	public SparqlQueryBuilder parse( SparqlCatalog catalog, final String sqlQuery )
 			throws SQLException
 	{
 		try
@@ -39,4 +41,21 @@ public class SparqlParserImpl implements SparqlParser
 		}
 	}
 
+	@Override
+	public String nativeSQL( String sqlQuery ) throws SQLException
+	{
+		try
+		{
+			final Statement stmt = parserManager.parse(new StringReader(
+					sqlQuery));
+			StringBuffer sb = new StringBuffer();
+			final StatementDeParser dp = new StatementDeParser( sb );
+			stmt.accept(dp);
+			return sb.toString();
+		}
+		catch (final JSQLParserException e)
+		{
+			throw new SQLException(e);
+		}
+	}
 }

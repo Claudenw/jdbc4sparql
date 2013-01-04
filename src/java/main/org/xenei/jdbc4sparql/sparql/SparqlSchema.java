@@ -8,19 +8,13 @@ import org.xenei.jdbc4sparql.sparql.builders.SchemaBuilder;
 public class SparqlSchema extends SchemaImpl
 {
 
-	// private SchemaBuilder builder;
+	public static final String DEFAULT_NAMESPACE="http://jdbc4sparql.xenei.org/namespace/schema#";
+
 
 	public SparqlSchema( final SparqlCatalog catalog, final String namespace,
 			final String localName )
 	{
 		super(catalog, namespace, localName);
-	}
-
-	public SparqlSchema( final SparqlCatalog catalog, final String namespace,
-			final String localName, final SchemaBuilder builder )
-	{
-		super(catalog, namespace, localName);
-		addTableDefs(builder.getTableDefs());
 	}
 
 	@Override

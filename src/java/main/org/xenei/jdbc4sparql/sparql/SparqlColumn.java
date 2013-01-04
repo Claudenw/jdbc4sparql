@@ -26,17 +26,20 @@ public class SparqlColumn extends ColumnImpl
 		for (final String segment : ((SparqlColumnDef) getColumnDef())
 				.getQuerySegments())
 		{
-			final List<String> parts = SparqlParser.Util
-					.parseQuerySegment(String.format(segment, tableVar,
-							columnVar, fqName));
-			if (parts.size() != 3)
+			if (! segment.trim().startsWith("#"))
 			{
-				throw new IllegalStateException(getFQName() + " query segment "
-						+ segment + " does not parse into 3 components");
+				final List<String> parts = SparqlParser.Util
+						.parseQuerySegment(String.format(segment, tableVar,
+								columnVar, fqName));
+				if (parts.size() != 3)
+				{
+					throw new IllegalStateException(getFQName() + " query segment "
+							+ segment + " does not parse into 3 components");
+				}
+				retval.add(new Triple(SparqlParser.Util.parseNode(parts.get(0)),
+						SparqlParser.Util.parseNode(parts.get(1)),
+						SparqlParser.Util.parseNode(parts.get(2))));
 			}
-			retval.add(new Triple(SparqlParser.Util.parseNode(parts.get(0)),
-					SparqlParser.Util.parseNode(parts.get(1)),
-					SparqlParser.Util.parseNode(parts.get(2))));
 		}
 		return retval;
 	}

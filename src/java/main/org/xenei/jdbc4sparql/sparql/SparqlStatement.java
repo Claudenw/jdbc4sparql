@@ -11,10 +11,12 @@ import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 public class SparqlStatement implements Statement
 {
 	private final SparqlParser parser;
+	private final SparqlCatalog catalog;
 
 	SparqlStatement( final SparqlCatalog catalog, final SparqlParser parser )
 	{
 		this.parser = parser;
+		this.catalog = catalog;
 	}
 
 	@Override
@@ -100,7 +102,7 @@ public class SparqlStatement implements Statement
 	@Override
 	public ResultSet executeQuery( final String query ) throws SQLException
 	{
-		final SparqlQueryBuilder builder = parser.parse(query);
+		final SparqlQueryBuilder builder = parser.parse(catalog, query);
 		return new SparqlView(builder).getResultSet();
 	}
 

@@ -1,5 +1,7 @@
 package org.xenei.jdbc4sparql.mock;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -10,17 +12,29 @@ import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.NameFilter;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.impl.NamespaceImpl;
+import org.xenei.jdbc4sparql.sparql.SparqlCatalog;
 
-public class MockCatalog extends NamespaceImpl implements Catalog
+public class MockCatalog extends SparqlCatalog
 {
-
+	public static final URL MOCK_URL;
 	public static final String NS = "http://examplec.com/namespace#";
 	public static final String LOCAL_NAME = "MockCatalog";
 	List<Schema> schemas = new ArrayList<Schema>();
 
+	static {
+		 try
+		{
+			MOCK_URL = new URL( "http://example.com/namespace");
+		}
+		catch (MalformedURLException e)
+		{
+			throw new RuntimeException( e );
+		}
+	}
+	
 	public MockCatalog()
 	{
-		super(MockCatalog.NS, MockCatalog.LOCAL_NAME);
+		super(MOCK_URL, MockCatalog.LOCAL_NAME);
 		schemas.add(new MockSchema(this));
 	}
 
