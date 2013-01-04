@@ -13,7 +13,8 @@ document.
 ## Usage
 
 ### URL
-The URL for the J4SDriver is jdbc:j4s:[catalog=<catalog>[&builder=<builder>]]:<sparqlendpoint url>
+The URL for the J4SDriver is 
+    jdbc:j4s:[?catalog=<catalog>[&builder=<builder>]]:<sparqlendpoint url>
 
 Currently the catalog must be supplied and only the default builder is supported.
 

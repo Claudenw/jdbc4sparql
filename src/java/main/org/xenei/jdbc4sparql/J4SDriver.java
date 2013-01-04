@@ -33,6 +33,17 @@ import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 public class J4SDriver implements Driver
 {
 
+	static {
+		 try
+		{
+			java.sql.DriverManager.registerDriver( new J4SDriver() );
+		}
+		catch (SQLException e)
+		{
+			throw new RuntimeException( e );
+		}
+	}
+	
 	public static void main( final String[] args )
 	{
 
