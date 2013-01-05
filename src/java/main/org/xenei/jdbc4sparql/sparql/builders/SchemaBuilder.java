@@ -66,7 +66,21 @@ public interface SchemaBuilder
 
 		public static SchemaBuilder getBuilder( final String name )
 		{
-			for (final Class<? extends SchemaBuilder> c : Util.getBuilders())
+			List<Class<? extends SchemaBuilder>> lst = Util.getBuilders();
+			if (name == null)
+			{
+				try
+				{
+					return lst.get(0).newInstance();
+				}
+				catch (InstantiationException | IllegalAccessException e)
+				{
+					throw new IllegalStateException(lst.get(0)
+							+ " could not be instantiated.", e);
+				}
+			}
+			
+			for (final Class<? extends SchemaBuilder> c : lst)
 			{
 				if (Util.getName(c).equals(name))
 				{
@@ -81,8 +95,29 @@ public interface SchemaBuilder
 					}
 				}
 			}
-			throw new IllegalArgumentException("Unknown schema builder: "
-					+ name);
+			try {
+				Class<?> clazz = Class.forName( name );
+				if (SchemaBuilder.class.isAssignableFrom( clazz))
+				{
+					try {
+						return (SchemaBuilder) clazz.newInstance();
+					}
+					catch (InstantiationException | IllegalAccessException e)
+					{
+						throw new IllegalStateException(clazz
+								+ " could not be instantiated.", e);
+					}
+				}
+				else
+				{
+					throw new IllegalArgumentException(clazz
+							+ " does not implement SchemaBuilder.");
+				}
+			}
+			catch (ClassNotFoundException e)
+			{
+				throw new IllegalArgumentException(e.getMessage());
+			}
 		}
 
 		public static List<Class<? extends SchemaBuilder>> getBuilders()

@@ -27,10 +27,9 @@ import org.xenei.jdbc4sparql.J4SUrl;
 public class MockConnection extends J4SConnection
 {
 
-	public MockConnection( final J4SDriver driver, final J4SUrl url,
-			final Properties properties ) throws MalformedURLException
+	public MockConnection( final J4SDriver driver, final Properties properties ) throws MalformedURLException
 	{
-		super(driver, url, properties);
+		super(driver, new MockJ4SUrl(), properties);
 
 	}
 

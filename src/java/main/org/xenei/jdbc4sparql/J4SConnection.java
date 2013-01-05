@@ -17,6 +17,9 @@
  */
 package org.xenei.jdbc4sparql;
 
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
+
 import java.net.MalformedURLException;
 import java.sql.Array;
 import java.sql.Blob;
@@ -35,7 +38,9 @@ import java.sql.SQLXML;
 import java.sql.Savepoint;
 import java.sql.Statement;
 import java.sql.Struct;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
@@ -49,6 +54,7 @@ import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 
 public class J4SConnection implements Connection
 {
+	private Properties properties;
 	private Properties clientInfo;
 	private final J4SUrl url;
 	private final Map<String, Catalog> catalogMap;
@@ -66,7 +72,7 @@ public class J4SConnection implements Connection
 			final Properties properties ) throws MalformedURLException
 	{
 		this.catalogMap = new HashMap<String, Catalog>();
-
+		this.properties = properties;
 		this.sqlWarnings = null;
 		this.driver = driver;
 		this.url = url;
@@ -87,9 +93,16 @@ public class J4SConnection implements Connection
 			throw new IllegalArgumentException("Catalog " + currentCatalog
 					+ " not found in catalog map");
 		}
-		this.sparqlParser = SparqlParser.Util.getDefaultParser();
+
+		this.sparqlParser = url.getParser() != null ? url.getParser()
+				: SparqlParser.Util.getDefaultParser();
 	}
 
+	public Map<String,Catalog> getCatalogs()
+	{
+		return catalogMap;
+	}
+	
 	@Override
 	public void abort( final Executor arg0 ) throws SQLException
 	{
@@ -129,12 +142,34 @@ public class J4SConnection implements Connection
 	private void configureCatalogMap( final Properties properties )
 			throws MalformedURLException
 	{
-		if (url.getBuilder() != null)
+
+		SparqlCatalog catalog = null;
+
+		if (url.getType().equals(J4SUrl.TYPE_CONFIG))
 		{
-			final SparqlCatalog catalog = new SparqlCatalog(url.getEndpoint()
-					.toURL(), currentCatalog);
-			final SchemaBuilder builder = SchemaBuilder.Util.getBuilder(url
-					.getBuilder());
+			throw new UnsupportedOperationException(
+					"Configuration type not yet supported");
+		}
+		else
+		{
+
+			if (url.getType().equals(J4SUrl.TYPE_SPARQL))
+
+			{
+				catalog = new SparqlCatalog(url.getEndpoint().toURL(),
+						currentCatalog);
+			}
+			else
+			{
+				// must be a local file
+				final Model model = ModelFactory.createDefaultModel();
+				model.read(url.getEndpoint().toString(), url.getType());
+				catalog = new SparqlCatalog(url.getEndpoint().toString(),
+						model, currentCatalog);
+			}
+
+			final SchemaBuilder builder = url.getBuilder() != null ? url
+					.getBuilder() : SchemaBuilder.Util.getBuilder(null);
 			final SparqlSchema schema = new SparqlSchema(catalog,
 					SparqlSchema.DEFAULT_NAMESPACE, "");
 			catalog.addSchema(schema);
@@ -142,10 +177,7 @@ public class J4SConnection implements Connection
 			currentSchema = schema.getLocalName();
 			catalogMap.put(catalog.getLocalName(), catalog);
 		}
-		else
-		{
-			// TODO future read from configuration
-		}
+
 	}
 
 	@Override

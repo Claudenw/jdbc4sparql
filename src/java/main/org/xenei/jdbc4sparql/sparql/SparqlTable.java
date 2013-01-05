@@ -26,6 +26,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.UUID;
 
 import org.xenei.jdbc4sparql.iface.ColumnDef;
 import org.xenei.jdbc4sparql.impl.AbstractTable;
@@ -64,7 +65,7 @@ public class SparqlTable extends AbstractTable
 
 	}
 
-	private Query query;
+	private SparqlQueryBuilder builder;
 
 	protected SparqlTable( final SparqlSchema schema,
 			final SparqlTableDef tableDef )
@@ -72,11 +73,11 @@ public class SparqlTable extends AbstractTable
 		super(tableDef.getNamespace(), schema, tableDef);
 	}
 
-	protected SparqlTable( final SparqlSchema schema,
-			final SparqlTableDef tableDef, final Query query )
+	protected SparqlTable( final SparqlQueryBuilder builder )
 	{
-		this(schema, tableDef);
-		this.query = query;
+		this(builder.getCatalog().getViewSchema(), builder.getTableDef(
+				SparqlView.NAME_SPACE, UUID.randomUUID().toString()));
+		this.builder = builder;
 	}
 
 	@Override
@@ -91,11 +92,16 @@ public class SparqlTable extends AbstractTable
 		return new ColumnIterator();
 	}
 
+	public String getSolutionName( int idx )
+	{
+		return builder.getSolutionName(idx);
+	}
+	
 	public Query getQuery() throws SQLException
 	{
-		if (query == null)
+		if (builder == null)
 		{
-			final SparqlQueryBuilder builder = new SparqlQueryBuilder(
+			builder = new SparqlQueryBuilder(
 					getCatalog());
 			builder.addTable(getSchema().getLocalName(), getLocalName());
 			final Iterator<SparqlColumn> iter = getColumns();
@@ -105,9 +111,8 @@ public class SparqlTable extends AbstractTable
 				builder.addColumn(col);
 				builder.addVar(col, col.getLocalName());
 			}
-			query = builder.build();
 		}
-		return query;
+		return builder.build();
 	}
 
 	public List<Triple> getQuerySegments( final Node tableVar )

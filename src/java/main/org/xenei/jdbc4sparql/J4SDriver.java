@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.logging.Logger;
 
+import org.openjena.riot.Lang;
 import org.xenei.jdbc4sparql.sparql.builders.SchemaBuilder;
 import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 
@@ -50,7 +51,22 @@ public class J4SDriver implements Driver
 		final J4SDriver driver = new J4SDriver();
 		System.out.println(String.format("%s Version %s.%s", driver.getName(),
 				driver.getMajorVersion(), driver.getMinorVersion()));
-
+		System.out.println( "URL Format:  jdbc:j4s[?arg=val[&arg=var]]:url");
+		System.out.println();
+		System.out.print( "Valid arguments: ");
+		for (String s: J4SUrl.ARGS )
+		{
+			System.out.print( s+" ");
+		}
+		System.out.println("Valid Types:");
+		System.out.println("(Default) config - URL is a J4S configuration file");
+		System.out.println("sparql - URL is a sparql endpoint");
+		for (Lang l : Lang.values())
+		{
+			System.out.println( String.format( "%s or %s - URL is a %s formatted RDF file", 
+					l.name(), l.getName(), l.getName()));
+		}
+		System.out.println();
 		System.out.println("Registered Schema Builders:");
 		System.out.print("(Default) ");
 		final List<Class<? extends SchemaBuilder>> builderList = SchemaBuilder.Util
@@ -61,15 +77,8 @@ public class J4SDriver implements Driver
 					+ SchemaBuilder.Util.getDescription(c));
 		}
 		System.out.println();
-		System.out.println("Registered SPARQL parsers:");
-		System.out.println("(Default)");
-		final List<Class<? extends SparqlParser>> parserList = SparqlParser.Util
-				.getParsers();
-		for (final Class<? extends SparqlParser> c : parserList)
-		{
-			System.out.println(SparqlParser.Util.getName(c) + ": "
-					+ SparqlParser.Util.getDescription(c));
-		}
+		System.out.println("Default SPARQL parser: "+SparqlParser.Util
+				.getDefaultParser().getClass());
 	}
 
 	public J4SDriver()

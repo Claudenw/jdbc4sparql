@@ -25,9 +25,7 @@ public class SparqlView extends SparqlTable
 
 	public SparqlView( final SparqlQueryBuilder builder )
 	{
-		super(builder.getCatalog().getViewSchema(), builder.getTableDef(
-				SparqlView.NAME_SPACE, UUID.randomUUID().toString()), builder
-				.build());
+		super(builder);
 	}
 
 }

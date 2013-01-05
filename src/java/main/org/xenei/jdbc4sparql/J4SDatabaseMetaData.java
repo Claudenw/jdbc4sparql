@@ -24,7 +24,9 @@ import java.sql.RowIdLifetime;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.Column;
@@ -41,7 +43,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	private final J4SDriver driver;
 	private static MetaCatalog metaCatalog;
 	private static MetaSchema metaSchema;
-	private final List<Catalog> catalogs;
+	private final Map<String,Catalog> catalogs;
 	private static DataTable CATALOGS_TABLE;
 
 	static
@@ -61,14 +63,17 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	{
 		this.connection = connection;
 		this.driver = driver;
-		this.catalogs = new ArrayList<Catalog>();
+		this.catalogs = new HashMap<String,Catalog>(connection.getCatalogs());
 	}
 
 	public void addCatalog( final Catalog catalog )
 	{
-		J4SDatabaseMetaData.CATALOGS_TABLE.addData(new Object[] { catalog
-				.getLocalName() });
-		catalogs.add(J4SDatabaseMetaData.metaCatalog);
+		if (catalogs.get(catalog.getLocalName())==null)
+		{
+			J4SDatabaseMetaData.CATALOGS_TABLE.addData(new Object[] { catalog
+					.getLocalName() });
+			catalogs.put( catalog.getLocalName(), J4SDatabaseMetaData.metaCatalog);
+		}
 	}
 
 	@Override
@@ -196,7 +201,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 				.newTable(MetaSchema.COLUMNS_TABLE);
 
 		for (final Catalog catalog : new NameFilter<Catalog>(catalogPattern,
-				catalogs))
+				catalogs.values()))
 		{
 			for (final Schema schema : new NameFilter<Schema>(schemaPattern,
 					catalog.getSchemas()))
@@ -613,7 +618,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 		final DataTable table = (DataTable) J4SDatabaseMetaData.metaSchema
 				.newTable(MetaSchema.SCHEMAS_TABLE);
 		for (final Catalog catalog : new NameFilter<Catalog>(catalogPattern,
-				catalogs))
+				catalogs.values()))
 		{
 			for (final Schema schema : new NameFilter<Schema>(schemaPattern,
 					catalog.getSchemas()))
@@ -691,7 +696,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 		final DataTable table = (DataTable) J4SDatabaseMetaData.metaSchema
 				.newTable(MetaSchema.TABLE_PRIVILEGES_TABLE);
 		for (final Catalog catalog : new NameFilter<Catalog>(catalogPattern,
-				catalogs))
+				catalogs.values()))
 		{
 			for (final Schema schema : new NameFilter<Schema>(schemaPattern,
 					catalog.getSchemas()))
@@ -718,7 +723,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 		final DataTable table = (DataTable) J4SDatabaseMetaData.metaSchema
 				.newTable(MetaSchema.TABLES_TABLE);
 		for (final Catalog catalog : new NameFilter<Catalog>(catalogPattern,
-				catalogs))
+				catalogs.values()))
 		{
 			for (final Schema schema : new NameFilter<Schema>(schemaPattern,
 					catalog.getSchemas()))
@@ -760,7 +765,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 				.getTable(MetaSchema.TABLE_TYPES_TABLE);
 		if (table.isEmpty())
 		{
-			for (final Catalog catalog : catalogs)
+			for (final Catalog catalog : catalogs.values())
 			{
 				for (final Schema schema : catalog.getSchemas())
 				{

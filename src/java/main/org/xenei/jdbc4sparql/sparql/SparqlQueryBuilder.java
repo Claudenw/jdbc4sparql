@@ -44,7 +44,11 @@ import java.util.Map;
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
+import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 
+/**
+ * Creates a SparqlQuery while tracking naming changes between nomenclatures.
+ */
 public class SparqlQueryBuilder
 {
 	private static final String NOT_FOUND_IN_QUERY = "%s not found in SPARQL query";
@@ -60,6 +64,10 @@ public class SparqlQueryBuilder
 	private final Map<String, Node> nodesInQuery;
 	private final Map<String, SparqlColumn> columnsInQuery;
 
+	/**
+	 * Create a query builder for a catalog
+	 * @param catalog The catalog to build the query for.
+	 */
 	public SparqlQueryBuilder( final SparqlCatalog catalog )
 	{
 		this.catalog = catalog;
@@ -71,6 +79,12 @@ public class SparqlQueryBuilder
 	}
 
 	// public void addBGP( final Node s, final Node p, final Node o )
+	/**
+	 * Add the triple to the BGP for the query.
+	 * This method handles adding the triple to the proper section of the 
+	 * query.
+	 * @param t The Triple to add.
+	 */
 	public void addBGP( final Triple t )
 	{
 		final ElementGroup eg = getElementGroup();
@@ -89,6 +103,26 @@ public class SparqlQueryBuilder
 		eg.addTriplePattern(t);
 	}
 
+	/**
+	 * Add a column to the query.
+	 * 
+	 * Adds the column to the query tracking the name changes as necessary.
+	 * If the column has not already been added to the query this method does
+	 * the following
+	 * <ul>
+	 * <li>
+	 * Adds the column table to the table list if not already added.
+	 * </li><li>
+	 * Adds the column to the bgp using the column query segments.
+	 * </li><li>
+	 * Makes the column values SPARQL optional if they are SQL nullable.
+	 * </li>
+	 * </ul>
+	 * 
+	 * @param column The column to add
+	 * @return The SPARQL based node name for the column.
+	 * @throws SQLException
+	 */
 	public Node addColumn( final SparqlColumn column ) throws SQLException
 	{
 		Node tableVar;
@@ -229,6 +263,12 @@ public class SparqlQueryBuilder
 		}
 	}
 
+	/**
+	 * Adds the the expression as a variable to the query.
+	 * As a variable the result will be returned from the query.  
+	 * @param expr The expression that defines the variable
+	 * @param name the alias for the expression, if null no alias is used.
+	 */
 	public void addVar( final Expr expr, final String name )
 	{
 		final NodeValue nv = expr.getConstant();
@@ -249,49 +289,91 @@ public class SparqlQueryBuilder
 		}
 	}
 
-	public void addVar( final SparqlColumn col, final String name )
+	/**
+	 * Adds the the column as a variable to the query.
+	 * As a variable the result will be returned from the query.  	 * 
+	 * @param col Adds a column as a variable.
+	 * @param alias the alias for the expression, if null no alias is used.
+	 * @throws SQLException
+	 */
+	public void addVar( final SparqlColumn col, final String alias )
 			throws SQLException
 	{
-		final String realName = name == null ? getDBName(col) : name;
+		// figure out what name we are going to use.
+		String realName = alias;
+		if (realName != null)
+		{
+			// var name must not have a dot (.) character
+			realName.replace( ".", SparqlParser.SPARQL_DOT );
+		}
+		else
+		{
+			realName = getDBName(col);
+		}
+
+		// allocate the var for the real name.
 		final Var v = Var.alloc(realName);
+		// if we have not seen this var before register all the info.
 		if (!query.getResultVars().contains(v.toString()))
 		{
-			if (realName.equalsIgnoreCase(name))
+			// if an alias is being used then do special registration
+			if (realName.equalsIgnoreCase(alias))
 			{
-
 				final Node n = addColumn(col);
 				final ElementBind bind = new ElementBind(v, new ExprVar(n));
 				getElementGroup().addElement(bind);
+				// add the alias for the column to the columns list.
+				columnsInQuery.put(v.getName(), col);
 			}
 			query.addResultVar(v);
 		}
 
 	}
 
+	/**
+	 * Adds the the columns as a variables to the query.
+	 * As variables the results will be returned from the query.
+	 * If there is already a column with the same name in the vars then 
+	 * the column's full SPARQL DB name will be used as the 
+	 * alias.  If there are multiple columns then no alias is assumed.  
+	 * @param cols Columns to add to the query as variables.
+	 * @throws SQLException
+	 */
 	public void addVars( final Iterator<SparqlColumn> cols )
 			throws SQLException
 	{
 		while (cols.hasNext())
 		{
 			final SparqlColumn col = cols.next();
-			addVar(col, (getColCount(col) > 1 ? null : col.getLocalName()));
+			addVar(col, getColCount(col)>1?null: col.getLocalName());
 		}
 	}
 
+	/**
+	 * Get the SPARQL query.
+	 * @return The constructed SPARQL query.
+	 */
 	public Query build()
 	{
 		return query;
 	}
 
-	private Collection<SparqlColumn> findColumns( final String schemaName,
-			final String tableName, final String columnName )
+	/**
+	 * Find all the columns for the given schema, table, and column patterns
+	 * @param schemaNamePattern The schema name pattern. null = no restriction.
+	 * @param tableNamePattern The table name pattern. null = no restriction.
+	 * @param columnNamePattern The column name pattern. null = no restriction.
+	 * @return
+	 */
+	private Collection<SparqlColumn> findColumns( final String schemaNamePattern,
+			final String tableNamePattern, final String columnNamePattern )
 	{
 		final List<SparqlColumn> columns = new ArrayList<SparqlColumn>();
-		for (final Schema schema : catalog.findSchemas(schemaName))
+		for (final Schema schema : catalog.findSchemas(schemaNamePattern))
 		{
-			for (final Table table : schema.findTables(tableName))
+			for (final Table table : schema.findTables(tableNamePattern))
 			{
-				for (final Column column : table.findColumns(columnName))
+				for (final Column column : table.findColumns(columnNamePattern))
 				{
 					if (column instanceof SparqlColumn)
 					{
@@ -320,6 +402,10 @@ public class SparqlQueryBuilder
 		return tables;
 	}
 
+	/**
+	 * Get the catalog this builder is working with.
+	 * @return a Catalog.
+	 */
 	public SparqlCatalog getCatalog()
 	{
 		return catalog;
@@ -392,27 +478,53 @@ public class SparqlQueryBuilder
 		return retval;
 	}
 
-	public SparqlTableDef getTableDef( final String namespace, final String name )
+	/**
+	 * Get the table definition for the specified namespace and name.
+	 * The Tabledef will not have a query segment.
+	 * @param namespace The namespace for the table definition.
+	 * @param localName The name for the table definition.
+	 * @return The table definition.
+	 */
+	public SparqlTableDef getTableDef( final String namespace, final String localName )
 	{
-		final SparqlTableDef tableDef = new SparqlTableDef(namespace, name, "");
+		final SparqlTableDef tableDef = new SparqlTableDef(namespace, localName, "");
 		for (final Var var : query.getProjectVars())
 		{
-			final Column c = columnsInQuery.get(var);
+			String varColName = var.getName().replace( SparqlParser.SPARQL_DOT, ".");
+			final Column c = columnsInQuery.get(varColName);
 			if (c == null)
 			{
 				throw new IllegalStateException(String.format(
 						SparqlQueryBuilder.NOT_FOUND_IN_QUERY, var));
 			}
-			tableDef.add(columnsInQuery.get(var));
+			tableDef.add(columnsInQuery.get(varColName));
 		}
 		return tableDef;
 	}
+	
+	/**
+	 * For a given result column get the column name 
+	 * @param idx
+	 * @return 
+	 */
+	public String getSolutionName( int idx )
+	{
+		return query.getProjectVars().get(idx).getName();
+	}
 
+	/**
+	 * @return returns true if the query is going to return all the columns from all the tables.
+	 */
 	public boolean isAllColumns()
 	{
 		return query.isQueryResultStar();
 	}
 
+	/**
+	 * Sets all the columns for all the tables currently defined.
+	 * This method should be called after all tables have been added to the querybuilder.
+	 * @throws SQLException
+	 */
 	public void setAllColumns() throws SQLException
 	{
 		// query.setQueryResultStar(true);
@@ -427,21 +539,35 @@ public class SparqlQueryBuilder
 		}
 	}
 
+	/**
+	 * Sets the distinct flag for the SPARQL query.
+	 */
 	public void setDistinct()
 	{
 		query.setDistinct(true);
 	}
 
+	/**
+	 * Sets the limit for the SPARQL query.
+	 * @param limit The number of records to return
+	 */
 	public void setLimit( final Long limit )
 	{
 		query.setLimit(limit);
 	}
 
+	/**
+	 * Set the offset for the SPARQL query.
+	 * @param offset The number of rows to skip over.
+	 */
 	public void setOffset( final Long offset )
 	{
 		query.setOffset(offset);
 	}
 
+	/**
+	 * Return the SPARQL query as the string value for the builder.
+	 */
 	@Override
 	public String toString()
 	{

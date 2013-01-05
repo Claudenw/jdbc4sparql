@@ -14,13 +14,36 @@ document.
 
 ### URL
 The URL for the J4SDriver is 
-    jdbc:j4s:[?catalog=<catalog>[&builder=<builder>]]:<sparqlendpoint url>
+    jdbc:j4s:[?arg=value>[&arg2=value2[&arg3=value3...]]]:url
 
-Currently the catalog must be supplied and only the default builder is supported.
+
+For current runtime configuration options and defaults execute the J4SDriver class as an application.
+
+#### Valid arguments
+* catalog The name of the catalog to restrict queries for.
+* type The type of the input.
+* builder The builder to build the SQL Schema with.  Either the name of a registered builder or a class name.  See "Registered Schema Builders" below.
+* parser The parser class.  A fully qualified SparqlParser implementation.  Defaults to org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlParserImpl
+
+#### Valid Types:
+* (Default) config - URL is a J4S configuration file (NOT YET IMPLEMENTED)
+* sparql - URL is a sparql endpoint
+* RDFXML or RDF/XML - URL is a RDF/XML formatted RDF file
+* NTRIPLES or N-Triples - URL is a N-Triples formatted RDF file
+* N3 or N3 - URL is a N3 formatted RDF file
+* TURTLE or Turtle - URL is a Turtle formatted RDF file
+* RDFJSON or RDF/JSON - URL is a RDF/JSON formatted RDF file
+* NQUADS or N-Quads - URL is a N-Quads formatted RDF file
+* TRIG or TriG - URL is a TriG formatted RDF file
+
+#### Registered Schema Builders
+(Default) Simple_Builder: A simple schema builder that builds tables based on RDFS Class names
+
+#### Notes ####
 
 Currently the catalog is built at runtime by the builder, however future improvements should include a mechanism to store an entire configuration of multiple catalogs.
 
-the Catalog contains the URL for the SPARQL endpoint so it will be possible to configure the driver to access multiple endpoints.
+the Catalog contains the URL for the SPARQL endpoint or RDF fileso it will be possible to configure the driver to access multiple endpoints.
 
 ## A Conflict Of Nomenclatures
 

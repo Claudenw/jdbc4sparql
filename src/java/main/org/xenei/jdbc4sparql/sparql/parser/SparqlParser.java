@@ -20,8 +20,6 @@ package org.xenei.jdbc4sparql.sparql.parser;
 import com.hp.hpl.jena.graph.Node;
 import com.hp.hpl.jena.sparql.core.Var;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -85,58 +83,50 @@ public interface SparqlParser
 			{
 				throw new IllegalStateException("No default parser defined");
 			}
-
 			try
 			{
 				return lst.get(0).newInstance();
 			}
 			catch (InstantiationException | IllegalAccessException e)
 			{
-				throw new IllegalStateException(Util.getName(lst.get(0))
+				throw new IllegalStateException(lst.get(0)
 						+ " could not be instantiated.", e);
 			}
 		}
 
-		public static String getDescription(
-				final Class<? extends SparqlParser> clazz )
+		public static SparqlParser getParser( final String parserName )
 		{
-			return Util.getField(clazz, "DESCRIPTION", clazz.getName());
-		}
+			if (parserName == null)
+			{
+				return Util.getDefaultParser();
+			}
 
-		private static String getField(
-				final Class<? extends SparqlParser> clazz,
-				final String fieldName, final String defaultValue )
-		{
 			try
 			{
-				final Field f = clazz.getField(fieldName);
-				if (Modifier.isStatic(f.getModifiers()))
+				final Class<?> clazz = Class.forName(parserName);
+				if (SparqlParser.class.isAssignableFrom(clazz))
 				{
-					return f.get(null).toString();
+					try
+					{
+						return (SparqlParser) clazz.newInstance();
+					}
+					catch (InstantiationException | IllegalAccessException e)
+					{
+						throw new IllegalStateException(clazz
+								+ " could not be instantiated.", e);
+					}
+				}
+				else
+				{
+					throw new IllegalArgumentException(clazz
+							+ " does not implement SparqlParser.");
 				}
 			}
-			catch (final NoSuchFieldException e)
+			catch (final ClassNotFoundException e)
 			{
-				// do nothing -- acceptable
+				throw new IllegalArgumentException(parserName
+						+ " is not a vaild SparqlParser");
 			}
-			catch (final SecurityException e)
-			{
-				// do nothing -- acceptable
-			}
-			catch (final IllegalArgumentException e)
-			{
-				// do nothing -- acceptable
-			}
-			catch (final IllegalAccessException e)
-			{
-				// do nothing -- acceptable
-			}
-			return defaultValue;
-		}
-
-		public static String getName( final Class<? extends SparqlParser> clazz )
-		{
-			return Util.getField(clazz, "PARSER_NAME", clazz.getSimpleName());
 		}
 
 		public static List<Class<? extends SparqlParser>> getParsers()
