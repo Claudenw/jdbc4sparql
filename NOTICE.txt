@@ -1,0 +1,4 @@
+
+JDBC 4 SPARQL is licensed under Apache License V2.  However, there is one component that is Licensed under the GNU LGPL V3.0
+this means that if you want to use this product in an environment that is not permitted under GNU LGPL V3.0 you will need to 
+find another implementation of the SparqlParser interface.  How to do this is covered in the README.md document.

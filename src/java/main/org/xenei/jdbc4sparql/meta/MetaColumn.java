@@ -57,14 +57,6 @@ public class MetaColumn extends ColumnDefImpl implements Column
 				signed);
 	}
 
-	public MetaColumn( final String localName, final int type,
-			final javax.persistence.Column columnDef )
-	{
-		this(localName, type, 0, columnDef.precision(), columnDef.scale(), true);
-		setNullable(columnDef.nullable() ? DatabaseMetaData.columnNullable
-				: DatabaseMetaData.columnNoNulls);
-	}
-
 	@Override
 	public Catalog getCatalog()
 	{
