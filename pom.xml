@@ -4,6 +4,20 @@
 	<groupId>org.xenei</groupId>
 	<artifactId>jdbc4sparql</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
+	<licenses>
+		<license>
+			<name>The Apache Software License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<distribution>repo</distribution>
+			<comments>A business-friendly OSS license</comments>
+		</license>
+		<license>
+			<name>GNU LESSER GENERAL PUBLIC LICENSE, Version 3.0</name>
+			<url>http://www.gnu.org/copyleft/lesser.html</url>
+			<distribution>repo</distribution>
+			<comments>Included jsqlparser uses this license</comments>
+		</license>
+	</licenses>
 	<build>
 		<resources>
 			<resource>
@@ -96,12 +110,11 @@
 	</dependencies>
 	<name>JDBC 4 SPARQL</name>
 	<description>A JDBC Driver that retrieves data from a SPARQL endpoint or an RDF file.</description>
-	<inceptionYear>10 Dec 2012</inceptionYear>
+	<inceptionYear>2012</inceptionYear>
 	<organization>
 		<name>xenei.org</name>
 	</organization>
 	<scm>
 		<url>https://github.com/Claudenw/jdbc4sparql</url>
-		<developerConnection>Claude Warren</developerConnection>
 	</scm>
 </project>
