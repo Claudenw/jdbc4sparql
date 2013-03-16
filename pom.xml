@@ -117,4 +117,12 @@
 	<scm>
 		<url>https://github.com/Claudenw/jdbc4sparql</url>
 	</scm>
+	<parent>
+		<groupId>org.sonatype.oss</groupId>
+		<artifactId>oss-parent</artifactId>
+		<version>7</version>
+	</parent>
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
 </project>

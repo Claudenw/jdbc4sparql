@@ -5,10 +5,17 @@ be completed in the near future.
 
 JDBC 4 SPARQL is a JDBC Driver that uses a SPARQL endpoint (or Jena Model) as the data store.
 
+## Licenses
+
 JDBC 4 SPARQL is licensed under Apache License V2.  However, there is one component that is Licensed under the GNU LGPL V3.0
 this means that if you want to use this product in an environment that is not permitted under GNU LGPL V3.0 you will need to 
 find another implementation of the SparqlParser interface.  How to do this is covered in the Extensions Points section of this 
 document.
+	
+## Maven
+
+Group ID: org.xenei
+Artifact ID: jdbc4sparql
 
 ## Usage
 
