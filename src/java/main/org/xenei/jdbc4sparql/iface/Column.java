@@ -19,11 +19,28 @@ package org.xenei.jdbc4sparql.iface;
 
 public interface Column extends NamespacedObject, ColumnDef
 {
+	/**
+	 * @return the Catalog this table is in.
+	 */
 	Catalog getCatalog();
 
-	String getDBName();
+	/**
+	 * @return the name formatted for SQL
+	 */
+	String getSQLName();
 
+	/**
+	 * @return The schema this table is in
+	 */
 	Schema getSchema();
 
+	/**
+	 * @return The table this column is in.
+	 */
 	Table getTable();
+
+	/**
+	 * @return The name formatted for SPARQL
+	 */
+	String getSPARQLName();
 }

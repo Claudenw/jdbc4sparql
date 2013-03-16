@@ -17,7 +17,6 @@
  */
 package org.xenei.jdbc4sparql.meta;
 
-import java.sql.DatabaseMetaData;
 import java.sql.Types;
 
 import org.xenei.jdbc4sparql.iface.Catalog;
@@ -25,30 +24,55 @@ import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.impl.ColumnDefImpl;
+import org.xenei.jdbc4sparql.impl.NameUtils;
 
 /**
  * Meta column can be created without a table being specified first.
  */
 public class MetaColumn extends ColumnDefImpl implements Column
 {
-
+	/**
+	 * Get an integer instance of a meta column.
+	 * @param localName The local name
+	 * @return a MetaColumn
+	 */
 	public static MetaColumn getIntInstance( final String localName )
 	{
 		return new MetaColumn(localName, Types.INTEGER, 0, 0, 0, true);
 	}
 
+	/**
+	 * Get a string (varchar) instance of a meta column
+	 * @param localName The local name
+	 * @return a MetaColumn
+	 */
 	public static MetaColumn getStringInstance( final String localName )
 	{
 		return new MetaColumn(localName, Types.VARCHAR, 0, 0, 0, false);
 	}
 
+	// the table the metacolumn is in.
 	private Table table;
 
+	/**
+	 * Constructor.
+	 * @param localName The local name
+	 * @param type The column Type.
+	 */
 	public MetaColumn( final String localName, final int type )
 	{
 		this(localName, type, 0, 0, 0, true);
 	}
 
+	/**
+	 * Constructor
+	 * @param localName The local name
+	 * @param type The column type.
+	 * @param displaySize The display size.
+	 * @param precision the percision.
+	 * @param scale the scale.
+	 * @param signed the signed flag.
+	 */
 	public MetaColumn( final String localName, final int type,
 			final int displaySize, final int precision, final int scale,
 			final boolean signed )
@@ -64,9 +88,9 @@ public class MetaColumn extends ColumnDefImpl implements Column
 	}
 
 	@Override
-	public String getDBName()
+	public String getSQLName()
 	{
-		return getTable().getDBName() + "." + getLocalName();
+		return NameUtils.getDBName(this);
 	}
 
 	@Override
@@ -81,9 +105,19 @@ public class MetaColumn extends ColumnDefImpl implements Column
 		return table;
 	}
 
+	/**
+	 * Set the table the metacolumn is in.
+	 * @param table
+	 */
 	void setTable( final Table table )
 	{
 		this.table = table;
+	}
+
+	@Override
+	public String getSPARQLName()
+	{
+		return NameUtils.getSPARQLName(this);
 	}
 
 }

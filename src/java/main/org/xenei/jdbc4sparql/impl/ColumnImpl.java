@@ -23,11 +23,22 @@ import org.xenei.jdbc4sparql.iface.ColumnDef;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
 
+/**
+ * A column implementation.
+ */
 public class ColumnImpl extends NamespaceImpl implements Column
 {
+	// the table the column is in
 	private final Table table;
+	// the definition for the column
 	private final ColumnDef columnDef;
 
+	/**
+	 * Constructor
+	 * @param namespace The namespace for the column
+	 * @param table The table the column is in.
+	 * @param columnDef The column defintion.
+	 */
 	public ColumnImpl( final String namespace, final Table table,
 			final ColumnDef columnDef )
 	{
@@ -36,6 +47,11 @@ public class ColumnImpl extends NamespaceImpl implements Column
 		this.columnDef = columnDef;
 	}
 
+	/**
+	 * Constructor.
+	 * @param table The table the column is in.
+	 * @param columnDef The column defintion.
+	 */
 	public ColumnImpl( final Table table, final ColumnDef columnDef )
 	{
 		this(table.getNamespace(), table, columnDef);
@@ -53,16 +69,24 @@ public class ColumnImpl extends NamespaceImpl implements Column
 		return columnDef.getColumnClassName();
 	}
 
+	/**
+	 * @return  The column definition
+	 */
 	protected ColumnDef getColumnDef()
 	{
 		return columnDef;
 	}
 
 	@Override
-	public String getDBName()
+	public String getSQLName()
 	{
-		return String.format("%s.%s.%s", getSchema().getLocalName(), getTable()
-				.getLocalName(), getLocalName());
+		return NameUtils.getDBName(this);
+	}
+	
+	@Override
+	public String getSPARQLName()
+	{
+		return NameUtils.getSPARQLName(this);
 	}
 
 	@Override
@@ -171,7 +195,7 @@ public class ColumnImpl extends NamespaceImpl implements Column
 	public String toString()
 	{
 		return String.format("Column[%s.%s]", getCatalog().getLocalName(),
-				getDBName());
+				getSQLName());
 	}
 
 }

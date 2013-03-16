@@ -34,6 +34,7 @@ import com.hp.hpl.jena.sparql.expr.E_Multiply;
 import com.hp.hpl.jena.sparql.expr.E_NotEquals;
 import com.hp.hpl.jena.sparql.expr.E_Subtract;
 import com.hp.hpl.jena.sparql.expr.Expr;
+import com.hp.hpl.jena.sparql.expr.ExprVar;
 import com.hp.hpl.jena.sparql.expr.nodevalue.NodeValueDT;
 import com.hp.hpl.jena.sparql.expr.nodevalue.NodeValueDouble;
 import com.hp.hpl.jena.sparql.expr.nodevalue.NodeValueInteger;
@@ -85,29 +86,49 @@ import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.SubSelect;
 
+import org.apache.commons.lang3.reflect.TypeUtils;
+import org.xenei.jdbc4sparql.sparql.SparqlColumn;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 
+/**
+ * An expression visitor. Merges SQL expressions into the SparqlQueryBuilder.
+ */
 class SparqlExprVisitor implements ExpressionVisitor
 {
+	// the query builder
 	private final SparqlQueryBuilder builder;
+	// A stack of expression elements.
 	private final Stack<Expr> stack;
 
+	/**
+	 * Constructor
+	 * @param builder The SparqlQueryBuilder to use.
+	 */
 	SparqlExprVisitor( final SparqlQueryBuilder builder )
 	{
 		this.builder = builder;
 		stack = new Stack<Expr>();
 	}
 
+	/**
+	 * Get the final result of the process.
+	 * @return
+	 */
 	public Expr getResult()
 	{
 		return stack.pop();
 	}
 
+	/**
+	 * 
+	 * @return True if the stack is empty (no result).
+	 */
 	public boolean isEmpty()
 	{
 		return stack.isEmpty();
 	}
 
+	// process a binary expression.
 	private void process( final BinaryExpression biExpr )
 	{
 		// put on in reverse order so they can be popped back off in the proper
@@ -187,10 +208,7 @@ class SparqlExprVisitor implements ExpressionVisitor
 			final Node columnVar = builder.addColumn(tableColumn.getTable()
 					.getSchemaName(), tableColumn.getTable().getName(),
 					tableColumn.getColumnName());
-			/**
-			 * Add column to expression
-			 */
-			stack.push(new NodeValueNode(columnVar));
+			stack.push(new ExprVar( columnVar ));
 		}
 		catch (final SQLException e)
 		{
@@ -229,19 +247,7 @@ class SparqlExprVisitor implements ExpressionVisitor
 	public void visit( final EqualsTo equalsTo )
 	{
 		process(equalsTo);
-		final Expr left = stack.pop();
-		final Expr right = stack.pop();
-		// if 2 vars then add to the SPARQL where to select and as a Filter
-		if ((left instanceof NodeValueNode) && (right instanceof NodeValueNode))
-		{
-			final NodeValueNode nLeft = (NodeValueNode) left;
-			final NodeValueNode nRight = (NodeValueNode) right;
-			if (nLeft.getNode().isVariable() && nRight.getNode().isVariable())
-			{
-				builder.addEquals(nLeft.getNode(), nRight.getNode());
-			}
-		}
-		stack.push(new E_Equals(left, right));
+		stack.push(new E_Equals(stack.pop(), stack.pop()));
 	}
 
 	@Override
@@ -300,7 +306,7 @@ class SparqlExprVisitor implements ExpressionVisitor
 	@Override
 	public void visit( final LikeExpression likeExpression )
 	{
-		// convert this to a regex function.
+		// TODO convert this to a regex function.
 		throw new UnsupportedOperationException("LIKE is not supported");
 	}
 

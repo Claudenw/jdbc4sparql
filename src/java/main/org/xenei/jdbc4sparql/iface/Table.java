@@ -24,24 +24,43 @@ import org.xenei.jdbc4sparql.impl.ColumnImpl;
 
 public interface Table extends NamespacedObject, TableDef
 {
+	/**
+	 * An iterator of the columns in the table.
+	 * 
+	 * Remove is not supported.
+	 */
 	public static class ColumnIterator implements Iterator<Column>
 	{
+		// the table 
 		private final Table table;
+		// the namespace
 		private final String namespace;
+		// an iterator over the columnDefs
 		private final Iterator<? extends ColumnDef> iter;
 
+		/**
+		 * Constructor
+		 * @param namespace The namespace of the table.
+		 * @param table The table.
+		 * @param colDefs The collection of column definitions.
+		 */
 		public ColumnIterator( final String namespace, final Table table,
-				final Collection<? extends ColumnDef> def )
+				final Collection<? extends ColumnDef> colDefs )
 		{
 			this.table = table;
 			this.namespace = namespace;
-			iter = def.iterator();
+			iter = colDefs.iterator();
 		}
 
+		/**
+		 * Constructor
+		 * @param table The table.
+		 * @param colDefs The collection of column definitions.
+		 */
 		public ColumnIterator( final Table table,
-				final Collection<? extends ColumnDef> def )
+				final Collection<? extends ColumnDef> colDefs )
 		{
-			this(table.getNamespace(), table, def);
+			this(table.getNamespace(), table, colDefs);
 		}
 
 		@Override
@@ -64,22 +83,50 @@ public interface Table extends NamespacedObject, TableDef
 
 	}
 
+	/**
+	 * Find all columns with the columnNamePattern.
+	 * 
+	 * If columnNamePattern is null all columns are matched.
+	 * 
+	 * @param columnNamePattern The pattern to match or null.
+	 * @return
+	 */
 	NameFilter<Column> findColumns( String columnNamePattern );
 
+	/**
+	 * 
+	 * @return Get the catalog this table is in.
+	 */
 	Catalog getCatalog();
 
+	/**
+	 * Get the column by index.
+	 * @param idx The index of the column to retrieve.
+	 * @return the column.
+	 * @thows IndexOutOfBoundsException
+	 */
 	Column getColumn( int idx );
 
+	/**
+	 * Get the column by name
+	 * @param name the name of the column to retrieve
+	 * @return the column or null if name not found.
+	 */
 	Column getColumn( String name );
 
+	/**
+	 * Get an iterator over all the columns in order.
+	 * @return The column iterator.
+	 */
 	Iterator<? extends Column> getColumns();
 
-	String getDBName();
+	/**
+	 * @return the SQL formatted table name
+	 */
+	String getSQLName();
 
 	/**
-	 * The schema the table belongs in.
-	 * 
-	 * @return
+	 * @return The schema the table belongs in.
 	 */
 	Schema getSchema();
 
@@ -87,6 +134,13 @@ public interface Table extends NamespacedObject, TableDef
 	 * Get the type of table.
 	 * Typical types are "TABLE", "VIEW", "SYSTEM TABLE", "GLOBAL TEMPORARY",
 	 * "LOCAL TEMPORARY", "ALIAS", "SYNONYM".
+	 * @return The table type
 	 */
 	String getType();
+
+	/**
+	 * 
+	 * @return the SPARQL formatted table name.
+	 */
+	String getSPARQLName();
 }

@@ -20,18 +20,42 @@ package org.xenei.jdbc4sparql.iface;
 import java.util.Collection;
 import java.util.Iterator;
 
+/**
+ * Filters a namespacedObject by name.  
+ * 
+ * @param <T> a NamespacedObject
+ */
 public class NameFilter<T extends NamespacedObject> implements Iterator<T>,
 		Iterable<T>
 {
-	String namePattern;
-	Iterator<? extends T> iter;
-	T next;
+	// the name pattern to match
+	private String namePattern;
+	// the iterator of the original collection.
+	private Iterator<? extends T> iter;
+	// our next object.
+	private T next;
 
+	/**
+	 * Construct a NameFilter from a pattern and a collection.
+	 * 
+	 * If namePattern is null match all names.
+	 * 
+	 * @param namePattern The pattern to match or null.
+	 * @param objs The collection of objects to filter.
+	 */
 	public NameFilter( final String namePattern, final Collection<T> objs )
 	{
 		this(namePattern, objs.iterator());
 	}
 
+	/**
+	 * Construct a NameFilter from a pattern and an iterator.
+	 * 
+	 * If namePattern is null match all names.
+	 * 
+	 * @param namePattern The pattern to match or null.
+	 * @param iter the iterator of objects to filter.
+	 */
 	public NameFilter( final String namePattern,
 			final Iterator<? extends T> iter )
 	{

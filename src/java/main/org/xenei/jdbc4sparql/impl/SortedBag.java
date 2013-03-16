@@ -27,6 +27,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.TreeMap;
 
+import org.apache.commons.collections.iterators.IteratorChain;
+
+/**
+ * A bag that is sorted by key.
+ *
+ * @param <T>
+ */
 public class SortedBag<T> implements Collection<T>
 {
 	private final TreeMap<T, List<T>> map;
@@ -97,6 +104,7 @@ public class SortedBag<T> implements Collection<T>
 			iter = iter.andThen(lst.iterator());
 		}
 		return iter;
+		
 	}
 
 	@Override

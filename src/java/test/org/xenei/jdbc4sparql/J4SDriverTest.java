@@ -17,6 +17,15 @@
  */
 package org.xenei.jdbc4sparql;
 
+import com.hp.hpl.jena.query.Query;
+import com.hp.hpl.jena.query.QueryExecution;
+import com.hp.hpl.jena.query.QueryExecutionFactory;
+import com.hp.hpl.jena.query.QueryFactory;
+import com.hp.hpl.jena.query.QuerySolution;
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.util.iterator.WrappedIterator;
+
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -28,24 +37,40 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 public class J4SDriverTest
 {
+	// file URL
+	private URL fUrl;
+	
+	// J4SUrl
+	private String url;
+	
+	// JDBC Connection
+	private Connection conn;
+	
+	
+	@Before
+	public void setup() throws Exception
+	{
+		Class.forName("org.xenei.jdbc4sparql.J4SDriver");
+		
+		fUrl = J4SDriverTest.class.getResource("./J4SDriverTest.ttl"); // /org/xenei/jdbc4sparql/J4SDriverTest.ttl");
+
+		url = "jdbc:j4s?catalog=test&type=turtle:"
+				+ fUrl.toString();
+
+		conn = DriverManager.getConnection(url, "myschema", "mypassw");
+	}
 
 	@Test
 	public void testTestDriverLoading() throws ClassNotFoundException,
 			SQLException
 	{
-		Class.forName("org.xenei.jdbc4sparql.J4SDriver");
+		
 
-		final URL fUrl = J4SDriverTest.class.getResource("./J4SDriverTest.ttl"); // /org/xenei/jdbc4sparql/J4SDriverTest.ttl");
-
-		final String url = "jdbc:j4s?catalog=test&type=turtle:"
-				+ fUrl.toString();
-
-		final Connection conn = DriverManager.getConnection(url, "myschema",
-				"mypassw");
 
 		// verify table exists
 		final DatabaseMetaData metaData = conn.getMetaData();
@@ -53,14 +78,9 @@ public class J4SDriverTest
 		Assert.assertTrue(rs.next());
 
 		// get the column names.
-		rs = metaData.getColumns(conn.getCatalog(), conn.getSchema(),
-				"fooTable", null);
-		final List<String> colNames = new ArrayList<String>();
-		while (rs.next())
-		{
-			colNames.add(rs.getString(4));
-		}
 
+		final List<String> colNames = getColumnNames("fooTable");
+		
 		// execute a query against the table and verify results
 		conn.setAutoCommit(false);
 		final Statement stmt = conn.createStatement();
@@ -76,4 +96,19 @@ public class J4SDriverTest
 		stmt.close();
 	}
 
+	
+	private List<String> getColumnNames( String table ) throws SQLException
+	{
+		ResultSet rs = conn.getMetaData().getColumns(conn.getCatalog(), conn.getSchema(),
+				table, null);
+		final List<String> colNames = new ArrayList<String>();
+		while (rs.next())
+		{
+			colNames.add(rs.getString(4));
+		}
+		return colNames;
+	}
+	
+	
+	
 }

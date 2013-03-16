@@ -29,17 +29,37 @@ import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.TableDef;
 
+/**
+ * A schema implementation.
+ */
 public class SchemaImpl extends NamespaceImpl implements Schema
 {
+	// The catalog the schema is in.
 	private final Catalog catalog;
+	// a map of table local names to tables in the catalog.
 	private final Map<String, Table> tables;
+	// a map of tabledef local names to tabledefs in the catalog.
 	private final Map<String, TableDef> tableDefs;
 
+	/**
+	 * Construcor.
+	 * 
+	 * Uses catalog namespace.
+	 * 
+	 * @param catalog The catalog the schema is in.
+	 * @param localName The local name for the schema.
+	 */
 	public SchemaImpl( final Catalog catalog, final String localName )
 	{
 		this(catalog, catalog.getNamespace(), localName);
 	}
 
+	/**
+	 * Constructor
+	 * @param catalog The catalog the schema is in.
+	 * @param namespace The namespace the catalog is in.
+	 * @param localName The local name for the schema.
+	 */
 	public SchemaImpl( final Catalog catalog, final String namespace,
 			final String localName )
 	{
@@ -49,6 +69,12 @@ public class SchemaImpl extends NamespaceImpl implements Schema
 		tableDefs = new HashMap<String, TableDef>();
 	}
 
+	/**
+	 * Add a table to the schema.
+	 * 
+	 * @param table The table to add
+	 * @throw IllegalArgumentException if a table wit the same FQName already exists in the schema.
+	 */
 	public void addTable( final Table table )
 	{
 		for (final Schema schema : getCatalog().findSchemas(null))
@@ -62,7 +88,7 @@ public class SchemaImpl extends NamespaceImpl implements Schema
 						throw new IllegalArgumentException(
 								String.format(
 										"Name conflict tables %s and %s have FQName of %s",
-										table.getDBName(), tbl.getDBName(),
+										table.getSQLName(), tbl.getSQLName(),
 										table.getFQName()));
 					}
 				}
@@ -71,11 +97,25 @@ public class SchemaImpl extends NamespaceImpl implements Schema
 		tables.put(table.getLocalName(), table);
 	}
 
+	/**
+	 * Add a table definition to the schema.
+	 * 
+	 * Will overwrite an existing table definition with the same local name.
+	 * 
+	 * @param tableDef The tabledefinition to add.
+	 */
 	public void addTableDef( final TableDef tableDef )
 	{
 		tableDefs.put(tableDef.getLocalName(), tableDef);
 	}
 
+	/**
+	 * Add a collection of table defs.
+	 * 
+	 * Will overwrite an existing table definition with the same local name.
+	 * 
+	 * @param tableDefs
+	 */
 	public void addTableDefs( final Collection<TableDef> tableDefs )
 	{
 		for (final TableDef t : tableDefs)
@@ -108,6 +148,11 @@ public class SchemaImpl extends NamespaceImpl implements Schema
 		return retval;
 	}
 
+	/**
+	 * Get teh table def for the local name.
+	 * @param localName The local name to find
+	 * @return The TableDef or null if it is not found.
+	 */
 	public TableDef getTableDef( final String localName )
 	{
 		return tableDefs.get(localName);

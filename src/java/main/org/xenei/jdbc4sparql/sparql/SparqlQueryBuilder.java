@@ -31,6 +31,8 @@ import com.hp.hpl.jena.sparql.syntax.ElementFilter;
 import com.hp.hpl.jena.sparql.syntax.ElementGroup;
 import com.hp.hpl.jena.sparql.syntax.ElementOptional;
 import com.hp.hpl.jena.sparql.syntax.ElementTriplesBlock;
+import com.hp.hpl.jena.util.iterator.Map1;
+import com.hp.hpl.jena.util.iterator.WrappedIterator;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
@@ -40,28 +42,33 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
-import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
+import org.xenei.jdbc4sparql.impl.NameUtils;
 
 /**
  * Creates a SparqlQuery while tracking naming changes between nomenclatures.
  */
 public class SparqlQueryBuilder
 {
+	// a set of error messages.
 	private static final String NOT_FOUND_IN_QUERY = "%s not found in SPARQL query";
 	private static final String FOUND_IN_MULTIPLE_ = "%s was found in multiple %s";
 	private static final String NOT_FOUND_IN_ANY_ = "%s was not found in any %s";
 
-	private static final String COLUMN_NAME_FMT = "%s\u00B7%s\u00B7%s";
-	private static final String TABLE_NAME_FMT = "%s\u00B7%s";
-
+	// the query we are building.
 	private final Query query;
+	// sparql catalog we are running against.
 	private final SparqlCatalog catalog;
+	// the list of tables in the query indexed by SQL name.
 	private final Map<String, SparqlTable> tablesInQuery;
+	// the list of nodes in the query indexed by SQL name.
 	private final Map<String, Node> nodesInQuery;
+	// the list of columns in the query indexed by SQL name.
 	private final Map<String, SparqlColumn> columnsInQuery;
 
 	/**
@@ -78,7 +85,6 @@ public class SparqlQueryBuilder
 		query.setQuerySelectType();
 	}
 
-	// public void addBGP( final Node s, final Node p, final Node o )
 	/**
 	 * Add the triple to the BGP for the query.
 	 * This method handles adding the triple to the proper section of the 
@@ -125,16 +131,18 @@ public class SparqlQueryBuilder
 	 */
 	public Node addColumn( final SparqlColumn column ) throws SQLException
 	{
-		Node tableVar;
-
-		if (!columnsInQuery.containsKey(column.getDBName()))
+		// if the column is not in the query add it.
+		if (!columnsInQuery.containsKey(column.getSQLName()))
 		{
-			columnsInQuery.put(column.getDBName(), column);
-			tableVar = addTable(column.getSchema().getLocalName(), column
+			// add the column to the query.
+			columnsInQuery.put(column.getSQLName(), column);
+			// make sure the table is in the query.
+			Node tableVar = addTable(column.getSchema().getLocalName(), column
 					.getTable().getLocalName());
-			final Node columnVar = Node.createVariable(getDBName(column));
-			nodesInQuery.put(column.getDBName(), columnVar);
-			// ?tableVar columnURI ?columnVar
+			// add the node to the query
+			final Node columnVar = Node.createVariable(column.getSPARQLName());
+			nodesInQuery.put(column.getSQLName(), columnVar);
+			// if the column does not allow null add triple
 			if (column.getNullable() == DatabaseMetaData.columnNoNulls)
 			{
 				for (final Triple t : column.getQuerySegments(tableVar,
@@ -145,6 +153,7 @@ public class SparqlQueryBuilder
 			}
 			else
 			{
+				// column supports nulls so make it optional.
 				final ElementGroup eg = getElementGroup();
 				final ElementTriplesBlock etb = new ElementTriplesBlock();
 				for (final Triple t : column.getQuerySegments(tableVar,
@@ -158,19 +167,66 @@ public class SparqlQueryBuilder
 		}
 		else
 		{
-			return getDBNode(column.getDBName());
+			// already there, return node from the query.
+			return getNodeBySQLName(column.getSQLName());
 		}
-
 	}
 
+	/**
+	 * Add teh column to the query.
+	 * @param schemaName The schema name.
+	 * @param tableName The table name.
+	 * @param columnName The column name.
+	 * @return The node for the column.
+	 * @throws SQLException
+	 */
 	public Node addColumn( final String schemaName, final String tableName,
 			final String columnName ) throws SQLException
 	{
+		// get all the columns that match the name patterns
 		final Collection<SparqlColumn> columns = findColumns(schemaName,
 				tableName, columnName);
 
+		// if there are more than one see if only one is specified in the list of tables.
 		if (columns.size() > 1)
 		{
+			if (tableName == null)
+			{
+				// wild table so look for table names currently in the query.
+				// get the set of table names.
+				Set<String> tblNames = WrappedIterator.create( tablesInQuery.values().iterator() ).mapWith( new Map1<SparqlTable,String>(){
+
+					@Override
+					public String map1( SparqlTable o )
+					{
+						return o.getSQLName();
+					}} ).toSet();
+				SparqlColumn col = null;
+				SparqlColumn thisCol = null;
+				Iterator<SparqlColumn> iter = columns.iterator();
+				while (iter.hasNext())
+				{
+					thisCol = iter.next();
+					if (tblNames.contains( thisCol.getTable().getSQLName()))
+					{
+						if (col != null)
+						{
+							throw new SQLException(
+									String.format(SparqlQueryBuilder.FOUND_IN_MULTIPLE_,
+											columnName, "tables"));							
+						}
+						else
+						{
+							col = thisCol;
+						}
+					}
+				}
+				if (col != null)
+				{
+					return addColumn(col);
+				}
+				
+			}
 			throw new SQLException(
 					String.format(SparqlQueryBuilder.FOUND_IN_MULTIPLE_,
 							columnName, "tables"));
@@ -183,36 +239,21 @@ public class SparqlQueryBuilder
 		return addColumn(columns.iterator().next());
 	}
 
-	public void addEquals( final Node left, final Node right )
-	{
-		final Var vLeft = Var.alloc(left);
-		final Var vRight = Var.alloc(right);
-
-		final Column cLeft = columnsInQuery.get(vLeft.getName());
-		if (cLeft == null)
-		{
-			throw new IllegalStateException(String.format(
-					SparqlQueryBuilder.NOT_FOUND_IN_QUERY, vLeft));
-		}
-		final Column cRight = columnsInQuery.get(vRight.getName());
-		if (cRight == null)
-		{
-			throw new IllegalStateException(String.format(
-					SparqlQueryBuilder.NOT_FOUND_IN_QUERY, vRight));
-		}
-		final Node tnLeft = getDBNode(cLeft.getTable().getDBName());
-		final Node tnRight = getDBNode(cRight.getTable().getDBName());
-		final Node anon = Node.createAnon(new AnonId());
-		addBGP(new Triple(tnLeft, Node.createURI(cLeft.getFQName()), anon));
-		addBGP(new Triple(tnRight, Node.createURI(cRight.getFQName()), anon));
-	}
-
+	/**
+	 * Add a filter to the query.
+	 * @param filter The filter to add.
+	 */
 	public void addFilter( final Expr filter )
 	{
 		final ElementFilter el = new ElementFilter(filter);
 		getElementGroup().addElementFilter(el);
 	}
 
+	/**
+	 * Add an order by to the query.
+	 * @param expr The expression to order by.
+	 * @param ascending true of order should be ascending, false = descending.
+	 */
 	public void addOrderBy( final Expr expr, final boolean ascending )
 	{
 		query.addOrderBy(expr, ascending ? Query.ORDER_ASCENDING
@@ -220,14 +261,11 @@ public class SparqlQueryBuilder
 	}
 
 	/**
-	 * Returns the variable for the table.
-	 * 
-	 * @param schemaName
-	 *            The schema name to find (null = any)
-	 * @param tableName
-	 *            The table name to find (null = any)
-	 * @return
-	 * @throws SQLException
+	 * Add a table to the query.
+	 * @param schemaName The schema name
+	 * @param tableName The table name
+	 * @return The node that represents the table.
+	 * @throws SQLException if the table is in multiple schemas or not found.
 	 */
 	public Node addTable( final String schemaName, final String tableName )
 			throws SQLException
@@ -246,11 +284,14 @@ public class SparqlQueryBuilder
 					SparqlQueryBuilder.NOT_FOUND_IN_ANY_, tableName, "schema"));
 		}
 		final SparqlTable table = tables.iterator().next();
-		if (!tablesInQuery.containsKey(table.getDBName()))
+		// make sure the table is in the query.
+		if (!tablesInQuery.containsKey(table.getSQLName()))
 		{
-			final Node tableVar = Node.createVariable(getDBName(table));
-			tablesInQuery.put(table.getDBName(), table);
-			nodesInQuery.put(table.getDBName(), tableVar);
+			tablesInQuery.put(table.getSQLName(), table);
+			// add the table var to the nodes.
+			final Node tableVar = Node.createVariable(table.getSPARQLName());
+			nodesInQuery.put(table.getSQLName(), tableVar);
+			// add the bgp to the query
 			for (final Triple t : table.getQuerySegments(tableVar))
 			{
 				addBGP(t);
@@ -259,7 +300,8 @@ public class SparqlQueryBuilder
 		}
 		else
 		{
-			return getDBNode(table.getDBName());
+			// look up the table node by sql name.
+			return getNodeBySQLName(table.getSQLName());
 		}
 	}
 
@@ -291,7 +333,8 @@ public class SparqlQueryBuilder
 
 	/**
 	 * Adds the the column as a variable to the query.
-	 * As a variable the result will be returned from the query.  	 * 
+	 * As a variable the result will be returned from the query.  	
+	 *  
 	 * @param col Adds a column as a variable.
 	 * @param alias the alias for the expression, if null no alias is used.
 	 * @throws SQLException
@@ -300,24 +343,15 @@ public class SparqlQueryBuilder
 			throws SQLException
 	{
 		// figure out what name we are going to use.
-		String realName = alias;
-		if (realName != null)
-		{
-			// var name must not have a dot (.) character
-			realName.replace( ".", SparqlParser.SPARQL_DOT );
-		}
-		else
-		{
-			realName = getDBName(col);
-		}
-
+		String sparqlName = StringUtils.defaultString(alias, col.getSPARQLName());
+		
 		// allocate the var for the real name.
-		final Var v = Var.alloc(realName);
+		final Var v = Var.alloc(sparqlName);
 		// if we have not seen this var before register all the info.
 		if (!query.getResultVars().contains(v.toString()))
 		{
 			// if an alias is being used then do special registration
-			if (realName.equalsIgnoreCase(alias))
+			if (sparqlName.equalsIgnoreCase(alias))
 			{
 				final Node n = addColumn(col);
 				final ElementBind bind = new ElementBind(v, new ExprVar(n));
@@ -358,6 +392,34 @@ public class SparqlQueryBuilder
 		return query;
 	}
 
+	/**
+	 * Get a column from the query.
+	 * 
+	 * None of the parameters may be null.
+	 * @param schemaName The schema name
+	 * @param tableName The table name
+	 * @param columnName The column name
+	 * @return The SparqlColumn or null if no column is defined in the query.
+	 */
+	public SparqlColumn getColumn( final String schemaName,
+			final String tableName, final String columnName )
+	{
+		if ( schemaName == null)
+		{
+			throw new IllegalArgumentException( "Schema name may not be null");
+		}
+		if ( tableName == null)
+		{
+			throw new IllegalArgumentException( "Table name may not be null");
+		}
+		if ( columnName == null)
+		{
+			throw new IllegalArgumentException( "Column name may not be null");
+		}
+		Iterator<SparqlColumn> iter = findColumns( schemaName, tableName, columnName ).iterator();
+		return (iter.hasNext())?iter.next():null;
+	}
+	
 	/**
 	 * Find all the columns for the given schema, table, and column patterns
 	 * @param schemaNamePattern The schema name pattern. null = no restriction.
@@ -425,19 +487,7 @@ public class SparqlQueryBuilder
 		return retval;
 	}
 
-	private String getDBName( final Column col )
-	{
-		return String.format(SparqlQueryBuilder.COLUMN_NAME_FMT, col
-				.getSchema().getLocalName(), col.getTable().getLocalName(), col
-				.getLocalName());
-	}
-
-	private String getDBName( final Table table )
-	{
-		return String.format(SparqlQueryBuilder.TABLE_NAME_FMT, table
-				.getSchema().getLocalName(), table.getLocalName());
-	}
-
+	
 	/*
 	 * private String getTableVar( Table table )
 	 * {
@@ -446,7 +496,7 @@ public class SparqlQueryBuilder
 	 * table.getSchema().getLocalName(), table.getLocalName() );
 	 * }
 	 */
-	private Node getDBNode( final String dbName )
+	private Node getNodeBySQLName( final String dbName )
 	{
 		final Node n = nodesInQuery.get(dbName);
 		if (n == null)
@@ -490,7 +540,7 @@ public class SparqlQueryBuilder
 		final SparqlTableDef tableDef = new SparqlTableDef(namespace, localName, "");
 		for (final Var var : query.getProjectVars())
 		{
-			String varColName = var.getName().replace( SparqlParser.SPARQL_DOT, ".");
+			String varColName = var.getName().replace( NameUtils.SPARQL_DOT, ".");
 			final Column c = columnsInQuery.get(varColName);
 			if (c == null)
 			{

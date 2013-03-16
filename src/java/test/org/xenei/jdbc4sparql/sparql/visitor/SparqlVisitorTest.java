@@ -39,12 +39,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.xenei.jdbc4sparql.impl.NameUtils;
 import org.xenei.jdbc4sparql.mock.MockCatalog;
 import org.xenei.jdbc4sparql.mock.MockColumn;
 import org.xenei.jdbc4sparql.mock.MockSchema;
 import org.xenei.jdbc4sparql.mock.MockTableDef;
 import org.xenei.jdbc4sparql.sparql.SparqlCatalog;
-import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlVisitor;
 
 public class SparqlVisitorTest
@@ -109,16 +109,16 @@ public class SparqlVisitorTest
 		Assert.assertEquals(4, bindElements.size());
 		Assert.assertTrue(bindElements.contains(String.format(
 				"BIND(?MockSchema%1$sfoo%1$s%2$s AS ?%2$s)",
-				SparqlParser.SPARQL_DOT, "StringCol")));
+				NameUtils.SPARQL_DOT, "StringCol")));
 		Assert.assertTrue(bindElements.contains(String.format(
 				"BIND(?MockSchema%1$sfoo%1$s%2$s AS ?%2$s)",
-				SparqlParser.SPARQL_DOT, "NullableStringCol")));
+				NameUtils.SPARQL_DOT, "NullableStringCol")));
 		Assert.assertTrue(bindElements.contains(String.format(
 				"BIND(?MockSchema%1$sfoo%1$s%2$s AS ?%2$s)",
-				SparqlParser.SPARQL_DOT, "IntCol")));
+				NameUtils.SPARQL_DOT, "IntCol")));
 		Assert.assertTrue(bindElements.contains(String.format(
 				"BIND(?MockSchema%1$sfoo%1$s%2$s AS ?%2$s)",
-				SparqlParser.SPARQL_DOT, "NullableIntCol")));
+				NameUtils.SPARQL_DOT, "NullableIntCol")));
 	}
 
 	@Test
@@ -149,8 +149,8 @@ public class SparqlVisitorTest
 		final List<Element> eLst = eg.getElements();
 		Assert.assertEquals(1, eLst.size());
 		Assert.assertTrue(eLst.get(0) instanceof ElementFilter);
-		Assert.assertEquals("FILTER ( ?MockSchema" + SparqlParser.SPARQL_DOT
-				+ "foo" + SparqlParser.SPARQL_DOT + "StringCol != \"baz\" )",
+		Assert.assertEquals("FILTER ( ?MockSchema" + NameUtils.SPARQL_DOT
+				+ "foo" + NameUtils.SPARQL_DOT + "StringCol != \"baz\" )",
 				eLst.get(0).toString());
 		final List<Var> vLst = q.getProjectVars();
 		Assert.assertEquals(1, vLst.size());
@@ -175,4 +175,20 @@ public class SparqlVisitorTest
 		final List<Var> vLst = q.getProjectVars();
 		Assert.assertEquals(8, vLst.size());
 	}
+	
+	@Test
+	public void testInnerJoinParse() throws Exception
+	{
+		final String query = "SELECT * FROM foo inner join bar using (NullableIntCol)";
+		final Statement stmt = parserManager.parse(new StringReader(query));
+		try {
+			stmt.accept(sv);
+			Assert.fail( "Should have thrown UnsupportedOperationException" );
+		}
+		catch (UnsupportedOperationException e)
+		{
+			// expected
+		}
+	}
+
 }

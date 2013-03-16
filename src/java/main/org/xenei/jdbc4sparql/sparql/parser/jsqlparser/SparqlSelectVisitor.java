@@ -36,15 +36,25 @@ import net.sf.jsqlparser.statement.select.Union;
 
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 
+/**
+ * Implementation of SelectVisitor and OrderByVisitor that merge the SQL commands
+ * into the SparqlQueryBuilder.
+ */
 public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 {
+	// the query builder
 	private final SparqlQueryBuilder queryBuilder;
 
-	public SparqlSelectVisitor( final SparqlQueryBuilder queryBuilder )
+	/**
+	 * Constructor
+	 * @param queryBuilder The builder to user.
+	 */
+	SparqlSelectVisitor( final SparqlQueryBuilder queryBuilder )
 	{
 		this.queryBuilder = queryBuilder;
 	}
 
+	// take apart the join and figure out how to merge it.
 	private void deparseJoin( final Join join )
 	{
 		if (join.isSimple())
@@ -77,31 +87,15 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 				throw new UnsupportedOperationException(String.format(fmt,
 						"LEFT", inOut));
 			}
+			else
+			{
+				throw new UnsupportedOperationException(String.format(fmt,
+						"", inOut));
+			}
 		}
-		/*
-		 * FromItem fromItem = join.getRightItem();
-		 * fromItem.accept(this);
-		 * 
-		 * 
-		 * if (join.getOnExpression() != null) {
-		 * buffer.append(" ON ");
-		 * join.getOnExpression().accept(expressionVisitor);
-		 * }
-		 * if (join.getUsingColumns() != null) {
-		 * buffer.append(" USING ( ");
-		 * for (Iterator iterator = join.getUsingColumns().iterator();
-		 * iterator.hasNext();) {
-		 * Column column = (Column) iterator.next();
-		 * buffer.append(column.getWholeColumnName());
-		 * if (iterator.hasNext()) {
-		 * buffer.append(" ,");
-		 * }
-		 * }
-		 * buffer.append(")");
-		 * }
-		 */
 	}
 
+	// process a limit
 	private void deparseLimit( final Limit limit )
 	{
 		// LIMIT n OFFSET skip
@@ -140,6 +134,10 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 		}
 	}
 
+	/**
+	 * Get the SPARQL query generated from the querybuilder.
+	 * @return The SPARQL query.
+	 */
 	public Query getQuery()
 	{
 		return queryBuilder.build();

@@ -31,17 +31,32 @@ import org.xenei.jdbc4sparql.iface.SortKey;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.TableDef;
 
+/**
+ * An abstract table implementation
+ */
 public abstract class AbstractTable extends NamespaceImpl implements Table
 {
+	// the table definition
 	private final TableDef tableDef;
+	// the schema this table is in.
 	private final Schema schema;
 
-	@SuppressWarnings( "unchecked" )
+	/**
+	 * Constructor
+	 * @param schema The schema that table is in
+	 * @param tableDef The definition of the table.
+	 */
 	public AbstractTable( final Schema schema, final TableDef tableDef )
 	{
 		this(schema.getNamespace(), schema, tableDef);
 	}
 
+	/**
+	 * Constructor.
+	 * @param namespace The namespace of the table.
+	 * @param schema The schema for the table.
+	 * @param tableDef The table definition of thatable.
+	 */
 	public AbstractTable( final String namespace, final Schema schema,
 			final TableDef tableDef )
 	{
@@ -117,11 +132,17 @@ public abstract class AbstractTable extends NamespaceImpl implements Table
 	}
 
 	@Override
-	public String getDBName()
+	public String getSQLName()
 	{
-		return String.format("%s.%s", schema.getLocalName(), getLocalName());
+		return NameUtils.getDBName(this);
 	}
 
+	@Override
+	public String getSPARQLName()
+	{
+		return NameUtils.getSPARQLName(this);
+	}
+	
 	@Override
 	public String getLocalName()
 	{
@@ -142,6 +163,9 @@ public abstract class AbstractTable extends NamespaceImpl implements Table
 		return tableDef.getSortKey();
 	}
 
+	/**
+	 * @return The table definition for this table.
+	 */
 	public TableDef getTableDef()
 	{
 		return tableDef;
@@ -157,7 +181,7 @@ public abstract class AbstractTable extends NamespaceImpl implements Table
 	public String toString()
 	{
 		return String.format("Table[ %s.%s ]", getCatalog().getLocalName(),
-				getDBName());
+				getSQLName());
 	}
 
 	@Override

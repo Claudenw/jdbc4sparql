@@ -29,15 +29,23 @@ import net.sf.jsqlparser.statement.select.SelectItemVisitor;
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
+import org.xenei.jdbc4sparql.impl.NameUtils;
 import org.xenei.jdbc4sparql.sparql.SparqlColumn;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 import org.xenei.jdbc4sparql.sparql.SparqlTable;
 
+/**
+ * A visitor that process the SQL select into the SparqlQueryBuilder.
+ */
 class SparqlSelectItemVisitor implements SelectItemVisitor
 {
-
+	// the query builder.
 	private final SparqlQueryBuilder queryBuilder;
 
+	/**
+	 * Constructor
+	 * @param queryBuilder The query builder.
+	 */
 	SparqlSelectItemVisitor( final SparqlQueryBuilder queryBuilder )
 	{
 		this.queryBuilder = queryBuilder;
@@ -119,8 +127,8 @@ class SparqlSelectItemVisitor implements SelectItemVisitor
 			// handle implicit name mapping
 			if (selectExpressionItem.getExpression() instanceof net.sf.jsqlparser.schema.Column)
 			{
-				queryBuilder.addVar(v.getResult(), selectExpressionItem
-						.getExpression().toString());
+				queryBuilder.addVar(v.getResult(), NameUtils.convertDB2SPARQL(selectExpressionItem
+						.getExpression().toString()));
 			}
 			else
 			{

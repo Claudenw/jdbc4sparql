@@ -29,6 +29,7 @@ import org.apache.commons.discovery.ResourceNameIterator;
 import org.apache.commons.discovery.resource.ClassLoaders;
 import org.apache.commons.discovery.resource.classes.DiscoverClasses;
 import org.apache.commons.discovery.resource.names.DiscoverServiceNames;
+import org.xenei.jdbc4sparql.impl.NameUtils;
 import org.xenei.jdbc4sparql.sparql.SparqlCatalog;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 
@@ -67,6 +68,9 @@ import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
  */
 public interface SparqlParser
 {
+	/**
+	 * A utility class that correctly handles common operations and provides common constants.
+	 */
 	static class Util
 	{
 		private static final int START = 0;
@@ -76,6 +80,10 @@ public interface SparqlParser
 		private static final String[] BLANK_MARKERS = { "[", "]" };
 		private static final String[] VAR_MARKERS = { "?$", " " };
 
+		/**
+		 * Get the defulat parser.
+		 * @return SparqlParser
+		 */
 		public static SparqlParser getDefaultParser()
 		{
 			final List<Class<? extends SparqlParser>> lst = Util.getParsers();
@@ -94,6 +102,18 @@ public interface SparqlParser
 			}
 		}
 
+		/**
+		 * Get the parser by parser name.
+		 * 
+		 * The name may be a parser name or a fully qualified class name.
+		 * 
+		 * If a class name is provided the class must implement SparqlParser.
+		 * 
+		 * If the name is null the default parser is returned.
+		 * 
+		 * @param parserName The name to find.
+		 * @return SparqlParser
+		 */
 		public static SparqlParser getParser( final String parserName )
 		{
 			if (parserName == null)
@@ -129,6 +149,10 @@ public interface SparqlParser
 			}
 		}
 
+		/**
+		 * Get the list of parsers.
+		 * @return The list of parsers.
+		 */
 		public static List<Class<? extends SparqlParser>> getParsers()
 		{
 			final List<Class<? extends SparqlParser>> retval = new ArrayList<Class<? extends SparqlParser>>();
@@ -169,9 +193,13 @@ public interface SparqlParser
 			}
 			// return the list
 			return retval;
-
 		}
 
+		/**
+		 * Method to parse a single node from a string.
+		 * @param nodeStr The string.
+		 * @return Node.
+		 */
 		public static Node parseNode( final String nodeStr )
 		{
 			final String s = nodeStr.trim();
@@ -194,6 +222,11 @@ public interface SparqlParser
 			return Node.createLiteral(s);
 		}
 
+		/**
+		 * parse a query segment (textual triple) into three nodes strings. 
+		 * @param segment
+		 * @return the list of node strings.
+		 */
 		public static List<String> parseQuerySegment( final String segment )
 		{
 			final String buffer = segment.trim() + " "; // space for var
@@ -293,19 +326,7 @@ public interface SparqlParser
 			}
 			return results;
 		}
-
-		public static String SparqlDBName( final String dbName )
-		{
-			return dbName.replace(".", SparqlParser.SPARQL_DOT);
-		}
-
-		public static String UnSparqlDBName( final String sparqlDBName )
-		{
-			return sparqlDBName.replace(SparqlParser.SPARQL_DOT, ".");
-		}
 	}
-
-	public static final String SPARQL_DOT = "\u00B7";
 
 	/**
 	 * Parse the SQL string and then deparse it back into SQL to provide
@@ -320,6 +341,13 @@ public interface SparqlParser
 	 */
 	String nativeSQL( String sqlQuery ) throws SQLException;
 
+	/**
+	 * Given a catalog and a SQL query create a SparqlQueryBuilder.
+	 * @param catalog The catalog to run the query against.
+	 * @param sqlQuery The SQL query to execute
+	 * @return The SparqlQueryBuilder.
+	 * @throws SQLException
+	 */
 	SparqlQueryBuilder parse( SparqlCatalog catalog, String sqlQuery )
 			throws SQLException;
 

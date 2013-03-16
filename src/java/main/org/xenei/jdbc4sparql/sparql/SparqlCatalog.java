@@ -28,13 +28,27 @@ import com.hp.hpl.jena.util.iterator.WrappedIterator;
 import java.net.URL;
 import java.util.List;
 
+import org.junit.Assert;
 import org.xenei.jdbc4sparql.impl.CatalogImpl;
 
+/**
+ * An implementation of sparql catalog.
+ */
 public class SparqlCatalog extends CatalogImpl
 {
+	// either the sparqlEndpoint or the localModel is set.
+	
+	// The URL for the sparql endpoint
 	private URL sparqlEndpoint;
+	// the model that contains the sparql data.
 	private Model localModel;
 
+	/**
+	 * Constructor for a local model.
+	 * @param namespace The namespace for the catalog.
+	 * @param localModel The model that contains the data.
+	 * @param localName The local name for the catalog.
+	 */
 	public SparqlCatalog( final String namespace, final Model localModel,
 			final String localName )
 	{
@@ -42,12 +56,25 @@ public class SparqlCatalog extends CatalogImpl
 		this.localModel = localModel;
 	}
 
+	/**
+	 * Constructor for a remote sparql endpoint.
+	 * 
+	 * The namespace for the catalog will be the the sparqlEndpoint.
+	 * 
+	 * @param sparqlEndpoint The sparql endpoint
+	 * @param localName The localname.
+	 */
 	public SparqlCatalog( final URL sparqlEndpoint, final String localName )
 	{
 		super(sparqlEndpoint.toString(), localName);
 		this.sparqlEndpoint = sparqlEndpoint;
 	}
 
+	/**
+	 * Execute a jena query against the data.
+	 * @param query The query to execute.
+	 * @return The list of QuerySolutions.
+	 */
 	public List<QuerySolution> executeQuery( final Query query )
 	{
 		QueryExecution qexec = null;
@@ -62,7 +89,7 @@ public class SparqlCatalog extends CatalogImpl
 		}
 		try
 		{
-			return WrappedIterator.create(qexec.execSelect()).toList();
+		    return WrappedIterator.create( qexec.execSelect() ).toList();
 		}
 		finally
 		{
@@ -70,11 +97,20 @@ public class SparqlCatalog extends CatalogImpl
 		}
 	}
 
+	/**
+	 * Execute a query against the data.
+	 * @param queryStr The query as a string.
+	 * @return The list of QuerySolutions.
+	 */
 	public List<QuerySolution> executeQuery( final String queryStr )
 	{
 		return executeQuery(QueryFactory.create(queryStr));
 	}
 
+	/**
+	 * Create a sparql schema that has an empty namespace.
+	 * @return The Schema.
+	 */
 	public SparqlSchema getViewSchema()
 	{
 		return new SparqlSchema(this, SparqlView.NAME_SPACE, "");
