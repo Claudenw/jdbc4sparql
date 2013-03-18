@@ -63,36 +63,67 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 					queryBuilder);
 			join.getRightItem().accept(fromVisitor);
 		}
-		else
+		else if (join.isOuter())
 		{
-			final String fmt = "%s %s JOIN Is not supported";
-			final String inOut = join.isOuter() ? "OUTER" : "INNER";
+			final String fmt = "%s OUTER JOIN Is not supported";
+			
 			if (join.isRight())
 			{
 				throw new UnsupportedOperationException(String.format(fmt,
-						"RIGHT", inOut));
+						"RIGHT"));
 			}
 			else if (join.isNatural())
 			{
 				throw new UnsupportedOperationException(String.format(fmt,
-						"NATURAL", inOut));
+						"NATURAL"));
 			}
 			else if (join.isFull())
 			{
 				throw new UnsupportedOperationException(String.format(fmt,
-						"FULL", inOut));
+						"FULL"));
 			}
 			else if (join.isLeft())
 			{
 				throw new UnsupportedOperationException(String.format(fmt,
-						"LEFT", inOut));
+						"LEFT"));
 			}
 			else
 			{
 				throw new UnsupportedOperationException(String.format(fmt,
-						"", inOut));
+						""));
+			}
+		} else {
+			// inner join
+			// select * from table join othertable on table.id = othertable.fk
+			final String fmt = "%s INNER JOIN Is not supported";
+			if (join.isRight())
+			{
+				throw new UnsupportedOperationException(String.format(fmt,
+						"RIGHT"));
+			}
+			else if (join.isNatural())
+			{
+				throw new UnsupportedOperationException(String.format(fmt,
+						"NATURAL"));
+			}
+			else if (join.isFull())
+			{
+				throw new UnsupportedOperationException(String.format(fmt,
+						"FULL"));
+			}
+			else if (join.isLeft())
+			{
+				throw new UnsupportedOperationException(String.format(fmt,
+						"LEFT"));
+			}
+			else
+			{
+				final SparqlFromVisitor fromVisitor = new SparqlFromVisitor(
+						queryBuilder);
+				join.getRightItem().accept(fromVisitor);
 			}
 		}
+		
 	}
 
 	// process a limit

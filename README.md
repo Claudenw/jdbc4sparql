@@ -15,6 +15,7 @@ document.
 ## Maven
 
 Group ID: org.xenei
+
 Artifact ID: jdbc4sparql
 
 ## Usage
@@ -22,7 +23,6 @@ Artifact ID: jdbc4sparql
 ### URL
 The URL for the J4SDriver is 
     jdbc:j4s:[?arg=value>[&arg2=value2[&arg3=value3...]]]:url
-
 
 For current runtime configuration options and defaults execute the J4SDriver class as an application.
 

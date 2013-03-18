@@ -181,14 +181,18 @@ public class SparqlVisitorTest
 	{
 		final String query = "SELECT * FROM foo inner join bar using (NullableIntCol)";
 		final Statement stmt = parserManager.parse(new StringReader(query));
-		try {
-			stmt.accept(sv);
-			Assert.fail( "Should have thrown UnsupportedOperationException" );
-		}
-		catch (UnsupportedOperationException e)
-		{
-			// expected
-		}
+
+		stmt.accept(sv);
+		final Query q = sv.getBuilder().build();
+
+		final Element e = q.getQueryPattern();
+		Assert.assertTrue(e instanceof ElementGroup);
+		final ElementGroup eg = (ElementGroup) e;
+		final List<Element> eLst = eg.getElements();
+		Assert.assertEquals(11, eLst.size());
+		final List<Var> vLst = q.getProjectVars();
+		Assert.assertEquals(8, vLst.size());
+		
 	}
 
 }
