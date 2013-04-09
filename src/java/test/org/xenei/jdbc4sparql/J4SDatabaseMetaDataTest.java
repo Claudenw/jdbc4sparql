@@ -55,8 +55,8 @@ public class J4SDatabaseMetaDataTest
 	public void setup() throws MalformedURLException
 	{
 		final MockDriver driver = new MockDriver();
-		metadata = new J4SDatabaseMetaData(
-				new MockConnection(driver, null), driver);
+		metadata = new J4SDatabaseMetaData(new MockConnection(driver, null),
+				driver);
 		metadata.addCatalog(new MetaCatalog());
 
 	}

@@ -28,7 +28,6 @@ import com.hp.hpl.jena.util.iterator.WrappedIterator;
 import java.net.URL;
 import java.util.List;
 
-import org.junit.Assert;
 import org.xenei.jdbc4sparql.impl.CatalogImpl;
 
 /**

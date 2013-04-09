@@ -30,6 +30,7 @@ public abstract class IteratorResultSet extends AbstractResultSet
 	Object row = null;
 	int position = 0;
 
+	@SuppressWarnings( "unchecked" )
 	public IteratorResultSet( final Iterator<?> rows, final Table table )
 			throws SQLException
 	{

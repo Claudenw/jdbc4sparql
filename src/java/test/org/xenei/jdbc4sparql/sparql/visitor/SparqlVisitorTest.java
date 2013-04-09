@@ -70,7 +70,7 @@ public class SparqlVisitorTest
 				.setNullable(DatabaseMetaData.columnNullable));
 		schema.addTableDef(tableDef);
 
-		// creae the var table
+		// create the bar table
 		tableDef = new MockTableDef("bar");
 		tableDef.add(new MockColumn("BarStringCol", Types.VARCHAR));
 		tableDef.add(new MockColumn("BarNullableStringCol", Types.VARCHAR)
@@ -81,6 +81,25 @@ public class SparqlVisitorTest
 		schema.addTableDef(tableDef);
 
 		sv = new SparqlVisitor(catalog);
+
+	}
+
+	@Test
+	public void testInnerJoinParse() throws Exception
+	{
+		final String query = "SELECT * FROM foo inner join bar using (NullableIntCol)";
+		final Statement stmt = parserManager.parse(new StringReader(query));
+
+		stmt.accept(sv);
+		final Query q = sv.getBuilder().build();
+
+		final Element e = q.getQueryPattern();
+		Assert.assertTrue(e instanceof ElementGroup);
+		final ElementGroup eg = (ElementGroup) e;
+		final List<Element> eLst = eg.getElements();
+		Assert.assertEquals(19, eLst.size());
+		final List<Var> vLst = q.getProjectVars();
+		Assert.assertEquals(8, vLst.size());
 
 	}
 
@@ -97,7 +116,7 @@ public class SparqlVisitorTest
 		Assert.assertTrue(q.getQueryPattern() instanceof ElementGroup);
 		final ElementGroup eg = (ElementGroup) q.getQueryPattern();
 		final List<Element> eLst = eg.getElements();
-		Assert.assertEquals(6, eLst.size());
+		Assert.assertEquals(10, eLst.size());
 		final List<String> bindElements = new ArrayList<String>();
 		for (final Element e : eLst)
 		{
@@ -147,11 +166,19 @@ public class SparqlVisitorTest
 		Assert.assertTrue(e instanceof ElementGroup);
 		final ElementGroup eg = (ElementGroup) e;
 		final List<Element> eLst = eg.getElements();
-		Assert.assertEquals(1, eLst.size());
-		Assert.assertTrue(eLst.get(0) instanceof ElementFilter);
-		Assert.assertEquals("FILTER ( ?MockSchema" + NameUtils.SPARQL_DOT
-				+ "foo" + NameUtils.SPARQL_DOT + "StringCol != \"baz\" )",
-				eLst.get(0).toString());
+		Assert.assertEquals(2, eLst.size());
+		final List<String> strLst = new ArrayList<String>();
+		for (int i = 0; i < 2; i++)
+		{
+			Assert.assertTrue(eLst.get(i) instanceof ElementFilter);
+			strLst.add(eLst.get(i).toString());
+		}
+		Assert.assertTrue(strLst.contains("FILTER ( ?MockSchema"
+				+ NameUtils.SPARQL_DOT + "foo" + NameUtils.SPARQL_DOT
+				+ "StringCol != \"baz\" )"));
+		Assert.assertTrue(strLst.contains("FILTER checkTypeF(?MockSchema"
+				+ NameUtils.SPARQL_DOT + "foo" + NameUtils.SPARQL_DOT
+				+ "StringCol)"));
 		final List<Var> vLst = q.getProjectVars();
 		Assert.assertEquals(1, vLst.size());
 		Assert.assertEquals(Var.alloc("StringCol"), vLst.get(0));
@@ -174,25 +201,6 @@ public class SparqlVisitorTest
 		Assert.assertEquals(17, eLst.size());
 		final List<Var> vLst = q.getProjectVars();
 		Assert.assertEquals(8, vLst.size());
-	}
-	
-	@Test
-	public void testInnerJoinParse() throws Exception
-	{
-		final String query = "SELECT * FROM foo inner join bar using (NullableIntCol)";
-		final Statement stmt = parserManager.parse(new StringReader(query));
-
-		stmt.accept(sv);
-		final Query q = sv.getBuilder().build();
-
-		final Element e = q.getQueryPattern();
-		Assert.assertTrue(e instanceof ElementGroup);
-		final ElementGroup eg = (ElementGroup) e;
-		final List<Element> eLst = eg.getElements();
-		Assert.assertEquals(11, eLst.size());
-		final List<Var> vLst = q.getProjectVars();
-		Assert.assertEquals(8, vLst.size());
-		
 	}
 
 }

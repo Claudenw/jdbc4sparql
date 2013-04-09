@@ -61,7 +61,6 @@ public class DataTable extends AbstractTable
 	 * @param tableDef
 	 *            The table definition to use
 	 */
-	@SuppressWarnings( "unchecked" )
 	public DataTable( final String namespace, final Schema schema,
 			final TableDef tableDef )
 	{

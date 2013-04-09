@@ -22,7 +22,7 @@ import java.util.Iterator;
 
 import org.xenei.jdbc4sparql.impl.ColumnImpl;
 
-public interface Table extends NamespacedObject, TableDef
+public interface Table extends TableDef
 {
 	/**
 	 * An iterator of the columns in the table.

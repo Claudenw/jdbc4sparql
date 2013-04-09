@@ -31,15 +31,17 @@ public class J4SUrlTest
 				"jdbc:j4s?builder=org.xenei.jdbc4sparql.sparql.builders.SimpleBuilder:http://example.com/test.file");
 
 		Assert.assertEquals("", url.getCatalog());
-		Assert.assertEquals("org.xenei.jdbc4sparql.sparql.builders.SimpleBuilder", url.getBuilder().getClass().getName());
+		Assert.assertEquals(
+				"org.xenei.jdbc4sparql.sparql.builders.SimpleBuilder", url
+						.getBuilder().getClass().getName());
 		Assert.assertEquals("http://example.com/test.file", url.getEndpoint()
 				.toString());
 
-		
 		url = new J4SUrl(
 				"jdbc:j4s?builder=org.xenei.jdbc4sparql.mock.MockSchemaBuilder:http://example.com/test.file");
 		Assert.assertEquals("", url.getCatalog());
-		Assert.assertEquals("org.xenei.jdbc4sparql.mock.MockSchemaBuilder", url.getBuilder().getClass().getName());
+		Assert.assertEquals("org.xenei.jdbc4sparql.mock.MockSchemaBuilder", url
+				.getBuilder().getClass().getName());
 		Assert.assertEquals("http://example.com/test.file", url.getEndpoint()
 				.toString());
 
@@ -66,7 +68,29 @@ public class J4SUrlTest
 		Assert.assertEquals("ftp://example.com/test.file", url.getEndpoint()
 				.toString());
 	}
-	
+
+	@Test
+	public void testSimpleURL()
+	{
+		J4SUrl url;
+		url = new J4SUrl("jdbc:j4s:http://example.com/test.file");
+		Assert.assertEquals("", url.getCatalog());
+		Assert.assertNull(url.getBuilder());
+		Assert.assertEquals("http://example.com/test.file", url.getEndpoint()
+				.toString());
+
+		url = new J4SUrl("jdbc:j4s:file:///test.file");
+		Assert.assertEquals("", url.getCatalog());
+		Assert.assertNull(url.getBuilder());
+		Assert.assertEquals("file:///test.file", url.getEndpoint().toString());
+
+		url = new J4SUrl("jdbc:j4s:ftp://example.com/test.file");
+		Assert.assertEquals("", url.getCatalog());
+		Assert.assertNull(url.getBuilder());
+		Assert.assertEquals("ftp://example.com/test.file", url.getEndpoint()
+				.toString());
+	}
+
 	@Test
 	public void testTypeURL()
 	{
@@ -86,34 +110,12 @@ public class J4SUrlTest
 		Assert.assertNull(url.getBuilder());
 		Assert.assertEquals("ftp://example.com/test.file", url.getEndpoint()
 				.toString());
-		
+
 		url = new J4SUrl("jdbc:j4s:ftp://example.com/test.file");
 		Assert.assertEquals(J4SUrl.TYPE_CONFIG, url.getType());
 		Assert.assertNull(url.getBuilder());
 		Assert.assertEquals("ftp://example.com/test.file", url.getEndpoint()
 				.toString());
 
-	}
-
-	@Test
-	public void testSimpleURL()
-	{
-		J4SUrl url;
-		url = new J4SUrl("jdbc:j4s:http://example.com/test.file");
-		Assert.assertEquals("", url.getCatalog());
-		Assert.assertNull(url.getBuilder());
-		Assert.assertEquals("http://example.com/test.file", url.getEndpoint()
-				.toString());
-
-		url = new J4SUrl("jdbc:j4s:file:///test.file");
-		Assert.assertEquals("",url.getCatalog());
-		Assert.assertNull(url.getBuilder());
-		Assert.assertEquals("file:///test.file", url.getEndpoint().toString());
-
-		url = new J4SUrl("jdbc:j4s:ftp://example.com/test.file");
-		Assert.assertEquals("",url.getCatalog());
-		Assert.assertNull(url.getBuilder());
-		Assert.assertEquals("ftp://example.com/test.file", url.getEndpoint()
-				.toString());
 	}
 }

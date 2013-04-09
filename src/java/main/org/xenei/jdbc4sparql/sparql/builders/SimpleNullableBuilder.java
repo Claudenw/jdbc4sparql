@@ -22,35 +22,30 @@ import com.hp.hpl.jena.rdf.model.Resource;
 
 import java.sql.DatabaseMetaData;
 import java.sql.Types;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
-import org.xenei.jdbc4sparql.iface.TableDef;
 import org.xenei.jdbc4sparql.sparql.SparqlCatalog;
 import org.xenei.jdbc4sparql.sparql.SparqlColumnDef;
 import org.xenei.jdbc4sparql.sparql.SparqlTableDef;
 
-public class SimpleBuilder implements SchemaBuilder
+/**
+ * A builder that looks for the phrase "nullable" in column localname to
+ * determine
+ * if they are nullable or not. if Nullable is not found columnNoNulls is set.
+ * if the localname contains int the colum type will be set to "integer"
+ * otherwise
+ * it is string.
+ */
+public class SimpleNullableBuilder extends SimpleBuilder
 {
-	public static final String BUILDER_NAME = "Simple_Builder";
-	public static final String DESCRIPTION = "A simple schema builder that builds tables based on RDFS Class names";
+	public static final String BUILDER_NAME = "Simple_nullable_Builder";
+	public static final String DESCRIPTION = "A simple schema builder extends Simple_Builder by addint nullable columns for columns that have 'nullable' in their names";
 
-	// Params: namespace.
-	private static final String TABLE_QUERY = " prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>"
-			+ " SELECT ?tName WHERE { ?tName a rdfs:Class ; " + " }";
-
-	// Params: class resource, namespace
-	protected static final String COLUMN_QUERY = "SELECT DISTINCT ?cName "
-			+ " WHERE { " + " ?instance a <%s> ; " + " ?cName [] ; }";
-
-	private static final String TABLE_SEGMENT = "%1$s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> %2$s";
-	protected static final String COLUMN_SEGMENT = "%1$s %3$s %2$s";
-
-	public SimpleBuilder()
+	public SimpleNullableBuilder()
 	{
 	}
 
+	@Override
 	protected void addColumnDefs( final SparqlCatalog catalog,
 			final SparqlTableDef tableDef, final Resource tName )
 	{
@@ -59,30 +54,25 @@ public class SimpleBuilder implements SchemaBuilder
 		for (final QuerySolution soln : solns)
 		{
 			final Resource cName = soln.getResource("cName");
+			int type = Types.VARCHAR;
+			if (cName.getLocalName().contains("Int"))
+			{
+				type = Types.INTEGER;
+			}
+
 			final SparqlColumnDef colDef = new SparqlColumnDef(
-					cName.getNameSpace(), cName.getLocalName(), Types.VARCHAR,
+					cName.getNameSpace(), cName.getLocalName(), type,
 					SimpleBuilder.COLUMN_SEGMENT);
-			colDef.setNullable(DatabaseMetaData.columnNullable);
+			if (cName.getLocalName().toLowerCase().contains("nullable"))
+			{
+				colDef.setNullable(DatabaseMetaData.columnNullable);
+			}
+			else
+			{
+				colDef.setNullable(DatabaseMetaData.columnNoNulls);
+			}
 			tableDef.add(colDef);
 		}
-	}
-
-	@Override
-	public Set<TableDef> getTableDefs( final SparqlCatalog catalog )
-	{
-		final HashSet<TableDef> retval = new HashSet<TableDef>();
-		final List<QuerySolution> solns = catalog
-				.executeQuery(SimpleBuilder.TABLE_QUERY);
-		for (final QuerySolution soln : solns)
-		{
-			final Resource tName = soln.getResource("tName");
-			final SparqlTableDef tableDef = new SparqlTableDef(
-					tName.getNameSpace(), tName.getLocalName(),
-					SimpleBuilder.TABLE_SEGMENT);
-			addColumnDefs(catalog, tableDef, tName);
-			retval.add(tableDef);
-		}
-		return retval;
 	}
 
 }

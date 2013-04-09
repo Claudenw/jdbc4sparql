@@ -27,7 +27,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.TreeMap;
 
-import org.apache.commons.collections.iterators.IteratorChain;
 
 /**
  * A bag that is sorted by key.
@@ -107,6 +106,7 @@ public class SortedBag<T> implements Collection<T>
 		
 	}
 
+	@SuppressWarnings( "unchecked" )
 	@Override
 	public boolean remove( final Object o )
 	{
@@ -162,10 +162,11 @@ public class SortedBag<T> implements Collection<T>
 		return ((ExtendedIterator<T>) iterator()).toList().toArray();
 	}
 
+	
+	@SuppressWarnings( "unchecked" )
 	@Override
-	public <T> T[] toArray( final T[] a )
+	public <T> T[] toArray( T[] a )
 	{
 		return ((ExtendedIterator<T>) iterator()).toList().toArray(a);
 	}
-
 }

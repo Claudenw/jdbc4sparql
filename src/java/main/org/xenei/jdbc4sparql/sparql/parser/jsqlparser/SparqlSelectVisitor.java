@@ -24,6 +24,7 @@ import com.hp.hpl.jena.query.Query;
 import java.util.Iterator;
 import java.util.List;
 
+import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.Limit;
 import net.sf.jsqlparser.statement.select.OrderByElement;
@@ -73,7 +74,8 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 						"RIGHT"));
 			}
 			else if (join.isNatural())
-			{
+			{	// this is one case we will not support as it is generally 
+				// considered bad.
 				throw new UnsupportedOperationException(String.format(fmt,
 						"NATURAL"));
 			}
@@ -97,22 +99,23 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 			// select * from table join othertable on table.id = othertable.fk
 			final String fmt = "%s INNER JOIN Is not supported";
 			if (join.isRight())
-			{
+			{	// this should never happen anyway
 				throw new UnsupportedOperationException(String.format(fmt,
 						"RIGHT"));
 			}
 			else if (join.isNatural())
-			{
+			{	// this is one case we will not support as it is generally 
+				// considered bad.
 				throw new UnsupportedOperationException(String.format(fmt,
 						"NATURAL"));
 			}
 			else if (join.isFull())
-			{
+			{	// this should never happen anyway
 				throw new UnsupportedOperationException(String.format(fmt,
 						"FULL"));
 			}
 			else if (join.isLeft())
-			{
+			{	// this should never happen anyway
 				throw new UnsupportedOperationException(String.format(fmt,
 						"LEFT"));
 			}
@@ -121,6 +124,12 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 				final SparqlFromVisitor fromVisitor = new SparqlFromVisitor(
 						queryBuilder);
 				join.getRightItem().accept(fromVisitor);
+				if (join.getOnExpression() != null)
+				{
+					SparqlExprVisitor expressionVisitor = new SparqlExprVisitor( queryBuilder );
+					join.getOnExpression().accept( expressionVisitor );
+					queryBuilder.addFilter(expressionVisitor.getResult());
+				}
 			}
 		}
 		

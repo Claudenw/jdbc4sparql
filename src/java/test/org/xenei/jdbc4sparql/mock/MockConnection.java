@@ -22,12 +22,12 @@ import java.util.Properties;
 
 import org.xenei.jdbc4sparql.J4SConnection;
 import org.xenei.jdbc4sparql.J4SDriver;
-import org.xenei.jdbc4sparql.J4SUrl;
 
 public class MockConnection extends J4SConnection
 {
 
-	public MockConnection( final J4SDriver driver, final Properties properties ) throws MalformedURLException
+	public MockConnection( final J4SDriver driver, final Properties properties )
+			throws MalformedURLException
 	{
 		super(driver, new MockJ4SUrl(), properties);
 

@@ -12,11 +12,11 @@ public class MockSchemaBuilder implements SchemaBuilder
 
 	public MockSchemaBuilder()
 	{
-		
+
 	}
 
 	@Override
-	public Set<TableDef> getTableDefs( SparqlCatalog catalog )
+	public Set<TableDef> getTableDefs( final SparqlCatalog catalog )
 	{
 		return Collections.emptySet();
 	}

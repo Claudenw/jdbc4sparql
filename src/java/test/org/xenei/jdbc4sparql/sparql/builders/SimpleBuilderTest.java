@@ -69,6 +69,7 @@ public class SimpleBuilderTest
 
 		model.add(foo2, stringCol, "Foo2String");
 		model.add(foo2, intCol, "5");
+		model.write(System.out, "TURTLE");
 	}
 
 	@Test

@@ -29,7 +29,6 @@ import org.apache.commons.discovery.ResourceNameIterator;
 import org.apache.commons.discovery.resource.ClassLoaders;
 import org.apache.commons.discovery.resource.classes.DiscoverClasses;
 import org.apache.commons.discovery.resource.names.DiscoverServiceNames;
-import org.xenei.jdbc4sparql.impl.NameUtils;
 import org.xenei.jdbc4sparql.sparql.SparqlCatalog;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 
@@ -69,7 +68,8 @@ import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 public interface SparqlParser
 {
 	/**
-	 * A utility class that correctly handles common operations and provides common constants.
+	 * A utility class that correctly handles common operations and provides
+	 * common constants.
 	 */
 	static class Util
 	{
@@ -82,6 +82,7 @@ public interface SparqlParser
 
 		/**
 		 * Get the defulat parser.
+		 * 
 		 * @return SparqlParser
 		 */
 		public static SparqlParser getDefaultParser()
@@ -111,7 +112,8 @@ public interface SparqlParser
 		 * 
 		 * If the name is null the default parser is returned.
 		 * 
-		 * @param parserName The name to find.
+		 * @param parserName
+		 *            The name to find.
 		 * @return SparqlParser
 		 */
 		public static SparqlParser getParser( final String parserName )
@@ -151,6 +153,7 @@ public interface SparqlParser
 
 		/**
 		 * Get the list of parsers.
+		 * 
 		 * @return The list of parsers.
 		 */
 		public static List<Class<? extends SparqlParser>> getParsers()
@@ -197,7 +200,9 @@ public interface SparqlParser
 
 		/**
 		 * Method to parse a single node from a string.
-		 * @param nodeStr The string.
+		 * 
+		 * @param nodeStr
+		 *            The string.
 		 * @return Node.
 		 */
 		public static Node parseNode( final String nodeStr )
@@ -223,7 +228,8 @@ public interface SparqlParser
 		}
 
 		/**
-		 * parse a query segment (textual triple) into three nodes strings. 
+		 * parse a query segment (textual triple) into three nodes strings.
+		 * 
 		 * @param segment
 		 * @return the list of node strings.
 		 */
@@ -343,8 +349,11 @@ public interface SparqlParser
 
 	/**
 	 * Given a catalog and a SQL query create a SparqlQueryBuilder.
-	 * @param catalog The catalog to run the query against.
-	 * @param sqlQuery The SQL query to execute
+	 * 
+	 * @param catalog
+	 *            The catalog to run the query against.
+	 * @param sqlQuery
+	 *            The SQL query to execute
 	 * @return The SparqlQueryBuilder.
 	 * @throws SQLException
 	 */

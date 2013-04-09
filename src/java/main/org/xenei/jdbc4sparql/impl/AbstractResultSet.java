@@ -120,12 +120,18 @@ public abstract class AbstractResultSet implements ResultSet
 	private <T> T extractData( final int columnIdx,
 			final Class<T> resultingClass ) throws SQLException
 	{
-		final Object columnObject = getObject(columnIdx + 1);
-
+		
+		return extractData( getObject(columnIdx + 1), resultingClass );
+	}
+	
+	@SuppressWarnings( "unchecked" )
+	public static <T> T extractData( Object columnObject,final Class<T> resultingClass ) throws SQLException
+	{
 		if (columnObject == null)
 		{
 			return (T) AbstractResultSet.nullValueMap.get(resultingClass);
 		}
+		
 		T retval = null;
 
 		// try the simple case
@@ -198,7 +204,7 @@ public abstract class AbstractResultSet implements ResultSet
 	 * @return
 	 * @throws SQLException
 	 */
-	private <T> T fromByteArray( final Object columnObject,
+	private static <T> T fromByteArray( final Object columnObject,
 			final Class<T> resultingClass ) throws SQLException
 	{
 		String s = null;
@@ -298,7 +304,7 @@ public abstract class AbstractResultSet implements ResultSet
 		}
 	}
 
-	private <T> T fromNumber( final Object columnObject,
+	private static <T> T fromNumber( final Object columnObject,
 			final Class<T> resultingClass ) throws SQLException
 	{
 		final Number n = Number.class.cast(columnObject);
@@ -365,42 +371,49 @@ public abstract class AbstractResultSet implements ResultSet
 		return null;
 	}
 
-	private <T> T fromString( final Object columnObject,
+	private static <T> T fromString( final Object columnObject,
 			final Class<T> resultingClass ) throws SQLException
 	{
 		final String val = String.class.cast(columnObject);
-		if (resultingClass == BigDecimal.class)
+		// to numeric casts
+		try {
+			if (resultingClass == BigDecimal.class)
+			{
+				return resultingClass.cast(new BigDecimal(val));
+			}
+			if (resultingClass == BigInteger.class)
+			{
+				return resultingClass.cast(new BigInteger(val));
+			}
+			if (resultingClass == Byte.class)
+			{
+				return resultingClass.cast(new Byte(val));
+			}
+			if (resultingClass == Double.class)
+			{
+				return resultingClass.cast(new Double(val));
+			}
+			if (resultingClass == Float.class)
+			{
+				return resultingClass.cast(new Float(val));
+			}
+			if (resultingClass == Integer.class)
+			{
+				return resultingClass.cast(new Integer(val));
+			}
+			if (resultingClass == Long.class)
+			{
+				return resultingClass.cast(new Long(val));
+			}
+			if (resultingClass == Short.class)
+			{
+				return resultingClass.cast(new Short(val));
+			}
+		} catch (NumberFormatException e)
 		{
-			return resultingClass.cast(new BigDecimal(val));
+			return null;
 		}
-		if (resultingClass == BigInteger.class)
-		{
-			return resultingClass.cast(new BigInteger(val));
-		}
-		if (resultingClass == Byte.class)
-		{
-			return resultingClass.cast(new Byte(val));
-		}
-		if (resultingClass == Double.class)
-		{
-			return resultingClass.cast(new Double(val));
-		}
-		if (resultingClass == Float.class)
-		{
-			return resultingClass.cast(new Float(val));
-		}
-		if (resultingClass == Integer.class)
-		{
-			return resultingClass.cast(new Integer(val));
-		}
-		if (resultingClass == Long.class)
-		{
-			return resultingClass.cast(new Long(val));
-		}
-		if (resultingClass == Short.class)
-		{
-			return resultingClass.cast(new Short(val));
-		}
+		
 		if (resultingClass == Boolean.class)
 		{
 			if ("0".equals(val))

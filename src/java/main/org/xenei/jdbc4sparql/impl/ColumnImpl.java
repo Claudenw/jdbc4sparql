@@ -101,6 +101,12 @@ public class ColumnImpl extends NamespaceImpl implements Column
 		return columnDef.getLabel();
 	}
 
+	/**
+	 * Indicates the nullability of values in the designated column.
+	 * Possible return values are ResultSetMetaData.columnNullable,
+	 * ResultSetMetaData.columnNoNulls,  ResultSetMetaData.columnNullableUnknown
+	 * @return the nullability status of the given column.
+	 */
 	@Override
 	public int getNullable()
 	{

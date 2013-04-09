@@ -22,11 +22,11 @@
               "FooString" .
  
 # data for bad parsing test              
-#[]    a       <http://example.com/jdbc4sparql#fooTable> ;
-#      <http://example.com/jdbc4sparql#IntCol>
-#              "notanint" ;
-#      <http://example.com/jdbc4sparql#StringCol>
-#              "Foo3String" .
+[]    a       <http://example.com/jdbc4sparql#fooTable> ;
+      <http://example.com/jdbc4sparql#IntCol>
+              "notanint" ;
+      <http://example.com/jdbc4sparql#StringCol>
+              "Foo3String" .
               
 #
 # The bar table
@@ -46,12 +46,12 @@
               "FooString" .
               
 # data for bad parsing text      
-#[]    a       <http://example.com/jdbc4sparql#barTable> ;
-#      <http://example.com/jdbc4sparql#IntCol>
-#              "25" ;
-#      <http://example.com/jdbc4sparql#NullableIntCol>
-#              "26" ;
-#      <http://example.com/jdbc4sparql#NullableStringCol>
-#              "BarNullableFoo3String" ;
-#      <http://example.com/jdbc4sparql#StringCol>
-#              "Foo3String" .              
+[]    a       <http://example.com/jdbc4sparql#barTable> ;
+      <http://example.com/jdbc4sparql#IntCol>
+              "25" ;
+      <http://example.com/jdbc4sparql#NullableIntCol>
+              "26" ;
+      <http://example.com/jdbc4sparql#NullableStringCol>
+              "BarNullableFoo3String" ;
+      <http://example.com/jdbc4sparql#StringCol>
+              "Foo3String" .              
