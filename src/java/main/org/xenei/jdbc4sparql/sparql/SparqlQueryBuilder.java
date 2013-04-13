@@ -20,8 +20,10 @@ package org.xenei.jdbc4sparql.sparql;
 import com.hp.hpl.jena.graph.Node;
 import com.hp.hpl.jena.graph.Triple;
 import com.hp.hpl.jena.query.Query;
+import com.hp.hpl.jena.query.QueryFactory;
 import com.hp.hpl.jena.sparql.core.Var;
 import com.hp.hpl.jena.sparql.engine.binding.Binding;
+
 import com.hp.hpl.jena.sparql.expr.E_Exists;
 import com.hp.hpl.jena.sparql.expr.Expr;
 import com.hp.hpl.jena.sparql.expr.ExprFunction1;
@@ -33,6 +35,8 @@ import com.hp.hpl.jena.sparql.syntax.ElementBind;
 import com.hp.hpl.jena.sparql.syntax.ElementFilter;
 import com.hp.hpl.jena.sparql.syntax.ElementGroup;
 import com.hp.hpl.jena.sparql.syntax.ElementOptional;
+import com.hp.hpl.jena.sparql.syntax.ElementService;
+import com.hp.hpl.jena.sparql.syntax.ElementSubQuery;
 import com.hp.hpl.jena.sparql.syntax.ElementTriplesBlock;
 import com.hp.hpl.jena.util.iterator.Map1;
 import com.hp.hpl.jena.util.iterator.WrappedIterator;
@@ -43,6 +47,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -74,6 +79,17 @@ public class SparqlQueryBuilder
 		{
 			super(new ExprVar(columnVar), "checkTypeF");
 			this.column = column;
+		}
+		
+		@Override
+		public boolean equals(Object o)
+		{
+			if (o instanceof CheckTypeF)
+			{
+				CheckTypeF cf = (CheckTypeF)o;
+				return column.equals( cf.column ) && getExpr().asVar().equals( cf.getExpr().asVar());
+			}
+			return false;
 		}
 
 		@Override
@@ -152,6 +168,8 @@ public class SparqlQueryBuilder
 
 	// the list of columns in the query indexed by SQL name.
 	private final Map<String, SparqlColumn> columnsInQuery;
+	
+	private final Set<CheckTypeF> typeFilterList;
 
 	/**
 	 * Create a query builder for a catalog
@@ -166,6 +184,7 @@ public class SparqlQueryBuilder
 		this.tablesInQuery = new HashMap<String, SparqlTable>();
 		this.nodesInQuery = new HashMap<String, Node>();
 		this.columnsInQuery = new HashMap<String, SparqlColumn>();
+		this.typeFilterList = new HashSet<CheckTypeF>();
 		query.setQuerySelectType();
 	}
 
@@ -236,10 +255,9 @@ public class SparqlQueryBuilder
 						columnVar))
 				{
 					addBGP(t);
-					// we have to check not null
-					final ElementTriplesBlock etb = new ElementTriplesBlock();
-					etb.addTriple(t);
-					addFilter(new E_Exists(etb));
+					ElementGroup eg = new ElementGroup();
+					eg.addTriplePattern( t );
+					addFilter(new E_Exists(eg));
 				}
 
 			}
@@ -256,7 +274,7 @@ public class SparqlQueryBuilder
 				eg.addElement(new ElementOptional(etb));
 			}
 			// only return values of the proper type
-			addFilter(new CheckTypeF(column, columnVar));
+			typeFilterList.add( new CheckTypeF(column, columnVar) );
 			return columnVar;
 		}
 		else
@@ -349,8 +367,13 @@ public class SparqlQueryBuilder
 	 */
 	public void addFilter( final Expr filter )
 	{
+		addFilter( query, filter );
+	}
+	
+	private static void addFilter( Query query, final Expr filter )
+	{
 		final ElementFilter el = new ElementFilter(filter);
-		getElementGroup().addElementFilter(el);
+		getElementGroup( query ).addElementFilter(el);
 	}
 
 	/**
@@ -430,9 +453,10 @@ public class SparqlQueryBuilder
 		final NodeValue nv = expr.getConstant();
 		if ((name != null) || (nv == null) || !nv.getNode().isVariable())
 		{
-			if (name == null)
+			String s = StringUtils.defaultString( expr.getVarName());
+			if (s.equals( StringUtils.defaultIfBlank(name, s)))
 			{
-				query.addResultVar(expr);
+				query.addResultVar(s);
 			}
 			else
 			{
@@ -444,6 +468,8 @@ public class SparqlQueryBuilder
 			query.addResultVar(nv.getNode());
 		}
 	}
+	
+	
 
 	/**
 	 * Adds the the column as a variable to the query.
@@ -508,7 +534,32 @@ public class SparqlQueryBuilder
 	 */
 	public Query build()
 	{
-		return query;
+		// create a copy of the query so that we can modify it for this request.
+		Query result = QueryFactory.create(query);
+		if ( catalog.isService())
+		{
+			// create the service call
+			// make sure we project all vars for the filters.
+			Set<Var> vars = new HashSet<Var>();
+			for (CheckTypeF f : typeFilterList)
+			{
+				vars.add( f.getArg().asVar() );
+			}
+			result.addProjectVars(vars);
+			ElementService service = new ElementService( catalog.getServiceNode(), new ElementSubQuery( result ), false );
+			// create real result
+			result = new Query();
+			result.setQuerySelectType();
+			result.addProjectVars(query.getProjectVars());
+			getElementGroup( result ).addElement( service );
+			
+		}
+		// add the filters.
+		for (CheckTypeF f : typeFilterList)
+		{
+			addFilter(result, f );
+		}
+		return result;
 	}
 
 	/**
@@ -618,6 +669,11 @@ public class SparqlQueryBuilder
 	}
 
 	private ElementGroup getElementGroup()
+	{
+		return getElementGroup( query );
+	}
+	
+	private static ElementGroup getElementGroup( Query query ) 
 	{
 		ElementGroup retval;
 		final Element e = query.getQueryPattern();

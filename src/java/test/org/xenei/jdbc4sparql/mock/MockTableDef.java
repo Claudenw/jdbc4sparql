@@ -24,7 +24,7 @@ public class MockTableDef extends SparqlTableDef
 
 	public MockTableDef( final String name )
 	{
-		super(MockCatalog.NS, name, "# table " + name + " query segment");
+		super(MockCatalog.NS, name, "%1$s <http://mock> %2$s");
 	}
 
 }

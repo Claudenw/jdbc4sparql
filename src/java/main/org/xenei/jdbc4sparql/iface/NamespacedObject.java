@@ -24,4 +24,18 @@ public interface NamespacedObject
 	String getLocalName();
 
 	String getNamespace();
+	
+	public static class Utils {
+		
+		public static boolean equals( NamespacedObject o1, Object o2)
+		{
+			return (o2 instanceof NamespacedObject)?o1.getFQName().equals( ((NamespacedObject)o2).getFQName() ):false;
+		}
+		
+		public static int hashCode( NamespacedObject o)
+		{
+			return o.getFQName().hashCode();
+		}
+		
+	}
 }

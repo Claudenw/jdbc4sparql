@@ -17,12 +17,14 @@
  */
 package org.xenei.jdbc4sparql.sparql;
 
+import com.hp.hpl.jena.graph.Node;
 import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.query.QueryExecution;
 import com.hp.hpl.jena.query.QueryExecutionFactory;
 import com.hp.hpl.jena.query.QueryFactory;
 import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.util.iterator.WrappedIterator;
 
 import java.net.URL;
@@ -67,8 +69,32 @@ public class SparqlCatalog extends CatalogImpl
 	{
 		super(sparqlEndpoint.toString(), localName);
 		this.sparqlEndpoint = sparqlEndpoint;
+		// we need an empty model to properly filter sparql queries.
+		this.localModel = ModelFactory.createMemModelMaker().createFreshModel();
 	}
 
+	/**
+	 * Execute the query against the local Model.
+	 * 
+	 * This is used to execute queries built by the query builder.
+	 * 
+	 * @param query
+	 * @return The list of QuerySolutions.
+	 */
+	public List<QuerySolution> executeLocalQuery( final Query query )
+	{
+		QueryExecution qexec = QueryExecutionFactory.create(query, localModel);
+		
+		try
+		{
+		    return WrappedIterator.create( qexec.execSelect() ).toList();
+		}
+		finally
+		{
+			qexec.close();
+		}
+	}
+	
 	/**
 	 * Execute a jena query against the data.
 	 * @param query The query to execute.
@@ -77,7 +103,7 @@ public class SparqlCatalog extends CatalogImpl
 	public List<QuerySolution> executeQuery( final Query query )
 	{
 		QueryExecution qexec = null;
-		if (localModel == null)
+		if (isService())
 		{
 			qexec = QueryExecutionFactory.sparqlService(
 					sparqlEndpoint.toString(), query);
@@ -115,4 +141,13 @@ public class SparqlCatalog extends CatalogImpl
 		return new SparqlSchema(this, SparqlView.NAME_SPACE, "");
 	}
 
+	public boolean isService()
+	{
+		return sparqlEndpoint != null;
+	}
+	
+	public Node getServiceNode()
+	{
+		return isService()?Node.createURI(sparqlEndpoint.toExternalForm()):null;
+	}
 }

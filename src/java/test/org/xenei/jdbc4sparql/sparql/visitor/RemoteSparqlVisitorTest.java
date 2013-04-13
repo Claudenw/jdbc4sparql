@@ -27,6 +27,7 @@ import com.hp.hpl.jena.sparql.syntax.ElementFilter;
 import com.hp.hpl.jena.sparql.syntax.ElementGroup;
 
 import java.io.StringReader;
+import java.net.URL;
 import java.sql.DatabaseMetaData;
 import java.sql.Types;
 import java.util.ArrayList;
@@ -47,7 +48,7 @@ import org.xenei.jdbc4sparql.mock.MockTableDef;
 import org.xenei.jdbc4sparql.sparql.SparqlCatalog;
 import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlVisitor;
 
-public class SparqlVisitorTest
+public class RemoteSparqlVisitorTest
 {
 
 	private final CCJSqlParserManager parserManager = new CCJSqlParserManager();
@@ -56,7 +57,7 @@ public class SparqlVisitorTest
 	@Before
 	public void setUp() throws Exception
 	{
-		final SparqlCatalog catalog = new SparqlCatalog(MockCatalog.NS, null,
+		final SparqlCatalog catalog = new SparqlCatalog( new URL( "http://example.com/sparql"),
 				MockCatalog.LOCAL_NAME);
 		final MockSchema schema = new MockSchema(catalog);
 		catalog.addSchema(schema);
@@ -97,7 +98,7 @@ public class SparqlVisitorTest
 		Assert.assertTrue(e instanceof ElementGroup);
 		final ElementGroup eg = (ElementGroup) e;
 		final List<Element> eLst = eg.getElements();
-		Assert.assertEquals(19, eLst.size());
+		Assert.assertEquals(9, eLst.size());
 		final List<Var> vLst = q.getProjectVars();
 		Assert.assertEquals(8, vLst.size());
 
@@ -116,28 +117,17 @@ public class SparqlVisitorTest
 		Assert.assertTrue(q.getQueryPattern() instanceof ElementGroup);
 		final ElementGroup eg = (ElementGroup) q.getQueryPattern();
 		final List<Element> eLst = eg.getElements();
-		Assert.assertEquals(10, eLst.size());
-		final List<String> bindElements = new ArrayList<String>();
+		Assert.assertEquals(5, eLst.size());
+		final List<String> filterElements = new ArrayList<String>();
 		for (final Element e : eLst)
 		{
-			if (e instanceof ElementBind)
+			if (e instanceof ElementFilter)
 			{
-				bindElements.add(e.toString());
+				filterElements.add(e.toString());
 			}
 		}
-		Assert.assertEquals(4, bindElements.size());
-		Assert.assertTrue(bindElements.contains(String.format(
-				"BIND(?MockSchema%1$sfoo%1$s%2$s AS ?%2$s)",
-				NameUtils.SPARQL_DOT, "StringCol")));
-		Assert.assertTrue(bindElements.contains(String.format(
-				"BIND(?MockSchema%1$sfoo%1$s%2$s AS ?%2$s)",
-				NameUtils.SPARQL_DOT, "NullableStringCol")));
-		Assert.assertTrue(bindElements.contains(String.format(
-				"BIND(?MockSchema%1$sfoo%1$s%2$s AS ?%2$s)",
-				NameUtils.SPARQL_DOT, "IntCol")));
-		Assert.assertTrue(bindElements.contains(String.format(
-				"BIND(?MockSchema%1$sfoo%1$s%2$s AS ?%2$s)",
-				NameUtils.SPARQL_DOT, "NullableIntCol")));
+		Assert.assertEquals(4, filterElements.size());
+		
 	}
 
 	@Test
@@ -147,7 +137,25 @@ public class SparqlVisitorTest
 		final Statement stmt = parserManager.parse(new StringReader(query));
 		stmt.accept(sv);
 		final Query q = sv.getBuilder().build();
-
+		
+		final Element e = q.getQueryPattern();
+		Assert.assertTrue(e instanceof ElementGroup);
+		final ElementGroup eg = (ElementGroup) e;
+		final List<Element> eLst = eg.getElements();
+		// service and checkTypeF filter only
+		Assert.assertEquals(2, eLst.size());
+		final List<String> strLst = new ArrayList<String>();
+		for (Element e2 : eLst )
+		{
+			// there is one mock table entry
+			if (e2 instanceof ElementFilter) {
+				strLst.add(e2.toString());
+			}
+		}
+		Assert.assertTrue(strLst.contains("FILTER checkTypeF(?MockSchema"
+				+ NameUtils.SPARQL_DOT + "foo" + NameUtils.SPARQL_DOT
+				+ "StringCol)"));
+		
 		final List<Var> vLst = q.getProjectVars();
 		Assert.assertEquals(1, vLst.size());
 		Assert.assertEquals(Var.alloc("StringCol"), vLst.get(0));
@@ -166,16 +174,16 @@ public class SparqlVisitorTest
 		Assert.assertTrue(e instanceof ElementGroup);
 		final ElementGroup eg = (ElementGroup) e;
 		final List<Element> eLst = eg.getElements();
+		// service and checkTypeF filter only
 		Assert.assertEquals(2, eLst.size());
 		final List<String> strLst = new ArrayList<String>();
-		for (int i = 0; i < 2; i++)
+		for (Element e2 : eLst )
 		{
-			Assert.assertTrue(eLst.get(i) instanceof ElementFilter);
-			strLst.add(eLst.get(i).toString());
+			// there is one mock table entry
+			if (e2 instanceof ElementFilter) {
+				strLst.add(e2.toString());
+			}
 		}
-		Assert.assertTrue(strLst.contains("FILTER ( ?MockSchema"
-				+ NameUtils.SPARQL_DOT + "foo" + NameUtils.SPARQL_DOT
-				+ "StringCol != \"baz\" )"));
 		Assert.assertTrue(strLst.contains("FILTER checkTypeF(?MockSchema"
 				+ NameUtils.SPARQL_DOT + "foo" + NameUtils.SPARQL_DOT
 				+ "StringCol)"));
@@ -202,5 +210,4 @@ public class SparqlVisitorTest
 		final List<Var> vLst = q.getProjectVars();
 		Assert.assertEquals(8, vLst.size());
 	}
-
 }

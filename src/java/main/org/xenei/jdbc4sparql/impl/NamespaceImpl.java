@@ -23,6 +23,7 @@ public class NamespaceImpl implements NamespacedObject
 {
 	private final String namespace;
 	private final String localName;
+	private final int hashCode;
 
 	protected NamespaceImpl( String namespace, final String localName )
 	{
@@ -32,6 +33,7 @@ public class NamespaceImpl implements NamespacedObject
 		{
 			namespace += namespace.contains("#") ? "/" : "#";
 		}
+		hashCode = NamespacedObject.Utils.hashCode(this);
 	}
 
 	@Override
@@ -50,6 +52,17 @@ public class NamespaceImpl implements NamespacedObject
 	public String getNamespace()
 	{
 		return namespace;
+	}
+	
+	@Override
+	public boolean equals( Object o)
+	{
+		return NamespacedObject.Utils.equals(this, o);
+	}
+	
+	@Override
+	public int hashCode() {
+		return hashCode;
 	}
 
 }
