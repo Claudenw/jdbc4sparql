@@ -66,12 +66,145 @@ import org.xenei.jdbc4sparql.impl.NameUtils;
  */
 public class SparqlQueryBuilder
 {
+	
+	public class SparqlTableInfo {
+		private SparqlTable table;
+		private ElementTriplesBlock etb;
+		private ElementGroup eg;
+		private Node tableVar;
+		private boolean optional;
+		// list of type filters to add at the end of the query
+		private final Set<CheckTypeF> typeFilterList;
+		
+		private SparqlTableInfo(ElementGroup queryElementGroup, SparqlTable table, boolean optional)
+		{
+			this.table = table;
+			this.eg = new ElementGroup();
+			this.etb = new ElementTriplesBlock();
+			this.optional = optional;
+			this.typeFilterList = new HashSet<CheckTypeF>();
+			eg.addElement( etb );
+			
+			
+			tablesInQuery.put(table.getSQLName(), this);
+			// add the table var to the nodes.
+			tableVar = Node.createVariable(table.getSPARQLName());
+			nodesInQuery.put(table.getSQLName(), tableVar);
+			for (final Triple t : table.getQuerySegments(tableVar))
+			{
+				etb.addTriple(t);
+			}
+			// add all the required columns
+			for (Iterator<SparqlColumn> colIter =table.getColumns(); colIter.hasNext(); )
+			{
+				SparqlColumn column = colIter.next();
+				if (! column.isOptional())
+				{
+					addColumn( colIter.next() );
+				}
+			}
+
+			if (optional)
+			{
+				queryElementGroup.addElement( new ElementOptional( eg ) );			
+			}
+			else
+			{
+				queryElementGroup.addElement( eg );
+			}				
+		}
+		
+		/**
+		 * Add the column to the columns being returned from this table.
+		 * @param column the column to return
+		 * @return The columnVar node.
+		 * @Throws IllegalArgumentException if column is not from this table.
+		 */
+		public Node addColumn(SparqlColumn column)
+		{
+			if (! column.getTable().equals( table ))
+			{
+				throw new IllegalArgumentException( String.format( "Column %s may not be added to table %s", column.getSQLName(), table.getSQLName()));
+			}
+			// add the column to the query.
+			final Node columnVar = Node.createVariable(column.getSPARQLName());
+			// if the column does not allow null add triple
+			
+			if (!columnsInQuery.containsKey(column))
+			{
+				columnsInQuery.put(column.getSQLName(), column);
+				nodesInQuery.put(column.getSQLName(), columnVar);
+			}
+			
+			ElementTriplesBlock workingEtb = etb;
+			if (column.isOptional())
+			{
+				workingEtb = new ElementTriplesBlock();
+				eg.addElement( new ElementOptional( workingEtb ));
+			}
+		
+			for (final Triple t : column.getQuerySegments(tableVar,
+					columnVar))
+			{
+				workingEtb.addTriple(t);
+			}
+			typeFilterList.add( new CheckTypeF(column, columnVar) );
+		
+			return columnVar;
+		}
+		
+		public Node getTableVar()
+		{
+			return tableVar;
+		}
+		
+		public String getSQLName()
+		{
+			return table.getSQLName();
+		}
+		
+		public void addTriple( Triple t )
+		{
+			etb.addTriple(t);
+		}
+		
+		public void addFilter( Expr expr )
+		{
+			eg.addElementFilter(new ElementFilter(expr));
+		}
+		
+		public void addOptional( ElementTriplesBlock etb )
+		{
+			eg.addElement( new ElementOptional( etb ));
+		}
+		
+		public Iterator<SparqlColumn> getColumns()
+		{
+			return table.getColumns();
+		}
+		
+		public boolean isOptional()
+		{
+			return optional;
+		}
+		
+		public ElementGroup getElementGroup()
+		{
+			return eg;
+		}
+		
+		public Set<CheckTypeF> getTypeFilterList()
+		{
+			return typeFilterList;
+		}
+	}
+	
 	/**
 	 * A local filter that removes any values that are null and not allowed to
 	 * be null or that can not be converted
 	 * to the expected column value type.
 	 */
-	private class CheckTypeF extends ExprFunction1
+	public class CheckTypeF extends ExprFunction1
 	{
 		private final SparqlColumn column;
 
@@ -158,18 +291,20 @@ public class SparqlQueryBuilder
 
 	private static final String NOT_FOUND_IN_ANY_ = "%s was not found in any %s";
 	// the query we are building.
-	private final Query query;
+	private Query query;
+	// query was built flag;
+	private boolean isBuilt;
 	// sparql catalog we are running against.
 	private final SparqlCatalog catalog;
 	// the list of tables in the query indexed by SQL name.
-	private final Map<String, SparqlTable> tablesInQuery;
+	private final Map<String, SparqlTableInfo> tablesInQuery;
+
 	// the list of nodes in the query indexed by SQL name.
 	private final Map<String, Node> nodesInQuery;
 
 	// the list of columns in the query indexed by SQL name.
 	private final Map<String, SparqlColumn> columnsInQuery;
-	
-	private final Set<CheckTypeF> typeFilterList;
+
 
 	/**
 	 * Create a query builder for a catalog
@@ -181,13 +316,56 @@ public class SparqlQueryBuilder
 	{
 		this.catalog = catalog;
 		this.query = new Query();
-		this.tablesInQuery = new HashMap<String, SparqlTable>();
+		this.isBuilt = false;
+		this.tablesInQuery = new HashMap<String, SparqlTableInfo>();
 		this.nodesInQuery = new HashMap<String, Node>();
 		this.columnsInQuery = new HashMap<String, SparqlColumn>();
-		this.typeFilterList = new HashSet<CheckTypeF>();
 		query.setQuerySelectType();
+		//query.getPrefixMapping().setNsPrefix("f", String.format( "java:%s.",SparqlQueryBuilder.class.getName()));
 	}
-
+	
+	public SparqlTableInfo getNodeTable( Node n )
+	{
+		checkBuilt();
+		for (Map.Entry<String,Node> entry : nodesInQuery.entrySet())
+		{
+			if (entry.getValue().equals( n ))
+			{
+				String objectSQLName = entry.getKey();
+				SparqlTableInfo sti = tablesInQuery.get( objectSQLName );
+				if (sti == null)
+				{
+					SparqlColumn col = columnsInQuery.get( objectSQLName );
+					if (col != null)
+					{
+						sti = tablesInQuery.get( col.getTable().getSQLName());
+					}
+				}
+				return sti;
+			}
+		}
+		return null;
+	}
+	
+	public SparqlColumn getNodeColumn( Node n )
+	{
+		checkBuilt();
+		for (Map.Entry<String,Node> entry : nodesInQuery.entrySet())
+		{
+			if (entry.getValue().equals( n ))
+			{
+				String objectSQLName = entry.getKey();
+				return columnsInQuery.get( objectSQLName );
+			}
+		}
+		return null;
+	}
+	/*
+	public Query getRawQuery()
+	{
+		return query;
+	}
+*/
 	/**
 	 * Add the triple to the BGP for the query.
 	 * This method handles adding the triple to the proper section of the
@@ -198,6 +376,7 @@ public class SparqlQueryBuilder
 	 */
 	public void addBGP( final Triple t )
 	{
+		checkBuilt();
 		final ElementGroup eg = getElementGroup();
 		// final Triple t = new Triple(s, p, o);
 		for (final Element el : eg.getElements())
@@ -236,46 +415,15 @@ public class SparqlQueryBuilder
 	 */
 	public Node addColumn( final SparqlColumn column ) throws SQLException
 	{
-		// if the column is not in the query add it.
+		checkBuilt();
 		if (!columnsInQuery.containsKey(column.getSQLName()))
 		{
-			// add the column to the query.
-			columnsInQuery.put(column.getSQLName(), column);
-			// make sure the table is in the query.
-			final Node tableVar = addTable(column.getSchema().getLocalName(),
-					column.getTable().getLocalName());
-			// add the node to the query
-			final Node columnVar = Node.createVariable(column.getSPARQLName());
-			nodesInQuery.put(column.getSQLName(), columnVar);
-			// if the column does not allow null add triple
-			// and a filter
-			if (column.getNullable() == DatabaseMetaData.columnNoNulls)
+			SparqlTableInfo sti = tablesInQuery.get( column.getTable().getSQLName());
+			if (sti == null)
 			{
-				for (final Triple t : column.getQuerySegments(tableVar,
-						columnVar))
-				{
-					addBGP(t);
-					ElementGroup eg = new ElementGroup();
-					eg.addTriplePattern( t );
-					addFilter(new E_Exists(eg));
-				}
-
+				sti = new SparqlTableInfo( getElementGroup(), column.getTable(), false );
 			}
-			else
-			{
-				// column supports nulls so make it optional.
-				final ElementGroup eg = getElementGroup();
-				final ElementTriplesBlock etb = new ElementTriplesBlock();
-				for (final Triple t : column.getQuerySegments(tableVar,
-						columnVar))
-				{
-					etb.addTriple(t);
-				}
-				eg.addElement(new ElementOptional(etb));
-			}
-			// only return values of the proper type
-			typeFilterList.add( new CheckTypeF(column, columnVar) );
-			return columnVar;
+			return sti.addColumn( column );
 		}
 		else
 		{
@@ -299,6 +447,7 @@ public class SparqlQueryBuilder
 	public Node addColumn( final String schemaName, final String tableName,
 			final String columnName ) throws SQLException
 	{
+		checkBuilt();
 		// get all the columns that match the name patterns
 		final Collection<SparqlColumn> columns = findColumns(schemaName,
 				tableName, columnName);
@@ -313,10 +462,10 @@ public class SparqlQueryBuilder
 				// get the set of table names.
 				final Set<String> tblNames = WrappedIterator
 						.create(tablesInQuery.values().iterator())
-						.mapWith(new Map1<SparqlTable, String>() {
+						.mapWith(new Map1<SparqlTableInfo, String>() {
 
 							@Override
-							public String map1( final SparqlTable o )
+							public String map1( final SparqlTableInfo o )
 							{
 								return o.getSQLName();
 							}
@@ -367,6 +516,7 @@ public class SparqlQueryBuilder
 	 */
 	public void addFilter( final Expr filter )
 	{
+		checkBuilt();
 		addFilter( query, filter );
 	}
 	
@@ -386,6 +536,7 @@ public class SparqlQueryBuilder
 	 */
 	public void addOrderBy( final Expr expr, final boolean ascending )
 	{
+		checkBuilt();
 		query.addOrderBy(expr, ascending ? Query.ORDER_ASCENDING
 				: Query.ORDER_DESCENDING);
 	}
@@ -404,6 +555,32 @@ public class SparqlQueryBuilder
 	public Node addTable( final String schemaName, final String tableName )
 			throws SQLException
 	{
+		checkBuilt();
+		return addTable( schemaName, tableName, false );
+	}
+
+	/**
+	 * Add an optional table to the query.
+	 * 
+	 * @param schemaName
+	 *            The schema name
+	 * @param tableName
+	 *            The table name
+	 * @return The node that represents the table.
+	 * @throws SQLException
+	 *             if the table is in multiple schemas or not found.
+	 */
+	public Node addOptionalTable( final String schemaName, final String tableName )
+			throws SQLException
+	{
+		checkBuilt();
+		return addTable( schemaName, tableName, true );
+	}
+
+	public Node addTable(final String schemaName, final String tableName, boolean optional )
+			throws SQLException
+	{
+		checkBuilt();
 		final Collection<SparqlTable> tables = findTables(schemaName, tableName);
 
 		if (tables.size() > 1)
@@ -419,24 +596,12 @@ public class SparqlQueryBuilder
 		}
 		final SparqlTable table = tables.iterator().next();
 		// make sure the table is in the query.
-		if (!tablesInQuery.containsKey(table.getSQLName()))
+		SparqlTableInfo sti = tablesInQuery.get( table.getSQLName());
+		if (sti == null)
 		{
-			tablesInQuery.put(table.getSQLName(), table);
-			// add the table var to the nodes.
-			final Node tableVar = Node.createVariable(table.getSPARQLName());
-			nodesInQuery.put(table.getSQLName(), tableVar);
-			// add the bgp to the query
-			for (final Triple t : table.getQuerySegments(tableVar))
-			{
-				addBGP(t);
-			}
-			return tableVar;
+			sti = new SparqlTableInfo( getElementGroup(), table, optional );	
 		}
-		else
-		{
-			// look up the table node by sql name.
-			return getNodeBySQLName(table.getSQLName());
-		}
+		return sti.getTableVar();
 	}
 
 	/**
@@ -450,6 +615,7 @@ public class SparqlQueryBuilder
 	 */
 	public void addVar( final Expr expr, final String name )
 	{
+		checkBuilt();
 		final NodeValue nv = expr.getConstant();
 		if ((name != null) || (nv == null) || !nv.getNode().isVariable())
 		{
@@ -484,6 +650,7 @@ public class SparqlQueryBuilder
 	public void addVar( final SparqlColumn col, final String alias )
 			throws SQLException
 	{
+		checkBuilt();
 		// figure out what name we are going to use.
 		final String sparqlName = StringUtils.defaultString(alias,
 				col.getSPARQLName());
@@ -520,13 +687,31 @@ public class SparqlQueryBuilder
 	public void addVars( final Iterator<SparqlColumn> cols )
 			throws SQLException
 	{
+		checkBuilt();
 		while (cols.hasNext())
 		{
 			final SparqlColumn col = cols.next();
 			addVar(col, getColCount(col) > 1 ? null : col.getLocalName());
 		}
 	}
+	
+	private Set<CheckTypeF> getTypeFilterList()
+	{
+		Set<CheckTypeF> retval = new HashSet<CheckTypeF>();
+		for (SparqlTableInfo sti : tablesInQuery.values())
+		{
+			retval.addAll( sti.getTypeFilterList() );
+		}
+		return retval;
+	}
 
+	private void checkBuilt()
+	{
+		if (isBuilt)
+		{
+			throw new IllegalStateException( "Query was already built");
+		}
+	}
 	/**
 	 * Get the SPARQL query.
 	 * 
@@ -534,32 +719,48 @@ public class SparqlQueryBuilder
 	 */
 	public Query build()
 	{
-		// create a copy of the query so that we can modify it for this request.
-		Query result = QueryFactory.create(query);
-		if ( catalog.isService())
+		if (!isBuilt)
 		{
-			// create the service call
-			// make sure we project all vars for the filters.
-			Set<Var> vars = new HashSet<Var>();
-			for (CheckTypeF f : typeFilterList)
+			if ( catalog.isService())
 			{
-				vars.add( f.getArg().asVar() );
+				// create a copy of the query so that we can modify it for this request.
+				Query result = query.cloneQuery();
+				// create the service call
+				// make sure we project all vars for the filters.
+				Set<Var> vars = new HashSet<Var>();
+				for (CheckTypeF f :  getTypeFilterList())
+				{
+					vars.add( f.getArg().asVar() );
+				}
+				result.addProjectVars(vars);
+				ElementService service = new ElementService( catalog.getServiceNode(), new ElementSubQuery( result ), false );
+				// create real result
+				result = new Query();
+				result.setQuerySelectType();
+				result.addProjectVars(query.getProjectVars());
+				getElementGroup( result ).addElement( service );
+				for (CheckTypeF f :  getTypeFilterList())
+				{
+					addFilter( result, f);
+				}
+				query = result;
 			}
-			result.addProjectVars(vars);
-			ElementService service = new ElementService( catalog.getServiceNode(), new ElementSubQuery( result ), false );
-			// create real result
-			result = new Query();
-			result.setQuerySelectType();
-			result.addProjectVars(query.getProjectVars());
-			getElementGroup( result ).addElement( service );
-			
+			else
+			{
+				// create a copy of the query so that we can verify that it is good.
+				query.cloneQuery();
+				// apply the type  filters to each subpart.
+				for (SparqlTableInfo sti : tablesInQuery.values())
+				{
+					for (CheckTypeF f : sti.getTypeFilterList())
+					{
+						sti.addFilter(f);
+					}
+				}
+			}
+			isBuilt=true;
 		}
-		// add the filters.
-		for (CheckTypeF f : typeFilterList)
-		{
-			addFilter(result, f );
-		}
-		return result;
+		return query;
 	}
 
 	/**
@@ -760,6 +961,7 @@ public class SparqlQueryBuilder
 	 */
 	public boolean isAllColumns()
 	{
+		checkBuilt();
 		return query.isQueryResultStar();
 	}
 
@@ -772,8 +974,9 @@ public class SparqlQueryBuilder
 	 */
 	public void setAllColumns() throws SQLException
 	{
+		checkBuilt();
 		// query.setQueryResultStar(true);
-		for (final SparqlTable t : tablesInQuery.values())
+		for (final SparqlTableInfo t : tablesInQuery.values())
 		{
 			final Iterator<SparqlColumn> iter = t.getColumns();
 			while (iter.hasNext())
@@ -789,6 +992,7 @@ public class SparqlQueryBuilder
 	 */
 	public void setDistinct()
 	{
+		checkBuilt();
 		query.setDistinct(true);
 	}
 
@@ -800,6 +1004,7 @@ public class SparqlQueryBuilder
 	 */
 	public void setLimit( final Long limit )
 	{
+		checkBuilt();
 		query.setLimit(limit);
 	}
 
@@ -811,6 +1016,7 @@ public class SparqlQueryBuilder
 	 */
 	public void setOffset( final Long offset )
 	{
+		checkBuilt();
 		query.setOffset(offset);
 	}
 
@@ -820,6 +1026,6 @@ public class SparqlQueryBuilder
 	@Override
 	public String toString()
 	{
-		return "QueryBuilder[" + query.toString() + "]";
+		return String.format( "QueryBuilder%s[%s]", (isBuilt?"(builtargs)":""), query.toString() );
 	}
 }

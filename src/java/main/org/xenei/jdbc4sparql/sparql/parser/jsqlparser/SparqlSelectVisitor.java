@@ -19,8 +19,20 @@
  */
 package org.xenei.jdbc4sparql.sparql.parser.jsqlparser;
 
+import com.hp.hpl.jena.graph.Node;
 import com.hp.hpl.jena.query.Query;
+import com.hp.hpl.jena.sparql.algebra.op.OpNull;
+import com.hp.hpl.jena.sparql.expr.E_Bound;
+import com.hp.hpl.jena.sparql.expr.E_Equals;
+import com.hp.hpl.jena.sparql.expr.E_LogicalNot;
+import com.hp.hpl.jena.sparql.expr.Expr;
+import com.hp.hpl.jena.sparql.expr.ExprFunction;
+import com.hp.hpl.jena.sparql.expr.E_LogicalOr;
+import com.hp.hpl.jena.sparql.expr.E_NotExists;
+import com.hp.hpl.jena.sparql.expr.ExprVar;
 
+
+import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.List;
 
@@ -35,6 +47,10 @@ import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.Top;
 import net.sf.jsqlparser.statement.select.Union;
 
+import org.openjena.atlas.logging.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.xenei.jdbc4sparql.sparql.SparqlColumn;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 
 /**
@@ -46,6 +62,7 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 	// the query builder
 	private final SparqlQueryBuilder queryBuilder;
 
+	private static Logger LOG = LoggerFactory.getLogger(SparqlSelectVisitor.class) ;
 	/**
 	 * Constructor
 	 * @param queryBuilder The builder to user.
@@ -55,8 +72,48 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 		this.queryBuilder = queryBuilder;
 	}
 
+	private boolean applyOuterExprSub( Expr aExpr, Expr toApply )
+	{
+		Expr expr = aExpr;
+		if (expr instanceof ExprFunction)
+		{	
+			for (Expr subExpr : ((ExprFunction)expr).getArgs())
+			{
+				if (applyOuterExprSub( subExpr, toApply ))
+				{
+					return true;
+				}
+			}
+			return false;
+		}
+		if (expr instanceof ExprVar)
+		{
+			Node n = ((ExprVar)expr).getAsNode();
+			SparqlQueryBuilder.SparqlTableInfo sti = queryBuilder.getNodeTable( n );
+			if (sti != null && sti.isOptional())
+			{
+				sti.addFilter( toApply );
+				return true;
+			}
+			return false;
+		}
+		return false;
+	}
+	
+	private void applyOuterExpr( Expr aExpr )
+	{
+		Expr expr = aExpr;
+		if (expr instanceof ExprFunction)
+		{	
+			if (applyOuterExprSub( aExpr, aExpr ))
+			{
+				return;
+			}
+		}
+		queryBuilder.addFilter( expr );
+	}
 	// take apart the join and figure out how to merge it.
-	private void deparseJoin( final Join join )
+	private void deparseJoin( final Join join ) 
 	{
 		if (join.isSimple())
 		{
@@ -86,8 +143,17 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 			}
 			else if (join.isLeft())
 			{
-				throw new UnsupportedOperationException(String.format(fmt,
-						"LEFT"));
+				final SparqlFromVisitor fromVisitor = new SparqlFromVisitor(
+						queryBuilder, SparqlFromVisitor.OPTIONAL );
+				join.getRightItem().accept(fromVisitor);
+				
+				
+				if (join.getOnExpression() != null)
+				{
+					SparqlExprVisitor expressionVisitor = new SparqlExprVisitor( queryBuilder );
+					join.getOnExpression().accept( expressionVisitor );
+					applyOuterExpr(expressionVisitor.getResult());
+				}
 			}
 			else
 			{

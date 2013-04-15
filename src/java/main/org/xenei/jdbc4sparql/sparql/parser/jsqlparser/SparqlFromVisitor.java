@@ -30,13 +30,23 @@ import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 
 class SparqlFromVisitor implements FromItemVisitor
 {
+	public static final boolean OPTIONAL = true;
+	public static final boolean REQUIRED = false;
+	
 	private final SparqlQueryBuilder builder;
+	private final boolean optional;
 
 	SparqlFromVisitor( final SparqlQueryBuilder builder )
 	{
-		this.builder = builder;
+		this( builder, REQUIRED);
 	}
 
+	SparqlFromVisitor( final SparqlQueryBuilder builder, final boolean optional )
+	{
+		this.builder = builder;
+		this.optional = optional;
+	}
+	
 	@Override
 	public void visit( final SubJoin subjoin )
 	{
@@ -55,7 +65,7 @@ class SparqlFromVisitor implements FromItemVisitor
 	{
 		try
 		{
-			builder.addTable(tableName.getSchemaName(), tableName.getName());
+			builder.addTable(tableName.getSchemaName(), tableName.getName(), optional);
 		}
 		catch (final SQLException e)
 		{

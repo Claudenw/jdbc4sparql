@@ -143,7 +143,7 @@ public class RemoteSparqlVisitorTest
 		final ElementGroup eg = (ElementGroup) e;
 		final List<Element> eLst = eg.getElements();
 		// service and checkTypeF filter only
-		Assert.assertEquals(2, eLst.size());
+		Assert.assertEquals(4, eLst.size());
 		final List<String> strLst = new ArrayList<String>();
 		for (Element e2 : eLst )
 		{
@@ -175,7 +175,7 @@ public class RemoteSparqlVisitorTest
 		final ElementGroup eg = (ElementGroup) e;
 		final List<Element> eLst = eg.getElements();
 		// service and checkTypeF filter only
-		Assert.assertEquals(2, eLst.size());
+		Assert.assertEquals(4, eLst.size());
 		final List<String> strLst = new ArrayList<String>();
 		for (Element e2 : eLst )
 		{

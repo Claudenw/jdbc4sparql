@@ -20,6 +20,7 @@ package org.xenei.jdbc4sparql.sparql;
 import com.hp.hpl.jena.graph.Node;
 import com.hp.hpl.jena.graph.Triple;
 
+import java.sql.DatabaseMetaData;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -61,5 +62,15 @@ public class SparqlColumn extends ColumnImpl
 			}
 		}
 		return retval;
+	}
+	
+	public SparqlTable getTable()
+	{
+		return (SparqlTable) super.getTable();
+	}
+	
+	public boolean isOptional()
+	{
+		return getNullable() != DatabaseMetaData.columnNoNulls;
 	}
 }

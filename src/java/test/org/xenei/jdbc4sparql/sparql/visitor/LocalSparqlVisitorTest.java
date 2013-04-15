@@ -97,7 +97,7 @@ public class LocalSparqlVisitorTest
 		Assert.assertTrue(e instanceof ElementGroup);
 		final ElementGroup eg = (ElementGroup) e;
 		final List<Element> eLst = eg.getElements();
-		Assert.assertEquals(20, eLst.size());
+		Assert.assertEquals(9, eLst.size()); // 2 tables, 7 binds
 		final List<Var> vLst = q.getProjectVars();
 		Assert.assertEquals(8, vLst.size());
 
@@ -116,7 +116,7 @@ public class LocalSparqlVisitorTest
 		Assert.assertTrue(q.getQueryPattern() instanceof ElementGroup);
 		final ElementGroup eg = (ElementGroup) q.getQueryPattern();
 		final List<Element> eLst = eg.getElements();
-		Assert.assertEquals(11, eLst.size());
+		Assert.assertEquals(5, eLst.size()); //table,  4 binds
 		final List<String> bindElements = new ArrayList<String>();
 		for (final Element e : eLst)
 		{
@@ -166,7 +166,7 @@ public class LocalSparqlVisitorTest
 		Assert.assertTrue(e instanceof ElementGroup);
 		final ElementGroup eg = (ElementGroup) e;
 		final List<Element> eLst = eg.getElements();
-		Assert.assertEquals(3, eLst.size());
+		Assert.assertEquals(2, eLst.size());
 		final List<String> strLst = new ArrayList<String>();
 		for (Element e2 : eLst )
 		{
@@ -178,9 +178,7 @@ public class LocalSparqlVisitorTest
 		Assert.assertTrue(strLst.contains("FILTER ( ?MockSchema"
 				+ NameUtils.SPARQL_DOT + "foo" + NameUtils.SPARQL_DOT
 				+ "StringCol != \"baz\" )"));
-		Assert.assertTrue(strLst.contains("FILTER checkTypeF(?MockSchema"
-				+ NameUtils.SPARQL_DOT + "foo" + NameUtils.SPARQL_DOT
-				+ "StringCol)"));
+		
 		final List<Var> vLst = q.getProjectVars();
 		Assert.assertEquals(1, vLst.size());
 		Assert.assertEquals(Var.alloc("StringCol"), vLst.get(0));

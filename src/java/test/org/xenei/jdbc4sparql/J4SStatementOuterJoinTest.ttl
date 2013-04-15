@@ -9,24 +9,24 @@
       <http://example.com/jdbc4sparql#IntCol>
               "5" ;
       <http://example.com/jdbc4sparql#StringCol>
-              "Foo2String" .
+              "Foo5String" .
 
 []    a       <http://example.com/jdbc4sparql#fooTable> ;
       <http://example.com/jdbc4sparql#IntCol>
-              "5" ;
+              "6" ;
       <http://example.com/jdbc4sparql#NullableIntCol>
               "6" ;
       <http://example.com/jdbc4sparql#NullableStringCol>
               "FooNullableFooString" ;
       <http://example.com/jdbc4sparql#StringCol>
-              "FooString" .
+              "Foo6tring" .
  
-# data for bad parsing test              
+             
 []    a       <http://example.com/jdbc4sparql#fooTable> ;
       <http://example.com/jdbc4sparql#IntCol>
-              "notanint" ;
+              "7" ;
       <http://example.com/jdbc4sparql#StringCol>
-              "Foo3String" .
+              "Foo7String" .
               
 #
 # The bar table
@@ -43,15 +43,22 @@
       <http://example.com/jdbc4sparql#NullableStringCol>
               "BarNullableFooString" ;
       <http://example.com/jdbc4sparql#StringCol>
-              "FooString" .
+              "Bar15String" .
               
-# data for bad parsing text      
+   
 []    a       <http://example.com/jdbc4sparql#barTable> ;
       <http://example.com/jdbc4sparql#IntCol>
-              "25" ;
+              "5" ;
       <http://example.com/jdbc4sparql#NullableIntCol>
               "26" ;
       <http://example.com/jdbc4sparql#NullableStringCol>
               "BarNullableFoo3String" ;
       <http://example.com/jdbc4sparql#StringCol>
-              "Foo3String" .                            
+              "Bar5String" .  
+              
+[]    a       <http://example.com/jdbc4sparql#barTable> ;
+      <http://example.com/jdbc4sparql#IntCol>
+              "7" ;
+      <http://example.com/jdbc4sparql#StringCol>
+              "Bar7String" .
+ 
