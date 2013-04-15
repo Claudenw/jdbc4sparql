@@ -141,8 +141,9 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 				throw new UnsupportedOperationException(String.format(fmt,
 						"FULL"));
 			}
-			else if (join.isLeft())
+			else 
 			{
+				// handles left and not specified
 				final SparqlFromVisitor fromVisitor = new SparqlFromVisitor(
 						queryBuilder, SparqlFromVisitor.OPTIONAL );
 				join.getRightItem().accept(fromVisitor);
@@ -154,11 +155,6 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 					join.getOnExpression().accept( expressionVisitor );
 					applyOuterExpr(expressionVisitor.getResult());
 				}
-			}
-			else
-			{
-				throw new UnsupportedOperationException(String.format(fmt,
-						""));
 			}
 		} else {
 			// inner join
