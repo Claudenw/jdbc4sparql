@@ -27,10 +27,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.TreeMap;
 
-
 /**
  * A bag that is sorted by key.
- *
+ * 
  * @param <T>
  */
 public class SortedBag<T> implements Collection<T>
@@ -103,7 +102,7 @@ public class SortedBag<T> implements Collection<T>
 			iter = iter.andThen(lst.iterator());
 		}
 		return iter;
-		
+
 	}
 
 	@SuppressWarnings( "unchecked" )
@@ -162,10 +161,9 @@ public class SortedBag<T> implements Collection<T>
 		return ((ExtendedIterator<T>) iterator()).toList().toArray();
 	}
 
-	
 	@SuppressWarnings( "unchecked" )
 	@Override
-	public <T> T[] toArray( T[] a )
+	public <T> T[] toArray( final T[] a )
 	{
 		return ((ExtendedIterator<T>) iterator()).toList().toArray(a);
 	}

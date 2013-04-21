@@ -46,8 +46,10 @@ public class SchemaImpl extends NamespaceImpl implements Schema
 	 * 
 	 * Uses catalog namespace.
 	 * 
-	 * @param catalog The catalog the schema is in.
-	 * @param localName The local name for the schema.
+	 * @param catalog
+	 *            The catalog the schema is in.
+	 * @param localName
+	 *            The local name for the schema.
 	 */
 	public SchemaImpl( final Catalog catalog, final String localName )
 	{
@@ -56,9 +58,13 @@ public class SchemaImpl extends NamespaceImpl implements Schema
 
 	/**
 	 * Constructor
-	 * @param catalog The catalog the schema is in.
-	 * @param namespace The namespace the catalog is in.
-	 * @param localName The local name for the schema.
+	 * 
+	 * @param catalog
+	 *            The catalog the schema is in.
+	 * @param namespace
+	 *            The namespace the catalog is in.
+	 * @param localName
+	 *            The local name for the schema.
 	 */
 	public SchemaImpl( final Catalog catalog, final String namespace,
 			final String localName )
@@ -72,8 +78,10 @@ public class SchemaImpl extends NamespaceImpl implements Schema
 	/**
 	 * Add a table to the schema.
 	 * 
-	 * @param table The table to add
-	 * @throw IllegalArgumentException if a table wit the same FQName already exists in the schema.
+	 * @param table
+	 *            The table to add
+	 * @throw IllegalArgumentException if a table wit the same FQName already
+	 *        exists in the schema.
 	 */
 	public void addTable( final Table table )
 	{
@@ -102,7 +110,8 @@ public class SchemaImpl extends NamespaceImpl implements Schema
 	 * 
 	 * Will overwrite an existing table definition with the same local name.
 	 * 
-	 * @param tableDef The tabledefinition to add.
+	 * @param tableDef
+	 *            The tabledefinition to add.
 	 */
 	public void addTableDef( final TableDef tableDef )
 	{
@@ -150,7 +159,9 @@ public class SchemaImpl extends NamespaceImpl implements Schema
 
 	/**
 	 * Get teh table def for the local name.
-	 * @param localName The local name to find
+	 * 
+	 * @param localName
+	 *            The local name to find
 	 * @return The TableDef or null if it is not found.
 	 */
 	public TableDef getTableDef( final String localName )

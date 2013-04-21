@@ -43,31 +43,6 @@ public abstract class TypeConverter
 			{ Types.LONGVARCHAR, byte[].class },
 			{ Types.BOOLEAN, Boolean.class }, };
 
-	public static boolean isNumeric( final int sqlType )
-	{
-		return Number.class.isAssignableFrom( getJavaType( sqlType ));
-	}
-	
-	public static boolean isBoolean( final int sqlType )
-	{
-		return getJavaType( sqlType ).equals( Boolean.class);
-	}
-	
-	public static boolean isTimeStamp( final int sqlType )
-	{
-		return getJavaType( sqlType ).equals( java.sql.Timestamp.class);
-	}
-	
-	public static boolean isDate( final int sqlType )
-	{
-		return getJavaType( sqlType ).equals( java.sql.Date.class);
-	}
-
-	public static boolean isTime( final int sqlType )
-	{
-		return getJavaType( sqlType ).equals( java.sql.Date.class);
-	}
-
 	public static Class<?> getJavaType( final int sqlType )
 	{
 		for (final Object[] map : TypeConverter.typeMap)
@@ -100,6 +75,33 @@ public abstract class TypeConverter
 			}
 		}
 		return null;
+	}
+
+	public static boolean isBoolean( final int sqlType )
+	{
+		return TypeConverter.getJavaType(sqlType).equals(Boolean.class);
+	}
+
+	public static boolean isDate( final int sqlType )
+	{
+		return TypeConverter.getJavaType(sqlType).equals(java.sql.Date.class);
+	}
+
+	public static boolean isNumeric( final int sqlType )
+	{
+		return Number.class
+				.isAssignableFrom(TypeConverter.getJavaType(sqlType));
+	}
+
+	public static boolean isTime( final int sqlType )
+	{
+		return TypeConverter.getJavaType(sqlType).equals(java.sql.Date.class);
+	}
+
+	public static boolean isTimeStamp( final int sqlType )
+	{
+		return TypeConverter.getJavaType(sqlType).equals(
+				java.sql.Timestamp.class);
 	}
 
 }

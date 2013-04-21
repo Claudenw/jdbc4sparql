@@ -69,4 +69,9 @@ public class KeySegment implements Comparator<Object[]>
 		return ascending ? retval : -1 * retval;
 	}
 
+	public String getId()
+	{
+		return (ascending ? "A" : "D") + idx;
+	}
+
 }

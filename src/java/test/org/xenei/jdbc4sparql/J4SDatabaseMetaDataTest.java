@@ -16,7 +16,7 @@
  * limitations under the License.
  */package org.xenei.jdbc4sparql;
 
-import java.net.MalformedURLException;
+import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -52,7 +52,7 @@ public class J4SDatabaseMetaDataTest
 	}
 
 	@Before
-	public void setup() throws MalformedURLException
+	public void setup() throws IOException
 	{
 		final MockDriver driver = new MockDriver();
 		metadata = new J4SDatabaseMetaData(new MockConnection(driver, null),

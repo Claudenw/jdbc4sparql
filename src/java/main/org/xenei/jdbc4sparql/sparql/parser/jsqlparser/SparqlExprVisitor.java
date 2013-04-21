@@ -38,7 +38,6 @@ import com.hp.hpl.jena.sparql.expr.ExprVar;
 import com.hp.hpl.jena.sparql.expr.nodevalue.NodeValueDT;
 import com.hp.hpl.jena.sparql.expr.nodevalue.NodeValueDouble;
 import com.hp.hpl.jena.sparql.expr.nodevalue.NodeValueInteger;
-import com.hp.hpl.jena.sparql.expr.nodevalue.NodeValueNode;
 import com.hp.hpl.jena.sparql.expr.nodevalue.NodeValueString;
 
 import java.sql.SQLException;
@@ -86,8 +85,6 @@ import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.SubSelect;
 
-import org.apache.commons.lang3.reflect.TypeUtils;
-import org.xenei.jdbc4sparql.sparql.SparqlColumn;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 
 /**
@@ -102,7 +99,9 @@ class SparqlExprVisitor implements ExpressionVisitor
 
 	/**
 	 * Constructor
-	 * @param builder The SparqlQueryBuilder to use.
+	 * 
+	 * @param builder
+	 *            The SparqlQueryBuilder to use.
 	 */
 	SparqlExprVisitor( final SparqlQueryBuilder builder )
 	{
@@ -112,6 +111,7 @@ class SparqlExprVisitor implements ExpressionVisitor
 
 	/**
 	 * Get the final result of the process.
+	 * 
 	 * @return
 	 */
 	public Expr getResult()
@@ -208,7 +208,7 @@ class SparqlExprVisitor implements ExpressionVisitor
 			final Node columnVar = builder.addColumn(tableColumn.getTable()
 					.getSchemaName(), tableColumn.getTable().getName(),
 					tableColumn.getColumnName());
-			stack.push(new ExprVar( columnVar ));
+			stack.push(new ExprVar(columnVar));
 		}
 		catch (final SQLException e)
 		{

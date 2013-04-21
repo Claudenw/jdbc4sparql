@@ -66,7 +66,7 @@ public interface SchemaBuilder
 
 		public static SchemaBuilder getBuilder( final String name )
 		{
-			List<Class<? extends SchemaBuilder>> lst = Util.getBuilders();
+			final List<Class<? extends SchemaBuilder>> lst = Util.getBuilders();
 			if (name == null)
 			{
 				try
@@ -79,7 +79,7 @@ public interface SchemaBuilder
 							+ " could not be instantiated.", e);
 				}
 			}
-			
+
 			for (final Class<? extends SchemaBuilder> c : lst)
 			{
 				if (Util.getName(c).equals(name))
@@ -95,11 +95,13 @@ public interface SchemaBuilder
 					}
 				}
 			}
-			try {
-				Class<?> clazz = Class.forName( name );
-				if (SchemaBuilder.class.isAssignableFrom( clazz))
+			try
+			{
+				final Class<?> clazz = Class.forName(name);
+				if (SchemaBuilder.class.isAssignableFrom(clazz))
 				{
-					try {
+					try
+					{
 						return (SchemaBuilder) clazz.newInstance();
 					}
 					catch (InstantiationException | IllegalAccessException e)
@@ -114,7 +116,7 @@ public interface SchemaBuilder
 							+ " does not implement SchemaBuilder.");
 				}
 			}
-			catch (ClassNotFoundException e)
+			catch (final ClassNotFoundException e)
 			{
 				throw new IllegalArgumentException(e.getMessage());
 			}

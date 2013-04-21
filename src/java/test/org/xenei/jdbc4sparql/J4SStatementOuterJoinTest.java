@@ -6,9 +6,6 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -28,19 +25,6 @@ public class J4SStatementOuterJoinTest
 	private Connection conn;
 
 	private Statement stmt;
-
-	private List<String> getColumnNames( final String table )
-			throws SQLException
-	{
-		final ResultSet rs = conn.getMetaData().getColumns(conn.getCatalog(),
-				conn.getSchema(), table, null);
-		final List<String> colNames = new ArrayList<String>();
-		while (rs.next())
-		{
-			colNames.add(rs.getString(4));
-		}
-		return colNames;
-	}
 
 	@Before
 	public void setup() throws Exception
@@ -78,6 +62,28 @@ public class J4SStatementOuterJoinTest
 	}
 
 	@Test
+	@Ignore
+	public void testFullOuterJoin() throws ClassNotFoundException, SQLException
+	{
+		final ResultSet rset = stmt
+				.executeQuery("select fooTable.IntCol, barTable.IntCol from fooTable right outer join barTable on fooTable.IntCol=barTable.IntCol");
+		try
+		{
+			boolean foundNull = false;
+			while (rset.next())
+			{
+				rset.getString(2);
+				foundNull |= rset.wasNull();
+			}
+			Assert.assertTrue("did not find null", foundNull);
+		}
+		finally
+		{
+			rset.close();
+		}
+	}
+
+	@Test
 	public void testLeftOuterJoin() throws ClassNotFoundException, SQLException
 	{
 		final ResultSet rset = stmt
@@ -90,7 +96,7 @@ public class J4SStatementOuterJoinTest
 				rset.getString(2);
 				foundNull |= rset.wasNull();
 			}
-			Assert.assertTrue( "did not find null", foundNull);
+			Assert.assertTrue("did not find null", foundNull);
 		}
 		finally
 		{
@@ -111,17 +117,18 @@ public class J4SStatementOuterJoinTest
 				rset.getString(2);
 				foundNull |= rset.wasNull();
 			}
-			Assert.assertTrue( "did not find null", foundNull);
+			Assert.assertTrue("did not find null", foundNull);
 		}
 		finally
 		{
 			rset.close();
 		}
 	}
-	
+
 	@Test
 	@Ignore
-	public void testRightOuterJoin() throws ClassNotFoundException, SQLException
+	public void testRightOuterJoin() throws ClassNotFoundException,
+			SQLException
 	{
 		final ResultSet rset = stmt
 				.executeQuery("select fooTable.IntCol, barTable.IntCol from fooTable right outer join barTable on fooTable.IntCol=barTable.IntCol");
@@ -133,29 +140,7 @@ public class J4SStatementOuterJoinTest
 				rset.getString(2);
 				foundNull |= rset.wasNull();
 			}
-			Assert.assertTrue( "did not find null", foundNull);
-		}
-		finally
-		{
-			rset.close();
-		}
-	}
-	
-	@Test
-	@Ignore
-	public void testFullOuterJoin() throws ClassNotFoundException, SQLException
-	{
-		final ResultSet rset = stmt
-				.executeQuery("select fooTable.IntCol, barTable.IntCol from fooTable right outer join barTable on fooTable.IntCol=barTable.IntCol");
-		try
-		{
-			boolean foundNull = false;
-			while (rset.next())
-			{
-				rset.getString(2);
-				foundNull |= rset.wasNull();
-			}
-			Assert.assertTrue( "did not find null", foundNull);
+			Assert.assertTrue("did not find null", foundNull);
 		}
 		finally
 		{

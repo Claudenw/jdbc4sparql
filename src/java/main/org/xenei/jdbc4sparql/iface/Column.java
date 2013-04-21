@@ -25,22 +25,22 @@ public interface Column extends NamespacedObject, ColumnDef
 	Catalog getCatalog();
 
 	/**
-	 * @return the name formatted for SQL
-	 */
-	String getSQLName();
-
-	/**
 	 * @return The schema this table is in
 	 */
 	Schema getSchema();
 
 	/**
-	 * @return The table this column is in.
-	 */
-	Table getTable();
-
-	/**
 	 * @return The name formatted for SPARQL
 	 */
 	String getSPARQLName();
+
+	/**
+	 * @return the name formatted for SQL
+	 */
+	String getSQLName();
+
+	/**
+	 * @return The table this column is in.
+	 */
+	Table getTable();
 }

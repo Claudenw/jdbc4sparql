@@ -31,7 +31,7 @@ public interface Table extends TableDef
 	 */
 	public static class ColumnIterator implements Iterator<Column>
 	{
-		// the table 
+		// the table
 		private final Table table;
 		// the namespace
 		private final String namespace;
@@ -40,9 +40,13 @@ public interface Table extends TableDef
 
 		/**
 		 * Constructor
-		 * @param namespace The namespace of the table.
-		 * @param table The table.
-		 * @param colDefs The collection of column definitions.
+		 * 
+		 * @param namespace
+		 *            The namespace of the table.
+		 * @param table
+		 *            The table.
+		 * @param colDefs
+		 *            The collection of column definitions.
 		 */
 		public ColumnIterator( final String namespace, final Table table,
 				final Collection<? extends ColumnDef> colDefs )
@@ -54,8 +58,11 @@ public interface Table extends TableDef
 
 		/**
 		 * Constructor
-		 * @param table The table.
-		 * @param colDefs The collection of column definitions.
+		 * 
+		 * @param table
+		 *            The table.
+		 * @param colDefs
+		 *            The collection of column definitions.
 		 */
 		public ColumnIterator( final Table table,
 				final Collection<? extends ColumnDef> colDefs )
@@ -88,7 +95,8 @@ public interface Table extends TableDef
 	 * 
 	 * If columnNamePattern is null all columns are matched.
 	 * 
-	 * @param columnNamePattern The pattern to match or null.
+	 * @param columnNamePattern
+	 *            The pattern to match or null.
 	 * @return
 	 */
 	NameFilter<Column> findColumns( String columnNamePattern );
@@ -101,7 +109,9 @@ public interface Table extends TableDef
 
 	/**
 	 * Get the column by index.
-	 * @param idx The index of the column to retrieve.
+	 * 
+	 * @param idx
+	 *            The index of the column to retrieve.
 	 * @return the column.
 	 * @thows IndexOutOfBoundsException
 	 */
@@ -109,21 +119,19 @@ public interface Table extends TableDef
 
 	/**
 	 * Get the column by name
-	 * @param name the name of the column to retrieve
+	 * 
+	 * @param name
+	 *            the name of the column to retrieve
 	 * @return the column or null if name not found.
 	 */
 	Column getColumn( String name );
 
 	/**
 	 * Get an iterator over all the columns in order.
+	 * 
 	 * @return The column iterator.
 	 */
 	Iterator<? extends Column> getColumns();
-
-	/**
-	 * @return the SQL formatted table name
-	 */
-	String getSQLName();
 
 	/**
 	 * @return The schema the table belongs in.
@@ -131,16 +139,22 @@ public interface Table extends TableDef
 	Schema getSchema();
 
 	/**
-	 * Get the type of table.
-	 * Typical types are "TABLE", "VIEW", "SYSTEM TABLE", "GLOBAL TEMPORARY",
-	 * "LOCAL TEMPORARY", "ALIAS", "SYNONYM".
-	 * @return The table type
-	 */
-	String getType();
-
-	/**
 	 * 
 	 * @return the SPARQL formatted table name.
 	 */
 	String getSPARQLName();
+
+	/**
+	 * @return the SQL formatted table name
+	 */
+	String getSQLName();
+
+	/**
+	 * Get the type of table.
+	 * Typical types are "TABLE", "VIEW", "SYSTEM TABLE", "GLOBAL TEMPORARY",
+	 * "LOCAL TEMPORARY", "ALIAS", "SYNONYM".
+	 * 
+	 * @return The table type
+	 */
+	String getType();
 }

@@ -39,7 +39,7 @@ public interface TableDef extends NamespacedObject
 	 * 
 	 * @return
 	 */
-	List<? extends ColumnDef> getColumnDefs();
+	List<ColumnDef> getColumnDefs();
 
 	int getColumnIndex( ColumnDef column );
 

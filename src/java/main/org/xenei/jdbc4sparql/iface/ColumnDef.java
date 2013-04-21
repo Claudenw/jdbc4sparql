@@ -17,8 +17,38 @@
  */
 package org.xenei.jdbc4sparql.iface;
 
+import java.security.NoSuchAlgorithmException;
+import java.util.UUID;
+
 public interface ColumnDef
 {
+	static class Util
+	{
+		/**
+		 * Create a unique ID for a column def.
+		 * 
+		 * @param def
+		 *            The column def to create the ID for.
+		 * @return a type 3 UUID for the column.
+		 * @throws NoSuchAlgorithmException
+		 */
+		public static UUID createID( final ColumnDef def )
+				throws NoSuchAlgorithmException
+		{
+			final StringBuilder sb = new StringBuilder()
+					.append(def.getColumnClassName())
+					.append(def.getDisplaySize()).append(def.getLabel())
+					.append(def.getNullable()).append(def.getPrecision())
+					.append(def.getScale()).append(def.getType())
+					.append(def.getTypeName()).append(def.isAutoIncrement())
+					.append(def.isCaseSensitive()).append(def.isCurrency())
+					.append(def.isDefinitelyWritable())
+					.append(def.isReadOnly()).append(def.isSearchable())
+					.append(def.isSigned()).append(def.isWritable());
+			return UUID.nameUUIDFromBytes(sb.toString().getBytes());
+		}
+	}
+
 	String getColumnClassName();
 
 	int getDisplaySize();
@@ -28,7 +58,8 @@ public interface ColumnDef
 	/**
 	 * Indicates the nullability of values in the designated column.
 	 * Possible return values are ResultSetMetaData.columnNullable,
-	 * ResultSetMetaData.columnNoNulls,  ResultSetMetaData.columnNullableUnknown
+	 * ResultSetMetaData.columnNoNulls, ResultSetMetaData.columnNullableUnknown
+	 * 
 	 * @return the nullability status of the given column.
 	 */
 	int getNullable();

@@ -21,9 +21,10 @@ import java.util.Collection;
 import java.util.Iterator;
 
 /**
- * Filters a namespacedObject by name.  
+ * Filters a namespacedObject by name.
  * 
- * @param <T> a NamespacedObject
+ * @param <T>
+ *            a NamespacedObject
  */
 public class NameFilter<T extends NamespacedObject> implements Iterator<T>,
 		Iterable<T>
@@ -40,8 +41,10 @@ public class NameFilter<T extends NamespacedObject> implements Iterator<T>,
 	 * 
 	 * If namePattern is null match all names.
 	 * 
-	 * @param namePattern The pattern to match or null.
-	 * @param objs The collection of objects to filter.
+	 * @param namePattern
+	 *            The pattern to match or null.
+	 * @param objs
+	 *            The collection of objects to filter.
 	 */
 	public NameFilter( final String namePattern, final Collection<T> objs )
 	{
@@ -53,8 +56,10 @@ public class NameFilter<T extends NamespacedObject> implements Iterator<T>,
 	 * 
 	 * If namePattern is null match all names.
 	 * 
-	 * @param namePattern The pattern to match or null.
-	 * @param iter the iterator of objects to filter.
+	 * @param namePattern
+	 *            The pattern to match or null.
+	 * @param iter
+	 *            the iterator of objects to filter.
 	 */
 	public NameFilter( final String namePattern,
 			final Iterator<? extends T> iter )

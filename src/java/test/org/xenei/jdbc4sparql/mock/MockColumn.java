@@ -19,12 +19,16 @@ package org.xenei.jdbc4sparql.mock;
 
 import org.xenei.jdbc4sparql.sparql.SparqlColumnDef;
 
-public class MockColumn extends SparqlColumnDef
+public class MockColumn
 {
 
-	public MockColumn( final String name, final int type )
+	public static SparqlColumnDef.Builder getBuilder( final String name,
+			final int type )
 	{
-		super(MockCatalog.NS, name, type, "# column " + name + " query segment");
+		final SparqlColumnDef.Builder builder = new SparqlColumnDef.Builder();
+		builder.addQuerySegment("# column " + name + " query segment")
+				.setNamespace(MockCatalog.NS).setLocalName(name).setType(type);
+		return builder;
 	}
 
 }

@@ -17,9 +17,14 @@
  */
 package org.xenei.jdbc4sparql.iface;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+
+import org.apache.commons.codec.binary.Base64;
 
 public class SortKey implements Comparator<Object[]>
 {
@@ -49,6 +54,23 @@ public class SortKey implements Comparator<Object[]>
 			}
 		}
 		return 0;
+	}
+
+	public String getId() throws NoSuchAlgorithmException
+	{
+		final StringBuilder sb = new StringBuilder().append(isUnique());
+		for (final KeySegment ks : segments)
+		{
+			sb.append(ks.getId());
+		}
+		final MessageDigest digest = MessageDigest.getInstance("MD5");
+		final byte[] bytes = digest.digest(sb.toString().getBytes());
+		return Base64.encodeBase64String(bytes);
+	}
+
+	public List<KeySegment> getSegments()
+	{
+		return Collections.unmodifiableList(segments);
 	}
 
 	public boolean isUnique()

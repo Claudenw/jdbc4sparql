@@ -17,8 +17,6 @@
  */
 package org.xenei.jdbc4sparql.sparql;
 
-import java.util.UUID;
-
 public class SparqlView extends SparqlTable
 {
 	public static final String NAME_SPACE = "http://org.xenei.jdbc4sparql/vocab#View";

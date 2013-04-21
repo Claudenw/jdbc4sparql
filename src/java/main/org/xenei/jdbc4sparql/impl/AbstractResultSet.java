@@ -75,63 +75,15 @@ public abstract class AbstractResultSet implements ResultSet
 		AbstractResultSet.nullValueMap.put(Double.class, new Double(0.0));
 	}
 
-	public AbstractResultSet( final Table table )
-	{
-		this(table, null);
-	}
-
-	public AbstractResultSet( final Table table, final Statement statement )
-	{
-		if (table == null)
-		{
-			throw new IllegalArgumentException("Table may not be null");
-		}
-		this.table = table;
-		this.statement = statement;
-		this.fetchDirection = ResultSet.FETCH_FORWARD;
-		this.holdability = ResultSet.CLOSE_CURSORS_AT_COMMIT;
-		this.concurrency = ResultSet.CONCUR_READ_ONLY;
-		columnNameIdx = new HashMap<String, Integer>();
-		for (int i = 0; i < table.getColumnDefs().size(); i++)
-		{
-			columnNameIdx.put(table.getColumn(i).getLabel(), i);
-		}
-	}
-
-	protected void checkColumn( final int columnOrdinal ) throws SQLException
-	{
-		if (!isValidColumn(columnOrdinal))
-		{
-			throw new SQLException("Invalid column ordinal: " + columnOrdinal);
-		}
-	}
-
-	protected void checkType( final int idx, final int type )
-			throws SQLException
-	{
-		final Column c = getColumn(idx);
-		if (c.getType() != type)
-		{
-			throw new SQLException("Column type (" + c.getType() + ") is not "
-					+ type);
-		}
-	}
-
-	private <T> T extractData( final int columnIdx,
-			final Class<T> resultingClass ) throws SQLException
-	{
-		
-		return extractData( getObject(columnIdx + 1), resultingClass );
-	}
-	
 	@SuppressWarnings( "unchecked" )
-	public static <T> T extractData( Object columnObject,final Class<T> resultingClass ) throws SQLException
+	public static <T> T extractData( final Object columnObject,
+			final Class<T> resultingClass ) throws SQLException
 	{
 		if (columnObject == null)
 		{
 			return (T) AbstractResultSet.nullValueMap.get(resultingClass);
 		}
-		
+
 		T retval = null;
 
 		// try the simple case
@@ -143,37 +95,42 @@ public abstract class AbstractResultSet implements ResultSet
 		// see if we can do a simple numeric assignment
 		if ((retval == null) && (columnObject instanceof Number))
 		{
-			retval = fromNumber(columnObject, resultingClass);
+			retval = AbstractResultSet.fromNumber(columnObject, resultingClass);
 		}
 
 		// see if we can convert from a string
 		if ((retval == null) && (columnObject instanceof String))
 		{
-			retval = fromString(columnObject, resultingClass);
+			retval = AbstractResultSet.fromString(columnObject, resultingClass);
 		}
 
 		if ((retval == null) && (columnObject instanceof Boolean))
 		{
 			final Boolean b = (Boolean) columnObject;
-			retval = fromString(b ? "1" : "0", resultingClass);
+			retval = AbstractResultSet
+					.fromString(b ? "1" : "0", resultingClass);
 		}
 
 		if ((retval == null) && (columnObject instanceof byte[]))
 		{
-			retval = fromByteArray(columnObject, resultingClass);
+			retval = AbstractResultSet.fromByteArray(columnObject,
+					resultingClass);
 		}
 
 		if ((retval == null) && (columnObject instanceof Blob))
 		{
-			retval = fromByteArray(columnObject, resultingClass);
+			retval = AbstractResultSet.fromByteArray(columnObject,
+					resultingClass);
 		}
 		if ((retval == null) && (columnObject instanceof Clob))
 		{
-			retval = fromByteArray(columnObject, resultingClass);
+			retval = AbstractResultSet.fromByteArray(columnObject,
+					resultingClass);
 		}
 		if ((retval == null) && (columnObject instanceof InputStream))
 		{
-			retval = fromByteArray(columnObject, resultingClass);
+			retval = AbstractResultSet.fromByteArray(columnObject,
+					resultingClass);
 		}
 		// if null result then throw an exception
 		if (retval == null)
@@ -182,17 +139,6 @@ public abstract class AbstractResultSet implements ResultSet
 					columnObject.getClass(), resultingClass));
 		}
 		return retval;
-	}
-
-	@Override
-	public int findColumn( final String columnName ) throws SQLException
-	{
-		final Integer idx = columnNameIdx.get(columnName);
-		if (idx == null)
-		{
-			throw new SQLException(columnName + " is not a column");
-		}
-		return idx;
 	}
 
 	/**
@@ -228,8 +174,8 @@ public abstract class AbstractResultSet implements ResultSet
 				{
 					return resultingClass.cast(IOUtils.toByteArray(is));
 				}
-				return fromString(new String(IOUtils.toByteArray(is)),
-						resultingClass);
+				return AbstractResultSet.fromString(
+						new String(IOUtils.toByteArray(is)), resultingClass);
 			}
 
 			if ((s == null) && (columnObject instanceof byte[]))
@@ -294,7 +240,7 @@ public abstract class AbstractResultSet implements ResultSet
 
 			if (s != null)
 			{
-				return fromString(s, resultingClass);
+				return AbstractResultSet.fromString(s, resultingClass);
 			}
 			return null;
 		}
@@ -376,7 +322,8 @@ public abstract class AbstractResultSet implements ResultSet
 	{
 		final String val = String.class.cast(columnObject);
 		// to numeric casts
-		try {
+		try
+		{
 			if (resultingClass == BigDecimal.class)
 			{
 				return resultingClass.cast(new BigDecimal(val));
@@ -409,11 +356,12 @@ public abstract class AbstractResultSet implements ResultSet
 			{
 				return resultingClass.cast(new Short(val));
 			}
-		} catch (NumberFormatException e)
+		}
+		catch (final NumberFormatException e)
 		{
 			return null;
 		}
-		
+
 		if (resultingClass == Boolean.class)
 		{
 			if ("0".equals(val))
@@ -438,6 +386,67 @@ public abstract class AbstractResultSet implements ResultSet
 			return resultingClass.cast(new SerialClob(val.toCharArray()));
 		}
 		return null;
+	}
+
+	public AbstractResultSet( final Table table )
+	{
+		this(table, null);
+	}
+
+	public AbstractResultSet( final Table table, final Statement statement )
+	{
+		if (table == null)
+		{
+			throw new IllegalArgumentException("Table may not be null");
+		}
+		this.table = table;
+		this.statement = statement;
+		this.fetchDirection = ResultSet.FETCH_FORWARD;
+		this.holdability = ResultSet.CLOSE_CURSORS_AT_COMMIT;
+		this.concurrency = ResultSet.CONCUR_READ_ONLY;
+		columnNameIdx = new HashMap<String, Integer>();
+		for (int i = 0; i < table.getColumnDefs().size(); i++)
+		{
+			columnNameIdx.put(table.getColumn(i).getLabel(), i);
+		}
+	}
+
+	protected void checkColumn( final int columnOrdinal ) throws SQLException
+	{
+		if (!isValidColumn(columnOrdinal))
+		{
+			throw new SQLException("Invalid column ordinal: " + columnOrdinal);
+		}
+	}
+
+	protected void checkType( final int idx, final int type )
+			throws SQLException
+	{
+		final Column c = getColumn(idx);
+		if (c.getType() != type)
+		{
+			throw new SQLException("Column type (" + c.getType() + ") is not "
+					+ type);
+		}
+	}
+
+	private <T> T extractData( final int columnIdx,
+			final Class<T> resultingClass ) throws SQLException
+	{
+
+		return AbstractResultSet.extractData(getObject(columnIdx + 1),
+				resultingClass);
+	}
+
+	@Override
+	public int findColumn( final String columnName ) throws SQLException
+	{
+		final Integer idx = columnNameIdx.get(columnName);
+		if (idx == null)
+		{
+			throw new SQLException(columnName + " is not a column");
+		}
+		return idx;
 	}
 
 	@Override

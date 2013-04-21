@@ -17,7 +17,7 @@
  */
 package org.xenei.jdbc4sparql.mock;
 
-import java.net.MalformedURLException;
+import java.io.IOException;
 import java.util.Properties;
 
 import org.xenei.jdbc4sparql.J4SConnection;
@@ -27,7 +27,7 @@ public class MockConnection extends J4SConnection
 {
 
 	public MockConnection( final J4SDriver driver, final Properties properties )
-			throws MalformedURLException
+			throws IOException
 	{
 		super(driver, new MockJ4SUrl(), properties);
 

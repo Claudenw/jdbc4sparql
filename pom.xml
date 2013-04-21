@@ -107,6 +107,11 @@
 			<artifactId>jsqlparser</artifactId>
 			<version>0.8.0</version>
 		</dependency>
+		<dependency>
+			<groupId>commons-codec</groupId>
+			<artifactId>commons-codec</artifactId>
+			<version>1.7</version>
+		</dependency>
 	</dependencies>
 	<name>JDBC 4 SPARQL</name>
 	<description>A JDBC Driver that retrieves data from a SPARQL endpoint or an RDF file.</description>

@@ -37,7 +37,7 @@ public class SimpleBuilder implements SchemaBuilder
 	public static final String DESCRIPTION = "A simple schema builder that builds tables based on RDFS Class names";
 
 	// Params: namespace.
-	private static final String TABLE_QUERY = " prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>"
+	protected static final String TABLE_QUERY = " prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>"
 			+ " SELECT ?tName WHERE { ?tName a rdfs:Class ; " + " }";
 
 	// Params: class resource, namespace
@@ -56,14 +56,15 @@ public class SimpleBuilder implements SchemaBuilder
 	{
 		final List<QuerySolution> solns = catalog.executeQuery(String.format(
 				SimpleBuilder.COLUMN_QUERY, tName));
+		final SparqlColumnDef.Builder builder = new SparqlColumnDef.Builder();
 		for (final QuerySolution soln : solns)
 		{
 			final Resource cName = soln.getResource("cName");
-			final SparqlColumnDef colDef = new SparqlColumnDef(
-					cName.getNameSpace(), cName.getLocalName(), Types.VARCHAR,
-					SimpleBuilder.COLUMN_SEGMENT);
-			colDef.setNullable(DatabaseMetaData.columnNullable);
-			tableDef.add(colDef);
+			builder.addQuerySegment(SimpleBuilder.COLUMN_SEGMENT)
+					.setNamespace(cName.getNameSpace())
+					.setLocalName(cName.getLocalName()).setType(Types.VARCHAR)
+					.setNullable(DatabaseMetaData.columnNullable);
+			tableDef.add(builder.build());
 		}
 	}
 

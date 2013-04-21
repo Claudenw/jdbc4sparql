@@ -19,23 +19,25 @@ package org.xenei.jdbc4sparql.iface;
 
 public interface NamespacedObject
 {
+	public static class Utils
+	{
+
+		public static boolean equals( final NamespacedObject o1, final Object o2 )
+		{
+			return (o2 instanceof NamespacedObject) ? o1.getFQName().equals(
+					((NamespacedObject) o2).getFQName()) : false;
+		}
+
+		public static int hashCode( final NamespacedObject o )
+		{
+			return o.getFQName().hashCode();
+		}
+
+	}
+
 	String getFQName();
 
 	String getLocalName();
 
 	String getNamespace();
-	
-	public static class Utils {
-		
-		public static boolean equals( NamespacedObject o1, Object o2)
-		{
-			return (o2 instanceof NamespacedObject)?o1.getFQName().equals( ((NamespacedObject)o2).getFQName() ):false;
-		}
-		
-		public static int hashCode( NamespacedObject o)
-		{
-			return o.getFQName().hashCode();
-		}
-		
-	}
 }

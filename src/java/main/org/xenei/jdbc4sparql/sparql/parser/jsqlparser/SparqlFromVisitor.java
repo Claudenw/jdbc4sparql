@@ -32,13 +32,13 @@ class SparqlFromVisitor implements FromItemVisitor
 {
 	public static final boolean OPTIONAL = true;
 	public static final boolean REQUIRED = false;
-	
+
 	private final SparqlQueryBuilder builder;
 	private final boolean optional;
 
 	SparqlFromVisitor( final SparqlQueryBuilder builder )
 	{
-		this( builder, REQUIRED);
+		this(builder, SparqlFromVisitor.REQUIRED);
 	}
 
 	SparqlFromVisitor( final SparqlQueryBuilder builder, final boolean optional )
@@ -46,7 +46,7 @@ class SparqlFromVisitor implements FromItemVisitor
 		this.builder = builder;
 		this.optional = optional;
 	}
-	
+
 	@Override
 	public void visit( final SubJoin subjoin )
 	{
@@ -65,7 +65,8 @@ class SparqlFromVisitor implements FromItemVisitor
 	{
 		try
 		{
-			builder.addTable(tableName.getSchemaName(), tableName.getName(), optional);
+			builder.addTable(tableName.getSchemaName(), tableName.getName(),
+					optional);
 		}
 		catch (final SQLException e)
 		{

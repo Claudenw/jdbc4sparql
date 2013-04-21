@@ -67,17 +67,17 @@ public class SparqlTable extends AbstractTable
 
 	private SparqlQueryBuilder builder;
 
-	protected SparqlTable( final SparqlSchema schema,
-			final SparqlTableDef tableDef )
-	{
-		super(tableDef.getNamespace(), schema, tableDef);
-	}
-
 	protected SparqlTable( final SparqlQueryBuilder builder )
 	{
 		this(builder.getCatalog().getViewSchema(), builder.getTableDef(
 				SparqlView.NAME_SPACE, UUID.randomUUID().toString()));
 		this.builder = builder;
+	}
+
+	protected SparqlTable( final SparqlSchema schema,
+			final SparqlTableDef tableDef )
+	{
+		super(tableDef.getNamespace(), schema, tableDef);
 	}
 
 	@Override
@@ -92,17 +92,11 @@ public class SparqlTable extends AbstractTable
 		return new ColumnIterator();
 	}
 
-	public String getSolutionName( int idx )
-	{
-		return builder.getSolutionName(idx);
-	}
-	
 	public Query getQuery() throws SQLException
 	{
 		if (builder == null)
 		{
-			builder = new SparqlQueryBuilder(
-					getCatalog());
+			builder = new SparqlQueryBuilder(getCatalog());
 			builder.addTable(getSchema().getLocalName(), getLocalName());
 			final Iterator<SparqlColumn> iter = getColumns();
 			while (iter.hasNext())
@@ -151,6 +145,11 @@ public class SparqlTable extends AbstractTable
 	public SparqlSchema getSchema()
 	{
 		return (SparqlSchema) super.getSchema();
+	}
+
+	public String getSolutionName( final int idx )
+	{
+		return builder.getSolutionName(idx);
 	}
 
 	@Override

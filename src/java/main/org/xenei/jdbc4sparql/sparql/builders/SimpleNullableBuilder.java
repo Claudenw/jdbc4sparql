@@ -60,18 +60,20 @@ public class SimpleNullableBuilder extends SimpleBuilder
 				type = Types.INTEGER;
 			}
 
-			final SparqlColumnDef colDef = new SparqlColumnDef(
-					cName.getNameSpace(), cName.getLocalName(), type,
-					SimpleBuilder.COLUMN_SEGMENT);
+			final SparqlColumnDef.Builder builder = new SparqlColumnDef.Builder();
+			builder.addQuerySegment(SimpleBuilder.COLUMN_SEGMENT)
+					.setNamespace(cName.getNameSpace())
+					.setLocalName(cName.getLocalName()).setType(type);
+
 			if (cName.getLocalName().toLowerCase().contains("nullable"))
 			{
-				colDef.setNullable(DatabaseMetaData.columnNullable);
+				builder.setNullable(DatabaseMetaData.columnNullable);
 			}
 			else
 			{
-				colDef.setNullable(DatabaseMetaData.columnNoNulls);
+				builder.setNullable(DatabaseMetaData.columnNoNulls);
 			}
-			tableDef.add(colDef);
+			tableDef.add(builder.build());
 		}
 	}
 

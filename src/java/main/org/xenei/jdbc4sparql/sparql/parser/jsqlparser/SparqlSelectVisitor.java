@@ -21,22 +21,13 @@ package org.xenei.jdbc4sparql.sparql.parser.jsqlparser;
 
 import com.hp.hpl.jena.graph.Node;
 import com.hp.hpl.jena.query.Query;
-import com.hp.hpl.jena.sparql.algebra.op.OpNull;
-import com.hp.hpl.jena.sparql.expr.E_Bound;
-import com.hp.hpl.jena.sparql.expr.E_Equals;
-import com.hp.hpl.jena.sparql.expr.E_LogicalNot;
 import com.hp.hpl.jena.sparql.expr.Expr;
 import com.hp.hpl.jena.sparql.expr.ExprFunction;
-import com.hp.hpl.jena.sparql.expr.E_LogicalOr;
-import com.hp.hpl.jena.sparql.expr.E_NotExists;
 import com.hp.hpl.jena.sparql.expr.ExprVar;
 
-
-import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.List;
 
-import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.Limit;
 import net.sf.jsqlparser.statement.select.OrderByElement;
@@ -47,14 +38,13 @@ import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.Top;
 import net.sf.jsqlparser.statement.select.Union;
 
-import org.openjena.atlas.logging.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xenei.jdbc4sparql.sparql.SparqlColumn;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 
 /**
- * Implementation of SelectVisitor and OrderByVisitor that merge the SQL commands
+ * Implementation of SelectVisitor and OrderByVisitor that merge the SQL
+ * commands
  * into the SparqlQueryBuilder.
  */
 public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
@@ -62,24 +52,41 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 	// the query builder
 	private final SparqlQueryBuilder queryBuilder;
 
-	private static Logger LOG = LoggerFactory.getLogger(SparqlSelectVisitor.class) ;
+	private static Logger LOG = LoggerFactory
+			.getLogger(SparqlSelectVisitor.class);
+
 	/**
 	 * Constructor
-	 * @param queryBuilder The builder to user.
+	 * 
+	 * @param queryBuilder
+	 *            The builder to user.
 	 */
 	SparqlSelectVisitor( final SparqlQueryBuilder queryBuilder )
 	{
 		this.queryBuilder = queryBuilder;
 	}
 
-	private boolean applyOuterExprSub( Expr aExpr, Expr toApply )
+	private void applyOuterExpr( final Expr aExpr )
 	{
-		Expr expr = aExpr;
+		final Expr expr = aExpr;
 		if (expr instanceof ExprFunction)
-		{	
-			for (Expr subExpr : ((ExprFunction)expr).getArgs())
+		{
+			if (applyOuterExprSub(aExpr, aExpr))
 			{
-				if (applyOuterExprSub( subExpr, toApply ))
+				return;
+			}
+		}
+		queryBuilder.addFilter(expr);
+	}
+
+	private boolean applyOuterExprSub( final Expr aExpr, final Expr toApply )
+	{
+		final Expr expr = aExpr;
+		if (expr instanceof ExprFunction)
+		{
+			for (final Expr subExpr : ((ExprFunction) expr).getArgs())
+			{
+				if (applyOuterExprSub(subExpr, toApply))
 				{
 					return true;
 				}
@@ -88,32 +95,21 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 		}
 		if (expr instanceof ExprVar)
 		{
-			Node n = ((ExprVar)expr).getAsNode();
-			SparqlQueryBuilder.SparqlTableInfo sti = queryBuilder.getNodeTable( n );
-			if (sti != null && sti.isOptional())
+			final Node n = ((ExprVar) expr).getAsNode();
+			final SparqlQueryBuilder.SparqlTableInfo sti = queryBuilder
+					.getNodeTable(n);
+			if ((sti != null) && sti.isOptional())
 			{
-				sti.addFilter( toApply );
+				sti.addFilter(toApply);
 				return true;
 			}
 			return false;
 		}
 		return false;
 	}
-	
-	private void applyOuterExpr( Expr aExpr )
-	{
-		Expr expr = aExpr;
-		if (expr instanceof ExprFunction)
-		{	
-			if (applyOuterExprSub( aExpr, aExpr ))
-			{
-				return;
-			}
-		}
-		queryBuilder.addFilter( expr );
-	}
+
 	// take apart the join and figure out how to merge it.
-	private void deparseJoin( final Join join ) 
+	private void deparseJoin( final Join join )
 	{
 		if (join.isSimple())
 		{
@@ -124,14 +120,14 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 		else if (join.isOuter())
 		{
 			final String fmt = "%s OUTER JOIN Is not supported";
-			
+
 			if (join.isRight())
 			{
 				throw new UnsupportedOperationException(String.format(fmt,
 						"RIGHT"));
 			}
 			else if (join.isNatural())
-			{	// this is one case we will not support as it is generally 
+			{ // this is one case we will not support as it is generally
 				// considered bad.
 				throw new UnsupportedOperationException(String.format(fmt,
 						"NATURAL"));
@@ -141,43 +137,45 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 				throw new UnsupportedOperationException(String.format(fmt,
 						"FULL"));
 			}
-			else 
+			else
 			{
 				// handles left and not specified
 				final SparqlFromVisitor fromVisitor = new SparqlFromVisitor(
-						queryBuilder, SparqlFromVisitor.OPTIONAL );
+						queryBuilder, SparqlFromVisitor.OPTIONAL);
 				join.getRightItem().accept(fromVisitor);
-				
-				
+
 				if (join.getOnExpression() != null)
 				{
-					SparqlExprVisitor expressionVisitor = new SparqlExprVisitor( queryBuilder );
-					join.getOnExpression().accept( expressionVisitor );
+					final SparqlExprVisitor expressionVisitor = new SparqlExprVisitor(
+							queryBuilder);
+					join.getOnExpression().accept(expressionVisitor);
 					applyOuterExpr(expressionVisitor.getResult());
 				}
 			}
-		} else {
+		}
+		else
+		{
 			// inner join
 			// select * from table join othertable on table.id = othertable.fk
 			final String fmt = "%s INNER JOIN Is not supported";
 			if (join.isRight())
-			{	// this should never happen anyway
+			{ // this should never happen anyway
 				throw new UnsupportedOperationException(String.format(fmt,
 						"RIGHT"));
 			}
 			else if (join.isNatural())
-			{	// this is one case we will not support as it is generally 
+			{ // this is one case we will not support as it is generally
 				// considered bad.
 				throw new UnsupportedOperationException(String.format(fmt,
 						"NATURAL"));
 			}
 			else if (join.isFull())
-			{	// this should never happen anyway
+			{ // this should never happen anyway
 				throw new UnsupportedOperationException(String.format(fmt,
 						"FULL"));
 			}
 			else if (join.isLeft())
-			{	// this should never happen anyway
+			{ // this should never happen anyway
 				throw new UnsupportedOperationException(String.format(fmt,
 						"LEFT"));
 			}
@@ -188,13 +186,14 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 				join.getRightItem().accept(fromVisitor);
 				if (join.getOnExpression() != null)
 				{
-					SparqlExprVisitor expressionVisitor = new SparqlExprVisitor( queryBuilder );
-					join.getOnExpression().accept( expressionVisitor );
+					final SparqlExprVisitor expressionVisitor = new SparqlExprVisitor(
+							queryBuilder);
+					join.getOnExpression().accept(expressionVisitor);
 					queryBuilder.addFilter(expressionVisitor.getResult());
 				}
 			}
 		}
-		
+
 	}
 
 	// process a limit
@@ -238,6 +237,7 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 
 	/**
 	 * Get the SPARQL query generated from the querybuilder.
+	 * 
 	 * @return The SPARQL query.
 	 */
 	public Query getQuery()

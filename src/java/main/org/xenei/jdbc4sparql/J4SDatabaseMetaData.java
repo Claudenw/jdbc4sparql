@@ -22,7 +22,6 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.RowIdLifetime;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -43,7 +42,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	private final J4SDriver driver;
 	private static MetaCatalog metaCatalog;
 	private static MetaSchema metaSchema;
-	private final Map<String,Catalog> catalogs;
+	private final Map<String, Catalog> catalogs;
 	private static DataTable CATALOGS_TABLE;
 
 	static
@@ -63,16 +62,17 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	{
 		this.connection = connection;
 		this.driver = driver;
-		this.catalogs = new HashMap<String,Catalog>(connection.getCatalogs());
+		this.catalogs = new HashMap<String, Catalog>(connection.getCatalogs());
 	}
 
 	public void addCatalog( final Catalog catalog )
 	{
-		if (catalogs.get(catalog.getLocalName())==null)
+		if (catalogs.get(catalog.getLocalName()) == null)
 		{
 			J4SDatabaseMetaData.CATALOGS_TABLE.addData(new Object[] { catalog
 					.getLocalName() });
-			catalogs.put( catalog.getLocalName(), J4SDatabaseMetaData.metaCatalog);
+			catalogs.put(catalog.getLocalName(),
+					J4SDatabaseMetaData.metaCatalog);
 		}
 	}
 

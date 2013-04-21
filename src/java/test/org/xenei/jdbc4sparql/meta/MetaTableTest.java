@@ -24,6 +24,7 @@ import java.sql.SQLException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.xenei.jdbc4sparql.impl.ColumnDefImpl;
 import org.xenei.jdbc4sparql.impl.DataTable;
 import org.xenei.jdbc4sparql.impl.TableDefImpl;
 import org.xenei.jdbc4sparql.mock.MockSchema;
@@ -65,12 +66,16 @@ public class MetaTableTest
 	public void setUp()
 	{
 		def = new TableDefImpl(MetaNamespace.NS, "TestDef");
-		def.add(MetaColumn.getStringInstance("NULLABLE_STRING").setNullable(
-				DatabaseMetaData.columnNullable));
-		def.add(MetaColumn.getStringInstance("STRING"));
-		def.add(MetaColumn.getIntInstance("INT"));
-		def.add(MetaColumn.getIntInstance("NULLABLE_INT").setNullable(
-				DatabaseMetaData.columnNullable));
+		def.add(ColumnDefImpl.Builder
+				.getStringBuilder(MetaNamespace.NS, "NULLABLE_STRING")
+				.setNullable(DatabaseMetaData.columnNullable).build());
+		def.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
+				"STRING").build());
+		def.add(ColumnDefImpl.Builder
+				.getIntegerBuilder(MetaNamespace.NS, "INT").build());
+		def.add(ColumnDefImpl.Builder
+				.getIntegerBuilder(MetaNamespace.NS, "NULLABLE_INT")
+				.setNullable(DatabaseMetaData.columnNullable).build());
 		rows = new Object[][] { new Object[] { "string", "row1", 5, 10 },
 				new Object[] { null, "row2", 5, null }, };
 	}

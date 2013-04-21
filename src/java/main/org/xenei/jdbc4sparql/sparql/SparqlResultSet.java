@@ -22,10 +22,8 @@ import com.hp.hpl.jena.rdf.model.RDFNode;
 
 import java.sql.SQLException;
 
-import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.TypeConverter;
 import org.xenei.jdbc4sparql.impl.ListResultSet;
-import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 
 public class SparqlResultSet extends ListResultSet
 {
@@ -35,16 +33,21 @@ public class SparqlResultSet extends ListResultSet
 		super(table.getCatalog().executeLocalQuery(table.getQuery()), table);
 	}
 
-	
+	@Override
+	protected SparqlTable getTable()
+	{
+		return (SparqlTable) super.getTable();
+	}
+
 	@Override
 	protected Object readObject( final int columnOrdinal ) throws SQLException
 	{
 		checkPosition();
 		checkColumn(columnOrdinal);
 		final QuerySolution soln = (QuerySolution) getRowObject();
-		String colName = getTable().getSolutionName( columnOrdinal-1 );
+		final String colName = getTable().getSolutionName(columnOrdinal - 1);
 		final RDFNode node = soln.get(colName);
-		
+
 		if (node == null)
 		{
 			return null;
@@ -54,12 +57,5 @@ public class SparqlResultSet extends ListResultSet
 			return TypeConverter.getJavaValue(node.asLiteral());
 		}
 		return node.toString();
-	}
-
-
-	@Override
-	protected SparqlTable getTable()
-	{
-		return (SparqlTable) super.getTable();
 	}
 }

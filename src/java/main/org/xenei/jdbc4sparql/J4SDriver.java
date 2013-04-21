@@ -17,7 +17,7 @@
  */
 package org.xenei.jdbc4sparql;
 
-import java.net.MalformedURLException;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverPropertyInfo;
@@ -34,37 +34,40 @@ import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 public class J4SDriver implements Driver
 {
 
-	static {
-		 try
+	static
+	{
+		try
 		{
-			java.sql.DriverManager.registerDriver( new J4SDriver() );
+			java.sql.DriverManager.registerDriver(new J4SDriver());
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
-			throw new RuntimeException( e );
+			throw new RuntimeException(e);
 		}
 	}
-	
+
 	public static void main( final String[] args )
 	{
 
 		final J4SDriver driver = new J4SDriver();
 		System.out.println(String.format("%s Version %s.%s", driver.getName(),
 				driver.getMajorVersion(), driver.getMinorVersion()));
-		System.out.println( "URL Format:  jdbc:j4s[?arg=val[&arg=var]]:url");
+		System.out.println("URL Format:  jdbc:j4s[?arg=val[&arg=var]]:url");
 		System.out.println();
-		System.out.print( "Valid arguments: ");
-		for (String s: J4SUrl.ARGS )
+		System.out.print("Valid arguments: ");
+		for (final String s : J4SUrl.ARGS)
 		{
-			System.out.print( s+" ");
+			System.out.print(s + " ");
 		}
 		System.out.println("Valid Types:");
-		System.out.println("(Default) config - URL is a J4S configuration file");
+		System.out
+				.println("(Default) config - URL is a J4S configuration file");
 		System.out.println("sparql - URL is a sparql endpoint");
-		for (Lang l : Lang.values())
+		for (final Lang l : Lang.values())
 		{
-			System.out.println( String.format( "%s or %s - URL is a %s formatted RDF file", 
-					l.name(), l.getName(), l.getName()));
+			System.out.println(String.format(
+					"%s or %s - URL is a %s formatted RDF file", l.name(),
+					l.getName(), l.getName()));
 		}
 		System.out.println();
 		System.out.println("Registered Schema Builders:");
@@ -77,8 +80,8 @@ public class J4SDriver implements Driver
 					+ SchemaBuilder.Util.getDescription(c));
 		}
 		System.out.println();
-		System.out.println("Default SPARQL parser: "+SparqlParser.Util
-				.getDefaultParser().getClass());
+		System.out.println("Default SPARQL parser: "
+				+ SparqlParser.Util.getDefaultParser().getClass());
 	}
 
 	public J4SDriver()
@@ -117,7 +120,7 @@ public class J4SDriver implements Driver
 		{
 			return new J4SConnection(this, url, props);
 		}
-		catch (final MalformedURLException e)
+		catch (final IOException e)
 		{
 			throw new SQLException(e);
 		}

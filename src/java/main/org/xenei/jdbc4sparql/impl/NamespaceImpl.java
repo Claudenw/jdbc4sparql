@@ -37,6 +37,12 @@ public class NamespaceImpl implements NamespacedObject
 	}
 
 	@Override
+	public boolean equals( final Object o )
+	{
+		return NamespacedObject.Utils.equals(this, o);
+	}
+
+	@Override
 	public String getFQName()
 	{
 		return namespace + localName;
@@ -53,15 +59,10 @@ public class NamespaceImpl implements NamespacedObject
 	{
 		return namespace;
 	}
-	
+
 	@Override
-	public boolean equals( Object o)
+	public int hashCode()
 	{
-		return NamespacedObject.Utils.equals(this, o);
-	}
-	
-	@Override
-	public int hashCode() {
 		return hashCode;
 	}
 

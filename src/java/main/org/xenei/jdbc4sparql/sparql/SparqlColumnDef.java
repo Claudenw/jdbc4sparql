@@ -24,6 +24,51 @@ import org.xenei.jdbc4sparql.impl.ColumnDefImpl;
 
 public class SparqlColumnDef extends ColumnDefImpl
 {
+	public static class Builder extends ColumnDefImpl.Builder
+	{
+		private final List<String> querySegments = new ArrayList<String>();
+
+		public Builder addQuerySegment( final String querySegment )
+		{
+			querySegments.add(querySegment);
+			return this;
+		}
+
+		@Override
+		public SparqlColumnDef build()
+		{
+			checkBuildState();
+			final SparqlColumnDef columnDef = new SparqlColumnDef(
+					getNamespace(), getLocalName(), getDisplaySize(),
+					getType(), getPrecision(), getScale(), isSigned(),
+					getNullable(), getLabel(), getTypeName(),
+					getColumnClassName(), isAutoIncrement(), isCaseSensitive(),
+					isCurrency(), isDefinitelyWritable(), isReadOnly(),
+					isSearchable(), isWritable(), querySegments);
+			resetVars();
+			return columnDef;
+		}
+
+		@Override
+		protected void checkBuildState()
+		{
+			super.checkBuildState();
+			if (querySegments.size() == 0)
+			{
+				throw new IllegalStateException(
+						"At least one query segment must be defined");
+			}
+		}
+
+		@Override
+		protected void resetVars()
+		{
+			super.resetVars();
+			querySegments.clear();
+		}
+
+	}
+
 	/**
 	 * Query segments are string format strings where
 	 * %1$s = table variable name
@@ -37,17 +82,21 @@ public class SparqlColumnDef extends ColumnDefImpl
 	 */
 	private final List<String> querySegments;
 
-	public SparqlColumnDef( final String namespace, final String localName,
-			final int type, final String querySegment )
+	private SparqlColumnDef( final String namespace, final String localName,
+			final int displaySize, final int type, final int precision,
+			final int scale, final boolean signed, final int nullable,
+			final String label, final String typeName,
+			final String columnClassName, final boolean autoIncrement,
+			final boolean caseSensitive, final boolean currency,
+			final boolean definitelyWritable, final boolean readOnly,
+			final boolean searchable, final boolean writable,
+			final List<String> querySegments )
 	{
-		super(namespace, localName, type);
-		querySegments = new ArrayList<String>();
-		querySegments.add(querySegment);
-	}
-
-	public void addQuerySegment( final String querySegment )
-	{
-		querySegments.add(querySegment);
+		super(namespace, localName, displaySize, type, precision, scale,
+				signed, nullable, label, typeName, columnClassName,
+				autoIncrement, caseSensitive, currency, definitelyWritable,
+				readOnly, searchable, writable);
+		this.querySegments = new ArrayList<String>(querySegments);
 	}
 
 	public List<String> getQuerySegments()

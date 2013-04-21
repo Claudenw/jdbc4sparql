@@ -23,6 +23,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.xenei.jdbc4sparql.iface.ColumnDef;
+import org.xenei.jdbc4sparql.impl.ColumnDefImpl;
 import org.xenei.jdbc4sparql.impl.TableDefImpl;
 
 public class MetaTableDefTest
@@ -33,12 +34,16 @@ public class MetaTableDefTest
 	public void setUp()
 	{
 		def = new TableDefImpl(MetaNamespace.NS, "TestDef");
-		def.add(MetaColumn.getStringInstance("NULLABLE_STRING").setNullable(
-				DatabaseMetaData.columnNullable));
-		def.add(MetaColumn.getStringInstance("STRING"));
-		def.add(MetaColumn.getIntInstance("INT"));
-		def.add(MetaColumn.getIntInstance("NULLABLE_INT").setNullable(
-				DatabaseMetaData.columnNullable));
+		def.add(ColumnDefImpl.Builder
+				.getStringBuilder(MetaNamespace.NS, "NULLABLE_STRING")
+				.setNullable(DatabaseMetaData.columnNullable).build());
+		def.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
+				"STRING").build());
+		def.add(ColumnDefImpl.Builder
+				.getIntegerBuilder(MetaNamespace.NS, "INT").build());
+		def.add(ColumnDefImpl.Builder
+				.getIntegerBuilder(MetaNamespace.NS, "NULLABLE_INT")
+				.setNullable(DatabaseMetaData.columnNullable).build());
 	}
 
 	@Test

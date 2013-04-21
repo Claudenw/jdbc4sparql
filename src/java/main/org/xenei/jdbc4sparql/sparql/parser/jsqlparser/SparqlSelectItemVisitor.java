@@ -44,7 +44,9 @@ class SparqlSelectItemVisitor implements SelectItemVisitor
 
 	/**
 	 * Constructor
-	 * @param queryBuilder The query builder.
+	 * 
+	 * @param queryBuilder
+	 *            The query builder.
 	 */
 	SparqlSelectItemVisitor( final SparqlQueryBuilder queryBuilder )
 	{
@@ -127,8 +129,9 @@ class SparqlSelectItemVisitor implements SelectItemVisitor
 			// handle implicit name mapping
 			if (selectExpressionItem.getExpression() instanceof net.sf.jsqlparser.schema.Column)
 			{
-				queryBuilder.addVar(v.getResult(), NameUtils.convertDB2SPARQL(selectExpressionItem
-						.getExpression().toString()));
+				queryBuilder.addVar(v.getResult(), NameUtils
+						.convertDB2SPARQL(selectExpressionItem.getExpression()
+								.toString()));
 			}
 			else
 			{

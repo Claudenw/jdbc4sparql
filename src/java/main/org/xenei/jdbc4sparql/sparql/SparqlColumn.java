@@ -63,12 +63,13 @@ public class SparqlColumn extends ColumnImpl
 		}
 		return retval;
 	}
-	
+
+	@Override
 	public SparqlTable getTable()
 	{
 		return (SparqlTable) super.getTable();
 	}
-	
+
 	public boolean isOptional()
 	{
 		return getNullable() != DatabaseMetaData.columnNoNulls;

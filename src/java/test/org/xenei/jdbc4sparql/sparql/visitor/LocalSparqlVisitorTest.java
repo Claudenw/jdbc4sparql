@@ -62,22 +62,24 @@ public class LocalSparqlVisitorTest
 		catalog.addSchema(schema);
 		// create the foo table
 		MockTableDef tableDef = new MockTableDef("foo");
-		tableDef.add(new MockColumn("StringCol", Types.VARCHAR));
-		tableDef.add(new MockColumn("NullableStringCol", Types.VARCHAR)
-				.setNullable(DatabaseMetaData.columnNullable));
-		tableDef.add(new MockColumn("IntCol", Types.INTEGER));
-		tableDef.add(new MockColumn("NullableIntCol", Types.INTEGER)
-				.setNullable(DatabaseMetaData.columnNullable));
+		tableDef.add(MockColumn.getBuilder("StringCol", Types.VARCHAR).build());
+		tableDef.add(MockColumn.getBuilder("NullableStringCol", Types.VARCHAR)
+				.setNullable(DatabaseMetaData.columnNullable).build());
+		tableDef.add(MockColumn.getBuilder("IntCol", Types.INTEGER).build());
+		tableDef.add(MockColumn.getBuilder("NullableIntCol", Types.INTEGER)
+				.setNullable(DatabaseMetaData.columnNullable).build());
 		schema.addTableDef(tableDef);
 
 		// create the bar table
 		tableDef = new MockTableDef("bar");
-		tableDef.add(new MockColumn("BarStringCol", Types.VARCHAR));
-		tableDef.add(new MockColumn("BarNullableStringCol", Types.VARCHAR)
-				.setNullable(DatabaseMetaData.columnNullable));
-		tableDef.add(new MockColumn("IntCol", Types.INTEGER));
-		tableDef.add(new MockColumn("BarNullableIntCol", Types.INTEGER)
-				.setNullable(DatabaseMetaData.columnNullable));
+		tableDef.add(MockColumn.getBuilder("BarStringCol", Types.VARCHAR)
+				.build());
+		tableDef.add(MockColumn
+				.getBuilder("BarNullableStringCol", Types.VARCHAR)
+				.setNullable(DatabaseMetaData.columnNullable).build());
+		tableDef.add(MockColumn.getBuilder("IntCol", Types.INTEGER).build());
+		tableDef.add(MockColumn.getBuilder("BarNullableIntCol", Types.INTEGER)
+				.setNullable(DatabaseMetaData.columnNullable).build());
 		schema.addTableDef(tableDef);
 
 		sv = new SparqlVisitor(catalog);
@@ -116,7 +118,7 @@ public class LocalSparqlVisitorTest
 		Assert.assertTrue(q.getQueryPattern() instanceof ElementGroup);
 		final ElementGroup eg = (ElementGroup) q.getQueryPattern();
 		final List<Element> eLst = eg.getElements();
-		Assert.assertEquals(5, eLst.size()); //table,  4 binds
+		Assert.assertEquals(5, eLst.size()); // table, 4 binds
 		final List<String> bindElements = new ArrayList<String>();
 		for (final Element e : eLst)
 		{
@@ -168,17 +170,18 @@ public class LocalSparqlVisitorTest
 		final List<Element> eLst = eg.getElements();
 		Assert.assertEquals(2, eLst.size());
 		final List<String> strLst = new ArrayList<String>();
-		for (Element e2 : eLst )
+		for (final Element e2 : eLst)
 		{
 			// there is one mock table entry
-			if (e2 instanceof ElementFilter) {
+			if (e2 instanceof ElementFilter)
+			{
 				strLst.add(e2.toString());
 			}
 		}
 		Assert.assertTrue(strLst.contains("FILTER ( ?MockSchema"
 				+ NameUtils.SPARQL_DOT + "foo" + NameUtils.SPARQL_DOT
 				+ "StringCol != \"baz\" )"));
-		
+
 		final List<Var> vLst = q.getProjectVars();
 		Assert.assertEquals(1, vLst.size());
 		Assert.assertEquals(Var.alloc("StringCol"), vLst.get(0));

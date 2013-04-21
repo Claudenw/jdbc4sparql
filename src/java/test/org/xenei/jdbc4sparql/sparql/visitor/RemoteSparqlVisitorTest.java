@@ -22,7 +22,6 @@ package org.xenei.jdbc4sparql.sparql.visitor;
 import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.sparql.core.Var;
 import com.hp.hpl.jena.sparql.syntax.Element;
-import com.hp.hpl.jena.sparql.syntax.ElementBind;
 import com.hp.hpl.jena.sparql.syntax.ElementFilter;
 import com.hp.hpl.jena.sparql.syntax.ElementGroup;
 
@@ -57,28 +56,30 @@ public class RemoteSparqlVisitorTest
 	@Before
 	public void setUp() throws Exception
 	{
-		final SparqlCatalog catalog = new SparqlCatalog( new URL( "http://example.com/sparql"),
-				MockCatalog.LOCAL_NAME);
+		final SparqlCatalog catalog = new SparqlCatalog(new URL(
+				"http://example.com/sparql"), MockCatalog.LOCAL_NAME);
 		final MockSchema schema = new MockSchema(catalog);
 		catalog.addSchema(schema);
 		// create the foo table
 		MockTableDef tableDef = new MockTableDef("foo");
-		tableDef.add(new MockColumn("StringCol", Types.VARCHAR));
-		tableDef.add(new MockColumn("NullableStringCol", Types.VARCHAR)
-				.setNullable(DatabaseMetaData.columnNullable));
-		tableDef.add(new MockColumn("IntCol", Types.INTEGER));
-		tableDef.add(new MockColumn("NullableIntCol", Types.INTEGER)
-				.setNullable(DatabaseMetaData.columnNullable));
+		tableDef.add(MockColumn.getBuilder("StringCol", Types.VARCHAR).build());
+		tableDef.add(MockColumn.getBuilder("NullableStringCol", Types.VARCHAR)
+				.setNullable(DatabaseMetaData.columnNullable).build());
+		tableDef.add(MockColumn.getBuilder("IntCol", Types.INTEGER).build());
+		tableDef.add(MockColumn.getBuilder("NullableIntCol", Types.INTEGER)
+				.setNullable(DatabaseMetaData.columnNullable).build());
 		schema.addTableDef(tableDef);
 
 		// create the bar table
 		tableDef = new MockTableDef("bar");
-		tableDef.add(new MockColumn("BarStringCol", Types.VARCHAR));
-		tableDef.add(new MockColumn("BarNullableStringCol", Types.VARCHAR)
-				.setNullable(DatabaseMetaData.columnNullable));
-		tableDef.add(new MockColumn("IntCol", Types.INTEGER));
-		tableDef.add(new MockColumn("BarNullableIntCol", Types.INTEGER)
-				.setNullable(DatabaseMetaData.columnNullable));
+		tableDef.add(MockColumn.getBuilder("BarStringCol", Types.VARCHAR)
+				.build());
+		tableDef.add(MockColumn
+				.getBuilder("BarNullableStringCol", Types.VARCHAR)
+				.setNullable(DatabaseMetaData.columnNullable).build());
+		tableDef.add(MockColumn.getBuilder("IntCol", Types.INTEGER).build());
+		tableDef.add(MockColumn.getBuilder("BarNullableIntCol", Types.INTEGER)
+				.setNullable(DatabaseMetaData.columnNullable).build());
 		schema.addTableDef(tableDef);
 
 		sv = new SparqlVisitor(catalog);
@@ -127,7 +128,7 @@ public class RemoteSparqlVisitorTest
 			}
 		}
 		Assert.assertEquals(4, filterElements.size());
-		
+
 	}
 
 	@Test
@@ -137,7 +138,7 @@ public class RemoteSparqlVisitorTest
 		final Statement stmt = parserManager.parse(new StringReader(query));
 		stmt.accept(sv);
 		final Query q = sv.getBuilder().build();
-		
+
 		final Element e = q.getQueryPattern();
 		Assert.assertTrue(e instanceof ElementGroup);
 		final ElementGroup eg = (ElementGroup) e;
@@ -145,17 +146,18 @@ public class RemoteSparqlVisitorTest
 		// service and checkTypeF filter only
 		Assert.assertEquals(4, eLst.size());
 		final List<String> strLst = new ArrayList<String>();
-		for (Element e2 : eLst )
+		for (final Element e2 : eLst)
 		{
 			// there is one mock table entry
-			if (e2 instanceof ElementFilter) {
+			if (e2 instanceof ElementFilter)
+			{
 				strLst.add(e2.toString());
 			}
 		}
 		Assert.assertTrue(strLst.contains("FILTER checkTypeF(?MockSchema"
 				+ NameUtils.SPARQL_DOT + "foo" + NameUtils.SPARQL_DOT
 				+ "StringCol)"));
-		
+
 		final List<Var> vLst = q.getProjectVars();
 		Assert.assertEquals(1, vLst.size());
 		Assert.assertEquals(Var.alloc("StringCol"), vLst.get(0));
@@ -177,10 +179,11 @@ public class RemoteSparqlVisitorTest
 		// service and checkTypeF filter only
 		Assert.assertEquals(4, eLst.size());
 		final List<String> strLst = new ArrayList<String>();
-		for (Element e2 : eLst )
+		for (final Element e2 : eLst)
 		{
 			// there is one mock table entry
-			if (e2 instanceof ElementFilter) {
+			if (e2 instanceof ElementFilter)
+			{
 				strLst.add(e2.toString());
 			}
 		}

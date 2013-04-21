@@ -35,9 +35,13 @@ public class ColumnImpl extends NamespaceImpl implements Column
 
 	/**
 	 * Constructor
-	 * @param namespace The namespace for the column
-	 * @param table The table the column is in.
-	 * @param columnDef The column defintion.
+	 * 
+	 * @param namespace
+	 *            The namespace for the column
+	 * @param table
+	 *            The table the column is in.
+	 * @param columnDef
+	 *            The column defintion.
 	 */
 	public ColumnImpl( final String namespace, final Table table,
 			final ColumnDef columnDef )
@@ -49,8 +53,11 @@ public class ColumnImpl extends NamespaceImpl implements Column
 
 	/**
 	 * Constructor.
-	 * @param table The table the column is in.
-	 * @param columnDef The column defintion.
+	 * 
+	 * @param table
+	 *            The table the column is in.
+	 * @param columnDef
+	 *            The column defintion.
 	 */
 	public ColumnImpl( final Table table, final ColumnDef columnDef )
 	{
@@ -70,23 +77,11 @@ public class ColumnImpl extends NamespaceImpl implements Column
 	}
 
 	/**
-	 * @return  The column definition
+	 * @return The column definition
 	 */
 	protected ColumnDef getColumnDef()
 	{
 		return columnDef;
-	}
-
-	@Override
-	public String getSQLName()
-	{
-		return NameUtils.getDBName(this);
-	}
-	
-	@Override
-	public String getSPARQLName()
-	{
-		return NameUtils.getSPARQLName(this);
 	}
 
 	@Override
@@ -104,7 +99,8 @@ public class ColumnImpl extends NamespaceImpl implements Column
 	/**
 	 * Indicates the nullability of values in the designated column.
 	 * Possible return values are ResultSetMetaData.columnNullable,
-	 * ResultSetMetaData.columnNoNulls,  ResultSetMetaData.columnNullableUnknown
+	 * ResultSetMetaData.columnNoNulls, ResultSetMetaData.columnNullableUnknown
+	 * 
 	 * @return the nullability status of the given column.
 	 */
 	@Override
@@ -129,6 +125,18 @@ public class ColumnImpl extends NamespaceImpl implements Column
 	public Schema getSchema()
 	{
 		return table.getSchema();
+	}
+
+	@Override
+	public String getSPARQLName()
+	{
+		return NameUtils.getSPARQLName(this);
+	}
+
+	@Override
+	public String getSQLName()
+	{
+		return NameUtils.getDBName(this);
 	}
 
 	@Override

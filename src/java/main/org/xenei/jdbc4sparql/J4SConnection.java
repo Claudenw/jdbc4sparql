@@ -20,7 +20,9 @@ package org.xenei.jdbc4sparql;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 
-import java.net.MalformedURLException;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.sql.Array;
 import java.sql.Blob;
 import java.sql.CallableStatement;
@@ -38,13 +40,15 @@ import java.sql.SQLXML;
 import java.sql.Savepoint;
 import java.sql.Statement;
 import java.sql.Struct;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
 
+import org.apache.commons.lang3.StringUtils;
+import org.xenei.jdbc4sparql.config.ConfigSerializer;
+import org.xenei.jdbc4sparql.config.ModelReader;
+import org.xenei.jdbc4sparql.config.ModelWriter;
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.meta.MetaCatalog;
 import org.xenei.jdbc4sparql.sparql.SparqlCatalog;
@@ -54,7 +58,6 @@ import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 
 public class J4SConnection implements Connection
 {
-	private Properties properties;
 	private Properties clientInfo;
 	private final J4SUrl url;
 	private final Map<String, Catalog> catalogMap;
@@ -69,10 +72,9 @@ public class J4SConnection implements Connection
 	private int holdability;
 
 	public J4SConnection( final J4SDriver driver, final J4SUrl url,
-			final Properties properties ) throws MalformedURLException
+			final Properties properties ) throws IOException
 	{
 		this.catalogMap = new HashMap<String, Catalog>();
-		this.properties = properties;
 		this.sqlWarnings = null;
 		this.driver = driver;
 		this.url = url;
@@ -87,22 +89,17 @@ public class J4SConnection implements Connection
 
 		final Catalog c = new MetaCatalog();
 		catalogMap.put(c.getLocalName(), c);
-		if ((currentCatalog != null)
+		if (StringUtils.isNotEmpty(currentCatalog)
 				&& (catalogMap.get(currentCatalog) == null))
 		{
-			throw new IllegalArgumentException("Catalog " + currentCatalog
-					+ " not found in catalog map");
+			throw new IllegalArgumentException("Catalog '" + currentCatalog
+					+ "' not found in catalog map");
 		}
 
 		this.sparqlParser = url.getParser() != null ? url.getParser()
 				: SparqlParser.Util.getDefaultParser();
 	}
 
-	public Map<String,Catalog> getCatalogs()
-	{
-		return catalogMap;
-	}
-	
 	@Override
 	public void abort( final Executor arg0 ) throws SQLException
 	{
@@ -140,21 +137,23 @@ public class J4SConnection implements Connection
 	}
 
 	private void configureCatalogMap( final Properties properties )
-			throws MalformedURLException
+			throws IOException
 	{
-
-		SparqlCatalog catalog = null;
 
 		if (url.getType().equals(J4SUrl.TYPE_CONFIG))
 		{
-			throw new UnsupportedOperationException(
-					"Configuration type not yet supported");
+			final ConfigSerializer serializer = new ConfigSerializer();
+			serializer.getLoader().read(
+					url.getEndpoint().toURL().toExternalForm());
+			for (final Catalog catalog : serializer.getCatalogs())
+			{
+				catalogMap.put(catalog.getLocalName(), catalog);
+			}
 		}
 		else
 		{
-
+			SparqlCatalog catalog = null;
 			if (url.getType().equals(J4SUrl.TYPE_SPARQL))
-
 			{
 				catalog = new SparqlCatalog(url.getEndpoint().toURL(),
 						currentCatalog);
@@ -263,6 +262,11 @@ public class J4SConnection implements Connection
 		return currentCatalog;
 	}
 
+	public Map<String, Catalog> getCatalogs()
+	{
+		return catalogMap;
+	}
+
 	@Override
 	public Properties getClientInfo() throws SQLException
 	{
@@ -275,12 +279,6 @@ public class J4SConnection implements Connection
 		return clientInfo.getProperty(key);
 	}
 
-	public String getConfiguration()
-	{
-		// TODO create config serialization
-		return "";
-	}
-
 	@Override
 	public int getHoldability() throws SQLException
 	{
@@ -291,6 +289,40 @@ public class J4SConnection implements Connection
 	public DatabaseMetaData getMetaData() throws SQLException
 	{
 		return new J4SDatabaseMetaData(this, driver);
+	}
+
+	/**
+	 * Get a model reader to populate alld the Sparql catalogs with.
+	 * 
+	 * When a configuration is reloaded if there are any catalogs that were
+	 * created
+	 * against a local file, those catalogs will defined but no data present.
+	 * The
+	 * reader provides a mechanism to load data into those catalog models.
+	 * 
+	 * @return A model reader.
+	 */
+	public ModelReader getModelReader()
+	{
+		return new ModelReader() {
+
+			@Override
+			public void read( final Model model )
+			{
+				for (final Catalog catalog : catalogMap.values())
+				{
+					if (catalog instanceof SparqlCatalog)
+					{
+						final SparqlCatalog cat = (SparqlCatalog) catalog;
+						if (!cat.isService())
+						{
+							cat.getModelReader().read(model);
+						}
+					}
+				}
+			}
+
+		};
 	}
 
 	@Override
@@ -347,7 +379,7 @@ public class J4SConnection implements Connection
 		{
 			throw new SQLException("Timeout must not be less than zero");
 		}
-		// TODO figure out how to do thos
+		// TODO figure out how to do this
 		return true;
 	}
 
@@ -445,6 +477,30 @@ public class J4SConnection implements Connection
 		throw new SQLFeatureNotSupportedException();
 	}
 
+	/**
+	 * Save all the current SparqlCatalogs to a configuration file.
+	 * 
+	 * Reloading this file may be used in the URL as the configuration location.
+	 * 
+	 * @param fileName
+	 *            the file to write to.
+	 * @throws IOException
+	 */
+	public void saveConfig( final String fileName ) throws IOException
+	{
+		final File f = new File(fileName);
+		if (!f.exists())
+		{
+			f.createNewFile();
+		}
+		final FileOutputStream fos = new FileOutputStream(f);
+		final ConfigSerializer cs = new ConfigSerializer();
+		cs.add(this);
+
+		cs.save(new ModelWriter(fos));
+		fos.close();
+	}
+
 	@Override
 	public void setAutoCommit( final boolean state ) throws SQLException
 	{
@@ -535,5 +591,4 @@ public class J4SConnection implements Connection
 	{
 		throw new SQLFeatureNotSupportedException();
 	}
-
 }

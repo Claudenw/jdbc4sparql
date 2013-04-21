@@ -43,8 +43,11 @@ public abstract class AbstractTable extends NamespaceImpl implements Table
 
 	/**
 	 * Constructor
-	 * @param schema The schema that table is in
-	 * @param tableDef The definition of the table.
+	 * 
+	 * @param schema
+	 *            The schema that table is in
+	 * @param tableDef
+	 *            The definition of the table.
 	 */
 	public AbstractTable( final Schema schema, final TableDef tableDef )
 	{
@@ -53,9 +56,13 @@ public abstract class AbstractTable extends NamespaceImpl implements Table
 
 	/**
 	 * Constructor.
-	 * @param namespace The namespace of the table.
-	 * @param schema The schema for the table.
-	 * @param tableDef The table definition of thatable.
+	 * 
+	 * @param namespace
+	 *            The namespace of the table.
+	 * @param schema
+	 *            The schema for the table.
+	 * @param tableDef
+	 *            The table definition of thatable.
 	 */
 	public AbstractTable( final String namespace, final Schema schema,
 			final TableDef tableDef )
@@ -108,7 +115,7 @@ public abstract class AbstractTable extends NamespaceImpl implements Table
 	}
 
 	@Override
-	public List<? extends ColumnDef> getColumnDefs()
+	public List<ColumnDef> getColumnDefs()
 	{
 		return tableDef.getColumnDefs();
 	}
@@ -132,18 +139,6 @@ public abstract class AbstractTable extends NamespaceImpl implements Table
 	}
 
 	@Override
-	public String getSQLName()
-	{
-		return NameUtils.getDBName(this);
-	}
-
-	@Override
-	public String getSPARQLName()
-	{
-		return NameUtils.getSPARQLName(this);
-	}
-	
-	@Override
 	public String getLocalName()
 	{
 		return tableDef.getLocalName();
@@ -161,6 +156,18 @@ public abstract class AbstractTable extends NamespaceImpl implements Table
 	public SortKey getSortKey()
 	{
 		return tableDef.getSortKey();
+	}
+
+	@Override
+	public String getSPARQLName()
+	{
+		return NameUtils.getSPARQLName(this);
+	}
+
+	@Override
+	public String getSQLName()
+	{
+		return NameUtils.getDBName(this);
 	}
 
 	/**
