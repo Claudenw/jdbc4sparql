@@ -23,7 +23,8 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.openjena.riot.Lang;
+import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFLanguages;
 import org.xenei.jdbc4sparql.sparql.builders.SchemaBuilder;
 import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 
@@ -212,21 +213,12 @@ public class J4SUrl
 			}
 			else
 			{
-				boolean found = false;
-				for (final Lang l : Lang.values())
+				Lang l =  RDFLanguages.nameToLang(type);
+				if (l != null)
 				{
-					if (l.name().equalsIgnoreCase(type))
-					{
-						found = true;
-						properties.setProperty(J4SUrl.TYPE, l.getName());
-					}
-					else if (l.getName().equalsIgnoreCase(type))
-					{
-						found = true;
-						properties.setProperty(J4SUrl.TYPE, l.getName());
-					}
+					properties.setProperty(J4SUrl.TYPE,l.getName());
 				}
-				if (!found)
+				else
 				{
 					throw new IllegalArgumentException(
 							"Not a valid J4S JDBC URL -- '" + type

@@ -21,6 +21,7 @@ import com.hp.hpl.jena.graph.Node;
 import com.hp.hpl.jena.graph.Triple;
 import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.sparql.core.Var;
+import com.hp.hpl.jena.sparql.core.VarExprList;
 import com.hp.hpl.jena.sparql.engine.binding.Binding;
 import com.hp.hpl.jena.sparql.expr.Expr;
 import com.hp.hpl.jena.sparql.expr.ExprFunction1;
@@ -185,7 +186,7 @@ public class SparqlQueryBuilder
 				final SparqlColumn column = colIter.next();
 				if (!column.isOptional())
 				{
-					addColumn(colIter.next());
+					addColumn(column);
 				}
 			}
 
@@ -941,17 +942,26 @@ public class SparqlQueryBuilder
 	{
 		final SparqlTableDef tableDef = new SparqlTableDef(namespace,
 				localName, "");
-		for (final Var var : query.getProjectVars())
+		VarExprList expLst = query.getProject();
+		for (final Var var : expLst.getVars())
 		{
-			final String varColName = var.getName().replace(
+			String varColName = null;
+			Expr expr = expLst.getExpr(var);
+			if (expr != null)
+			{
+				varColName = expr.getExprVar().getVarName().replace(
 					NameUtils.SPARQL_DOT, ".");
+			}
+			else {
+				varColName = var.getName().replace(NameUtils.SPARQL_DOT, ".");
+			}
 			final Column c = columnsInQuery.get(varColName);
 			if (c == null)
 			{
 				throw new IllegalStateException(String.format(
 						SparqlQueryBuilder.NOT_FOUND_IN_QUERY, var));
 			}
-			tableDef.add(columnsInQuery.get(varColName));
+			tableDef.add(c);
 		}
 		return tableDef;
 	}

@@ -1,5 +1,6 @@
 package org.xenei.jdbc4sparql.config;
 
+import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Property;
@@ -300,7 +301,7 @@ public class ConfigSerializer
 	 * @return The configured SparqlCatalog.
 	 * @throws MalformedURLException
 	 */
-	public SparqlCatalog getCatalog( final String catalogFQName )
+	public SparqlCatalog getCatalog( Dataset dataset,  final String catalogFQName )
 			throws MalformedURLException
 	{
 		Resource catR = ResourceFactory.createResource(catalogFQName);
@@ -317,7 +318,7 @@ public class ConfigSerializer
 			else
 			{
 				retval = new SparqlCatalog(catR.getNameSpace(),
-						ModelFactory.createDefaultModel(), catR.getLocalName());
+						dataset.getNamedModel( catR.getLocalName() ), catR.getLocalName());
 			}
 			for (final Statement stmt : catR.listProperties(schemaType)
 					.toList())
@@ -340,15 +341,16 @@ public class ConfigSerializer
 	 * repopulated using the ModelReager for the catalog.
 	 * 
 	 * @return The list of catalogs.
+	 * @param dataset the Dataset to add the catalog model to.
 	 * @throws MalformedURLException
 	 */
-	public Collection<SparqlCatalog> getCatalogs() throws MalformedURLException
+	public Collection<SparqlCatalog> getCatalogs(Dataset dataset) throws MalformedURLException
 	{
 		final List<SparqlCatalog> catalogs = new ArrayList<SparqlCatalog>();
 		for (final Resource r : model.listResourcesWithProperty(RDF.type,
 				catalogType).toList())
 		{
-			catalogs.add(getCatalog(r.getURI()));
+			catalogs.add(getCatalog(dataset, r.getURI()));
 		}
 		return catalogs;
 	}
@@ -363,9 +365,9 @@ public class ConfigSerializer
 		return new ModelReader() {
 
 			@Override
-			public void read( final Model model )
+			public Model getModel()
 			{
-				ConfigSerializer.this.model = model;
+				return ConfigSerializer.this.model;
 			}
 		};
 

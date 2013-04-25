@@ -27,7 +27,9 @@ import java.util.List;
 import java.util.Properties;
 import java.util.logging.Logger;
 
-import org.openjena.riot.Lang;
+
+import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFLanguages;
 import org.xenei.jdbc4sparql.sparql.builders.SchemaBuilder;
 import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 
@@ -63,11 +65,17 @@ public class J4SDriver implements Driver
 		System.out
 				.println("(Default) config - URL is a J4S configuration file");
 		System.out.println("sparql - URL is a sparql endpoint");
-		for (final Lang l : Lang.values())
+		for (final Lang l : RDFLanguages.getRegisteredLanguages())
 		{
 			System.out.println(String.format(
-					"%s or %s - URL is a %s formatted RDF file", l.name(),
-					l.getName(), l.getName()));
+					"%s - URL is a %s formatted RDF file", l.getName(),
+					l.getContentType()));
+			for (String alt : l.getAltNames())
+			{
+				System.out.println(String.format(
+						"%s - URL is a %s formatted RDF file", alt,
+						l.getContentType()));
+			}
 		}
 		System.out.println();
 		System.out.println("Registered Schema Builders:");

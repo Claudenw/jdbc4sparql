@@ -51,5 +51,10 @@ public interface Catalog extends NamespacedObject
 	 * @return
 	 */
 	Set<Schema> getSchemas();
+	
+	/**
+	 * Close release all associated resources.
+	 */
+	public void close();
 
 }

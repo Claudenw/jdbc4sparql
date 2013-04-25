@@ -99,7 +99,7 @@ public class LocalSparqlVisitorTest
 		Assert.assertTrue(e instanceof ElementGroup);
 		final ElementGroup eg = (ElementGroup) e;
 		final List<Element> eLst = eg.getElements();
-		Assert.assertEquals(9, eLst.size()); // 2 tables, 7 binds
+		Assert.assertEquals(8, eLst.size()); // 2 tables, 6 binds
 		final List<Var> vLst = q.getProjectVars();
 		Assert.assertEquals(8, vLst.size());
 

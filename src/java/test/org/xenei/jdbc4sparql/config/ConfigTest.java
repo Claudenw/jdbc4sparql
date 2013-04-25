@@ -1,5 +1,7 @@
 package org.xenei.jdbc4sparql.config;
 
+import com.hp.hpl.jena.query.Dataset;
+import com.hp.hpl.jena.query.DatasetFactory;
 import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
@@ -21,6 +23,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -94,6 +97,7 @@ public class ConfigTest
 	private SparqlCatalog catalog;
 	private Model model;
 	private SchemaBuilder builder;
+	private Dataset dataset;
 
 	private URL fUrl;
 
@@ -182,6 +186,13 @@ public class ConfigTest
 		model.read(fUrl.toString(), "TURTLE");
 
 		catalog = new SparqlCatalog(ConfigTest.CAT_NS, model, "SimpleSparql");
+		dataset = DatasetFactory.createMem();
+	}
+	
+	@After
+	public void teardown()
+	{
+		dataset.close();
 	}
 
 	@Test
@@ -261,8 +272,10 @@ public class ConfigTest
 		cs = new ConfigSerializer();
 		cs.getLoader().read(new ByteArrayInputStream(boas.toByteArray()), "",
 				"TTL");
-		final SparqlCatalog cat2 = cs.getCatalog(catalog.getFQName());
+		Dataset dataset = DatasetFactory.createMem();
+		final SparqlCatalog cat2 = cs.getCatalog(dataset, catalog.getFQName());
 		deepCompare(catalog, cat2);
+		dataset.close();
 	}
 
 	@Test
@@ -283,7 +296,9 @@ public class ConfigTest
 		cs = new ConfigSerializer();
 		cs.getLoader().read(new ByteArrayInputStream(boas.toByteArray()), "",
 				"TTL");
-		final SparqlCatalog cat2 = cs.getCatalog(catalog.getFQName());
+	
+		final SparqlCatalog cat2 = cs.getCatalog( dataset, catalog.getFQName());
 		deepCompare(catalog, cat2);
+
 	}
 }

@@ -125,7 +125,7 @@ public class SchemaImpl extends NamespaceImpl implements Schema
 	 * 
 	 * @param tableDefs
 	 */
-	public void addTableDefs( final Collection<TableDef> tableDefs )
+	public void addTableDefs( final Collection<? extends TableDef> tableDefs )
 	{
 		for (final TableDef t : tableDefs)
 		{

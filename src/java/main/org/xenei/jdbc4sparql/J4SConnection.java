@@ -17,12 +17,16 @@
  */
 package org.xenei.jdbc4sparql;
 
+import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.tdb.TDBFactory;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
 import java.sql.Array;
 import java.sql.Blob;
 import java.sql.CallableStatement;
@@ -43,6 +47,7 @@ import java.sql.Struct;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.UUID;
 import java.util.concurrent.Executor;
 
 import org.apache.commons.lang3.StringUtils;
@@ -70,6 +75,8 @@ public class J4SConnection implements Connection
 	private final SparqlParser sparqlParser;
 	private SQLWarning sqlWarnings;
 	private int holdability;
+	private File tmpDir;
+	private Dataset dataset;
 
 	public J4SConnection( final J4SDriver driver, final J4SUrl url,
 			final Properties properties ) throws IOException
@@ -80,7 +87,7 @@ public class J4SConnection implements Connection
 		this.url = url;
 		this.currentCatalog = url.getCatalog();
 		this.currentSchema = null;
-
+		this.tmpDir = null;
 		this.clientInfo = null;
 
 		this.holdability = ResultSet.HOLD_CURSORS_OVER_COMMIT;
@@ -123,6 +130,11 @@ public class J4SConnection implements Connection
 	@Override
 	public void close() throws SQLException
 	{
+		for (Catalog cat : catalogMap.values())
+		{
+			cat.close();
+		}
+		if (dataset != null) dataset.close();
 		closed = true;
 	}
 
@@ -135,6 +147,18 @@ public class J4SConnection implements Connection
 			throw new SQLException("commit called on autoCommit connection");
 		}
 	}
+	
+	private Dataset getDataset()
+	{
+		if (dataset == null)
+		{
+			// must be a local file				
+			tmpDir = new File( System.getProperty("java.io.tmpdir"));
+			tmpDir = new File( tmpDir, UUID.randomUUID().toString());
+			dataset = TDBFactory.createDataset( tmpDir.getAbsolutePath() );
+		}
+		return dataset;
+	}
 
 	private void configureCatalogMap( final Properties properties )
 			throws IOException
@@ -145,7 +169,7 @@ public class J4SConnection implements Connection
 			final ConfigSerializer serializer = new ConfigSerializer();
 			serializer.getLoader().read(
 					url.getEndpoint().toURL().toExternalForm());
-			for (final Catalog catalog : serializer.getCatalogs())
+			for (final Catalog catalog : serializer.getCatalogs( getDataset() ))
 			{
 				catalogMap.put(catalog.getLocalName(), catalog);
 			}
@@ -160,8 +184,17 @@ public class J4SConnection implements Connection
 			}
 			else
 			{
-				// must be a local file
-				final Model model = ModelFactory.createDefaultModel();
+				
+				Model model = null;
+				if (StringUtils.isEmpty(currentCatalog))
+				{
+					model = getDataset().getDefaultModel();
+				}
+				else
+				{
+					model = getDataset().getNamedModel( currentCatalog );
+				}
+				model.removeAll();
 				model.read(url.getEndpoint().toString(), url.getType());
 				catalog = new SparqlCatalog(url.getEndpoint().toString(),
 						model, currentCatalog);
@@ -304,25 +337,7 @@ public class J4SConnection implements Connection
 	 */
 	public ModelReader getModelReader()
 	{
-		return new ModelReader() {
-
-			@Override
-			public void read( final Model model )
-			{
-				for (final Catalog catalog : catalogMap.values())
-				{
-					if (catalog instanceof SparqlCatalog)
-					{
-						final SparqlCatalog cat = (SparqlCatalog) catalog;
-						if (!cat.isService())
-						{
-							cat.getModelReader().read(model);
-						}
-					}
-				}
-			}
-
-		};
+		return new ConModelReader();
 	}
 
 	@Override
@@ -482,23 +497,14 @@ public class J4SConnection implements Connection
 	 * 
 	 * Reloading this file may be used in the URL as the configuration location.
 	 * 
-	 * @param fileName
-	 *            the file to write to.
+	 * @param The modelWriter to write the config to.
 	 * @throws IOException
 	 */
-	public void saveConfig( final String fileName ) throws IOException
+	public void saveConfig( ModelWriter writer ) throws IOException
 	{
-		final File f = new File(fileName);
-		if (!f.exists())
-		{
-			f.createNewFile();
-		}
-		final FileOutputStream fos = new FileOutputStream(f);
 		final ConfigSerializer cs = new ConfigSerializer();
 		cs.add(this);
-
-		cs.save(new ModelWriter(fos));
-		fos.close();
+		cs.save(writer);
 	}
 
 	@Override
@@ -590,5 +596,57 @@ public class J4SConnection implements Connection
 	public <T> T unwrap( final Class<T> arg0 ) throws SQLException
 	{
 		throw new SQLFeatureNotSupportedException();
+	}
+	
+	private class ConModelReader extends ModelReader {
+		
+
+		private Model model = getDataset().getNamedModel( UUID.randomUUID().toString() );
+		
+		@Override
+		public Model getModel()
+		{
+			return model;
+		}
+		
+		@Override
+		public void read( Model model )
+		{
+			super.read(model);
+			distributeLoad();
+		}
+
+		private void distributeLoad()
+		{
+			for (Catalog catalog : catalogMap.values())
+			{
+				if (catalog instanceof SparqlCatalog)
+				{
+					((SparqlCatalog)catalog).getModelReader().read( model );
+				}
+			}	
+		}
+		
+		@Override
+		public void read( InputStream in, String base, String lang )
+		{
+			super.read(in, base, lang);
+			distributeLoad();
+		}
+
+		@Override
+		public void read( Reader reader, String base, String lang )
+		{
+			super.read(reader, base, lang);
+			distributeLoad();
+		}
+
+		@Override
+		public void read( String url, String base, String lang )
+		{
+			super.read(url, base, lang);
+			distributeLoad();
+		}
+		
 	}
 }

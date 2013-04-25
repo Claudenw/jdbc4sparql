@@ -28,7 +28,7 @@ public abstract class ModelReader
 	 */
 	public void read( final InputStream in, final String base )
 	{
-		read(ModelFactory.createDefaultModel().read(in, base));
+		this.read(in, base, "RDF/XML");
 	}
 
 	/**
@@ -45,16 +45,19 @@ public abstract class ModelReader
 	 */
 	public void read( final InputStream in, final String base, final String lang )
 	{
-		read(ModelFactory.createDefaultModel().read(in, base, lang));
+		getModel().read(in, base, lang);
 	}
 
+	abstract public Model getModel();
 	/**
 	 * Read the model into the graph(s).
 	 * 
 	 * @param model
 	 *            The model to read.
 	 */
-	abstract public void read( Model model );
+	public void read( Model model ) {
+		getModel().add( model );
+	}
 
 	/**
 	 * Read the reader in to the model using base for relative URLs.
@@ -66,7 +69,7 @@ public abstract class ModelReader
 	 */
 	public void read( final Reader reader, final String base )
 	{
-		read(ModelFactory.createDefaultModel().read(reader, base));
+		this.read(reader, base, "RDF/XML");
 	}
 
 	/**
@@ -83,7 +86,7 @@ public abstract class ModelReader
 	 */
 	public void read( final Reader reader, final String base, final String lang )
 	{
-		read(ModelFactory.createDefaultModel().read(reader, base, lang));
+		getModel().read(reader, base, lang);
 	}
 
 	/**
@@ -97,8 +100,7 @@ public abstract class ModelReader
 	 */
 	public void read( final String url )
 	{
-		read(ModelFactory.createDefaultModel().read(url,
-				FileUtils.guessLang(url)));
+		this.read(url,FileUtils.guessLang(url));
 	}
 
 	/**
@@ -115,7 +117,7 @@ public abstract class ModelReader
 	 */
 	public void read( final String url, final String lang )
 	{
-		read(ModelFactory.createDefaultModel().read(url, lang));
+		this.read(url, "", lang);
 	}
 
 	/**
@@ -133,7 +135,7 @@ public abstract class ModelReader
 	 */
 	public void read( final String url, final String base, final String lang )
 	{
-		read(ModelFactory.createDefaultModel().read(url, base, lang));
+		getModel().read(url, base, lang);
 	}
 
 }

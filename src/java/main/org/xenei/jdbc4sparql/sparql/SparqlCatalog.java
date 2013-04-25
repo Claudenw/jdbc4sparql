@@ -155,7 +155,17 @@ public class SparqlCatalog extends CatalogImpl
 			@Override
 			public void read( final Model model )
 			{
-				localModel = model;
+				if (localModel != model)
+				{
+					localModel.close();
+					localModel = model;
+				}
+			}
+
+			@Override
+			public Model getModel()
+			{
+				return localModel;
 			}
 		};
 	}
@@ -179,6 +189,12 @@ public class SparqlCatalog extends CatalogImpl
 	public boolean isService()
 	{
 		return sparqlEndpoint != null;
+	}
+	
+	public void close()
+	{
+		localModel.close();
+		super.close();
 	}
 
 }

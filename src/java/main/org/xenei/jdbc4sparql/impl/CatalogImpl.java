@@ -66,4 +66,8 @@ public class CatalogImpl extends NamespaceImpl implements Catalog
 		return String.format("Catalog[%s]", getLocalName());
 	}
 
+	public void close()
+	{
+		this.schemas.clear();
+	}
 }
