@@ -80,6 +80,13 @@ public class SparqlCatalog extends CatalogImpl
 		this.localModel = ModelFactory.createMemModelMaker().createFreshModel();
 	}
 
+	@Override
+	public void close()
+	{
+		localModel.close();
+		super.close();
+	}
+
 	/**
 	 * Execute the query against the local Model.
 	 * 
@@ -153,6 +160,12 @@ public class SparqlCatalog extends CatalogImpl
 		}
 		return new ModelReader() {
 			@Override
+			public Model getModel()
+			{
+				return localModel;
+			}
+
+			@Override
 			public void read( final Model model )
 			{
 				if (localModel != model)
@@ -160,12 +173,6 @@ public class SparqlCatalog extends CatalogImpl
 					localModel.close();
 					localModel = model;
 				}
-			}
-
-			@Override
-			public Model getModel()
-			{
-				return localModel;
 			}
 		};
 	}
@@ -189,12 +196,6 @@ public class SparqlCatalog extends CatalogImpl
 	public boolean isService()
 	{
 		return sparqlEndpoint != null;
-	}
-	
-	public void close()
-	{
-		localModel.close();
-		super.close();
 	}
 
 }

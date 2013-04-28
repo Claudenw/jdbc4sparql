@@ -37,6 +37,7 @@ import org.xenei.jdbc4sparql.iface.TableDef;
 public class DataTable extends AbstractTable
 {
 	private Collection<Object[]> data;
+	private DataTable superDataTable;
 
 	/**
 	 * Constructor that uses the schema namespace for table namespace.
@@ -154,6 +155,20 @@ public class DataTable extends AbstractTable
 		}
 		return retval;
 
+	}
+
+	@Override
+	public DataTable getSuperTable()
+	{
+		if (superDataTable == null)
+		{
+			if (getSuperTableDef() == null)
+			{
+				return null;
+			}
+			superDataTable = new DataTable(getSchema(), getSuperTableDef());
+		}
+		return superDataTable;
 	}
 
 	public boolean isEmpty()

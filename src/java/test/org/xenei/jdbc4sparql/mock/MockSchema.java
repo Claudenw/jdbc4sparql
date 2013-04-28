@@ -17,8 +17,6 @@
  */
 package org.xenei.jdbc4sparql.mock;
 
-import org.xenei.jdbc4sparql.iface.Table;
-import org.xenei.jdbc4sparql.iface.TableDef;
 import org.xenei.jdbc4sparql.sparql.SparqlCatalog;
 import org.xenei.jdbc4sparql.sparql.SparqlSchema;
 
@@ -41,15 +39,4 @@ public class MockSchema extends SparqlSchema
 		super(catalog, MockCatalog.NS, schema);
 	}
 
-	@Override
-	public Table newTable( final String name )
-	{
-		final TableDef tableDef = getTableDef(name);
-		if (tableDef == null)
-		{
-			throw new IllegalArgumentException(name
-					+ " is not a table in this schema");
-		}
-		return new MockTable(this, (MockTableDef) tableDef);
-	}
 }

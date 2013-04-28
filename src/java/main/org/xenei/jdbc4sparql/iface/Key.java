@@ -17,26 +17,30 @@
  */
 package org.xenei.jdbc4sparql.iface;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.UUID;
 
-import org.apache.commons.codec.binary.Base64;
-
-public class SortKey implements Comparator<Object[]>
+public class Key implements Comparator<Object[]>
 {
+	private String keyName;
 	private boolean unique;
 	private final List<KeySegment> segments;
 
-	public SortKey()
+	public Key()
 	{
-		segments = new ArrayList<KeySegment>();
+		this(null);
 	}
 
-	public SortKey addSegment( final KeySegment segment )
+	public Key( final String keyName )
+	{
+		segments = new ArrayList<KeySegment>();
+		this.keyName = keyName;
+	}
+
+	public Key addSegment( final KeySegment segment )
 	{
 		segments.add(segment);
 		return this;
@@ -56,16 +60,28 @@ public class SortKey implements Comparator<Object[]>
 		return 0;
 	}
 
-	public String getId() throws NoSuchAlgorithmException
+	public String getId()
 	{
 		final StringBuilder sb = new StringBuilder().append(isUnique());
 		for (final KeySegment ks : segments)
 		{
 			sb.append(ks.getId());
 		}
-		final MessageDigest digest = MessageDigest.getInstance("MD5");
-		final byte[] bytes = digest.digest(sb.toString().getBytes());
-		return Base64.encodeBase64String(bytes);
+		return UUID.nameUUIDFromBytes(sb.toString().getBytes()).toString();
+	}
+
+	/**
+	 * Get the key name (may be null)
+	 * 
+	 * @return the key name.
+	 */
+	public String getKeyName()
+	{
+		if (keyName == null)
+		{
+			keyName = "key-" + getId();
+		}
+		return keyName;
 	}
 
 	public List<KeySegment> getSegments()

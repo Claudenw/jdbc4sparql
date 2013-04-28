@@ -941,18 +941,19 @@ public class SparqlQueryBuilder
 			final String localName )
 	{
 		final SparqlTableDef tableDef = new SparqlTableDef(namespace,
-				localName, "");
-		VarExprList expLst = query.getProject();
+				localName, "", null);
+		final VarExprList expLst = query.getProject();
 		for (final Var var : expLst.getVars())
 		{
 			String varColName = null;
-			Expr expr = expLst.getExpr(var);
+			final Expr expr = expLst.getExpr(var);
 			if (expr != null)
 			{
-				varColName = expr.getExprVar().getVarName().replace(
-					NameUtils.SPARQL_DOT, ".");
+				varColName = expr.getExprVar().getVarName()
+						.replace(NameUtils.SPARQL_DOT, ".");
 			}
-			else {
+			else
+			{
 				varColName = var.getName().replace(NameUtils.SPARQL_DOT, ".");
 			}
 			final Column c = columnsInQuery.get(varColName);

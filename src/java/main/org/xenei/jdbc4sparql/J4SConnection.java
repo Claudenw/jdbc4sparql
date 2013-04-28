@@ -19,11 +19,9 @@ package org.xenei.jdbc4sparql;
 
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.tdb.TDBFactory;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
@@ -63,6 +61,61 @@ import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 
 public class J4SConnection implements Connection
 {
+	private class ConModelReader extends ModelReader
+	{
+
+		private final Model model = getDataset().getNamedModel(
+				UUID.randomUUID().toString());
+
+		private void distributeLoad()
+		{
+			for (final Catalog catalog : catalogMap.values())
+			{
+				if (catalog instanceof SparqlCatalog)
+				{
+					((SparqlCatalog) catalog).getModelReader().read(model);
+				}
+			}
+		}
+
+		@Override
+		public Model getModel()
+		{
+			return model;
+		}
+
+		@Override
+		public void read( final InputStream in, final String base,
+				final String lang )
+		{
+			super.read(in, base, lang);
+			distributeLoad();
+		}
+
+		@Override
+		public void read( final Model model )
+		{
+			super.read(model);
+			distributeLoad();
+		}
+
+		@Override
+		public void read( final Reader reader, final String base,
+				final String lang )
+		{
+			super.read(reader, base, lang);
+			distributeLoad();
+		}
+
+		@Override
+		public void read( final String url, final String base, final String lang )
+		{
+			super.read(url, base, lang);
+			distributeLoad();
+		}
+
+	}
+
 	private Properties clientInfo;
 	private final J4SUrl url;
 	private final Map<String, Catalog> catalogMap;
@@ -76,6 +129,7 @@ public class J4SConnection implements Connection
 	private SQLWarning sqlWarnings;
 	private int holdability;
 	private File tmpDir;
+
 	private Dataset dataset;
 
 	public J4SConnection( final J4SDriver driver, final J4SUrl url,
@@ -130,11 +184,14 @@ public class J4SConnection implements Connection
 	@Override
 	public void close() throws SQLException
 	{
-		for (Catalog cat : catalogMap.values())
+		for (final Catalog cat : catalogMap.values())
 		{
 			cat.close();
 		}
-		if (dataset != null) dataset.close();
+		if (dataset != null)
+		{
+			dataset.close();
+		}
 		closed = true;
 	}
 
@@ -147,18 +204,6 @@ public class J4SConnection implements Connection
 			throw new SQLException("commit called on autoCommit connection");
 		}
 	}
-	
-	private Dataset getDataset()
-	{
-		if (dataset == null)
-		{
-			// must be a local file				
-			tmpDir = new File( System.getProperty("java.io.tmpdir"));
-			tmpDir = new File( tmpDir, UUID.randomUUID().toString());
-			dataset = TDBFactory.createDataset( tmpDir.getAbsolutePath() );
-		}
-		return dataset;
-	}
 
 	private void configureCatalogMap( final Properties properties )
 			throws IOException
@@ -169,7 +214,7 @@ public class J4SConnection implements Connection
 			final ConfigSerializer serializer = new ConfigSerializer();
 			serializer.getLoader().read(
 					url.getEndpoint().toURL().toExternalForm());
-			for (final Catalog catalog : serializer.getCatalogs( getDataset() ))
+			for (final Catalog catalog : serializer.getCatalogs(getDataset()))
 			{
 				catalogMap.put(catalog.getLocalName(), catalog);
 			}
@@ -184,7 +229,7 @@ public class J4SConnection implements Connection
 			}
 			else
 			{
-				
+
 				Model model = null;
 				if (StringUtils.isEmpty(currentCatalog))
 				{
@@ -192,7 +237,7 @@ public class J4SConnection implements Connection
 				}
 				else
 				{
-					model = getDataset().getNamedModel( currentCatalog );
+					model = getDataset().getNamedModel(currentCatalog);
 				}
 				model.removeAll();
 				model.read(url.getEndpoint().toString(), url.getType());
@@ -310,6 +355,18 @@ public class J4SConnection implements Connection
 	public String getClientInfo( final String key ) throws SQLException
 	{
 		return clientInfo.getProperty(key);
+	}
+
+	private Dataset getDataset()
+	{
+		if (dataset == null)
+		{
+			// must be a local file
+			tmpDir = new File(System.getProperty("java.io.tmpdir"));
+			tmpDir = new File(tmpDir, UUID.randomUUID().toString());
+			dataset = TDBFactory.createDataset(tmpDir.getAbsolutePath());
+		}
+		return dataset;
 	}
 
 	@Override
@@ -497,10 +554,11 @@ public class J4SConnection implements Connection
 	 * 
 	 * Reloading this file may be used in the URL as the configuration location.
 	 * 
-	 * @param The modelWriter to write the config to.
+	 * @param The
+	 *            modelWriter to write the config to.
 	 * @throws IOException
 	 */
-	public void saveConfig( ModelWriter writer ) throws IOException
+	public void saveConfig( final ModelWriter writer ) throws IOException
 	{
 		final ConfigSerializer cs = new ConfigSerializer();
 		cs.add(this);
@@ -596,57 +654,5 @@ public class J4SConnection implements Connection
 	public <T> T unwrap( final Class<T> arg0 ) throws SQLException
 	{
 		throw new SQLFeatureNotSupportedException();
-	}
-	
-	private class ConModelReader extends ModelReader {
-		
-
-		private Model model = getDataset().getNamedModel( UUID.randomUUID().toString() );
-		
-		@Override
-		public Model getModel()
-		{
-			return model;
-		}
-		
-		@Override
-		public void read( Model model )
-		{
-			super.read(model);
-			distributeLoad();
-		}
-
-		private void distributeLoad()
-		{
-			for (Catalog catalog : catalogMap.values())
-			{
-				if (catalog instanceof SparqlCatalog)
-				{
-					((SparqlCatalog)catalog).getModelReader().read( model );
-				}
-			}	
-		}
-		
-		@Override
-		public void read( InputStream in, String base, String lang )
-		{
-			super.read(in, base, lang);
-			distributeLoad();
-		}
-
-		@Override
-		public void read( Reader reader, String base, String lang )
-		{
-			super.read(reader, base, lang);
-			distributeLoad();
-		}
-
-		@Override
-		public void read( String url, String base, String lang )
-		{
-			super.read(url, base, lang);
-			distributeLoad();
-		}
-		
 	}
 }

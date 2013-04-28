@@ -23,6 +23,11 @@ public interface Catalog extends NamespacedObject
 {
 
 	/**
+	 * Close release all associated resources.
+	 */
+	public void close();
+
+	/**
 	 * Return the list of schemas that have names matching the pattern
 	 * if name pattern == null return all the schemas
 	 * if name pattern == "" return only unamed schemas.
@@ -51,10 +56,5 @@ public interface Catalog extends NamespacedObject
 	 * @return
 	 */
 	Set<Schema> getSchemas();
-	
-	/**
-	 * Close release all associated resources.
-	 */
-	public void close();
 
 }

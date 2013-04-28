@@ -213,10 +213,10 @@ public class J4SUrl
 			}
 			else
 			{
-				Lang l =  RDFLanguages.nameToLang(type);
+				final Lang l = RDFLanguages.nameToLang(type);
 				if (l != null)
 				{
-					properties.setProperty(J4SUrl.TYPE,l.getName());
+					properties.setProperty(J4SUrl.TYPE, l.getName());
 				}
 				else
 				{

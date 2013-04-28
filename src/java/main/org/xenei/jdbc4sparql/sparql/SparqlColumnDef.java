@@ -17,7 +17,6 @@
  */
 package org.xenei.jdbc4sparql.sparql;
 
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 

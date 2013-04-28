@@ -23,20 +23,28 @@ import java.sql.SQLException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.xenei.jdbc4sparql.iface.ColumnDef;
+import org.xenei.jdbc4sparql.iface.Key;
+import org.xenei.jdbc4sparql.iface.KeySegment;
+import org.xenei.jdbc4sparql.impl.ColumnDefImpl;
+import org.xenei.jdbc4sparql.impl.TableDefImpl;
 import org.xenei.jdbc4sparql.meta.MetaCatalog;
 import org.xenei.jdbc4sparql.meta.MetaSchema;
+import org.xenei.jdbc4sparql.mock.MockCatalog;
 import org.xenei.jdbc4sparql.mock.MockConnection;
 import org.xenei.jdbc4sparql.mock.MockDriver;
+import org.xenei.jdbc4sparql.mock.MockSchema;
+import org.xenei.jdbc4sparql.sparql.SparqlTableDef;
 
 public class J4SDatabaseMetaDataTest
 {
-
 	private J4SDatabaseMetaData metadata;
 
 	private void columnChecking( final String tableName,
 			final String[] columnNames ) throws SQLException
 	{
-		final ResultSet rs = metadata.getColumns(null, null, tableName, null);
+		final ResultSet rs = metadata.getColumns(MetaCatalog.LOCAL_NAME,
+				MetaSchema.LOCAL_NAME, tableName, null);
 		for (int i = 0; i < columnNames.length; i++)
 		{
 			Assert.assertTrue(rs.next());
@@ -55,6 +63,7 @@ public class J4SDatabaseMetaDataTest
 	public void setup() throws IOException
 	{
 		final MockDriver driver = new MockDriver();
+
 		metadata = new J4SDatabaseMetaData(new MockConnection(driver, null),
 				driver);
 		metadata.addCatalog(new MetaCatalog());
@@ -233,6 +242,34 @@ public class J4SDatabaseMetaDataTest
 		final String[] names = { "TABLE_CAT", "TABLE_SCHEM", "TABLE_NAME",
 				"COLUMN_NAME", "KEY_SEQ", "PK_NAME", };
 		columnChecking(MetaSchema.PRIMARY_KEY_TABLE, names);
+
+		final MockCatalog catalog = new MockCatalog();
+		final MockSchema schema = new MockSchema();
+		catalog.addSchema(schema);
+		metadata.addCatalog(catalog);
+
+		final TableDefImpl tableDef = new SparqlTableDef(
+				"http://example.com/example/", "testTable", "SPARQL String",
+				null);
+
+		final ColumnDef cd = ColumnDefImpl.Builder.getStringBuilder(
+				"http://example.com/example/", "testColumn").build();
+
+		tableDef.add(cd);
+		schema.addTableDef(tableDef);
+
+		ResultSet rs = metadata.getPrimaryKeys(catalog.getLocalName(),
+				schema.getLocalName(), "testTable");
+		Assert.assertFalse(rs.next());
+		final Key key = new Key();
+		key.addSegment(new KeySegment(0, cd));
+		tableDef.setPrimaryKey(key);
+
+		rs = metadata.getPrimaryKeys(catalog.getLocalName(),
+				schema.getLocalName(), "testTable");
+		Assert.assertTrue(rs.next());
+		Assert.assertEquals(cd.getLabel(), rs.getString("COLUMN_NAME"));
+		Assert.assertEquals("key-" + key.getId(), rs.getString("PK_NAME"));
 	}
 
 	@Test
@@ -271,6 +308,42 @@ public class J4SDatabaseMetaDataTest
 
 		};
 		columnChecking(MetaSchema.SUPER_TABLES_TABLE, names);
+
+		final MockCatalog catalog = new MockCatalog();
+		final MockSchema schema = new MockSchema();
+		catalog.addSchema(schema);
+		metadata.addCatalog(catalog);
+
+		final TableDefImpl tableDef = new SparqlTableDef(
+				"http://example.com/example/", "testTable", "SPARQL String",
+				null);
+
+		final ColumnDef cd = ColumnDefImpl.Builder.getStringBuilder(
+				"http://example.com/example/", "testColumn1").build();
+
+		tableDef.add(cd);
+		schema.addTableDef(tableDef);
+
+		final TableDefImpl tableDef2 = new SparqlTableDef(
+				"http://example.com/example/", "testTable2", "SPARQL String",
+				tableDef);
+
+		final ColumnDef cd2 = ColumnDefImpl.Builder.getStringBuilder(
+				"http://example.com/example/", "testColumn2").build();
+
+		tableDef2.add(cd2);
+		schema.addTableDef(tableDef2);
+
+		ResultSet rs = metadata.getSuperTables(catalog.getLocalName(),
+				schema.getLocalName(), "testTable");
+		Assert.assertFalse(rs.next());
+
+		rs = metadata.getSuperTables(catalog.getLocalName(),
+				schema.getLocalName(), "testTable2");
+		Assert.assertTrue(rs.next());
+		Assert.assertEquals("testTable", rs.getString("SUPERTABLE_NAME"));
+
+		Assert.assertFalse(rs.next());
 	}
 
 	@Test

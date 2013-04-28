@@ -79,7 +79,7 @@ public class SimpleBuilder implements SchemaBuilder
 			final Resource tName = soln.getResource("tName");
 			final SparqlTableDef tableDef = new SparqlTableDef(
 					tName.getNameSpace(), tName.getLocalName(),
-					SimpleBuilder.TABLE_SEGMENT);
+					SimpleBuilder.TABLE_SEGMENT, null);
 			addColumnDefs(catalog, tableDef, tName);
 			retval.add(tableDef);
 		}

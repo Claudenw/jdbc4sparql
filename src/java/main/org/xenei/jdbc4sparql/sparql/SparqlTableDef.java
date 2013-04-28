@@ -20,6 +20,7 @@ package org.xenei.jdbc4sparql.sparql;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.xenei.jdbc4sparql.iface.TableDef;
 import org.xenei.jdbc4sparql.impl.TableDefImpl;
 
 public class SparqlTableDef extends TableDefImpl
@@ -38,9 +39,9 @@ public class SparqlTableDef extends TableDefImpl
 	private final List<String> querySegments;
 
 	public SparqlTableDef( final String namespace, final String name,
-			final String querySegment )
+			final String querySegment, final TableDef tableDef )
 	{
-		super(namespace, name);
+		super(namespace, name, tableDef);
 		this.querySegments = new ArrayList<String>();
 		this.querySegments.add(querySegment);
 	}

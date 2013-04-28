@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.logging.Logger;
 
-
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFLanguages;
 import org.xenei.jdbc4sparql.sparql.builders.SchemaBuilder;
@@ -70,7 +69,7 @@ public class J4SDriver implements Driver
 			System.out.println(String.format(
 					"%s - URL is a %s formatted RDF file", l.getName(),
 					l.getContentType()));
-			for (String alt : l.getAltNames())
+			for (final String alt : l.getAltNames())
 			{
 				System.out.println(String.format(
 						"%s - URL is a %s formatted RDF file", alt,

@@ -46,12 +46,21 @@ public interface TableDef extends NamespacedObject
 	int getColumnIndex( String columnName );
 
 	/**
+	 * get the primary key for the table
+	 * 
+	 * @return
+	 */
+	Key getPrimaryKey();
+
+	/**
 	 * Get the table sort order key.
 	 * returns null if the table is not sorted.
 	 * 
 	 * @return
 	 */
-	SortKey getSortKey();
+	Key getSortKey();
+
+	TableDef getSuperTableDef();
 
 	/**
 	 * Verify that the row data matches the definition

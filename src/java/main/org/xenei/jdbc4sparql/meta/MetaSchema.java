@@ -57,21 +57,147 @@ public class MetaSchema extends SchemaImpl
 	public MetaSchema( final Catalog catalog )
 	{
 		super(catalog, MetaSchema.LOCAL_NAME);
-		init();
+		addAttributesTable();
+		addBestRowTable();
+		addCatalogsTable();
+		addClientInfoTable();
+		addColumnsTable();
+		addExportedKeysTable();
+		addFunctionColumnsTable();
+		addFunctionsTable();
+		addImportedKeysTable();
+		addIndexInfoTable();
+		addPrimaryKeyTable();
+		addProcedureColumnsTable();
+		addProceduresTable();
+		addSchemasTable();
+		addSuperTablesTable();
+		addSuperTypesTable();
+		addTablePrivilegesTable();
+		addTablesTable();
+		addTableTypesTable();
+		addTypeInfoTableTable();
+		addUDTTable();
+		addVersionColumnsTable();
+		addXrefTable();
 	}
 
-	private void init()
+	private void addAttributesTable()
 	{
-		TableDefImpl tableDef = null;
+		final TableDefImpl tableDef = new TableDefImpl(MetaNamespace.NS,
+				MetaSchema.ATTRIBUTES_TABLE, null);
+		tableDef.add(ColumnDefImpl.Builder
+				.getStringBuilder(MetaNamespace.NS, "TYPE_CAT")
+				.setNullable(DatabaseMetaData.columnNullable).build());
+		tableDef.add(ColumnDefImpl.Builder
+				.getStringBuilder(MetaNamespace.NS, "TYPE_SCHEM")
+				.setNullable(DatabaseMetaData.columnNullable).build());
+		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
+				"TYPE_NAME").build());
+		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
+				"ATTR_NAME").build());
+		tableDef.add(ColumnDefImpl.Builder.getIntegerBuilder(MetaNamespace.NS,
+				"DATA_TYPE").build());
+		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
+				"ATTR_TYPE_NAME").build());
+		tableDef.add(ColumnDefImpl.Builder.getIntegerBuilder(MetaNamespace.NS,
+				"ATTR_SIZE").build());
+		tableDef.add(ColumnDefImpl.Builder
+				.getIntegerBuilder(MetaNamespace.NS, "DECIMAL_DIGITS")
+				.setNullable(DatabaseMetaData.columnNullable).build());
+		tableDef.add(ColumnDefImpl.Builder.getIntegerBuilder(MetaNamespace.NS,
+				"NUM_PREC_RADIX").build());
+		tableDef.add(ColumnDefImpl.Builder.getIntegerBuilder(MetaNamespace.NS,
+				"NULLABLE").build());
+		tableDef.add(ColumnDefImpl.Builder
+				.getStringBuilder(MetaNamespace.NS, "REMARKS")
+				.setNullable(DatabaseMetaData.columnNullable).build());
+		tableDef.add(ColumnDefImpl.Builder
+				.getStringBuilder(MetaNamespace.NS, "ATTR_DEF")
+				.setNullable(DatabaseMetaData.columnNullable).build());
+		tableDef.add(ColumnDefImpl.Builder
+				.getIntegerBuilder(MetaNamespace.NS, "SQL_DATA_TYPE")
+				.setNullable(DatabaseMetaData.columnNullable).build());
+		tableDef.add(ColumnDefImpl.Builder
+				.getIntegerBuilder(MetaNamespace.NS, "SQL_DATETIME_SUB")
+				.setNullable(DatabaseMetaData.columnNullable).build());
+		tableDef.add(ColumnDefImpl.Builder.getIntegerBuilder(MetaNamespace.NS,
+				"CHAR_OCTET_LENGTH").build());
+		tableDef.add(ColumnDefImpl.Builder.getIntegerBuilder(MetaNamespace.NS,
+				"ORDINAL_POSITION").build());
+		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
+				"IS_NULLABLE").build());
+		tableDef.add(ColumnDefImpl.Builder
+				.getStringBuilder(MetaNamespace.NS, "SCOPE_CATALOG")
+				.setNullable(DatabaseMetaData.columnNullable).build());
+		tableDef.add(ColumnDefImpl.Builder
+				.getStringBuilder(MetaNamespace.NS, "SCOPE_SCHEMA")
+				.setNullable(DatabaseMetaData.columnNullable).build());
+		tableDef.add(ColumnDefImpl.Builder
+				.getStringBuilder(MetaNamespace.NS, "SCOPE_TABLE")
+				.setNullable(DatabaseMetaData.columnNullable).build());
+		tableDef.add(ColumnDefImpl.Builder
+				.getSmallIntBuilder(MetaNamespace.NS, "SOURCE_DATA_TYPE")
+				.setNullable(DatabaseMetaData.columnNullable).build());
+		addTableDef(tableDef);
+	}
 
-		tableDef = new TableDefImpl(MetaNamespace.NS, MetaSchema.CATALOGS_TABLE);
+	private void addBestRowTable()
+	{
+		final TableDefImpl tableDef = new TableDefImpl(MetaNamespace.NS,
+				MetaSchema.BEST_ROW_TABLE, null);
+		tableDef.add(ColumnDefImpl.Builder.getIntegerBuilder(MetaNamespace.NS,
+				"SCOPE").build());
+		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
+				"COLUMN_NAME").build());
+		tableDef.add(ColumnDefImpl.Builder.getIntegerBuilder(MetaNamespace.NS,
+				"DATA_TYPE").build());
+		tableDef.add(ColumnDefImpl.Builder
+				.getStringBuilder(MetaNamespace.NS, "TYPE_NAME")
+				.setNullable(DatabaseMetaData.columnNullable).build());
+		tableDef.add(ColumnDefImpl.Builder.getIntegerBuilder(MetaNamespace.NS,
+				"COLUMN_SIZE").build());
+		tableDef.add(ColumnDefImpl.Builder.getIntegerBuilder(MetaNamespace.NS,
+				"BUFFER_LENGTH").build());
+		tableDef.add(ColumnDefImpl.Builder.getIntegerBuilder(MetaNamespace.NS,
+				"DECIMAL_DIGITS").build());
+		tableDef.add(ColumnDefImpl.Builder.getIntegerBuilder(MetaNamespace.NS,
+				"PSEUDO_COLUMN").build());
+		tableDef.addKey("SCOPE");
+		addTableDef(tableDef);
+	}
+
+	private void addCatalogsTable()
+	{
+		final TableDefImpl tableDef = new TableDefImpl(MetaNamespace.NS,
+				MetaSchema.CATALOGS_TABLE, null);
 		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
 				"TABLE_CAT").build());
 		tableDef.addKey("TABLE_CAT");
 		tableDef.setUnique();
 		addTableDef(tableDef);
+	}
 
-		tableDef = new TableDefImpl(MetaNamespace.NS, MetaSchema.COLUMNS_TABLE);
+	private void addClientInfoTable()
+	{
+		final TableDefImpl tableDef = new TableDefImpl(MetaNamespace.NS,
+				MetaSchema.CLIENT_INFO_TABLE, null);
+		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
+				"NAME").build());
+		tableDef.add(ColumnDefImpl.Builder.getIntegerBuilder(MetaNamespace.NS,
+				"MAX_LEN").build());
+		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
+				"DEFAULT_VALUE").build());
+		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
+				"DESCRIPTION").build());
+		tableDef.addKey("NAME");
+		addTableDef(tableDef);
+	}
+
+	private void addColumnsTable()
+	{
+		final TableDefImpl tableDef = new TableDefImpl(MetaNamespace.NS,
+				MetaSchema.COLUMNS_TABLE, null);
 
 		tableDef.add(ColumnDefImpl.Builder
 				.getStringBuilder(MetaNamespace.NS, "TABLE_CAT")
@@ -139,32 +265,107 @@ public class MetaSchema extends SchemaImpl
 		tableDef.addKey("TABLE_NAME");
 		tableDef.addKey("ORDINAL_POSITION");
 		addTableDef(tableDef);
+	}
 
-		tableDef = new TableDefImpl(MetaNamespace.NS, MetaSchema.SCHEMAS_TABLE);
-		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
-				"TABLE_SCHEM").build());
+	private void addExportedKeysTable()
+	{
+		final TableDefImpl tableDef = new TableDefImpl(MetaNamespace.NS,
+				MetaSchema.EXPORTED_KEYS_TABLE, null);
 		tableDef.add(ColumnDefImpl.Builder
-				.getStringBuilder(MetaNamespace.NS, "TABLE_CATALOG")
+				.getStringBuilder(MetaNamespace.NS, "PKTABLE_CAT")
 				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.addKey("TABLE_CATALOG");
-		tableDef.addKey("TABLE_SCHEM");
-		addTableDef(tableDef);
-
-		tableDef = new TableDefImpl(MetaNamespace.NS,
-				MetaSchema.CLIENT_INFO_TABLE);
+		tableDef.add(ColumnDefImpl.Builder
+				.getStringBuilder(MetaNamespace.NS, "PKTABLE_SCHEM")
+				.setNullable(DatabaseMetaData.columnNullable).build());
 		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
-				"NAME").build());
+				"PKTABLE_NAME").build());
+		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
+				"PKCOLUMN_NAME").build());
+		tableDef.add(ColumnDefImpl.Builder
+				.getStringBuilder(MetaNamespace.NS, "FKTABLE_CAT")
+				.setNullable(DatabaseMetaData.columnNullable).build());
+		tableDef.add(ColumnDefImpl.Builder
+				.getStringBuilder(MetaNamespace.NS, "FKTABLE_SCHEM")
+				.setNullable(DatabaseMetaData.columnNullable).build());
+		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
+				"FKTABLE_NAME").build());
+		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
+				"FKCOLUMN_NAME").build());
+		tableDef.add(ColumnDefImpl.Builder.getSmallIntBuilder(MetaNamespace.NS,
+				"KEY_SEQ").build());
+		tableDef.add(ColumnDefImpl.Builder.getSmallIntBuilder(MetaNamespace.NS,
+				"UPDATE_RULE").build());
+		tableDef.add(ColumnDefImpl.Builder.getSmallIntBuilder(MetaNamespace.NS,
+				"DELETE_RULE").build());
+		tableDef.add(ColumnDefImpl.Builder
+				.getStringBuilder(MetaNamespace.NS, "FK_NAME")
+				.setNullable(DatabaseMetaData.columnNullable).build());
+		tableDef.add(ColumnDefImpl.Builder
+				.getStringBuilder(MetaNamespace.NS, "PK_NAME")
+				.setNullable(DatabaseMetaData.columnNullable).build());
+		tableDef.add(ColumnDefImpl.Builder.getSmallIntBuilder(MetaNamespace.NS,
+				"DEFERRABILITY").build());
+		tableDef.addKey("FKTABLE_CAT");
+		tableDef.addKey("FKTABLE_SCHEM");
+		tableDef.addKey("FKTABLE_NAME");
+		tableDef.addKey("KEY_SEQ");
+		addTableDef(tableDef);
+	}
+
+	private void addFunctionColumnsTable()
+	{
+		final TableDefImpl tableDef = new TableDefImpl(MetaNamespace.NS,
+				MetaSchema.FUNCTION_COLUMNS_TABLE, null);
+		tableDef.add(ColumnDefImpl.Builder
+				.getStringBuilder(MetaNamespace.NS, "FUNCTION_CAT")
+				.setNullable(DatabaseMetaData.columnNullable).build());
+		tableDef.add(ColumnDefImpl.Builder
+				.getStringBuilder(MetaNamespace.NS, "FUNCTION_SCHEM")
+				.setNullable(DatabaseMetaData.columnNullable).build());
+		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
+				"FUNCTION_NAME").build());
+		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
+				"COLUMN_NAME").build());
+		;
+		tableDef.add(ColumnDefImpl.Builder.getSmallIntBuilder(MetaNamespace.NS,
+				"COLUMN_TYPE").build());
 		tableDef.add(ColumnDefImpl.Builder.getIntegerBuilder(MetaNamespace.NS,
-				"MAX_LEN").build());
+				"DATA_TYPE").build());
 		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
-				"DEFAULT_VALUE").build());
+				"TYPE_NAME").build());
+		;
+		tableDef.add(ColumnDefImpl.Builder.getIntegerBuilder(MetaNamespace.NS,
+				"PRECISION").build());
+		tableDef.add(ColumnDefImpl.Builder.getIntegerBuilder(MetaNamespace.NS,
+				"LENGTH").build());
+		tableDef.add(ColumnDefImpl.Builder.getSmallIntBuilder(MetaNamespace.NS,
+				"SCALE").build());
+		tableDef.add(ColumnDefImpl.Builder.getSmallIntBuilder(MetaNamespace.NS,
+				"RADIX").build());
+		tableDef.add(ColumnDefImpl.Builder.getSmallIntBuilder(MetaNamespace.NS,
+				"NULLABLE").build());
+		tableDef.add(ColumnDefImpl.Builder
+				.getStringBuilder(MetaNamespace.NS, "REMARKS")
+				.setNullable(DatabaseMetaData.columnNullable).build());
+		tableDef.add(ColumnDefImpl.Builder.getIntegerBuilder(MetaNamespace.NS,
+				"CHAR_OCTET_LENGTH").build());
+		tableDef.add(ColumnDefImpl.Builder.getIntegerBuilder(MetaNamespace.NS,
+				"ORDINAL_POSITION").build());
 		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
-				"DESCRIPTION").build());
-		tableDef.addKey("NAME");
+				"IS_NULLABLE").build());
+		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
+				"SPECIFIC_NAME").build());
+		tableDef.addKey("FUNCTION_CAT");
+		tableDef.addKey("FUNCTION_SCHEM");
+		tableDef.addKey("FUNCTION_NAME");
+		tableDef.addKey("SPECIFIC_NAME");
 		addTableDef(tableDef);
+	}
 
-		tableDef = new TableDefImpl(MetaNamespace.NS,
-				MetaSchema.FUNCTIONS_TABLE);
+	private void addFunctionsTable()
+	{
+		final TableDefImpl tableDef = new TableDefImpl(MetaNamespace.NS,
+				MetaSchema.FUNCTIONS_TABLE, null);
 		tableDef.add(ColumnDefImpl.Builder
 				.getStringBuilder(MetaNamespace.NS, "FUNCTION_CAT")
 				.setNullable(DatabaseMetaData.columnNullable).build());
@@ -185,8 +386,57 @@ public class MetaSchema extends SchemaImpl
 		tableDef.addKey("SPECIFIC_NAME");
 		addTableDef(tableDef);
 
-		tableDef = new TableDefImpl(MetaNamespace.NS,
-				MetaSchema.TABLE_PRIVILEGES_TABLE);
+	}
+
+	private void addImportedKeysTable()
+	{
+		final TableDefImpl tableDef = new TableDefImpl(MetaNamespace.NS,
+				MetaSchema.IMPORTED_KEYS_TABLE, null);
+		tableDef.add(ColumnDefImpl.Builder
+				.getStringBuilder(MetaNamespace.NS, "PKTABLE_CAT")
+				.setNullable(DatabaseMetaData.columnNullable).build());
+		tableDef.add(ColumnDefImpl.Builder
+				.getStringBuilder(MetaNamespace.NS, "PKTABLE_SCHEM")
+				.setNullable(DatabaseMetaData.columnNullable).build());
+		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
+				"PKTABLE_NAME").build());
+		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
+				"PKCOLUMN_NAME").build());
+		tableDef.add(ColumnDefImpl.Builder
+				.getStringBuilder(MetaNamespace.NS, "FKTABLE_CAT")
+				.setNullable(DatabaseMetaData.columnNullable).build());
+		tableDef.add(ColumnDefImpl.Builder
+				.getStringBuilder(MetaNamespace.NS, "FKTABLE_SCHEM")
+				.setNullable(DatabaseMetaData.columnNullable).build());
+		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
+				"FKTABLE_NAME").build());
+		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
+				"FKCOLUMN_NAME").build());
+		tableDef.add(ColumnDefImpl.Builder.getSmallIntBuilder(MetaNamespace.NS,
+				"KEY_SEQ").build());
+		tableDef.add(ColumnDefImpl.Builder.getSmallIntBuilder(MetaNamespace.NS,
+				"UPDATE_RULE").build());
+		tableDef.add(ColumnDefImpl.Builder.getSmallIntBuilder(MetaNamespace.NS,
+				"DELETE_RULE").build());
+		tableDef.add(ColumnDefImpl.Builder
+				.getStringBuilder(MetaNamespace.NS, "FK_NAME")
+				.setNullable(DatabaseMetaData.columnNullable).build());
+		tableDef.add(ColumnDefImpl.Builder
+				.getStringBuilder(MetaNamespace.NS, "PK_NAME")
+				.setNullable(DatabaseMetaData.columnNullable).build());
+		tableDef.add(ColumnDefImpl.Builder.getSmallIntBuilder(MetaNamespace.NS,
+				"DEFERRABILITY").build());
+		tableDef.addKey("PKTABLE_CAT");
+		tableDef.addKey("PKTABLE_SCHEM");
+		tableDef.addKey("PKTABLE_NAME");
+		tableDef.addKey("KEY_SEQ");
+		addTableDef(tableDef);
+	}
+
+	private void addIndexInfoTable()
+	{
+		final TableDefImpl tableDef = new TableDefImpl(MetaNamespace.NS,
+				MetaSchema.INDEXINFO_TABLE, null);
 		tableDef.add(ColumnDefImpl.Builder
 				.getStringBuilder(MetaNamespace.NS, "TABLE_CAT")
 				.setNullable(DatabaseMetaData.columnNullable).build());
@@ -195,75 +445,64 @@ public class MetaSchema extends SchemaImpl
 				.setNullable(DatabaseMetaData.columnNullable).build());
 		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
 				"TABLE_NAME").build());
+		tableDef.add(new ColumnDefImpl.Builder().setNamespace(MetaNamespace.NS)
+				.setLocalName("NON_UNIQUE").setType(Types.BOOLEAN).build());
 		tableDef.add(ColumnDefImpl.Builder
-				.getStringBuilder(MetaNamespace.NS, "GRANTOR")
+				.getStringBuilder(MetaNamespace.NS, "INDEX_QUALIFIER")
+				.setNullable(DatabaseMetaData.columnNullable).build());
+		tableDef.add(ColumnDefImpl.Builder
+				.getStringBuilder(MetaNamespace.NS, "INDEX_NAME")
+				.setNullable(DatabaseMetaData.columnNullable).build());
+		tableDef.add(ColumnDefImpl.Builder.getSmallIntBuilder(MetaNamespace.NS,
+				"TYPE").build());
+		tableDef.add(ColumnDefImpl.Builder.getSmallIntBuilder(MetaNamespace.NS,
+				"ORDINAL_POSITION").build());
+		tableDef.add(ColumnDefImpl.Builder
+				.getStringBuilder(MetaNamespace.NS, "COLUMN_NAME")
+				.setNullable(DatabaseMetaData.columnNullable).build());
+		tableDef.add(ColumnDefImpl.Builder
+				.getStringBuilder(MetaNamespace.NS, "ASC_OR_DESC")
+				.setNullable(DatabaseMetaData.columnNullable).build());
+		tableDef.add(ColumnDefImpl.Builder.getIntegerBuilder(MetaNamespace.NS,
+				"CARDINALITY").build());
+		tableDef.add(ColumnDefImpl.Builder.getIntegerBuilder(MetaNamespace.NS,
+				"PAGES").build());
+		tableDef.add(ColumnDefImpl.Builder
+				.getStringBuilder(MetaNamespace.NS, "FILTER_CONDITION")
+				.setNullable(DatabaseMetaData.columnNullable).build());
+		tableDef.addKey("NON_UNIQUE");
+		tableDef.addKey("TYPE");
+		tableDef.addKey("INDEX_NAME");
+		addTableDef(tableDef);
+	}
+
+	private void addPrimaryKeyTable()
+	{
+		final TableDefImpl tableDef = new TableDefImpl(MetaNamespace.NS,
+				MetaSchema.PRIMARY_KEY_TABLE, null);
+		tableDef.add(ColumnDefImpl.Builder
+				.getStringBuilder(MetaNamespace.NS, "TABLE_CAT")
+				.setNullable(DatabaseMetaData.columnNullable).build());
+		tableDef.add(ColumnDefImpl.Builder
+				.getStringBuilder(MetaNamespace.NS, "TABLE_SCHEM")
 				.setNullable(DatabaseMetaData.columnNullable).build());
 		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
-				"GRANTEE").build());
-		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
-				"PRIVILEGE").build());
-		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
-				"IS_GRANTABLE").build());
-		tableDef.addKey("TABLE_CAT");
-		tableDef.addKey("TABLE_SCHEM");
-		tableDef.addKey("TABLE_NAME");
-		tableDef.addKey("PRIVILEGE");
-		addTableDef(tableDef);
-
-		tableDef = new TableDefImpl(MetaNamespace.NS, MetaSchema.BEST_ROW_TABLE);
-		tableDef.add(ColumnDefImpl.Builder.getIntegerBuilder(MetaNamespace.NS,
-				"SCOPE").build());
+				"TABLE_NAME").build());
 		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
 				"COLUMN_NAME").build());
-		tableDef.add(ColumnDefImpl.Builder.getIntegerBuilder(MetaNamespace.NS,
-				"DATA_TYPE").build());
+		tableDef.add(ColumnDefImpl.Builder.getSmallIntBuilder(MetaNamespace.NS,
+				"KEY_SEQ").build());
 		tableDef.add(ColumnDefImpl.Builder
-				.getStringBuilder(MetaNamespace.NS, "TYPE_NAME")
+				.getStringBuilder(MetaNamespace.NS, "PK_NAME")
 				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.add(ColumnDefImpl.Builder.getIntegerBuilder(MetaNamespace.NS,
-				"COLUMN_SIZE").build());
-		tableDef.add(ColumnDefImpl.Builder.getIntegerBuilder(MetaNamespace.NS,
-				"BUFFER_LENGTH").build());
-		tableDef.add(ColumnDefImpl.Builder.getIntegerBuilder(MetaNamespace.NS,
-				"DECIMAL_DIGITS").build());
-		tableDef.add(ColumnDefImpl.Builder.getIntegerBuilder(MetaNamespace.NS,
-				"PSEUDO_COLUMN").build());
-		tableDef.addKey("SCOPE");
+		tableDef.addKey("COLUMN_NAME");
 		addTableDef(tableDef);
+	}
 
-		tableDef = new TableDefImpl(MetaNamespace.NS,
-				MetaSchema.PROCEDURES_TABLE);
-		tableDef.add(ColumnDefImpl.Builder
-				.getStringBuilder(MetaNamespace.NS, "PROCEDURE_CAT")
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.add(ColumnDefImpl.Builder
-				.getStringBuilder(MetaNamespace.NS, "PROCEDURE_SCHEM")
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
-				"PROCEDURE_NAME").build());
-		tableDef.add(ColumnDefImpl.Builder
-				.getStringBuilder(MetaNamespace.NS, "FUTURE1")
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.add(ColumnDefImpl.Builder
-				.getStringBuilder(MetaNamespace.NS, "FUTURE2")
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.add(ColumnDefImpl.Builder
-				.getStringBuilder(MetaNamespace.NS, "FUTURE3")
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
-				"REMARKS").build());
-		tableDef.add(new ColumnDefImpl.Builder().setNamespace(MetaNamespace.NS)
-				.setLocalName("PROCEDURE_TYPE").setType(Types.SMALLINT).build());
-		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
-				"SPECIFIC_NAME").build());
-		tableDef.addKey("PROCEDURE_CAT");
-		tableDef.addKey("PROCEDURE_SCHEM");
-		tableDef.addKey("PROCEDURE_NAME");
-		tableDef.addKey("SPECIFIC_NAME");
-		addTableDef(tableDef);
-
-		tableDef = new TableDefImpl(MetaNamespace.NS,
-				MetaSchema.PROCEDURE_COLUMNS_TABLE);
+	private void addProcedureColumnsTable()
+	{
+		final TableDefImpl tableDef = new TableDefImpl(MetaNamespace.NS,
+				MetaSchema.PROCEDURE_COLUMNS_TABLE, null);
 		tableDef.add(ColumnDefImpl.Builder
 				.getStringBuilder(MetaNamespace.NS, "PROCEDURE_CAT")
 				.setNullable(DatabaseMetaData.columnNullable).build());
@@ -316,8 +555,128 @@ public class MetaSchema extends SchemaImpl
 		tableDef.addKey("PROCEDURE_NAME");
 		tableDef.addKey("SPECIFIC_NAME");
 		addTableDef(tableDef);
+	}
 
-		tableDef = new TableDefImpl(MetaNamespace.NS, MetaSchema.TABLES_TABLE);
+	private void addProceduresTable()
+	{
+		final TableDefImpl tableDef = new TableDefImpl(MetaNamespace.NS,
+				MetaSchema.PROCEDURES_TABLE, null);
+		tableDef.add(ColumnDefImpl.Builder
+				.getStringBuilder(MetaNamespace.NS, "PROCEDURE_CAT")
+				.setNullable(DatabaseMetaData.columnNullable).build());
+		tableDef.add(ColumnDefImpl.Builder
+				.getStringBuilder(MetaNamespace.NS, "PROCEDURE_SCHEM")
+				.setNullable(DatabaseMetaData.columnNullable).build());
+		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
+				"PROCEDURE_NAME").build());
+		tableDef.add(ColumnDefImpl.Builder
+				.getStringBuilder(MetaNamespace.NS, "FUTURE1")
+				.setNullable(DatabaseMetaData.columnNullable).build());
+		tableDef.add(ColumnDefImpl.Builder
+				.getStringBuilder(MetaNamespace.NS, "FUTURE2")
+				.setNullable(DatabaseMetaData.columnNullable).build());
+		tableDef.add(ColumnDefImpl.Builder
+				.getStringBuilder(MetaNamespace.NS, "FUTURE3")
+				.setNullable(DatabaseMetaData.columnNullable).build());
+		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
+				"REMARKS").build());
+		tableDef.add(new ColumnDefImpl.Builder().setNamespace(MetaNamespace.NS)
+				.setLocalName("PROCEDURE_TYPE").setType(Types.SMALLINT).build());
+		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
+				"SPECIFIC_NAME").build());
+		tableDef.addKey("PROCEDURE_CAT");
+		tableDef.addKey("PROCEDURE_SCHEM");
+		tableDef.addKey("PROCEDURE_NAME");
+		tableDef.addKey("SPECIFIC_NAME");
+		addTableDef(tableDef);
+	}
+
+	private void addSchemasTable()
+	{
+		final TableDefImpl tableDef = new TableDefImpl(MetaNamespace.NS,
+				MetaSchema.SCHEMAS_TABLE, null);
+		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
+				"TABLE_SCHEM").build());
+		tableDef.add(ColumnDefImpl.Builder
+				.getStringBuilder(MetaNamespace.NS, "TABLE_CATALOG")
+				.setNullable(DatabaseMetaData.columnNullable).build());
+		tableDef.addKey("TABLE_CATALOG");
+		tableDef.addKey("TABLE_SCHEM");
+		addTableDef(tableDef);
+	}
+
+	private void addSuperTablesTable()
+	{
+		final TableDefImpl tableDef = new TableDefImpl(MetaNamespace.NS,
+				MetaSchema.SUPER_TABLES_TABLE, null);
+		tableDef.add(ColumnDefImpl.Builder
+				.getStringBuilder(MetaNamespace.NS, "TABLE_CAT")
+				.setNullable(DatabaseMetaData.columnNullable).build());
+		tableDef.add(ColumnDefImpl.Builder
+				.getStringBuilder(MetaNamespace.NS, "TABLE_SCHEM")
+				.setNullable(DatabaseMetaData.columnNullable).build());
+		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
+				"TABLE_NAME").build());
+		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
+				"SUPERTABLE_NAME").build());
+		addTableDef(tableDef);
+	}
+
+	private void addSuperTypesTable()
+	{
+		final TableDefImpl tableDef = new TableDefImpl(MetaNamespace.NS,
+				MetaSchema.SUPER_TYPES_TABLE, null);
+		tableDef.add(ColumnDefImpl.Builder
+				.getStringBuilder(MetaNamespace.NS, "TYPE_CAT")
+				.setNullable(DatabaseMetaData.columnNullable).build());
+		tableDef.add(ColumnDefImpl.Builder
+				.getStringBuilder(MetaNamespace.NS, "TYPE_SCHEM")
+				.setNullable(DatabaseMetaData.columnNullable).build());
+		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
+				"TYPE_NAME").build());
+		tableDef.add(ColumnDefImpl.Builder
+				.getStringBuilder(MetaNamespace.NS, "SUPERTYPE_CAT")
+				.setNullable(DatabaseMetaData.columnNullable).build());
+		tableDef.add(ColumnDefImpl.Builder
+				.getStringBuilder(MetaNamespace.NS, "SUPERTYPE_SCHEM")
+				.setNullable(DatabaseMetaData.columnNullable).build());
+		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
+				"SUPERTYPE_NAME").build());
+		addTableDef(tableDef);
+	}
+
+	private void addTablePrivilegesTable()
+	{
+		final TableDefImpl tableDef = new TableDefImpl(MetaNamespace.NS,
+				MetaSchema.TABLE_PRIVILEGES_TABLE, null);
+		tableDef.add(ColumnDefImpl.Builder
+				.getStringBuilder(MetaNamespace.NS, "TABLE_CAT")
+				.setNullable(DatabaseMetaData.columnNullable).build());
+		tableDef.add(ColumnDefImpl.Builder
+				.getStringBuilder(MetaNamespace.NS, "TABLE_SCHEM")
+				.setNullable(DatabaseMetaData.columnNullable).build());
+		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
+				"TABLE_NAME").build());
+		tableDef.add(ColumnDefImpl.Builder
+				.getStringBuilder(MetaNamespace.NS, "GRANTOR")
+				.setNullable(DatabaseMetaData.columnNullable).build());
+		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
+				"GRANTEE").build());
+		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
+				"PRIVILEGE").build());
+		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
+				"IS_GRANTABLE").build());
+		tableDef.addKey("TABLE_CAT");
+		tableDef.addKey("TABLE_SCHEM");
+		tableDef.addKey("TABLE_NAME");
+		tableDef.addKey("PRIVILEGE");
+		addTableDef(tableDef);
+	}
+
+	private void addTablesTable()
+	{
+		final TableDefImpl tableDef = new TableDefImpl(MetaNamespace.NS,
+				MetaSchema.TABLES_TABLE, null);
 		tableDef.add(ColumnDefImpl.Builder
 				.getStringBuilder(MetaNamespace.NS, "TABLE_CAT")
 				.setNullable(DatabaseMetaData.columnNullable).build());
@@ -350,9 +709,12 @@ public class MetaSchema extends SchemaImpl
 		tableDef.addKey("TABLE_SCHEM");
 		tableDef.addKey("TABLE_NAME");
 		addTableDef(tableDef);
+	}
 
-		tableDef = new TableDefImpl(MetaNamespace.NS,
-				MetaSchema.TABLE_TYPES_TABLE);
+	private void addTableTypesTable()
+	{
+		TableDefImpl tableDef = new TableDefImpl(MetaNamespace.NS,
+				MetaSchema.TABLE_TYPES_TABLE, null);
 		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
 				"TABLE_TYPE").build());
 		tableDef.addKey("TABLE_TYPE");
@@ -360,7 +722,7 @@ public class MetaSchema extends SchemaImpl
 		addTableDef(tableDef);
 
 		tableDef = new TableDefImpl(MetaNamespace.NS,
-				MetaSchema.COLUMN_PRIVILIGES_TABLE);
+				MetaSchema.COLUMN_PRIVILIGES_TABLE, null);
 		tableDef.add(ColumnDefImpl.Builder
 				.getStringBuilder(MetaNamespace.NS, "TABLE_CAT")
 				.setNullable(DatabaseMetaData.columnNullable).build());
@@ -383,173 +745,12 @@ public class MetaSchema extends SchemaImpl
 		tableDef.addKey("COLUMN_NAME");
 		tableDef.addKey("PRIVILEGE");
 		addTableDef(tableDef);
+	}
 
-		tableDef = new TableDefImpl(MetaNamespace.NS,
-				MetaSchema.VERSION_COLUMNS_TABLE);
-		tableDef.add(ColumnDefImpl.Builder.getSmallIntBuilder(MetaNamespace.NS,
-				"SCOPE").build());
-		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
-				"COLUMN_NAME").build());
-		tableDef.add(ColumnDefImpl.Builder.getIntegerBuilder(MetaNamespace.NS,
-				"DATA_TYPE").build());
-		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
-				"TYPE_NAME").build());
-		tableDef.add(ColumnDefImpl.Builder.getIntegerBuilder(MetaNamespace.NS,
-				"COLUMN_SIZE").build());
-		tableDef.add(ColumnDefImpl.Builder.getIntegerBuilder(MetaNamespace.NS,
-				"BUFFER_LENGTH").build());
-		tableDef.add(ColumnDefImpl.Builder.getSmallIntBuilder(MetaNamespace.NS,
-				"DECIMAL_DIGITS").build());
-		tableDef.add(ColumnDefImpl.Builder.getSmallIntBuilder(MetaNamespace.NS,
-				"PSEUDO_COLUMN").build());
-		addTableDef(tableDef);
-
-		tableDef = new TableDefImpl(MetaNamespace.NS,
-				MetaSchema.PRIMARY_KEY_TABLE);
-		tableDef.add(ColumnDefImpl.Builder
-				.getStringBuilder(MetaNamespace.NS, "TABLE_CAT")
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.add(ColumnDefImpl.Builder
-				.getStringBuilder(MetaNamespace.NS, "TABLE_SCHEM")
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
-				"TABLE_NAME").build());
-		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
-				"COLUMN_NAME").build());
-		tableDef.add(ColumnDefImpl.Builder.getSmallIntBuilder(MetaNamespace.NS,
-				"KEY_SEQ").build());
-		tableDef.add(ColumnDefImpl.Builder
-				.getStringBuilder(MetaNamespace.NS, "PK_NAME")
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.addKey("COLUMN_NAME");
-		addTableDef(tableDef);
-
-		tableDef = new TableDefImpl(MetaNamespace.NS,
-				MetaSchema.IMPORTED_KEYS_TABLE);
-		tableDef.add(ColumnDefImpl.Builder
-				.getStringBuilder(MetaNamespace.NS, "PKTABLE_CAT")
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.add(ColumnDefImpl.Builder
-				.getStringBuilder(MetaNamespace.NS, "PKTABLE_SCHEM")
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
-				"PKTABLE_NAME").build());
-		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
-				"PKCOLUMN_NAME").build());
-		tableDef.add(ColumnDefImpl.Builder
-				.getStringBuilder(MetaNamespace.NS, "FKTABLE_CAT")
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.add(ColumnDefImpl.Builder
-				.getStringBuilder(MetaNamespace.NS, "FKTABLE_SCHEM")
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
-				"FKTABLE_NAME").build());
-		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
-				"FKCOLUMN_NAME").build());
-		tableDef.add(ColumnDefImpl.Builder.getSmallIntBuilder(MetaNamespace.NS,
-				"KEY_SEQ").build());
-		tableDef.add(ColumnDefImpl.Builder.getSmallIntBuilder(MetaNamespace.NS,
-				"UPDATE_RULE").build());
-		tableDef.add(ColumnDefImpl.Builder.getSmallIntBuilder(MetaNamespace.NS,
-				"DELETE_RULE").build());
-		tableDef.add(ColumnDefImpl.Builder
-				.getStringBuilder(MetaNamespace.NS, "FK_NAME")
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.add(ColumnDefImpl.Builder
-				.getStringBuilder(MetaNamespace.NS, "PK_NAME")
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.add(ColumnDefImpl.Builder.getSmallIntBuilder(MetaNamespace.NS,
-				"DEFERRABILITY").build());
-		tableDef.addKey("PKTABLE_CAT");
-		tableDef.addKey("PKTABLE_SCHEM");
-		tableDef.addKey("PKTABLE_NAME");
-		tableDef.addKey("KEY_SEQ");
-		addTableDef(tableDef);
-
-		tableDef = new TableDefImpl(MetaNamespace.NS,
-				MetaSchema.EXPORTED_KEYS_TABLE);
-		tableDef.add(ColumnDefImpl.Builder
-				.getStringBuilder(MetaNamespace.NS, "PKTABLE_CAT")
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.add(ColumnDefImpl.Builder
-				.getStringBuilder(MetaNamespace.NS, "PKTABLE_SCHEM")
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
-				"PKTABLE_NAME").build());
-		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
-				"PKCOLUMN_NAME").build());
-		tableDef.add(ColumnDefImpl.Builder
-				.getStringBuilder(MetaNamespace.NS, "FKTABLE_CAT")
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.add(ColumnDefImpl.Builder
-				.getStringBuilder(MetaNamespace.NS, "FKTABLE_SCHEM")
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
-				"FKTABLE_NAME").build());
-		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
-				"FKCOLUMN_NAME").build());
-		tableDef.add(ColumnDefImpl.Builder.getSmallIntBuilder(MetaNamespace.NS,
-				"KEY_SEQ").build());
-		tableDef.add(ColumnDefImpl.Builder.getSmallIntBuilder(MetaNamespace.NS,
-				"UPDATE_RULE").build());
-		tableDef.add(ColumnDefImpl.Builder.getSmallIntBuilder(MetaNamespace.NS,
-				"DELETE_RULE").build());
-		tableDef.add(ColumnDefImpl.Builder
-				.getStringBuilder(MetaNamespace.NS, "FK_NAME")
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.add(ColumnDefImpl.Builder
-				.getStringBuilder(MetaNamespace.NS, "PK_NAME")
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.add(ColumnDefImpl.Builder.getSmallIntBuilder(MetaNamespace.NS,
-				"DEFERRABILITY").build());
-		tableDef.addKey("FKTABLE_CAT");
-		tableDef.addKey("FKTABLE_SCHEM");
-		tableDef.addKey("FKTABLE_NAME");
-		tableDef.addKey("KEY_SEQ");
-		addTableDef(tableDef);
-
-		tableDef = new TableDefImpl(MetaNamespace.NS, MetaSchema.XREF_TABLE);
-		tableDef.add(ColumnDefImpl.Builder
-				.getStringBuilder(MetaNamespace.NS, "PKTABLE_CAT")
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.add(ColumnDefImpl.Builder
-				.getStringBuilder(MetaNamespace.NS, "PKTABLE_SCHEM")
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
-				"PKTABLE_NAME").build());
-		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
-				"PKCOLUMN_NAME").build());
-		tableDef.add(ColumnDefImpl.Builder
-				.getStringBuilder(MetaNamespace.NS, "FKTABLE_CAT")
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.add(ColumnDefImpl.Builder
-				.getStringBuilder(MetaNamespace.NS, "FKTABLE_SCHEM")
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
-				"FKTABLE_NAME").build());
-		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
-				"FKCOLUMN_NAME").build());
-		tableDef.add(ColumnDefImpl.Builder.getSmallIntBuilder(MetaNamespace.NS,
-				"KEY_SEQ").build());
-		tableDef.add(ColumnDefImpl.Builder.getSmallIntBuilder(MetaNamespace.NS,
-				"UPDATE_RULE").build());
-		tableDef.add(ColumnDefImpl.Builder.getSmallIntBuilder(MetaNamespace.NS,
-				"DELETE_RULE").build());
-		tableDef.add(ColumnDefImpl.Builder
-				.getStringBuilder(MetaNamespace.NS, "FK_NAME")
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.add(ColumnDefImpl.Builder
-				.getStringBuilder(MetaNamespace.NS, "PK_NAME")
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.add(ColumnDefImpl.Builder.getSmallIntBuilder(MetaNamespace.NS,
-				"DEFERRABILITY").build());
-		tableDef.addKey("FKTABLE_CAT");
-		tableDef.addKey("FKTABLE_SCHEM");
-		tableDef.addKey("FKTABLE_NAME");
-		tableDef.addKey("KEY_SEQ");
-		addTableDef(tableDef);
-
-		tableDef = new TableDefImpl(MetaNamespace.NS, MetaSchema.TYPEINFO_TABLE);
+	private void addTypeInfoTableTable()
+	{
+		final TableDefImpl tableDef = new TableDefImpl(MetaNamespace.NS,
+				MetaSchema.TYPEINFO_TABLE, null);
 		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
 				"TYPE_NAME").build());
 		tableDef.add(ColumnDefImpl.Builder.getIntegerBuilder(MetaNamespace.NS,
@@ -593,48 +794,12 @@ public class MetaSchema extends SchemaImpl
 		tableDef.add(ColumnDefImpl.Builder.getIntegerBuilder(MetaNamespace.NS,
 				"NUM_PREC_RADIX").build());
 		addTableDef(tableDef);
+	}
 
-		tableDef = new TableDefImpl(MetaNamespace.NS,
-				MetaSchema.INDEXINFO_TABLE);
-		tableDef.add(ColumnDefImpl.Builder
-				.getStringBuilder(MetaNamespace.NS, "TABLE_CAT")
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.add(ColumnDefImpl.Builder
-				.getStringBuilder(MetaNamespace.NS, "TABLE_SCHEM")
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
-				"TABLE_NAME").build());
-		tableDef.add(new ColumnDefImpl.Builder().setNamespace(MetaNamespace.NS)
-				.setLocalName("NON_UNIQUE").setType(Types.BOOLEAN).build());
-		tableDef.add(ColumnDefImpl.Builder
-				.getStringBuilder(MetaNamespace.NS, "INDEX_QUALIFIER")
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.add(ColumnDefImpl.Builder
-				.getStringBuilder(MetaNamespace.NS, "INDEX_NAME")
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.add(ColumnDefImpl.Builder.getSmallIntBuilder(MetaNamespace.NS,
-				"TYPE").build());
-		tableDef.add(ColumnDefImpl.Builder.getSmallIntBuilder(MetaNamespace.NS,
-				"ORDINAL_POSITION").build());
-		tableDef.add(ColumnDefImpl.Builder
-				.getStringBuilder(MetaNamespace.NS, "COLUMN_NAME")
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.add(ColumnDefImpl.Builder
-				.getStringBuilder(MetaNamespace.NS, "ASC_OR_DESC")
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.add(ColumnDefImpl.Builder.getIntegerBuilder(MetaNamespace.NS,
-				"CARDINALITY").build());
-		tableDef.add(ColumnDefImpl.Builder.getIntegerBuilder(MetaNamespace.NS,
-				"PAGES").build());
-		tableDef.add(ColumnDefImpl.Builder
-				.getStringBuilder(MetaNamespace.NS, "FILTER_CONDITION")
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.addKey("NON_UNIQUE");
-		tableDef.addKey("TYPE");
-		tableDef.addKey("INDEX_NAME");
-		addTableDef(tableDef);
-
-		tableDef = new TableDefImpl(MetaNamespace.NS, MetaSchema.UDT_TABLES);
+	private void addUDTTable()
+	{
+		final TableDefImpl tableDef = new TableDefImpl(MetaNamespace.NS,
+				MetaSchema.UDT_TABLES, null);
 		tableDef.add(ColumnDefImpl.Builder
 				.getStringBuilder(MetaNamespace.NS, "TYPE_CAT")
 				.setNullable(DatabaseMetaData.columnNullable).build());
@@ -657,143 +822,73 @@ public class MetaSchema extends SchemaImpl
 		tableDef.addKey("TYPE_SCHEM");
 		tableDef.addKey("TYPE_NAME");
 		addTableDef(tableDef);
+	}
 
-		tableDef = new TableDefImpl(MetaNamespace.NS,
-				MetaSchema.SUPER_TYPES_TABLE);
-		tableDef.add(ColumnDefImpl.Builder
-				.getStringBuilder(MetaNamespace.NS, "TYPE_CAT")
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.add(ColumnDefImpl.Builder
-				.getStringBuilder(MetaNamespace.NS, "TYPE_SCHEM")
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
-				"TYPE_NAME").build());
-		tableDef.add(ColumnDefImpl.Builder
-				.getStringBuilder(MetaNamespace.NS, "SUPERTYPE_CAT")
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.add(ColumnDefImpl.Builder
-				.getStringBuilder(MetaNamespace.NS, "SUPERTYPE_SCHEM")
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
-				"SUPERTYPE_NAME").build());
-		addTableDef(tableDef);
-
-		tableDef = new TableDefImpl(MetaNamespace.NS,
-				MetaSchema.SUPER_TABLES_TABLE);
-		tableDef.add(ColumnDefImpl.Builder
-				.getStringBuilder(MetaNamespace.NS, "TABLE_CAT")
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.add(ColumnDefImpl.Builder
-				.getStringBuilder(MetaNamespace.NS, "TABLE_SCHEM")
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
-				"TABLE_NAME").build());
-		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
-				"SUPERTABLE_NAME").build());
-		addTableDef(tableDef);
-
-		tableDef = new TableDefImpl(MetaNamespace.NS,
-				MetaSchema.ATTRIBUTES_TABLE);
-		tableDef.add(ColumnDefImpl.Builder
-				.getStringBuilder(MetaNamespace.NS, "TYPE_CAT")
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.add(ColumnDefImpl.Builder
-				.getStringBuilder(MetaNamespace.NS, "TYPE_SCHEM")
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
-				"TYPE_NAME").build());
-		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
-				"ATTR_NAME").build());
-		tableDef.add(ColumnDefImpl.Builder.getIntegerBuilder(MetaNamespace.NS,
-				"DATA_TYPE").build());
-		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
-				"ATTR_TYPE_NAME").build());
-		tableDef.add(ColumnDefImpl.Builder.getIntegerBuilder(MetaNamespace.NS,
-				"ATTR_SIZE").build());
-		tableDef.add(ColumnDefImpl.Builder
-				.getIntegerBuilder(MetaNamespace.NS, "DECIMAL_DIGITS")
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.add(ColumnDefImpl.Builder.getIntegerBuilder(MetaNamespace.NS,
-				"NUM_PREC_RADIX").build());
-		tableDef.add(ColumnDefImpl.Builder.getIntegerBuilder(MetaNamespace.NS,
-				"NULLABLE").build());
-		tableDef.add(ColumnDefImpl.Builder
-				.getStringBuilder(MetaNamespace.NS, "REMARKS")
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.add(ColumnDefImpl.Builder
-				.getStringBuilder(MetaNamespace.NS, "ATTR_DEF")
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.add(ColumnDefImpl.Builder
-				.getIntegerBuilder(MetaNamespace.NS, "SQL_DATA_TYPE")
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.add(ColumnDefImpl.Builder
-				.getIntegerBuilder(MetaNamespace.NS, "SQL_DATETIME_SUB")
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.add(ColumnDefImpl.Builder.getIntegerBuilder(MetaNamespace.NS,
-				"CHAR_OCTET_LENGTH").build());
-		tableDef.add(ColumnDefImpl.Builder.getIntegerBuilder(MetaNamespace.NS,
-				"ORDINAL_POSITION").build());
-		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
-				"IS_NULLABLE").build());
-		tableDef.add(ColumnDefImpl.Builder
-				.getStringBuilder(MetaNamespace.NS, "SCOPE_CATALOG")
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.add(ColumnDefImpl.Builder
-				.getStringBuilder(MetaNamespace.NS, "SCOPE_SCHEMA")
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.add(ColumnDefImpl.Builder
-				.getStringBuilder(MetaNamespace.NS, "SCOPE_TABLE")
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.add(ColumnDefImpl.Builder
-				.getSmallIntBuilder(MetaNamespace.NS, "SOURCE_DATA_TYPE")
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		addTableDef(tableDef);
-
-		tableDef = new TableDefImpl(MetaNamespace.NS,
-				MetaSchema.FUNCTION_COLUMNS_TABLE);
-		tableDef.add(ColumnDefImpl.Builder
-				.getStringBuilder(MetaNamespace.NS, "FUNCTION_CAT")
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.add(ColumnDefImpl.Builder
-				.getStringBuilder(MetaNamespace.NS, "FUNCTION_SCHEM")
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
-				"FUNCTION_NAME").build());
+	private void addVersionColumnsTable()
+	{
+		final TableDefImpl tableDef = new TableDefImpl(MetaNamespace.NS,
+				MetaSchema.VERSION_COLUMNS_TABLE, null);
+		tableDef.add(ColumnDefImpl.Builder.getSmallIntBuilder(MetaNamespace.NS,
+				"SCOPE").build());
 		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
 				"COLUMN_NAME").build());
-		;
-		tableDef.add(ColumnDefImpl.Builder.getSmallIntBuilder(MetaNamespace.NS,
-				"COLUMN_TYPE").build());
 		tableDef.add(ColumnDefImpl.Builder.getIntegerBuilder(MetaNamespace.NS,
 				"DATA_TYPE").build());
 		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
 				"TYPE_NAME").build());
-		;
 		tableDef.add(ColumnDefImpl.Builder.getIntegerBuilder(MetaNamespace.NS,
-				"PRECISION").build());
+				"COLUMN_SIZE").build());
 		tableDef.add(ColumnDefImpl.Builder.getIntegerBuilder(MetaNamespace.NS,
-				"LENGTH").build());
+				"BUFFER_LENGTH").build());
 		tableDef.add(ColumnDefImpl.Builder.getSmallIntBuilder(MetaNamespace.NS,
-				"SCALE").build());
+				"DECIMAL_DIGITS").build());
 		tableDef.add(ColumnDefImpl.Builder.getSmallIntBuilder(MetaNamespace.NS,
-				"RADIX").build());
-		tableDef.add(ColumnDefImpl.Builder.getSmallIntBuilder(MetaNamespace.NS,
-				"NULLABLE").build());
+				"PSEUDO_COLUMN").build());
+		addTableDef(tableDef);
+	}
+
+	private void addXrefTable()
+	{
+		final TableDefImpl tableDef = new TableDefImpl(MetaNamespace.NS,
+				MetaSchema.XREF_TABLE, null);
 		tableDef.add(ColumnDefImpl.Builder
-				.getStringBuilder(MetaNamespace.NS, "REMARKS")
+				.getStringBuilder(MetaNamespace.NS, "PKTABLE_CAT")
 				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.add(ColumnDefImpl.Builder.getIntegerBuilder(MetaNamespace.NS,
-				"CHAR_OCTET_LENGTH").build());
-		tableDef.add(ColumnDefImpl.Builder.getIntegerBuilder(MetaNamespace.NS,
-				"ORDINAL_POSITION").build());
+		tableDef.add(ColumnDefImpl.Builder
+				.getStringBuilder(MetaNamespace.NS, "PKTABLE_SCHEM")
+				.setNullable(DatabaseMetaData.columnNullable).build());
 		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
-				"IS_NULLABLE").build());
+				"PKTABLE_NAME").build());
 		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
-				"SPECIFIC_NAME").build());
-		tableDef.addKey("FUNCTION_CAT");
-		tableDef.addKey("FUNCTION_SCHEM");
-		tableDef.addKey("FUNCTION_NAME");
-		tableDef.addKey("SPECIFIC_NAME");
+				"PKCOLUMN_NAME").build());
+		tableDef.add(ColumnDefImpl.Builder
+				.getStringBuilder(MetaNamespace.NS, "FKTABLE_CAT")
+				.setNullable(DatabaseMetaData.columnNullable).build());
+		tableDef.add(ColumnDefImpl.Builder
+				.getStringBuilder(MetaNamespace.NS, "FKTABLE_SCHEM")
+				.setNullable(DatabaseMetaData.columnNullable).build());
+		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
+				"FKTABLE_NAME").build());
+		tableDef.add(ColumnDefImpl.Builder.getStringBuilder(MetaNamespace.NS,
+				"FKCOLUMN_NAME").build());
+		tableDef.add(ColumnDefImpl.Builder.getSmallIntBuilder(MetaNamespace.NS,
+				"KEY_SEQ").build());
+		tableDef.add(ColumnDefImpl.Builder.getSmallIntBuilder(MetaNamespace.NS,
+				"UPDATE_RULE").build());
+		tableDef.add(ColumnDefImpl.Builder.getSmallIntBuilder(MetaNamespace.NS,
+				"DELETE_RULE").build());
+		tableDef.add(ColumnDefImpl.Builder
+				.getStringBuilder(MetaNamespace.NS, "FK_NAME")
+				.setNullable(DatabaseMetaData.columnNullable).build());
+		tableDef.add(ColumnDefImpl.Builder
+				.getStringBuilder(MetaNamespace.NS, "PK_NAME")
+				.setNullable(DatabaseMetaData.columnNullable).build());
+		tableDef.add(ColumnDefImpl.Builder.getSmallIntBuilder(MetaNamespace.NS,
+				"DEFERRABILITY").build());
+		tableDef.addKey("FKTABLE_CAT");
+		tableDef.addKey("FKTABLE_SCHEM");
+		tableDef.addKey("FKTABLE_NAME");
+		tableDef.addKey("KEY_SEQ");
 		addTableDef(tableDef);
 	}
 }

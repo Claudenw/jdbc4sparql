@@ -22,22 +22,37 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.xenei.jdbc4sparql.iface.ColumnDef;
+import org.xenei.jdbc4sparql.iface.Key;
 import org.xenei.jdbc4sparql.iface.KeySegment;
-import org.xenei.jdbc4sparql.iface.SortKey;
 import org.xenei.jdbc4sparql.iface.TableDef;
 import org.xenei.jdbc4sparql.iface.TypeConverter;
 
 public class TableDefImpl extends NamespaceImpl implements TableDef
 {
-	// private String name;
 	private final List<ColumnDef> columns;
-	private SortKey sortKey;
+	private Key sortKey;
+	private final TableDef superTable;
+	private Key primaryKey;
 
-	public TableDefImpl( final String namespace, final String name )
+	public TableDefImpl( final String namespace, final String name,
+			final TableDef superTable )
+	{
+		this(namespace, name, superTable, null);
+	}
+
+	public TableDefImpl( final String namespace, final String name,
+			final TableDef superTable, final Key primaryKey )
 	{
 		super(namespace, name);
+		if ((primaryKey != null) && !primaryKey.isUnique())
+		{
+			throw new IllegalArgumentException(String.format(
+					"Primary key for %s is not unique", getFQName()));
+		}
 		this.columns = new ArrayList<ColumnDef>();
 		this.sortKey = null;
+		this.superTable = superTable;
+		this.primaryKey = primaryKey;
 	}
 
 	public void add( final ColumnDef column )
@@ -47,7 +62,7 @@ public class TableDefImpl extends NamespaceImpl implements TableDef
 
 	public void addKey( final ColumnDef columnDef )
 	{
-		final int idx = columns.indexOf(columnDef);
+		final short idx = (short) columns.indexOf(columnDef);
 		if (idx == -1)
 		{
 			throw new IllegalArgumentException(columnDef.getLabel()
@@ -55,7 +70,7 @@ public class TableDefImpl extends NamespaceImpl implements TableDef
 		}
 		if (sortKey == null)
 		{
-			sortKey = new SortKey();
+			sortKey = new Key();
 		}
 		sortKey.addSegment(new KeySegment(idx, columnDef));
 	}
@@ -116,16 +131,33 @@ public class TableDefImpl extends NamespaceImpl implements TableDef
 	}
 
 	@Override
-	public SortKey getSortKey()
+	public Key getPrimaryKey()
+	{
+		return primaryKey;
+	}
+
+	@Override
+	public Key getSortKey()
 	{
 		return sortKey;
+	}
+
+	@Override
+	public TableDef getSuperTableDef()
+	{
+		return superTable;
+	}
+
+	public void setPrimaryKey( final Key primaryKey )
+	{
+		this.primaryKey = primaryKey;
 	}
 
 	public void setUnique()
 	{
 		if (sortKey == null)
 		{
-			sortKey = new SortKey();
+			sortKey = new Key();
 		}
 		sortKey.setUnique();
 	}
@@ -164,7 +196,7 @@ public class TableDefImpl extends NamespaceImpl implements TableDef
 				if (!clazz.isAssignableFrom(row[i].getClass()))
 				{
 					throw new IllegalArgumentException(String.format(
-							"Column %s can not recieve values of class %s",
+							"Column %s can not receive values of class %s",
 							c.getLabel(), row[i].getClass()));
 				}
 			}

@@ -150,6 +150,13 @@ public interface Table extends TableDef
 	String getSQLName();
 
 	/**
+	 * Get the supertable for this table.
+	 * 
+	 * @return The super table or null.
+	 */
+	Table getSuperTable();
+
+	/**
 	 * Get the type of table.
 	 * Typical types are "TABLE", "VIEW", "SYSTEM TABLE", "GLOBAL TEMPORARY",
 	 * "LOCAL TEMPORARY", "ALIAS", "SYNONYM".

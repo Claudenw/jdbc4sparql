@@ -65,12 +65,13 @@ public class SparqlTable extends AbstractTable
 
 	}
 
+	private SparqlTable superTable = null;
 	private SparqlQueryBuilder builder;
 
 	protected SparqlTable( final SparqlQueryBuilder builder )
 	{
 		this(builder.getCatalog().getViewSchema(), builder.getTableDef(
-				SparqlView.NAME_SPACE, UUID.randomUUID().toString()));
+				SparqlView.NAME_SPACE, "UUID-" + UUID.randomUUID().toString()));
 		this.builder = builder;
 	}
 
@@ -150,6 +151,27 @@ public class SparqlTable extends AbstractTable
 	public String getSolutionName( final int idx )
 	{
 		return builder.getSolutionName(idx);
+	}
+
+	@Override
+	public SparqlTable getSuperTable()
+	{
+		if (superTable == null)
+		{
+			if (getSuperTableDef() == null)
+			{
+				return null;
+			}
+			superTable = (SparqlTable) getSchema().getTable(
+					getSuperTableDef().getLocalName());
+			if (superTable == null)
+			{
+				superTable = new SparqlTable(getSchema(),
+						(SparqlTableDef) getSuperTableDef());
+				getSchema().addTable(superTable);
+			}
+		}
+		return superTable;
 	}
 
 	@Override

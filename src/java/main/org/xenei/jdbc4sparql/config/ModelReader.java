@@ -1,7 +1,6 @@
 package org.xenei.jdbc4sparql.config;
 
 import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.util.FileUtils;
 
 import java.io.InputStream;
@@ -18,6 +17,8 @@ import java.io.Reader;
  */
 public abstract class ModelReader
 {
+	abstract public Model getModel();
+
 	/**
 	 * Read the input stream in to the model using base for relative URLs.
 	 * 
@@ -48,15 +49,15 @@ public abstract class ModelReader
 		getModel().read(in, base, lang);
 	}
 
-	abstract public Model getModel();
 	/**
 	 * Read the model into the graph(s).
 	 * 
 	 * @param model
 	 *            The model to read.
 	 */
-	public void read( Model model ) {
-		getModel().add( model );
+	public void read( final Model model )
+	{
+		getModel().add(model);
 	}
 
 	/**
@@ -100,7 +101,7 @@ public abstract class ModelReader
 	 */
 	public void read( final String url )
 	{
-		this.read(url,FileUtils.guessLang(url));
+		this.read(url, FileUtils.guessLang(url));
 	}
 
 	/**

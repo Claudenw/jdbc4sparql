@@ -43,6 +43,12 @@ public class CatalogImpl extends NamespaceImpl implements Catalog
 	}
 
 	@Override
+	public void close()
+	{
+		this.schemas.clear();
+	}
+
+	@Override
 	public NameFilter<Schema> findSchemas( final String schemaNamePattern )
 	{
 		return new NameFilter<Schema>(schemaNamePattern, getSchemas());
@@ -64,10 +70,5 @@ public class CatalogImpl extends NamespaceImpl implements Catalog
 	public String toString()
 	{
 		return String.format("Catalog[%s]", getLocalName());
-	}
-
-	public void close()
-	{
-		this.schemas.clear();
 	}
 }

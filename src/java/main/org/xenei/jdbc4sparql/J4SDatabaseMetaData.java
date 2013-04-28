@@ -29,6 +29,8 @@ import java.util.Map;
 
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.Column;
+import org.xenei.jdbc4sparql.iface.Key;
+import org.xenei.jdbc4sparql.iface.KeySegment;
 import org.xenei.jdbc4sparql.iface.NameFilter;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
@@ -71,8 +73,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 		{
 			J4SDatabaseMetaData.CATALOGS_TABLE.addData(new Object[] { catalog
 					.getLocalName() });
-			catalogs.put(catalog.getLocalName(),
-					J4SDatabaseMetaData.metaCatalog);
+			catalogs.put(catalog.getLocalName(), catalog);
 		}
 	}
 
@@ -230,7 +231,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 								null, // SQL_DATETIME_SUB
 								1, // CHAR_OCTET_LENGTH
 								table.getColumnIndex(column) + 1, // ORDINAL_POSITION
-								"", // IS_NULLABLE
+								getNullableString(column.getNullable()), // IS_NULLABLE
 								null, // SCOPE_CATLOG
 								null, // SCOPE_SCHEMA
 								null, // SCOPE_TABLE
@@ -540,6 +541,19 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 		return 0;
 	}
 
+	private String getNullableString( final int nullable )
+	{
+		if (nullable == DatabaseMetaData.columnNoNulls)
+		{
+			return "NO";
+		}
+		if (nullable == DatabaseMetaData.columnNullable)
+		{
+			return "YES";
+		}
+		return "";
+	}
+
 	@Override
 	public String getNumericFunctions() throws SQLException
 	{
@@ -548,12 +562,39 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	}
 
 	@Override
-	public ResultSet getPrimaryKeys( final String arg0, final String arg1,
-			final String arg2 ) throws SQLException
+	public ResultSet getPrimaryKeys( final String catalogPattern,
+			final String schemaPattern, final String tableNamePattern )
+			throws SQLException
 	{
 		final DataTable table = (DataTable) J4SDatabaseMetaData.metaSchema
 				.newTable(MetaSchema.PRIMARY_KEY_TABLE);
-		// TODO populate table here.
+		for (final Catalog catalog : new NameFilter<Catalog>(catalogPattern,
+				catalogs.values()))
+		{
+			for (final Schema schema : new NameFilter<Schema>(schemaPattern,
+					catalog.getSchemas()))
+			{
+				for (final Table tbl : new NameFilter<Table>(tableNamePattern,
+						schema.getTables()))
+				{
+					if (tbl.getPrimaryKey() != null)
+					{
+						final Key pk = tbl.getPrimaryKey();
+						for (final KeySegment seg : pk.getSegments())
+						{
+							final Object[] data = { catalog.getLocalName(), // TABLE_CAT
+									schema.getLocalName(), // TABLE_SCHEM
+									tbl.getLocalName(), // TABLE_NAME
+									tbl.getColumn(seg.getIdx()).getLocalName(), // COLUMN_NAME
+									new Short((short) (seg.getIdx() + 1)), // KEY_SEQ
+									pk.getKeyName() // PK_NAME
+							};
+							table.addData(data);
+						}
+					}
+				}
+			}
+		}
 		return table.getResultSet();
 	}
 
@@ -663,12 +704,56 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	}
 
 	@Override
-	public ResultSet getSuperTables( final String arg0, final String arg1,
-			final String arg2 ) throws SQLException
+	public ResultSet getSuperTables( final String catalogP,
+			final String schemaP, final String tableNameP ) throws SQLException
 	{
+		String catalogPattern = catalogP;
+		String schemaPattern = schemaP;
+		String tableNamePattern = tableNameP;
+		if (tableNameP.contains("."))
+		{
+			final String[] parts = tableNameP.split("\\.");
+			if (parts.length > 3)
+			{
+				throw new SQLException(String.format("Invalid tableName: %s",
+						tableNameP));
+			}
+			if (parts.length == 3)
+			{
+				catalogPattern = parts[0];
+				schemaPattern = parts[1];
+				tableNamePattern = parts[2];
+			}
+			if (parts.length == 2)
+			{
+				schemaPattern = parts[0];
+				tableNamePattern = parts[1];
+			}
+		}
 		final DataTable table = (DataTable) J4SDatabaseMetaData.metaSchema
 				.newTable(MetaSchema.SUPER_TABLES_TABLE);
-		// TODO populate table here.
+
+		for (final Catalog catalog : new NameFilter<Catalog>(catalogPattern,
+				catalogs.values()))
+		{
+			for (final Schema schema : new NameFilter<Schema>(schemaPattern,
+					catalog.getSchemas()))
+			{
+				for (final Table tbl : new NameFilter<Table>(tableNamePattern,
+						schema.getTables()))
+				{
+					if (tbl.getSuperTableDef() != null)
+					{
+						final Object[] data = { catalog.getLocalName(), // TABLE_CAT
+								schema.getLocalName(), // TABLE_SCHEM
+								tbl.getLocalName(), // TABLE_NAME
+								tbl.getSuperTableDef().getLocalName(), // SUPERTABLE_NAME
+						};
+						table.addData(data);
+					}
+				}
+			}
+		}
 		return table.getResultSet();
 	}
 
@@ -1244,8 +1329,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	@Override
 	public boolean supportsNonNullableColumns() throws SQLException
 	{
-		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
 
 	@Override

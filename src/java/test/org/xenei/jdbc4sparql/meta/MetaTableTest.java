@@ -65,7 +65,7 @@ public class MetaTableTest
 	@Before
 	public void setUp()
 	{
-		def = new TableDefImpl(MetaNamespace.NS, "TestDef");
+		def = new TableDefImpl(MetaNamespace.NS, "TestDef", null);
 		def.add(ColumnDefImpl.Builder
 				.getStringBuilder(MetaNamespace.NS, "NULLABLE_STRING")
 				.setNullable(DatabaseMetaData.columnNullable).build());

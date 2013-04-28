@@ -21,7 +21,7 @@ import java.util.Comparator;
 
 public class KeySegment implements Comparator<Object[]>
 {
-	private final int idx;
+	private final short idx;
 	private final boolean ascending;
 
 	public KeySegment( final int idx, final ColumnDef columnDef )
@@ -32,7 +32,12 @@ public class KeySegment implements Comparator<Object[]>
 	public KeySegment( final int idx, final ColumnDef columnDef,
 			final boolean ascending )
 	{
-		this.idx = idx;
+		if (idx > Short.MAX_VALUE)
+		{
+			throw new IllegalArgumentException("Maximum index value is "
+					+ Short.MAX_VALUE);
+		}
+		this.idx = (short) idx;
 		this.ascending = ascending;
 		final Class<?> type = TypeConverter.getJavaType(columnDef.getType());
 		if (type == null)
@@ -74,4 +79,18 @@ public class KeySegment implements Comparator<Object[]>
 		return (ascending ? "A" : "D") + idx;
 	}
 
+	/**
+	 * The index of the column position in the table (0 based)
+	 * 
+	 * @return the index.
+	 */
+	public short getIdx()
+	{
+		return idx;
+	}
+
+	public boolean isAscending()
+	{
+		return ascending;
+	}
 }

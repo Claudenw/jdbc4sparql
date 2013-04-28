@@ -81,7 +81,7 @@ public class ConfigTest
 				final Resource tName = soln.getResource("tName");
 				final SparqlTableDef tableDef = new SparqlTableDef(
 						tName.getNameSpace(), tName.getLocalName(),
-						"Query Segment 1");
+						"Query Segment 1", null);
 				tableDef.addQuerySegment("Query Segment 2");
 				tableDef.addQuerySegment("Query Segment 3");
 				addColumnDefs(catalog, tableDef, tName);
@@ -188,7 +188,7 @@ public class ConfigTest
 		catalog = new SparqlCatalog(ConfigTest.CAT_NS, model, "SimpleSparql");
 		dataset = DatasetFactory.createMem();
 	}
-	
+
 	@After
 	public void teardown()
 	{
@@ -272,7 +272,7 @@ public class ConfigTest
 		cs = new ConfigSerializer();
 		cs.getLoader().read(new ByteArrayInputStream(boas.toByteArray()), "",
 				"TTL");
-		Dataset dataset = DatasetFactory.createMem();
+		final Dataset dataset = DatasetFactory.createMem();
 		final SparqlCatalog cat2 = cs.getCatalog(dataset, catalog.getFQName());
 		deepCompare(catalog, cat2);
 		dataset.close();
@@ -296,8 +296,8 @@ public class ConfigTest
 		cs = new ConfigSerializer();
 		cs.getLoader().read(new ByteArrayInputStream(boas.toByteArray()), "",
 				"TTL");
-	
-		final SparqlCatalog cat2 = cs.getCatalog( dataset, catalog.getFQName());
+
+		final SparqlCatalog cat2 = cs.getCatalog(dataset, catalog.getFQName());
 		deepCompare(catalog, cat2);
 
 	}

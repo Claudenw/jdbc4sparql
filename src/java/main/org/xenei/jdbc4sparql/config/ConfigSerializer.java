@@ -23,6 +23,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.xenei.jdbc4sparql.J4SConnection;
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.ColumnDef;
+import org.xenei.jdbc4sparql.iface.Key;
+import org.xenei.jdbc4sparql.iface.KeySegment;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.sparql.SparqlCatalog;
@@ -37,12 +39,14 @@ import org.xenei.jdbc4sparql.sparql.SparqlTableDef;
 public class ConfigSerializer
 {
 	private static final String NS = "http://jdbc4sparql.xenei.org/entity/";
-	private Model model;
+	private final Model model;
 	private Property catalogType;
 	private Property catalogURL;
 	private Property schemaType;
 	private Property tableDefType;
+	private Property tableDefSuperTable;
 	private Property tableDefQuerySegment;
+	private Property tableDefPrimaryKey;
 	private Property columnDefLocalName;
 	private Property columnDefNamespace;
 	private Property columnDefType;
@@ -62,6 +66,12 @@ public class ConfigSerializer
 	private Property columnDefSearchable;
 	private Property columnDefSigned;
 	private Property columnDefWritable;
+	private Property keyType;
+	private Property keyUnique;
+	private Property keyName;
+	private Property keySegment;
+	private Property keySegmentAscending;
+	private Property keySegmentIdx;
 
 	/**
 	 * Constructor.
@@ -176,11 +186,18 @@ public class ConfigSerializer
 		final SparqlTableDef tableDef = table.getTableDef();
 		Resource tableDefR = ResourceFactory.createResource(tableDef
 				.getFQName());
+
 		if (!model.contains(tableDefR, RDF.type, tableDefType))
 		{
 			tableDefR = model
 					.createResource(tableDef.getFQName(), tableDefType);
 			tableDefR.addLiteral(RDFS.label, table.getLocalName());
+
+			if (table.getPrimaryKey() != null)
+			{
+				addPrimaryKey(tableDefR, table);
+			}
+
 			for (final ColumnDef colDef : tableDef.getColumnDefs())
 			{
 				add(tableDefR, (SparqlColumnDef) colDef);
@@ -220,6 +237,57 @@ public class ConfigSerializer
 		}
 	}
 
+	private void addPrimaryKey( final Resource tableDefR,
+			final SparqlTable table )
+	{
+		final Key pk = table.getPrimaryKey();
+		if (pk != null)
+		{
+
+			Resource r = ResourceFactory.createResource(ConfigSerializer.NS
+					+ "keyInstance/UUID-" + pk.toString());
+			if (model.contains(r, null))
+			{
+				r = model.getResource(r.getURI());
+			}
+			else
+			{
+				r = model.createResource(r.getURI(), keyType);
+				r.addLiteral(keyUnique, pk.isUnique());
+				r.addLiteral(keyName, pk.getKeyName());
+				RDFList lst = null;
+				for (final KeySegment seg : pk.getSegments())
+				{
+					Resource s = ResourceFactory
+							.createResource(ConfigSerializer.NS
+									+ "/keySegment/" + seg.getId());
+					if (model.contains(s, null))
+					{
+						s = model.createResource(s.getURI());
+					}
+					else
+					{
+						s = model.createResource(s.getURI(), keySegment);
+						s.addLiteral(keySegmentAscending, seg.isAscending());
+						s.addLiteral(keySegmentIdx, seg.getIdx());
+					}
+					if (lst == null)
+					{
+						lst = model.createList().with(s);
+					}
+					else
+					{
+						lst.add(s);
+					}
+				}
+				r.addProperty(keySegment, lst);
+			}
+
+			tableDefR.addProperty(tableDefPrimaryKey, r);
+		}
+
+	}
+
 	private void addQuerySegments( final Resource r,
 			final Property segmentProp, final List<String> segments )
 	{
@@ -248,8 +316,12 @@ public class ConfigSerializer
 
 		schemaType = model.createProperty(ConfigSerializer.NS, "Schema");
 		tableDefType = model.createProperty(ConfigSerializer.NS, "TableDef");
+		tableDefSuperTable = model.createProperty(ConfigSerializer.NS,
+				"TableDefSuperTable");
 		tableDefQuerySegment = model.createProperty(ConfigSerializer.NS,
 				"TableDefQuerySegment");
+		tableDefPrimaryKey = model.createProperty(ConfigSerializer.NS,
+				"TableDefPrimaryKey");
 		columnDefType = model.createProperty(ConfigSerializer.NS, "ColumnDef");
 		columnDefNamespace = model.createProperty(ConfigSerializer.NS,
 				"ColumnDefNamespace");
@@ -287,6 +359,16 @@ public class ConfigSerializer
 				"ColumnDefSigned");
 		columnDefWritable = model.createProperty(ConfigSerializer.NS,
 				"ColumnDefWritable");
+
+		keyType = model.createProperty(ConfigSerializer.NS, "KeyType");
+		keyUnique = model.createProperty(ConfigSerializer.NS, "KeyUnique");
+		keyName = model.createProperty(ConfigSerializer.NS, "KeyName");
+		keySegment = model.createProperty(ConfigSerializer.NS, "KeySegment");
+
+		keySegmentAscending = model.createProperty(ConfigSerializer.NS,
+				"KeySegmentAscending");
+		keySegmentIdx = model.createProperty(ConfigSerializer.NS,
+				"KeySegmentIdx");
 	}
 
 	/**
@@ -301,8 +383,8 @@ public class ConfigSerializer
 	 * @return The configured SparqlCatalog.
 	 * @throws MalformedURLException
 	 */
-	public SparqlCatalog getCatalog( Dataset dataset,  final String catalogFQName )
-			throws MalformedURLException
+	public SparqlCatalog getCatalog( final Dataset dataset,
+			final String catalogFQName ) throws MalformedURLException
 	{
 		Resource catR = ResourceFactory.createResource(catalogFQName);
 		if (model.contains(catR, RDF.type, catalogType))
@@ -318,7 +400,8 @@ public class ConfigSerializer
 			else
 			{
 				retval = new SparqlCatalog(catR.getNameSpace(),
-						dataset.getNamedModel( catR.getLocalName() ), catR.getLocalName());
+						dataset.getNamedModel(catR.getLocalName()),
+						catR.getLocalName());
 			}
 			for (final Statement stmt : catR.listProperties(schemaType)
 					.toList())
@@ -341,10 +424,12 @@ public class ConfigSerializer
 	 * repopulated using the ModelReager for the catalog.
 	 * 
 	 * @return The list of catalogs.
-	 * @param dataset the Dataset to add the catalog model to.
+	 * @param dataset
+	 *            the Dataset to add the catalog model to.
 	 * @throws MalformedURLException
 	 */
-	public Collection<SparqlCatalog> getCatalogs(Dataset dataset) throws MalformedURLException
+	public Collection<SparqlCatalog> getCatalogs( final Dataset dataset )
+			throws MalformedURLException
 	{
 		final List<SparqlCatalog> catalogs = new ArrayList<SparqlCatalog>();
 		for (final Resource r : model.listResourcesWithProperty(RDF.type,
@@ -381,7 +466,10 @@ public class ConfigSerializer
 		for (final Statement stmt : schemaR.listProperties(tableDefType)
 				.toList())
 		{
-			schema.addTableDef(retrieveTableDef(stmt.getResource()));
+			if (schema.getTableDef(stmt.getResource().getLocalName()) == null)
+			{
+				schema.addTableDef(retrieveTableDef(schema, stmt.getResource()));
+			}
 		}
 		catalog.addSchema(schema);
 	}
@@ -471,16 +559,34 @@ public class ConfigSerializer
 		return retval;
 	}
 
-	private SparqlTableDef retrieveTableDef( final Resource tableDefR )
+	private SparqlTableDef retrieveTableDef( final SparqlSchema schema,
+			final Resource tableDefR )
 	{
 		SparqlTableDef tableDef = null;
+		SparqlTableDef superTableDef = null;
+		Statement stmt = tableDefR.getProperty(tableDefSuperTable);
+		if (stmt != null)
+		{
+			superTableDef = (SparqlTableDef) schema.getTableDef(stmt
+					.getResource().getLocalName());
+			if (superTableDef == null)
+			{
+				superTableDef = retrieveTableDef(schema, stmt.getResource());
+				schema.addTableDef(superTableDef);
+			}
+		}
+		else
+		{
+			superTableDef = null;
+		}
+
 		for (final String querySegment : retrieveQuerySegments(tableDefR,
 				tableDefQuerySegment))
 		{
 			if (tableDef == null)
 			{
 				tableDef = new SparqlTableDef(tableDefR.getNameSpace(),
-						tableDefR.getLocalName(), querySegment);
+						tableDefR.getLocalName(), querySegment, superTableDef);
 			}
 			else
 			{
@@ -490,14 +596,44 @@ public class ConfigSerializer
 		if (tableDef == null)
 		{
 			tableDef = new SparqlTableDef(tableDefR.getNameSpace(),
-					tableDefR.getLocalName(), "");
+					tableDefR.getLocalName(), "", superTableDef);
 		}
+
 		final RDFList lst = tableDefR.getPropertyResourceValue(columnDefType)
 				.as(RDFList.class);
 		for (final RDFNode columnDefR : lst.asJavaList())
 		{
 			populateTableDef(tableDef, (Resource) columnDefR);
 		}
+
+		stmt = tableDefR.getProperty(tableDefPrimaryKey);
+		if (stmt != null)
+		{
+			final Resource r = stmt.getResource();
+			final boolean unique = r.getProperty(keyUnique).getBoolean();
+			final String name = r.getProperty(keyName).getString();
+			final Key pk = new Key(name);
+			if (unique)
+			{
+				pk.setUnique();
+			}
+
+			final List<RDFNode> segments = r.getProperty(keySegment)
+					.getResource().as(RDFList.class).asJavaList();
+			for (final RDFNode segment : segments)
+			{
+				final boolean ascending = segment.asResource()
+						.getProperty(keySegmentAscending).getBoolean();
+				final short idx = segment.asResource()
+						.getProperty(keySegmentIdx).getShort();
+				final KeySegment keySeg = new KeySegment(idx,
+						tableDef.getColumnDef(idx), ascending);
+				pk.addSegment(keySeg);
+			}
+
+			tableDef.setPrimaryKey(pk);
+		}
+
 		return tableDef;
 	}
 

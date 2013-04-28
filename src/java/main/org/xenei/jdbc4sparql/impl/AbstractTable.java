@@ -25,9 +25,9 @@ import java.util.List;
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.ColumnDef;
+import org.xenei.jdbc4sparql.iface.Key;
 import org.xenei.jdbc4sparql.iface.NameFilter;
 import org.xenei.jdbc4sparql.iface.Schema;
-import org.xenei.jdbc4sparql.iface.SortKey;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.TableDef;
 
@@ -62,7 +62,7 @@ public abstract class AbstractTable extends NamespaceImpl implements Table
 	 * @param schema
 	 *            The schema for the table.
 	 * @param tableDef
-	 *            The table definition of thatable.
+	 *            The table definition of the table.
 	 */
 	public AbstractTable( final String namespace, final Schema schema,
 			final TableDef tableDef )
@@ -144,6 +144,12 @@ public abstract class AbstractTable extends NamespaceImpl implements Table
 		return tableDef.getLocalName();
 	}
 
+	@Override
+	public Key getPrimaryKey()
+	{
+		return tableDef.getPrimaryKey();
+	}
+
 	abstract public ResultSet getResultSet() throws SQLException;
 
 	@Override
@@ -153,7 +159,7 @@ public abstract class AbstractTable extends NamespaceImpl implements Table
 	}
 
 	@Override
-	public SortKey getSortKey()
+	public Key getSortKey()
 	{
 		return tableDef.getSortKey();
 	}
@@ -168,6 +174,12 @@ public abstract class AbstractTable extends NamespaceImpl implements Table
 	public String getSQLName()
 	{
 		return NameUtils.getDBName(this);
+	}
+
+	@Override
+	public TableDef getSuperTableDef()
+	{
+		return tableDef.getSuperTableDef();
 	}
 
 	/**
@@ -196,5 +208,4 @@ public abstract class AbstractTable extends NamespaceImpl implements Table
 	{
 		tableDef.verify(row);
 	}
-
 }
