@@ -37,7 +37,7 @@ public class J4SResultSetMetaData implements ResultSetMetaData
 	@Override
 	public String getCatalogName( final int columnOrdinal ) throws SQLException
 	{
-		return getColumn(columnOrdinal).getLocalName();
+		return getColumn(columnOrdinal).getName();
 	}
 
 	private Column getColumn( final int columnOrdinal )
@@ -74,7 +74,7 @@ public class J4SResultSetMetaData implements ResultSetMetaData
 	@Override
 	public String getColumnName( final int columnOrdinal ) throws SQLException
 	{
-		return getColumn(columnOrdinal).getLocalName();
+		return getColumn(columnOrdinal).getName();
 	}
 
 	@Override
@@ -107,13 +107,13 @@ public class J4SResultSetMetaData implements ResultSetMetaData
 	@Override
 	public String getSchemaName( final int columnOrdinal ) throws SQLException
 	{
-		return getColumn(columnOrdinal).getSchema().getLocalName();
+		return getColumn(columnOrdinal).getSchema().getName();
 	}
 
 	@Override
 	public String getTableName( final int columnOrdinal ) throws SQLException
 	{
-		return getColumn(columnOrdinal).getTable().getLocalName();
+		return getColumn(columnOrdinal).getTable().getName();
 	}
 
 	@Override

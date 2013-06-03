@@ -117,6 +117,17 @@
 			<artifactId>jena-tdb</artifactId>
 			<version>0.10.0</version>
 		</dependency>
+		<dependency>
+			<groupId>org.xenei</groupId>
+			<artifactId>PA4RDF</artifactId>
+			<version>1.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-all</artifactId>
+			<version>1.9.5</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 	<name>JDBC 4 SPARQL</name>
 	<description>A JDBC Driver that retrieves data from a SPARQL endpoint or an RDF file.</description>

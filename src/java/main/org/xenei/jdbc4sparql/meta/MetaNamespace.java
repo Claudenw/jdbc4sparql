@@ -26,7 +26,7 @@ public abstract class MetaNamespace implements NamespacedObject
 	@Override
 	public String getFQName()
 	{
-		return getNamespace() + getLocalName();
+		return NamespacedObject.Utils.getFQName(this);
 	}
 
 	@Override

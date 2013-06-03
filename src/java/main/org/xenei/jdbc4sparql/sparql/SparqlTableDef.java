@@ -17,15 +17,80 @@
  */
 package org.xenei.jdbc4sparql.sparql;
 
+import com.hp.hpl.jena.rdf.model.Literal;
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.Property;
+import com.hp.hpl.jena.rdf.model.RDFList;
+import com.hp.hpl.jena.rdf.model.RDFNode;
+import com.hp.hpl.jena.rdf.model.Statement;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import org.xenei.jdbc4sparql.iface.TableDef;
 import org.xenei.jdbc4sparql.impl.TableDefImpl;
+import org.xenei.jdbc4sparql.impl.rdf.ColumnDefBuilder;
+import org.xenei.jdbc4sparql.impl.rdf.RdfTableDef;
+import org.xenei.jdbc4sparql.impl.rdf.ResourceBuilder;
+import org.xenei.jdbc4sparql.impl.rdf.TableDefBuilder;
+import org.xenei.jdbc4sparql.sparql.SparqlColumnDef.Builder;
 
-public class SparqlTableDef extends TableDefImpl
+public class SparqlTableDef extends RdfTableDef
 {
 
+	public static class Builder extends TableDefBuilder
+	{
+		private final List<String> querySegments = new ArrayList<String>();
+		
+		public Builder() {
+			super( SparqlTableDef.class, SparqlColumnDef.class );
+			
+		}
+		
+		public Builder addQuerySegment( final String querySegment )
+		{
+			querySegments.add(querySegment);
+			return this;
+		}
+		
+		@Override
+		public SparqlTableDef build(Model model)
+		{
+			SparqlTableDef def = (SparqlTableDef) super.build(model);
+		
+			
+			RDFList lst = null;
+
+			for (final String seg : querySegments)
+			{
+				final Literal l = model.createTypedLiteral( seg );
+				if (lst == null)
+				{
+					lst = model.createList().with(l);
+				}
+				else
+				{
+					lst.add(l);
+				}
+			}
+			ResourceBuilder builder = new ResourceBuilder( model );
+			def.querySegmentLst = builder.getProperty(SparqlTableDef.class, "querySegments");
+			def.getResource().addProperty(def.querySegmentLst, lst);
+			querySegments.clear();
+			return def;
+		}
+		
+		@Override
+		protected void checkBuildState()
+		{
+			super.checkBuildState();
+			if (querySegments.size() == 0)
+			{
+				throw new IllegalStateException(
+						"At least one query segment must be defined");
+			}
+		}
+	}
 	/**
 	 * Query segments are string format strings where
 	 * %1$s = table variable name
@@ -36,23 +101,21 @@ public class SparqlTableDef extends TableDefImpl
 	 * the components of the triple other than %1$s and %2$s must be fully
 	 * qualified.
 	 */
-	private final List<String> querySegments;
-
-	public SparqlTableDef( final String namespace, final String name,
-			final String querySegment, final TableDef tableDef )
-	{
-		super(namespace, name, tableDef);
-		this.querySegments = new ArrayList<String>();
-		this.querySegments.add(querySegment);
-	}
-
-	public void addQuerySegment( final String querySegment )
-	{
-		querySegments.add(querySegment);
-	}
+	private List<String> querySegments;
+	private Property querySegmentLst;
 
 	public List<String> getQuerySegments()
 	{
+		if (querySegments == null)
+		{
+			querySegments = new ArrayList<String>();
+			Statement stmt = this.getResource().getRequiredProperty(querySegmentLst);
+			RDFList lst = stmt.getObject().as( RDFList.class );
+			for (RDFNode n : lst.asJavaList())
+			{
+				querySegments.add( n.asLiteral().getString() );
+			}
+		}
 		return querySegments;
 	}
 }

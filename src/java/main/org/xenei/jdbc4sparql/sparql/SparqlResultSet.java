@@ -30,7 +30,7 @@ public class SparqlResultSet extends ListResultSet
 
 	public SparqlResultSet( final SparqlTable table ) throws SQLException
 	{
-		super(table.getCatalog().executeLocalQuery(table.getQuery()), table);
+		super(((SparqlCatalog)table.getCatalog()).executeLocalQuery(table.getQuery()), table);
 	}
 
 	@Override

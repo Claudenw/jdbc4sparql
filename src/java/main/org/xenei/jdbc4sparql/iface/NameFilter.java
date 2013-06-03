@@ -26,7 +26,7 @@ import java.util.Iterator;
  * @param <T>
  *            a NamespacedObject
  */
-public class NameFilter<T extends NamespacedObject> implements Iterator<T>,
+public class NameFilter<T extends NamedObject> implements Iterator<T>,
 		Iterable<T>
 {
 	// the name pattern to match
@@ -46,7 +46,7 @@ public class NameFilter<T extends NamespacedObject> implements Iterator<T>,
 	 * @param objs
 	 *            The collection of objects to filter.
 	 */
-	public NameFilter( final String namePattern, final Collection<T> objs )
+	public NameFilter( final String namePattern, final Collection<? extends T> objs )
 	{
 		this(namePattern, objs.iterator());
 	}
@@ -80,7 +80,7 @@ public class NameFilter<T extends NamespacedObject> implements Iterator<T>,
 		while ((next == null) && iter.hasNext())
 		{
 			next = iter.next();
-			if (!next.getLocalName().equals(namePattern))
+			if (!next.getName().equals(namePattern))
 			{
 				next = null;
 			}

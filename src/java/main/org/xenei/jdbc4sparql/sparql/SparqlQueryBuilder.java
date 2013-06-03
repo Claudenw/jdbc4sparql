@@ -20,6 +20,8 @@ package org.xenei.jdbc4sparql.sparql;
 import com.hp.hpl.jena.graph.Node;
 import com.hp.hpl.jena.graph.Triple;
 import com.hp.hpl.jena.query.Query;
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.sparql.core.Var;
 import com.hp.hpl.jena.sparql.core.VarExprList;
 import com.hp.hpl.jena.sparql.engine.binding.Binding;
@@ -814,7 +816,7 @@ public class SparqlQueryBuilder
 		int retval = 0;
 		for (final Column c : columnsInQuery.values())
 		{
-			if (c.getLocalName().equalsIgnoreCase(col.getLocalName()))
+			if (c.getName().equalsIgnoreCase(col.getName()))
 			{
 				retval++;
 			}
@@ -940,9 +942,14 @@ public class SparqlQueryBuilder
 	public SparqlTableDef getTableDef( final String namespace,
 			final String localName )
 	{
-		final SparqlTableDef tableDef = new SparqlTableDef(namespace,
-				localName, "", null);
+		SparqlTableDef.Builder builder = new SparqlTableDef.Builder();
+		Model model = ModelFactory.createDefaultModel();	
+			
+		
+		//final SparqlTableDef tableDef = new SparqlTableDef(namespace,
+		//		localName, "", null);
 		final VarExprList expLst = query.getProject();
+		List<Column> colLst = new ArrayList<Column>();
 		for (final Var var : expLst.getVars())
 		{
 			String varColName = null;
@@ -962,9 +969,10 @@ public class SparqlQueryBuilder
 				throw new IllegalStateException(String.format(
 						SparqlQueryBuilder.NOT_FOUND_IN_QUERY, var));
 			}
-			tableDef.add(c);
+			builder.addColumnDef(c.getColumnDef());
+			
 		}
-		return tableDef;
+		return builder.build(model);
 	}
 
 	private Set<CheckTypeF> getTypeFilterList()

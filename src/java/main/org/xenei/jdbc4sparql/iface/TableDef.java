@@ -19,38 +19,34 @@ package org.xenei.jdbc4sparql.iface;
 
 import java.util.List;
 
-public interface TableDef extends NamespacedObject
+import org.xenei.jena.entities.ResourceWrapper;
+import org.xenei.jena.entities.annotations.Predicate;
+import org.xenei.jena.entities.annotations.Subject;
+
+
+public interface TableDef extends ResourceWrapper
 {
 
-	int getColumnCount();
+	public int getColumnCount();
 
-	ColumnDef getColumnDef( int idx );
+	public ColumnDef getColumnDef( int idx );
 
-	ColumnDef getColumnDef( String name );
-
-	/**
-	 * get the name for the table.
-	 * 
-	 * @return
-	 */
-	// String getName();
 	/**
 	 * Get the list of columns in the table
 	 * 
 	 * @return
 	 */
-	List<ColumnDef> getColumnDefs();
+	public List<ColumnDef> getColumnDefs();
 
-	int getColumnIndex( ColumnDef column );
-
-	int getColumnIndex( String columnName );
+	public int getColumnIndex( ColumnDef column );
 
 	/**
 	 * get the primary key for the table
 	 * 
 	 * @return
 	 */
-	Key getPrimaryKey();
+
+	public Key getPrimaryKey();
 
 	/**
 	 * Get the table sort order key.
@@ -58,16 +54,9 @@ public interface TableDef extends NamespacedObject
 	 * 
 	 * @return
 	 */
-	Key getSortKey();
 
-	TableDef getSuperTableDef();
+	public Key getSortKey();
 
-	/**
-	 * Verify that the row data matches the definition
-	 * 
-	 * @param row
-	 * @throws IllegalArgumentException
-	 *             on errors
-	 */
-	void verify( Object[] row );
+	public TableDef getSuperTableDef();
+
 }

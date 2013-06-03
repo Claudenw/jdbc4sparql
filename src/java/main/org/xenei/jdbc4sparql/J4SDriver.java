@@ -131,6 +131,18 @@ public class J4SDriver implements Driver
 		{
 			throw new SQLException(e);
 		}
+		catch (InstantiationException e)
+		{
+			throw new SQLException(e);
+		}
+		catch (IllegalAccessException e)
+		{
+			throw new SQLException(e);
+		}
+		catch (ClassNotFoundException e)
+		{
+			throw new SQLException(e);
+		}
 	}
 
 	@Override

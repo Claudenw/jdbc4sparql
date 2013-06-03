@@ -17,17 +17,35 @@
  */
 package org.xenei.jdbc4sparql.sparql;
 
+import com.hp.hpl.jena.rdf.model.Literal;
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.Property;
+import com.hp.hpl.jena.rdf.model.RDFList;
+import com.hp.hpl.jena.rdf.model.RDFNode;
+import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.rdf.model.Statement;
+
 import java.util.ArrayList;
 import java.util.List;
 
+import org.xenei.jdbc4sparql.iface.ColumnDef;
 import org.xenei.jdbc4sparql.impl.ColumnDefImpl;
+import org.xenei.jdbc4sparql.impl.rdf.ColumnDefBuilder;
+import org.xenei.jdbc4sparql.impl.rdf.RdfColumnDef;
+import org.xenei.jdbc4sparql.impl.rdf.ResourceBuilder;
 
-public class SparqlColumnDef extends ColumnDefImpl
+public class SparqlColumnDef extends RdfColumnDef
 {
-	public static class Builder extends ColumnDefImpl.Builder
+	public static class Builder extends ColumnDefBuilder
 	{
+		
 		private final List<String> querySegments = new ArrayList<String>();
 
+		public Builder()
+		{
+			super( SparqlColumnDef.class );
+		}
+		
 		public Builder addQuerySegment( final String querySegment )
 		{
 			querySegments.add(querySegment);
@@ -35,18 +53,29 @@ public class SparqlColumnDef extends ColumnDefImpl
 		}
 
 		@Override
-		public SparqlColumnDef build()
+		public SparqlColumnDef build(Model model)
 		{
-			checkBuildState();
-			final SparqlColumnDef columnDef = new SparqlColumnDef(
-					getNamespace(), getLocalName(), getDisplaySize(),
-					getType(), getPrecision(), getScale(), isSigned(),
-					getNullable(), getLabel(), getTypeName(),
-					getColumnClassName(), isAutoIncrement(), isCaseSensitive(),
-					isCurrency(), isDefinitelyWritable(), isReadOnly(),
-					isSearchable(), isWritable(), querySegments);
-			resetVars();
-			return columnDef;
+			SparqlColumnDef def = (SparqlColumnDef) super.build(model);
+			
+			RDFList lst = null;
+
+			for (final String seg : querySegments)
+			{
+				final Literal l = model.createTypedLiteral( seg );
+				if (lst == null)
+				{
+					lst = model.createList().with(l);
+				}
+				else
+				{
+					lst.add(l);
+				}
+			}
+			ResourceBuilder builder = new ResourceBuilder( model );
+			def.querySegmentLst = builder.getProperty(SparqlColumnDef.class, "querySegments");
+			def.getResource().addProperty(def.querySegmentLst, lst);
+			querySegments.clear();
+			return def;
 		}
 
 		@Override
@@ -59,14 +88,6 @@ public class SparqlColumnDef extends ColumnDefImpl
 						"At least one query segment must be defined");
 			}
 		}
-
-		@Override
-		protected void resetVars()
-		{
-			super.resetVars();
-			querySegments.clear();
-		}
-
 	}
 
 	/**
@@ -80,27 +101,21 @@ public class SparqlColumnDef extends ColumnDefImpl
 	 * the components of the triple other than %1$s and %2$s must be fully
 	 * qualified.
 	 */
-	private final List<String> querySegments;
-
-	private SparqlColumnDef( final String namespace, final String localName,
-			final int displaySize, final int type, final int precision,
-			final int scale, final boolean signed, final int nullable,
-			final String label, final String typeName,
-			final String columnClassName, final boolean autoIncrement,
-			final boolean caseSensitive, final boolean currency,
-			final boolean definitelyWritable, final boolean readOnly,
-			final boolean searchable, final boolean writable,
-			final List<String> querySegments )
-	{
-		super(namespace, localName, displaySize, type, precision, scale,
-				signed, nullable, label, typeName, columnClassName,
-				autoIncrement, caseSensitive, currency, definitelyWritable,
-				readOnly, searchable, writable);
-		this.querySegments = new ArrayList<String>(querySegments);
-	}
+	private List<String> querySegments;
+	private Property querySegmentLst;
 
 	public List<String> getQuerySegments()
 	{
+		if (querySegments == null)
+		{
+			querySegments = new ArrayList<String>();
+			Statement stmt = this.getResource().getRequiredProperty(querySegmentLst);
+			RDFList lst = stmt.getObject().as( RDFList.class );
+			for (RDFNode n : lst.asJavaList())
+			{
+				querySegments.add( n.asLiteral().getString() );
+			}
+		}
 		return querySegments;
 	}
 

@@ -19,7 +19,13 @@ package org.xenei.jdbc4sparql.iface;
 
 import java.util.Set;
 
-public interface Catalog extends NamespacedObject
+import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
+import org.xenei.jena.entities.ResourceWrapper;
+import org.xenei.jena.entities.annotations.Predicate;
+import org.xenei.jena.entities.annotations.Subject;
+
+
+public interface Catalog extends NamedObject, ResourceWrapper
 {
 
 	/**

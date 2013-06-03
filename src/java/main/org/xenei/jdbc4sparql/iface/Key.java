@@ -17,39 +17,34 @@
  */
 package org.xenei.jdbc4sparql.iface;
 
+import com.hp.hpl.jena.rdf.model.Property;
+import com.hp.hpl.jena.rdf.model.RDFList;
+import com.hp.hpl.jena.rdf.model.RDFNode;
+import com.hp.hpl.jena.rdf.model.Resource;
+
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
-public class Key implements Comparator<Object[]>
+import org.xenei.jdbc4sparql.impl.rdf.ResourceBuilder;
+import org.xenei.jena.entities.EntityManager;
+import org.xenei.jena.entities.EntityManagerFactory;
+import org.xenei.jena.entities.MissingAnnotation;
+import org.xenei.jena.entities.ResourceWrapper;
+import org.xenei.jena.entities.annotations.Predicate;
+import org.xenei.jena.entities.annotations.Subject;
+
+@Subject( namespace = "http://org.xenei.jdbc4sparql/entity/Key#" )
+public abstract class Key implements Comparator<Object[]>, ResourceWrapper
 {
-	private String keyName;
-	private boolean unique;
-	private final List<KeySegment> segments;
 
-	public Key()
-	{
-		this(null);
-	}
-
-	public Key( final String keyName )
-	{
-		segments = new ArrayList<KeySegment>();
-		this.keyName = keyName;
-	}
-
-	public Key addSegment( final KeySegment segment )
-	{
-		segments.add(segment);
-		return this;
-	}
+	private List<KeySegment> segments;
 
 	@Override
-	public int compare( final Object[] data1, final Object[] data2 )
+	public final int compare( final Object[] data1, final Object[] data2 )
 	{
-		for (final KeySegment segment : segments)
+		for (final KeySegment segment : getSegments())
 		{
 			final int retval = segment.compare(data1, data2);
 			if (retval != 0)
@@ -60,10 +55,10 @@ public class Key implements Comparator<Object[]>
 		return 0;
 	}
 
-	public String getId()
+	public final String getId()
 	{
 		final StringBuilder sb = new StringBuilder().append(isUnique());
-		for (final KeySegment ks : segments)
+		for (final KeySegment ks : getSegments())
 		{
 			sb.append(ks.getId());
 		}
@@ -75,27 +70,37 @@ public class Key implements Comparator<Object[]>
 	 * 
 	 * @return the key name.
 	 */
-	public String getKeyName()
-	{
-		if (keyName == null)
-		{
-			keyName = "key-" + getId();
-		}
-		return keyName;
-	}
+	@Predicate
+	abstract public String getKeyName();
 
 	public List<KeySegment> getSegments()
 	{
-		return Collections.unmodifiableList(segments);
+		if (segments == null)
+		{
+			final EntityManager entityManager = EntityManagerFactory
+					.getEntityManager();
+			segments = new ArrayList<KeySegment>();
+			final Resource resource = getResource();
+			final Property p = resource.getModel().createProperty(
+					ResourceBuilder.getFQName(KeySegment.class));
+			final List<RDFNode> resLst = resource.getRequiredProperty(p)
+					.getResource().as(RDFList.class).asJavaList();
+			for (final RDFNode n : resLst)
+			{
+				try
+				{
+					segments.add(entityManager.read(n.asResource(),
+							KeySegment.class));
+				}
+				catch (MissingAnnotation e)
+				{
+					throw new RuntimeException( e );
+				}
+			}
+		}
+		return segments;
 	}
 
-	public boolean isUnique()
-	{
-		return unique;
-	}
-
-	public void setUnique()
-	{
-		unique = true;
-	}
+	@Predicate
+	abstract public boolean isUnique();
 }

@@ -405,9 +405,9 @@ public abstract class AbstractResultSet implements ResultSet
 		this.holdability = ResultSet.CLOSE_CURSORS_AT_COMMIT;
 		this.concurrency = ResultSet.CONCUR_READ_ONLY;
 		columnNameIdx = new HashMap<String, Integer>();
-		for (int i = 0; i < table.getColumnDefs().size(); i++)
+		for (int i = 0; i < table.getColumnCount(); i++)
 		{
-			columnNameIdx.put(table.getColumn(i).getLabel(), i);
+			columnNameIdx.put(table.getColumn(i).getName(), i);
 		}
 	}
 
@@ -423,9 +423,9 @@ public abstract class AbstractResultSet implements ResultSet
 			throws SQLException
 	{
 		final Column c = getColumn(idx);
-		if (c.getType() != type)
+		if (c.getColumnDef().getType() != type)
 		{
-			throw new SQLException("Column type (" + c.getType() + ") is not "
+			throw new SQLException("Column type (" + c.getColumnDef().getType() + ") is not "
 					+ type);
 		}
 	}
@@ -618,7 +618,7 @@ public abstract class AbstractResultSet implements ResultSet
 	@Override
 	public String getCursorName() throws SQLException
 	{
-		return table.getFQName();
+		return table.getResource().getLocalName();
 	}
 
 	@Override

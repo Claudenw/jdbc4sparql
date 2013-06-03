@@ -86,7 +86,7 @@ public class SimpleBuilderTest
 		{
 			schema.addTableDef(td);
 			final SparqlTable t = (SparqlTable) schema.getTable(td
-					.getLocalName());
+					.getName());
 			final ResultSet rs = t.getResultSet();
 			int count = 0;
 			while (rs.next())
@@ -131,7 +131,7 @@ public class SimpleBuilderTest
 		{
 			schema.addTableDef(td);
 			final SparqlTable t = (SparqlTable) schema.getTable(td
-					.getLocalName());
+					.getName());
 			final ResultSet rs = t.getResultSet();
 			boolean foundNull = false;
 			while (rs.next() && !foundNull)

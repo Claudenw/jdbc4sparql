@@ -30,69 +30,28 @@ import java.util.UUID;
 
 import org.xenei.jdbc4sparql.iface.ColumnDef;
 import org.xenei.jdbc4sparql.impl.AbstractTable;
+import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
+import org.xenei.jdbc4sparql.impl.rdf.TableBuilder;
 import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 
-public class SparqlTable extends AbstractTable
+public class SparqlTable extends RdfTable
 {
-	private class ColumnIterator implements Iterator<SparqlColumn>
+	public static class Builder extends TableBuilder
 	{
-
-		private final Iterator<? extends ColumnDef> iter;
-
-		public ColumnIterator()
+		public Builder()
 		{
-			iter = getColumnDefs().iterator();
+			super( SparqlTable.class, SparqlColumn.class );
+			super.setType( "SPARQL TABLE" );
 		}
-
+		
 		@Override
-		public boolean hasNext()
-		{
-			return iter.hasNext();
+		public Builder setType( String ignore ) {
+			// do nothing
+			return this;
 		}
-
-		@Override
-		public SparqlColumn next()
-		{
-			return new SparqlColumn(SparqlTable.this,
-					(SparqlColumnDef) iter.next());
-		}
-
-		@Override
-		public void remove()
-		{
-			throw new UnsupportedOperationException();
-		}
-
 	}
-
-	private SparqlTable superTable = null;
 	private SparqlQueryBuilder builder;
-
-	protected SparqlTable( final SparqlQueryBuilder builder )
-	{
-		this(builder.getCatalog().getViewSchema(), builder.getTableDef(
-				SparqlView.NAME_SPACE, "UUID-" + UUID.randomUUID().toString()));
-		this.builder = builder;
-	}
-
-	protected SparqlTable( final SparqlSchema schema,
-			final SparqlTableDef tableDef )
-	{
-		super(tableDef.getNamespace(), schema, tableDef);
-	}
-
-	@Override
-	public SparqlCatalog getCatalog()
-	{
-		return (SparqlCatalog) super.getCatalog();
-	}
-
-	@Override
-	public Iterator<SparqlColumn> getColumns()
-	{
-		return new ColumnIterator();
-	}
-
+	
 	public Query getQuery() throws SQLException
 	{
 		if (builder == null)

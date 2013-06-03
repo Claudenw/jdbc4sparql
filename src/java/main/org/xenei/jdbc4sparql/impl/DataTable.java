@@ -17,6 +17,9 @@
  */
 package org.xenei.jdbc4sparql.impl;
 
+import com.hp.hpl.jena.rdf.model.Resource;
+
+import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -25,8 +28,12 @@ import java.util.List;
 import java.util.NavigableSet;
 import java.util.TreeSet;
 
+import org.xenei.jdbc4sparql.iface.Column;
+import org.xenei.jdbc4sparql.iface.ColumnDef;
 import org.xenei.jdbc4sparql.iface.Schema;
+import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.TableDef;
+import org.xenei.jdbc4sparql.iface.TypeConverter;
 
 /**
  * An implementation of AbstractTable that stores the data
@@ -38,54 +45,45 @@ public class DataTable extends AbstractTable
 {
 	private Collection<Object[]> data;
 	private DataTable superDataTable;
+	private Table table;
 
 	/**
-	 * Constructor that uses the schema namespace for table namespace.
+	 * Constructor.
 	 * 
 	 * @param schema
 	 *            The schema this table is in
 	 * @param tableDef
 	 *            The table definition to use.
 	 */
-	public DataTable( final Schema schema, final TableDef tableDef )
+	public DataTable( final Table table )
 	{
-		this(schema.getNamespace(), schema, tableDef);
-	}
-
-	/**
-	 * Constructor.
-	 * 
-	 * @param namespace
-	 *            The namespace for the table
-	 * @param schema
-	 *            The schema to use.
-	 * @param tableDef
-	 *            The table definition to use
-	 */
-	public DataTable( final String namespace, final Schema schema,
-			final TableDef tableDef )
-	{
-		super(schema, tableDef);
-		if (tableDef.getSortKey() == null)
+		super(table.getSchema(), table);
+		this.table = table;
+		if (table.getSortKey() == null)
 		{
 			data = new ArrayList<Object[]>();
 		}
 		else
 		{
-			if (tableDef.getSortKey().isUnique())
+			if (table.getSortKey().isUnique())
 			{
-				data = new TreeSet<Object[]>(tableDef.getSortKey());
+				data = new TreeSet<Object[]>(table.getSortKey());
 			}
 			else
 			{
 				// supress warning is for this conversion as TreeBag is not
 				// generic.
-				data = new SortedBag<Object[]>(tableDef.getSortKey());
+				data = new SortedBag<Object[]>(table.getSortKey());
 			}
 		}
 
 	}
-
+	
+	public Resource getResource()
+	{
+		return table.getResource();
+	}
+	
 	/**
 	 * Add an object array as a row in the table.
 	 * 
@@ -96,7 +94,7 @@ public class DataTable extends AbstractTable
 	 */
 	public void addData( final Object[] args )
 	{
-		getTableDef().verify(args);
+		verify(args);
 		data.add(args);
 	}
 
@@ -166,7 +164,7 @@ public class DataTable extends AbstractTable
 			{
 				return null;
 			}
-			superDataTable = new DataTable(getSchema(), getSuperTableDef());
+			superDataTable = new DataTable(table.getSuperTable());
 		}
 		return superDataTable;
 	}
@@ -176,4 +174,34 @@ public class DataTable extends AbstractTable
 		return data.isEmpty();
 	}
 
+	@Override
+	public Column getColumn( int idx )
+	{
+		return table.getColumn(idx);
+	}
+
+	public int getColumnIndex( String name )
+	{
+		return table.getColumnIndex(name);
+	}
+	
+	@Override
+	public Column getColumn( String name )
+	{
+		return table.getColumn( name );
+	}
+
+	@Override
+	public void delete()
+	{
+		table.delete();
+	}
+
+	@Override
+	public String getName()
+	{
+		return table.getName();
+	}
+
+	
 }

@@ -50,10 +50,12 @@ import java.util.concurrent.Executor;
 
 import org.apache.commons.lang3.StringUtils;
 import org.xenei.jdbc4sparql.config.ConfigSerializer;
+import org.xenei.jdbc4sparql.config.ModelFactory;
 import org.xenei.jdbc4sparql.config.ModelReader;
 import org.xenei.jdbc4sparql.config.ModelWriter;
 import org.xenei.jdbc4sparql.iface.Catalog;
-import org.xenei.jdbc4sparql.meta.MetaCatalog;
+import org.xenei.jdbc4sparql.impl.rdf.CatalogBuilder;
+import org.xenei.jdbc4sparql.meta.MetaCatalogBuilder;
 import org.xenei.jdbc4sparql.sparql.SparqlCatalog;
 import org.xenei.jdbc4sparql.sparql.SparqlSchema;
 import org.xenei.jdbc4sparql.sparql.builders.SchemaBuilder;
@@ -61,6 +63,8 @@ import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 
 public class J4SConnection implements Connection
 {
+	public static final String META_MODEL_FACTORY="MetaModelFactory";
+	
 	private class ConModelReader extends ModelReader
 	{
 
@@ -129,11 +133,12 @@ public class J4SConnection implements Connection
 	private SQLWarning sqlWarnings;
 	private int holdability;
 	private File tmpDir;
+	private Model model;
 
 	private Dataset dataset;
 
 	public J4SConnection( final J4SDriver driver, final J4SUrl url,
-			final Properties properties ) throws IOException
+			final Properties properties ) throws IOException, InstantiationException, IllegalAccessException, ClassNotFoundException
 	{
 		this.catalogMap = new HashMap<String, Catalog>();
 		this.sqlWarnings = null;
@@ -143,13 +148,15 @@ public class J4SConnection implements Connection
 		this.currentSchema = null;
 		this.tmpDir = null;
 		this.clientInfo = null;
+		this.model = null;
 
 		this.holdability = ResultSet.HOLD_CURSORS_OVER_COMMIT;
 
+		configureModel( properties );
 		configureCatalogMap(properties);
 
-		final Catalog c = new MetaCatalog();
-		catalogMap.put(c.getLocalName(), c);
+		final Catalog c = MetaCatalogBuilder.getInstance(model);
+		catalogMap.put(c.getName(), c);
 		if (StringUtils.isNotEmpty(currentCatalog)
 				&& (catalogMap.get(currentCatalog) == null))
 		{
@@ -160,7 +167,25 @@ public class J4SConnection implements Connection
 		this.sparqlParser = url.getParser() != null ? url.getParser()
 				: SparqlParser.Util.getDefaultParser();
 	}
+	
+	private void configureModel( final Properties properties ) throws InstantiationException, IllegalAccessException, ClassNotFoundException
+	{
+		if (properties.containsKey( META_MODEL_FACTORY))
+		{
+			Class<? extends ModelFactory> clazz = (Class<? extends ModelFactory>) J4SConnection.class.getClassLoader().loadClass( properties.getProperty( META_MODEL_FACTORY));
+			model = clazz.newInstance().createModel(properties);
+		}
+		else
+		{
+			model = com.hp.hpl.jena.rdf.model.ModelFactory.createDefaultModel();
+		}
+	}
 
+	public Catalog addCatalog( CatalogBuilder catalogBuilder )
+	{
+		return catalogBuilder.build( model );
+	}
+	
 	@Override
 	public void abort( final Executor arg0 ) throws SQLException
 	{
@@ -216,7 +241,7 @@ public class J4SConnection implements Connection
 					url.getEndpoint().toURL().toExternalForm());
 			for (final Catalog catalog : serializer.getCatalogs(getDataset()))
 			{
-				catalogMap.put(catalog.getLocalName(), catalog);
+				catalogMap.put(catalog.getName(), catalog);
 			}
 		}
 		else
@@ -251,8 +276,8 @@ public class J4SConnection implements Connection
 					SparqlSchema.DEFAULT_NAMESPACE, "");
 			catalog.addSchema(schema);
 			schema.addTableDefs(builder.getTableDefs(catalog));
-			currentSchema = schema.getLocalName();
-			catalogMap.put(catalog.getLocalName(), catalog);
+			currentSchema = schema.getName();
+			catalogMap.put(catalog.getName(), catalog);
 		}
 
 	}

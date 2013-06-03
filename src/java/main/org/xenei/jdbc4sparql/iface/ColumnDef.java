@@ -20,7 +20,12 @@ package org.xenei.jdbc4sparql.iface;
 import java.security.NoSuchAlgorithmException;
 import java.util.UUID;
 
-public interface ColumnDef
+import org.xenei.jena.entities.ResourceWrapper;
+import org.xenei.jena.entities.annotations.Predicate;
+import org.xenei.jena.entities.annotations.Subject;
+
+
+public interface ColumnDef extends ResourceWrapper
 {
 	static class Util
 	{
@@ -33,14 +38,13 @@ public interface ColumnDef
 		 * @throws NoSuchAlgorithmException
 		 */
 		public static UUID createID( final ColumnDef def )
-				throws NoSuchAlgorithmException
 		{
 			final StringBuilder sb = new StringBuilder()
 					.append(def.getColumnClassName())
-					.append(def.getDisplaySize()).append(def.getLabel())
-					.append(def.getNullable()).append(def.getPrecision())
-					.append(def.getScale()).append(def.getType())
-					.append(def.getTypeName()).append(def.isAutoIncrement())
+					.append(def.getDisplaySize()).append(def.getNullable())
+					.append(def.getPrecision()).append(def.getScale())
+					.append(def.getType()).append(def.getTypeName())
+					.append(def.isAutoIncrement())
 					.append(def.isCaseSensitive()).append(def.isCurrency())
 					.append(def.isDefinitelyWritable())
 					.append(def.isReadOnly()).append(def.isSearchable())
@@ -52,8 +56,6 @@ public interface ColumnDef
 	String getColumnClassName();
 
 	int getDisplaySize();
-
-	String getLabel();
 
 	/**
 	 * Indicates the nullability of values in the designated column.

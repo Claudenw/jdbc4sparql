@@ -25,17 +25,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.xenei.jdbc4sparql.impl.ColumnImpl;
+import org.xenei.jdbc4sparql.impl.rdf.ColumnBuilder;
+import org.xenei.jdbc4sparql.impl.rdf.RdfColumn;
 import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 
-public class SparqlColumn extends ColumnImpl
+public class SparqlColumn extends RdfColumn
 {
-
-	public SparqlColumn( final SparqlTable table,
-			final SparqlColumnDef columnDef )
+	public static class Builder extends ColumnBuilder
 	{
-		super(columnDef.getNamespace(), table, columnDef);
+		
+		public Builder() {
+			super( SparqlColumn.class, SparqlTable.class );
+		}
+		
+		
 	}
-
+	
+	
 	public List<Triple> getQuerySegments( final Node tableVar,
 			final Node columnVar )
 	{
@@ -72,6 +78,6 @@ public class SparqlColumn extends ColumnImpl
 
 	public boolean isOptional()
 	{
-		return getNullable() != DatabaseMetaData.columnNoNulls;
+		return getColumnDef().getNullable() != DatabaseMetaData.columnNoNulls;
 	}
 }

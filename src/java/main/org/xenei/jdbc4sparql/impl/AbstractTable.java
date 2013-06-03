@@ -17,6 +17,7 @@
  */
 package org.xenei.jdbc4sparql.impl;
 
+import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Iterator;
@@ -30,11 +31,12 @@ import org.xenei.jdbc4sparql.iface.NameFilter;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.TableDef;
+import org.xenei.jdbc4sparql.iface.TypeConverter;
 
 /**
  * An abstract table implementation
  */
-public abstract class AbstractTable extends NamespaceImpl implements Table
+public abstract class AbstractTable implements Table
 {
 	// the table definition
 	private final TableDef tableDef;
@@ -51,23 +53,6 @@ public abstract class AbstractTable extends NamespaceImpl implements Table
 	 */
 	public AbstractTable( final Schema schema, final TableDef tableDef )
 	{
-		this(schema.getNamespace(), schema, tableDef);
-	}
-
-	/**
-	 * Constructor.
-	 * 
-	 * @param namespace
-	 *            The namespace of the table.
-	 * @param schema
-	 *            The schema for the table.
-	 * @param tableDef
-	 *            The table definition of the table.
-	 */
-	public AbstractTable( final String namespace, final Schema schema,
-			final TableDef tableDef )
-	{
-		super(namespace, tableDef.getLocalName());
 		this.schema = schema;
 		this.tableDef = tableDef;
 	}
@@ -85,52 +70,30 @@ public abstract class AbstractTable extends NamespaceImpl implements Table
 	}
 
 	@Override
-	public Column getColumn( final int idx )
-	{
-		return new ColumnImpl(this, getColumnDef(idx));
-	}
-
-	@Override
-	public Column getColumn( final String name )
-	{
-		return new ColumnImpl(this, getColumnDef(name));
-	}
-
-	@Override
 	public int getColumnCount()
 	{
 		return tableDef.getColumnCount();
 	}
 
-	@Override
+
 	public ColumnDef getColumnDef( final int idx )
 	{
 		return tableDef.getColumnDef(idx);
 	}
 
-	@Override
-	public ColumnDef getColumnDef( final String name )
-	{
-		return tableDef.getColumnDef(name);
-	}
-
-	@Override
+	
 	public List<ColumnDef> getColumnDefs()
 	{
 		return tableDef.getColumnDefs();
 	}
 
-	@Override
+
 	public int getColumnIndex( final ColumnDef column )
 	{
 		return tableDef.getColumnIndex(column);
 	}
 
-	@Override
-	public int getColumnIndex( final String columnName )
-	{
-		return tableDef.getColumnIndex(columnName);
-	}
+	
 
 	@Override
 	public Iterator<? extends Column> getColumns()
@@ -138,13 +101,8 @@ public abstract class AbstractTable extends NamespaceImpl implements Table
 		return new Table.ColumnIterator(this, getColumnDefs());
 	}
 
-	@Override
-	public String getLocalName()
-	{
-		return tableDef.getLocalName();
-	}
 
-	@Override
+
 	public Key getPrimaryKey()
 	{
 		return tableDef.getPrimaryKey();
@@ -158,7 +116,7 @@ public abstract class AbstractTable extends NamespaceImpl implements Table
 		return schema;
 	}
 
-	@Override
+
 	public Key getSortKey()
 	{
 		return tableDef.getSortKey();
@@ -176,7 +134,7 @@ public abstract class AbstractTable extends NamespaceImpl implements Table
 		return NameUtils.getDBName(this);
 	}
 
-	@Override
+
 	public TableDef getSuperTableDef()
 	{
 		return tableDef.getSuperTableDef();
@@ -199,13 +157,42 @@ public abstract class AbstractTable extends NamespaceImpl implements Table
 	@Override
 	public String toString()
 	{
-		return String.format("Table[ %s.%s ]", getCatalog().getLocalName(),
+		return String.format("Table[ %s.%s ]", getCatalog().getName(),
 				getSQLName());
 	}
 
-	@Override
 	public void verify( final Object[] row )
 	{
-		tableDef.verify(row);
+		List<ColumnDef> columns = tableDef.getColumnDefs();
+		if (row.length != columns.size())
+		{
+			throw new IllegalArgumentException(String.format(
+					"Expected %s columns but got %s", columns.size(),
+					row.length));
+		}
+		for (int i = 0; i < row.length; i++)
+		{
+			final ColumnDef c = columns.get(i);
+
+			if (row[i] == null)
+			{
+				if (c.getNullable() == DatabaseMetaData.columnNoNulls)
+				{
+					throw new IllegalArgumentException(String.format(
+							"Column %s may not be null", getColumn(i).getName()));
+				}
+			}
+			else
+			{
+				final Class<?> clazz = TypeConverter.getJavaType(c.getType());
+				if (!clazz.isAssignableFrom(row[i].getClass()))
+				{
+					throw new IllegalArgumentException(String.format(
+							"Column %s can not receive values of class %s",
+							getColumn(i).getName(), row[i].getClass()));
+				}
+			}
+		}
+
 	}
 }

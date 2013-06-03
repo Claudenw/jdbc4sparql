@@ -16,40 +16,51 @@
  * limitations under the License.
  */package org.xenei.jdbc4sparql;
 
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
+
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
+import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.ColumnDef;
 import org.xenei.jdbc4sparql.iface.Key;
 import org.xenei.jdbc4sparql.iface.KeySegment;
 import org.xenei.jdbc4sparql.impl.ColumnDefImpl;
 import org.xenei.jdbc4sparql.impl.TableDefImpl;
-import org.xenei.jdbc4sparql.meta.MetaCatalog;
-import org.xenei.jdbc4sparql.meta.MetaSchema;
-import org.xenei.jdbc4sparql.mock.MockCatalog;
-import org.xenei.jdbc4sparql.mock.MockConnection;
-import org.xenei.jdbc4sparql.mock.MockDriver;
-import org.xenei.jdbc4sparql.mock.MockSchema;
+import org.xenei.jdbc4sparql.impl.rdf.CatalogBuilder;
+import org.xenei.jdbc4sparql.meta.MetaCatalogBuilder;
+
 import org.xenei.jdbc4sparql.sparql.SparqlTableDef;
 
 public class J4SDatabaseMetaDataTest
 {
+	private J4SConnection connection;
 	private J4SDatabaseMetaData metadata;
+	private J4SUrl mockUrl;
+	private Properties mockProperties;
+	private Model model;
 
 	private void columnChecking( final String tableName,
 			final String[] columnNames ) throws SQLException
 	{
-		final ResultSet rs = metadata.getColumns(MetaCatalog.LOCAL_NAME,
-				MetaSchema.LOCAL_NAME, tableName, null);
+		final ResultSet rs = metadata.getColumns(MetaCatalogBuilder.LOCAL_NAME,
+				MetaCatalogBuilder.SCHEMA_LOCAL_NAME, tableName, null);
 		for (int i = 0; i < columnNames.length; i++)
 		{
 			Assert.assertTrue(rs.next());
-			Assert.assertEquals(MetaCatalog.LOCAL_NAME, rs.getString(1)); // TABLE_CAT
-			Assert.assertEquals(MetaSchema.LOCAL_NAME, rs.getString(2)); // TABLE_SCHEM
+			Assert.assertEquals(MetaCatalogBuilder.LOCAL_NAME, rs.getString(1)); // TABLE_CAT
+			Assert.assertEquals(MetaCatalogBuilder.SCHEMA_LOCAL_NAME, rs.getString(2)); // TABLE_SCHEM
 			Assert.assertEquals(tableName, rs.getString(3)); // TABLE_NAME
 			if (!columnNames[i].equals("reserved"))
 			{
@@ -60,13 +71,17 @@ public class J4SDatabaseMetaDataTest
 	}
 
 	@Before
-	public void setup() throws IOException
+	public void setup() throws IOException, InstantiationException, IllegalAccessException, ClassNotFoundException
 	{
-		final MockDriver driver = new MockDriver();
-
-		metadata = new J4SDatabaseMetaData(new MockConnection(driver, null),
-				driver);
-		metadata.addCatalog(new MetaCatalog());
+		final J4SDriver driver = new J4SDriver();
+		model = ModelFactory.createDefaultModel();
+		//Mockito.when( mockUrl.getType()).thenReturn("TURTLE");
+		connection = Mockito.mock(J4SConnection.class);
+		Map<String,Catalog> catalogs = new HashMap<String,Catalog>();
+		Catalog cat = MetaCatalogBuilder.getInstance(model);
+		catalogs.put( cat.getName(), cat);
+		Mockito.when( connection.getCatalogs()).thenReturn(catalogs);
+		metadata = new J4SDatabaseMetaData(connection,	driver);
 
 	}
 
@@ -82,7 +97,7 @@ public class J4SDatabaseMetaDataTest
 				"SOURCE_DATA_TYPE",
 
 		};
-		columnChecking(MetaSchema.ATTRIBUTES_TABLE, names);
+		columnChecking(MetaCatalogBuilder.ATTRIBUTES_TABLE, names);
 	}
 
 	@Test
@@ -91,14 +106,14 @@ public class J4SDatabaseMetaDataTest
 		final String[] names = { "SCOPE", "COLUMN_NAME", "DATA_TYPE",
 				"TYPE_NAME", "COLUMN_SIZE", "BUFFER_LENGTH", "DECIMAL_DIGITS",
 				"PSEUDO_COLUMN", };
-		columnChecking(MetaSchema.BEST_ROW_TABLE, names);
+		columnChecking(MetaCatalogBuilder.BEST_ROW_TABLE, names);
 	}
 
 	@Test
 	public void testCatalogsDef() throws SQLException
 	{
 		final String[] names = { "TABLE_CAT", };
-		columnChecking(MetaSchema.CATALOGS_TABLE, names);
+		columnChecking(MetaCatalogBuilder.CATALOGS_TABLE, names);
 	}
 
 	@Test
@@ -108,7 +123,7 @@ public class J4SDatabaseMetaDataTest
 				"DESCRIPTION",
 
 		};
-		columnChecking(MetaSchema.CLIENT_INFO_TABLE, names);
+		columnChecking(MetaCatalogBuilder.CLIENT_INFO_TABLE, names);
 	}
 
 	@Test
@@ -117,7 +132,7 @@ public class J4SDatabaseMetaDataTest
 		final String[] names = { "TABLE_CAT", "TABLE_SCHEM", "TABLE_NAME",
 				"COLUMN_NAME", "GRANTOR", "GRANTEE", "PRIVILEGE",
 				"IS_GRANTABLE", };
-		columnChecking(MetaSchema.COLUMN_PRIVILIGES_TABLE, names);
+		columnChecking(MetaCatalogBuilder.COLUMN_PRIVILIGES_TABLE, names);
 	}
 
 	@Test
@@ -130,7 +145,7 @@ public class J4SDatabaseMetaDataTest
 				"SQL_DATETIME_SUB", "CHAR_OCTET_LENGTH", "ORDINAL_POSITION",
 				"IS_NULLABLE", "SCOPE_CATLOG", "SCOPE_SCHEMA", "SCOPE_TABLE",
 				"SOURCE_DATA_TYPE", "IS_AUTOINCREMENT", };
-		columnChecking(MetaSchema.COLUMNS_TABLE, names);
+		columnChecking(MetaCatalogBuilder.COLUMNS_TABLE, names);
 	}
 
 	@Test
@@ -141,7 +156,7 @@ public class J4SDatabaseMetaDataTest
 				"FKTABLE_SCHEM", "FKTABLE_NAME", "FKCOLUMN_NAME", "KEY_SEQ",
 				"UPDATE_RULE", "DELETE_RULE", "FK_NAME", "PK_NAME",
 				"DEFERRABILITY", };
-		columnChecking(MetaSchema.XREF_TABLE, names);
+		columnChecking(MetaCatalogBuilder.XREF_TABLE, names);
 	}
 
 	@Test
@@ -152,7 +167,7 @@ public class J4SDatabaseMetaDataTest
 				"FKTABLE_SCHEM", "FKTABLE_NAME", "FKCOLUMN_NAME", "KEY_SEQ",
 				"UPDATE_RULE", "DELETE_RULE", "FK_NAME", "PK_NAME",
 				"DEFERRABILITY", };
-		columnChecking(MetaSchema.EXPORTED_KEYS_TABLE, names);
+		columnChecking(MetaCatalogBuilder.EXPORTED_KEYS_TABLE, names);
 	}
 
 	@Test
@@ -163,7 +178,7 @@ public class J4SDatabaseMetaDataTest
 				"TYPE_NAME", "PRECISION", "LENGTH", "SCALE", "RADIX",
 				"NULLABLE", "REMARKS", "CHAR_OCTET_LENGTH", "ORDINAL_POSITION",
 				"IS_NULLABLE", "SPECIFIC_NAME", };
-		columnChecking(MetaSchema.FUNCTION_COLUMNS_TABLE, names);
+		columnChecking(MetaCatalogBuilder.FUNCTION_COLUMNS_TABLE, names);
 	}
 
 	@Test
@@ -173,7 +188,7 @@ public class J4SDatabaseMetaDataTest
 				"FUNCTION_NAME", "REMARKS", "FUNCTION_TYPE", "SPECIFIC_NAME",
 
 		};
-		columnChecking(MetaSchema.FUNCTIONS_TABLE, names);
+		columnChecking(MetaCatalogBuilder.FUNCTIONS_TABLE, names);
 	}
 
 	@Test
@@ -191,8 +206,8 @@ public class J4SDatabaseMetaDataTest
 		for (final String name : names)
 		{
 			Assert.assertTrue(rs.next());
-			Assert.assertEquals(MetaCatalog.LOCAL_NAME, rs.getString(1)); // TABLE_CAT
-			Assert.assertEquals(MetaSchema.LOCAL_NAME, rs.getString(2)); // TABLE_SCHEM
+			Assert.assertEquals(MetaCatalogBuilder.LOCAL_NAME, rs.getString(1)); // TABLE_CAT
+			Assert.assertEquals(MetaCatalogBuilder.SCHEMA_LOCAL_NAME, rs.getString(2)); // TABLE_SCHEM
 			Assert.assertEquals(name, rs.getString(3)); // TABLE_NAME
 			Assert.assertEquals("TABLE", rs.getString(4)); // TABLE_TYPE
 			Assert.assertEquals("", rs.getString(5)); // REMARKS
@@ -209,7 +224,7 @@ public class J4SDatabaseMetaDataTest
 				"FKTABLE_SCHEM", "FKTABLE_NAME", "FKCOLUMN_NAME", "KEY_SEQ",
 				"UPDATE_RULE", "DELETE_RULE", "FK_NAME", "PK_NAME",
 				"DEFERRABILITY", };
-		columnChecking(MetaSchema.IMPORTED_KEYS_TABLE, names);
+		columnChecking(MetaCatalogBuilder.IMPORTED_KEYS_TABLE, names);
 	}
 
 	@Test
@@ -219,58 +234,58 @@ public class J4SDatabaseMetaDataTest
 				"NON_UNIQUE", "INDEX_QUALIFIER", "INDEX_NAME", "TYPE",
 				"ORDINAL_POSITION", "COLUMN_NAME", "ASC_OR_DESC",
 				"CARDINALITY", "PAGES", "FILTER_CONDITION", };
-		columnChecking(MetaSchema.INDEXINFO_TABLE, names);
+		columnChecking(MetaCatalogBuilder.INDEXINFO_TABLE, names);
 	}
 
 	@Test
 	public void testOneTable() throws SQLException
 	{
 		final ResultSet rs = metadata.getTables(null, null,
-				MetaSchema.COLUMNS_TABLE, null);
+				MetaCatalogBuilder.COLUMNS_TABLE, null);
 		Assert.assertTrue(rs.next());
-		Assert.assertEquals(MetaCatalog.LOCAL_NAME, rs.getString(1)); // TABLE_CAT
-		Assert.assertEquals(MetaSchema.LOCAL_NAME, rs.getString(2)); // TABLE_SCHEM
-		Assert.assertEquals(MetaSchema.COLUMNS_TABLE, rs.getString(3)); // TABLE_NAME
+		Assert.assertEquals(MetaCatalogBuilder.LOCAL_NAME, rs.getString(1)); // TABLE_CAT
+		Assert.assertEquals(MetaCatalogBuilder.SCHEMA_LOCAL_NAME, rs.getString(2)); // TABLE_SCHEM
+		Assert.assertEquals(MetaCatalogBuilder.COLUMNS_TABLE, rs.getString(3)); // TABLE_NAME
 		Assert.assertEquals("TABLE", rs.getString(4)); // TABLE_TYPE
 		Assert.assertEquals("", rs.getString(5)); // REMARKS
 		Assert.assertFalse(rs.next());
 	}
 
-	@Test
-	public void testPrimaryKeysDef() throws SQLException
-	{
-		final String[] names = { "TABLE_CAT", "TABLE_SCHEM", "TABLE_NAME",
-				"COLUMN_NAME", "KEY_SEQ", "PK_NAME", };
-		columnChecking(MetaSchema.PRIMARY_KEY_TABLE, names);
-
-		final MockCatalog catalog = new MockCatalog();
-		final MockSchema schema = new MockSchema();
-		catalog.addSchema(schema);
-		metadata.addCatalog(catalog);
-
-		final TableDefImpl tableDef = new SparqlTableDef(
-				"http://example.com/example/", "testTable", "SPARQL String",
-				null);
-
-		final ColumnDef cd = ColumnDefImpl.Builder.getStringBuilder(
-				"http://example.com/example/", "testColumn").build();
-
-		tableDef.add(cd);
-		schema.addTableDef(tableDef);
-
-		ResultSet rs = metadata.getPrimaryKeys(catalog.getLocalName(),
-				schema.getLocalName(), "testTable");
-		Assert.assertFalse(rs.next());
-		final Key key = new Key();
-		key.addSegment(new KeySegment(0, cd));
-		tableDef.setPrimaryKey(key);
-
-		rs = metadata.getPrimaryKeys(catalog.getLocalName(),
-				schema.getLocalName(), "testTable");
-		Assert.assertTrue(rs.next());
-		Assert.assertEquals(cd.getLabel(), rs.getString("COLUMN_NAME"));
-		Assert.assertEquals("key-" + key.getId(), rs.getString("PK_NAME"));
-	}
+//	@Test
+//	public void testPrimaryKeysDef() throws SQLException
+//	{
+//		final String[] names = { "TABLE_CAT", "TABLE_SCHEM", "TABLE_NAME",
+//				"COLUMN_NAME", "KEY_SEQ", "PK_NAME", };
+//		columnChecking(MetaCatalogBuilder.PRIMARY_KEY_TABLE, names);
+//
+//		final Catalog catalog = new CatalogBuilder().setLocalName("MOCK_CATALOG").build(model);
+//		final MockSchema schema = new MockSchema();
+//		catalog.addSchema(schema);
+//		metadata.addCatalog(catalog);
+//
+//		final TableDefImpl tableDef = new SparqlTableDef(
+//				"http://example.com/example/", "testTable", "SPARQL String",
+//				null);
+//
+//		final ColumnDef cd = ColumnDefImpl.Builder.getStringBuilder(
+//				"http://example.com/example/", "testColumn").build();
+//
+//		tableDef.add(cd);
+//		schema.addTableDef(tableDef);
+//
+//		ResultSet rs = metadata.getPrimaryKeys(catalog.getLocalName(),
+//				schema.getLocalName(), "testTable");
+//		Assert.assertFalse(rs.next());
+//		final Key key = new Key();
+//		key.addSegment(new KeySegment(0, cd));
+//		tableDef.setPrimaryKey(key);
+//
+//		rs = metadata.getPrimaryKeys(catalog.getLocalName(),
+//				schema.getLocalName(), "testTable");
+//		Assert.assertTrue(rs.next());
+//		Assert.assertEquals(cd.getLabel(), rs.getString("COLUMN_NAME"));
+//		Assert.assertEquals("key-" + key.getId(), rs.getString("PK_NAME"));
+//	}
 
 	@Test
 	public void testProcedureColumnsDef() throws SQLException
@@ -281,7 +296,7 @@ public class J4SDatabaseMetaDataTest
 				"NULLABLE", "REMARKS", "COLUMN_DEF", "SQL_DATA_TYPE",
 				"SQL_DATETIME_SUB", "CHAR_OCTET_LENGTH", "ORDINAL_POSITION",
 				"IS_NULLABLE", "SPECIFIC_NAME", };
-		columnChecking(MetaSchema.PROCEDURE_COLUMNS_TABLE, names);
+		columnChecking(MetaCatalogBuilder.PROCEDURE_COLUMNS_TABLE, names);
 	}
 
 	@Test
@@ -290,70 +305,73 @@ public class J4SDatabaseMetaDataTest
 		final String[] names = { "PROCEDURE_CAT", "PROCEDURE_SCHEM",
 				"PROCEDURE_NAME", "reserved", "reserved", "reserved",
 				"REMARKS", "PROCEDURE_TYPE", "SPECIFIC_NAME", };
-		columnChecking(MetaSchema.PROCEDURES_TABLE, names);
+		columnChecking(MetaCatalogBuilder.PROCEDURES_TABLE, names);
 	}
 
 	@Test
 	public void testSchemasDef() throws SQLException
 	{
 		final String[] names = { "TABLE_SCHEM", "TABLE_CATALOG", };
-		columnChecking(MetaSchema.SCHEMAS_TABLE, names);
+		columnChecking(MetaCatalogBuilder.SCHEMAS_TABLE, names);
 	}
 
+//	@Test
+//	public void testSuperTablesDef() throws SQLException
+//	{
+//		final String[] names = { "TABLE_CAT", "TABLE_SCHEM", "TABLE_NAME",
+//				"SUPERTABLE_NAME",
+//
+//		};
+//		columnChecking(MetaCatalogBuilder.SUPER_TABLES_TABLE, names);
+//
+//		final MockCatalog catalog = new MockCatalog();
+//		final MockSchema schema = new MockSchema();
+//		catalog.addSchema(schema);
+//		metadata.addCatalog(catalog);
+//
+//		final TableDefImpl tableDef = new SparqlTableDef(
+//				"http://example.com/example/", "testTable", "SPARQL String",
+//				null);
+//
+//		final ColumnDef cd = ColumnDefImpl.Builder.getStringBuilder(
+//				"http://example.com/example/", "testColumn1").build();
+//
+//		tableDef.add(cd);
+//		schema.addTableDef(tableDef);
+//
+//		final TableDefImpl tableDef2 = new SparqlTableDef(
+//				"http://example.com/example/", "testTable2", "SPARQL String",
+//				tableDef);
+//
+//		final ColumnDef cd2 = ColumnDefImpl.Builder.getStringBuilder(
+//				"http://example.com/example/", "testColumn2").build();
+//
+//		tableDef2.add(cd2);
+//		schema.addTableDef(tableDef2);
+//
+//		ResultSet rs = metadata.getSuperTables(catalog.getLocalName(),
+//				schema.getLocalName(), "testTable");
+//		Assert.assertFalse(rs.next());
+//
+//		rs = metadata.getSuperTables(catalog.getLocalName(),
+//				schema.getLocalName(), "testTable2");
+//		Assert.assertTrue(rs.next());
+//		Assert.assertEquals("testTable", rs.getString("SUPERTABLE_NAME"));
+//
+//		Assert.assertFalse(rs.next());
+//	}
+
 	@Test
-	public void testSuperTablesDef() throws SQLException
+	public void testSuperTypesDef() throws Exception
 	{
-		final String[] names = { "TABLE_CAT", "TABLE_SCHEM", "TABLE_NAME",
-				"SUPERTABLE_NAME",
-
-		};
-		columnChecking(MetaSchema.SUPER_TABLES_TABLE, names);
-
-		final MockCatalog catalog = new MockCatalog();
-		final MockSchema schema = new MockSchema();
-		catalog.addSchema(schema);
-		metadata.addCatalog(catalog);
-
-		final TableDefImpl tableDef = new SparqlTableDef(
-				"http://example.com/example/", "testTable", "SPARQL String",
-				null);
-
-		final ColumnDef cd = ColumnDefImpl.Builder.getStringBuilder(
-				"http://example.com/example/", "testColumn1").build();
-
-		tableDef.add(cd);
-		schema.addTableDef(tableDef);
-
-		final TableDefImpl tableDef2 = new SparqlTableDef(
-				"http://example.com/example/", "testTable2", "SPARQL String",
-				tableDef);
-
-		final ColumnDef cd2 = ColumnDefImpl.Builder.getStringBuilder(
-				"http://example.com/example/", "testColumn2").build();
-
-		tableDef2.add(cd2);
-		schema.addTableDef(tableDef2);
-
-		ResultSet rs = metadata.getSuperTables(catalog.getLocalName(),
-				schema.getLocalName(), "testTable");
-		Assert.assertFalse(rs.next());
-
-		rs = metadata.getSuperTables(catalog.getLocalName(),
-				schema.getLocalName(), "testTable2");
-		Assert.assertTrue(rs.next());
-		Assert.assertEquals("testTable", rs.getString("SUPERTABLE_NAME"));
-
-		Assert.assertFalse(rs.next());
-	}
-
-	@Test
-	public void testSuperTypesDef() throws SQLException
-	{
+		model.write( System.out, "TURTLE" );
+		model.write( new FileOutputStream( new File( "dump.ttl")), "TURTLE");
+		
 		final String[] names = { "TYPE_CAT", "TYPE_SCHEM", "TYPE_NAME",
 				"SUPERTYPE_CAT", "SUPERTYPE_SCHEM", "SUPERTYPE_NAME",
 
 		};
-		columnChecking(MetaSchema.SUPER_TYPES_TABLE, names);
+		columnChecking(MetaCatalogBuilder.SUPER_TYPES_TABLE, names);
 	}
 
 	@Test
@@ -361,7 +379,7 @@ public class J4SDatabaseMetaDataTest
 	{
 		final String[] names = { "TABLE_CAT", "TABLE_SCHEM", "TABLE_NAME",
 				"GRANTOR", "GRANTEE", "PRIVILEGE", "IS_GRANTABLE", };
-		columnChecking(MetaSchema.TABLE_PRIVILEGES_TABLE, names);
+		columnChecking(MetaCatalogBuilder.TABLE_PRIVILEGES_TABLE, names);
 	}
 
 	@Test
@@ -370,14 +388,14 @@ public class J4SDatabaseMetaDataTest
 		final String[] names = { "TABLE_CAT", "TABLE_SCHEM", "TABLE_NAME",
 				"TABLE_TYPE", "REMARKS", "TYPE_CAT", "TYPE_SCHEM", "TYPE_NAME",
 				"SELF_REFERENCING_COL_NAME", "REF_GENERATION", };
-		columnChecking(MetaSchema.TABLES_TABLE, names);
+		columnChecking(MetaCatalogBuilder.TABLES_TABLE, names);
 	}
 
 	@Test
 	public void testTableTypesDef() throws SQLException
 	{
 		final String[] names = { "TABLE_TYPE", };
-		columnChecking(MetaSchema.TABLE_TYPES_TABLE, names);
+		columnChecking(MetaCatalogBuilder.TABLE_TYPES_TABLE, names);
 	}
 
 	@Test
@@ -389,7 +407,7 @@ public class J4SDatabaseMetaDataTest
 				"UNSIGNED_ATTRIBUTE", "FIXED_PREC_SCALE", "AUTO_INCREMENT",
 				"LOCAL_TYPE_NAME", "MINIMUM_SCALE", "MAXIMUM_SCALE",
 				"SQL_DATA_TYPE", "SQL_DATETIME_SUB", "NUM_PREC_RADIX", };
-		columnChecking(MetaSchema.TYPEINFO_TABLE, names);
+		columnChecking(MetaCatalogBuilder.TYPEINFO_TABLE, names);
 	}
 
 	@Test
@@ -397,7 +415,7 @@ public class J4SDatabaseMetaDataTest
 	{
 		final String[] names = { "TYPE_CAT", "TYPE_SCHEM", "TYPE_NAME",
 				"CLASS_NAME", "DATA_TYPE", "REMARKS", "BASE_TYPE", };
-		columnChecking(MetaSchema.UDT_TABLES, names);
+		columnChecking(MetaCatalogBuilder.UDT_TABLES, names);
 	}
 
 	@Test
@@ -406,6 +424,6 @@ public class J4SDatabaseMetaDataTest
 		final String[] names = { "SCOPE", "COLUMN_NAME", "DATA_TYPE",
 				"TYPE_NAME", "COLUMN_SIZE", "BUFFER_LENGTH", "DECIMAL_DIGITS",
 				"PSEUDO_COLUMN", };
-		columnChecking(MetaSchema.VERSION_COLUMNS_TABLE, names);
+		columnChecking(MetaCatalogBuilder.VERSION_COLUMNS_TABLE, names);
 	}
 }

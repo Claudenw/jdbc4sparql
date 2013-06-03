@@ -28,6 +28,11 @@ public interface NamespacedObject
 					((NamespacedObject) o2).getFQName()) : false;
 		}
 
+		public static String getFQName( final NamespacedObject o )
+		{
+			return o.getNamespace() + o.getLocalName();
+		}
+
 		public static int hashCode( final NamespacedObject o )
 		{
 			return o.getFQName().hashCode();

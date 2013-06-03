@@ -21,8 +21,14 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import org.xenei.jdbc4sparql.impl.ColumnImpl;
+import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
+import org.xenei.jdbc4sparql.impl.rdf.RdfTableDef;
+import org.xenei.jena.entities.ResourceWrapper;
+import org.xenei.jena.entities.annotations.Predicate;
+import org.xenei.jena.entities.annotations.Subject;
 
-public interface Table extends TableDef
+
+public interface Table extends NamedObject, ResourceWrapper
 {
 	/**
 	 * An iterator of the columns in the table.
@@ -67,9 +73,9 @@ public interface Table extends TableDef
 		public ColumnIterator( final Table table,
 				final Collection<? extends ColumnDef> colDefs )
 		{
-			this(table.getNamespace(), table, colDefs);
+			this(table.getResource().getURI(), table, colDefs);
 		}
-
+		
 		@Override
 		public boolean hasNext()
 		{
@@ -89,7 +95,9 @@ public interface Table extends TableDef
 		}
 
 	}
-
+	
+	public TableDef getTableDef();
+	
 	/**
 	 * Find all columns with the columnNamePattern.
 	 * 
@@ -107,6 +115,7 @@ public interface Table extends TableDef
 	 */
 	Catalog getCatalog();
 
+	int getColumnCount();
 	/**
 	 * Get the column by index.
 	 * 
@@ -164,4 +173,19 @@ public interface Table extends TableDef
 	 * @return The table type
 	 */
 	String getType();
+	
+	/**
+	 * delete the table.  Removes the table from the schema.
+	 */
+	void delete();
+	
+	/**
+	 * Get the index (zero based) for the column name.
+	 * @param columnName The column name to search for
+	 * @return index for column name or -1 if not found.
+	 */
+	public int getColumnIndex( String columnName );
+	
+	public int getColumnIndex( Column column );
+
 }

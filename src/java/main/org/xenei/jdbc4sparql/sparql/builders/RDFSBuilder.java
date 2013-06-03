@@ -34,6 +34,8 @@ import java.util.Set;
 import org.xenei.jdbc4sparql.iface.Key;
 import org.xenei.jdbc4sparql.iface.KeySegment;
 import org.xenei.jdbc4sparql.iface.TableDef;
+import org.xenei.jdbc4sparql.impl.rdf.KeyBuilder;
+import org.xenei.jdbc4sparql.impl.rdf.KeySegmentBuilder;
 import org.xenei.jdbc4sparql.sparql.SparqlCatalog;
 import org.xenei.jdbc4sparql.sparql.SparqlColumnDef;
 import org.xenei.jdbc4sparql.sparql.SparqlTableDef;
@@ -90,8 +92,8 @@ public class RDFSBuilder implements SchemaBuilder
 							.setSigned(false)
 							.setNullable(DatabaseMetaData.columnNoNulls);
 					idDef.add(bldr.build());
-					pk = new Key();
-					pk.addSegment(new KeySegment(0, idDef.getColumnDef(0)));
+					pk = new KeyBuilder().setUnique(true).addSegment(
+							new KeySegmentBuilder().setIdx(0).setAscending(true) ).build(model);
 					idDef.setPrimaryKey(pk);
 				}
 				else

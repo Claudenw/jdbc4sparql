@@ -17,30 +17,38 @@
  */
 package org.xenei.jdbc4sparql.iface;
 
-public interface Column extends NamespacedObject, ColumnDef
+import org.xenei.jena.entities.ResourceWrapper;
+import org.xenei.jena.entities.annotations.Predicate;
+import org.xenei.jena.entities.annotations.Subject;
+
+
+public interface Column extends NamedObject, ResourceWrapper
 {
 	/**
 	 * @return the Catalog this table is in.
 	 */
-	Catalog getCatalog();
+	public Catalog getCatalog();
+	
+	public ColumnDef getColumnDef();
 
 	/**
 	 * @return The schema this table is in
 	 */
-	Schema getSchema();
+	public Schema getSchema();
 
 	/**
 	 * @return The name formatted for SPARQL
 	 */
-	String getSPARQLName();
+	public String getSPARQLName();
 
 	/**
 	 * @return the name formatted for SQL
 	 */
-	String getSQLName();
+	public String getSQLName();
 
 	/**
 	 * @return The table this column is in.
 	 */
-	Table getTable();
+	public Table getTable();
+	
 }

@@ -19,43 +19,19 @@ package org.xenei.jdbc4sparql.iface;
 
 import java.util.Comparator;
 
-public class KeySegment implements Comparator<Object[]>
+import org.xenei.jena.entities.ResourceWrapper;
+import org.xenei.jena.entities.annotations.Predicate;
+import org.xenei.jena.entities.annotations.Subject;
+
+@Subject( namespace = "http://org.xenei.jdbc4sparql/entity/KeySegment#" )
+public abstract class KeySegment implements Comparator<Object[]>,
+		ResourceWrapper
 {
-	private final short idx;
-	private final boolean ascending;
-
-	public KeySegment( final int idx, final ColumnDef columnDef )
-	{
-		this(idx, columnDef, true);
-	}
-
-	public KeySegment( final int idx, final ColumnDef columnDef,
-			final boolean ascending )
-	{
-		if (idx > Short.MAX_VALUE)
-		{
-			throw new IllegalArgumentException("Maximum index value is "
-					+ Short.MAX_VALUE);
-		}
-		this.idx = (short) idx;
-		this.ascending = ascending;
-		final Class<?> type = TypeConverter.getJavaType(columnDef.getType());
-		if (type == null)
-		{
-			throw new IllegalArgumentException(columnDef.getLabel()
-					+ " uses an unsupported data type: " + columnDef.getType());
-		}
-		if ((type == null) || !Comparable.class.isAssignableFrom(type))
-		{
-			throw new IllegalArgumentException(columnDef.getLabel()
-					+ " is not a comparable object type");
-		}
-
-	}
 
 	@Override
-	public int compare( final Object[] data1, final Object[] data2 )
+	public final int compare( final Object[] data1, final Object[] data2 )
 	{
+		final int idx = getIdx();
 		final Object o1 = data1[idx];
 		final Object o2 = data2[idx];
 		int retval;
@@ -71,26 +47,17 @@ public class KeySegment implements Comparator<Object[]>
 		{
 			retval = Comparable.class.cast(data1[idx]).compareTo(data2[idx]);
 		}
-		return ascending ? retval : -1 * retval;
+		return isAscending() ? retval : -1 * retval;
 	}
 
-	public String getId()
+	public final String getId()
 	{
-		return (ascending ? "A" : "D") + idx;
+		return (isAscending() ? "A" : "D") + getIdx();
 	}
 
-	/**
-	 * The index of the column position in the table (0 based)
-	 * 
-	 * @return the index.
-	 */
-	public short getIdx()
-	{
-		return idx;
-	}
+	@Predicate
+	abstract public short getIdx();
 
-	public boolean isAscending()
-	{
-		return ascending;
-	}
+	@Predicate
+	abstract public boolean isAscending();
 }

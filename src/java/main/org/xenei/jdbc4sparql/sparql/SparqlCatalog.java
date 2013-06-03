@@ -30,55 +30,61 @@ import com.hp.hpl.jena.util.iterator.WrappedIterator;
 import java.net.URL;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.xenei.jdbc4sparql.config.ModelReader;
 import org.xenei.jdbc4sparql.impl.CatalogImpl;
+import org.xenei.jdbc4sparql.impl.rdf.CatalogBuilder;
+import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 
 /**
  * An implementation of sparql catalog.
  */
-public class SparqlCatalog extends CatalogImpl
+public class SparqlCatalog extends RdfCatalog
 {
-	// either the sparqlEndpoint or the localModel is set.
-
+	public static class Builder extends CatalogBuilder {
+		
+		private Model localModel;
+		private URL sparqlEndpoint;
+		
+		public Builder()
+		{
+			super();
+		}
+		
+		public SparqlCatalog build( Model model )
+		{
+			SparqlCatalog cat = (SparqlCatalog) super.build(model);
+			cat.localModel = localModel!=null?localModel:ModelFactory.createMemModelMaker().createFreshModel();;
+			cat.sparqlEndpoint = sparqlEndpoint;
+			return cat;
+		}
+		
+		public Builder setLocalModel( Model localModel )
+		{
+			this.localModel = localModel;
+			return this;
+		}
+		
+		public Builder setSparqlEndpoint( URL sparqlEndpoint )
+		{
+			this.sparqlEndpoint = sparqlEndpoint;
+			return this;
+		}
+		
+		protected void checkBuildState()
+		{
+			super.checkBuildState();
+			if (localModel == null && sparqlEndpoint == null)
+			{
+				throw new IllegalStateException("Either LocalModel or SPARQL endpoint must be set");
+			}
+		}
+	}
+	
 	// The URL for the sparql endpoint
 	private URL sparqlEndpoint;
 	// the model that contains the sparql data.
 	private Model localModel;
-
-	/**
-	 * Constructor for a local model.
-	 * 
-	 * @param namespace
-	 *            The namespace for the catalog.
-	 * @param localModel
-	 *            The model that contains the data.
-	 * @param localName
-	 *            The local name for the catalog.
-	 */
-	public SparqlCatalog( final String namespace, final Model localModel,
-			final String localName )
-	{
-		super(namespace, localName);
-		this.localModel = localModel;
-	}
-
-	/**
-	 * Constructor for a remote sparql endpoint.
-	 * 
-	 * The namespace for the catalog will be the the sparqlEndpoint.
-	 * 
-	 * @param sparqlEndpoint
-	 *            The sparql endpoint
-	 * @param localName
-	 *            The localname.
-	 */
-	public SparqlCatalog( final URL sparqlEndpoint, final String localName )
-	{
-		super(sparqlEndpoint.toString(), localName);
-		this.sparqlEndpoint = sparqlEndpoint;
-		// we need an empty model to properly filter sparql queries.
-		this.localModel = ModelFactory.createMemModelMaker().createFreshModel();
-	}
 
 	@Override
 	public void close()
@@ -190,7 +196,11 @@ public class SparqlCatalog extends CatalogImpl
 	 */
 	public SparqlSchema getViewSchema()
 	{
-		return new SparqlSchema(this, SparqlView.NAME_SPACE, "");
+		SparqlSchema.Builder builder = new SparqlSchema.Builder();
+		builder.setCatalog(this)
+			.setName("");
+		return (SparqlSchema) builder.build( this.getResource().getModel() );
+		
 	}
 
 	public boolean isService()
