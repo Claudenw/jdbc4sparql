@@ -17,7 +17,6 @@
  */
 package org.xenei.jdbc4sparql.mock;
 
-import org.xenei.jdbc4sparql.sparql.SparqlTable;
 
 public class MockTable extends SparqlTable
 {

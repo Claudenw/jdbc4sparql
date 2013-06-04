@@ -17,8 +17,6 @@
  */
 package org.xenei.jdbc4sparql.mock;
 
-import org.xenei.jdbc4sparql.sparql.SparqlCatalog;
-import org.xenei.jdbc4sparql.sparql.SparqlSchema;
 
 public class MockSchema extends SparqlSchema
 {

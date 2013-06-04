@@ -25,140 +25,6 @@ import org.xenei.jena.entities.annotations.Subject;
 @Subject( namespace = "http://org.xenei.jdbc4sparql/entity/ColumnDef#" )
 public class RdfColumnDef implements ColumnDef
 {
-	private List<String> querySegments;
-
-	@Override
-	@Predicate( impl=true )
-	public Resource getResource()
-	{
-		throw new EntityManagerRequiredException();
-	}
-
-	@Override
-	@Predicate( impl=true )
-	public String getColumnClassName()
-	{
-		throw new EntityManagerRequiredException();
-	}
-
-	@Override
-	@Predicate( impl=true )
-	public int getDisplaySize()
-	{
-		throw new EntityManagerRequiredException();
-	}
-
-	@Override
-	@Predicate( impl=true )
-	public int getNullable()
-	{
-		throw new EntityManagerRequiredException();
-	}
-
-	@Override
-	@Predicate( impl=true )
-	public int getPrecision()
-	{
-		throw new EntityManagerRequiredException();
-	}
-
-	@Override
-	@Predicate( impl=true )
-	public int getScale()
-	{
-		throw new EntityManagerRequiredException();
-	}
-
-	@Override
-	@Predicate( impl=true )
-	public int getType()
-	{
-		throw new EntityManagerRequiredException();
-	}
-
-	@Override
-	@Predicate( impl=true )
-	public String getTypeName()
-	{
-		throw new EntityManagerRequiredException();
-	}
-
-	@Override
-	@Predicate( impl=true )
-	public boolean isAutoIncrement()
-	{
-		throw new EntityManagerRequiredException();
-	}
-
-	@Override
-	@Predicate( impl=true )
-	public boolean isCaseSensitive()
-	{
-		throw new EntityManagerRequiredException();
-	}
-
-	@Override
-	@Predicate( impl=true )
-	public boolean isCurrency()
-	{
-		throw new EntityManagerRequiredException();
-	}
-
-	@Override
-	@Predicate( impl=true )
-	public boolean isDefinitelyWritable()
-	{
-		throw new EntityManagerRequiredException();
-	}
-
-	@Override
-	@Predicate( impl=true )
-	public boolean isReadOnly()
-	{
-		throw new EntityManagerRequiredException();
-	}
-
-	@Override
-	@Predicate( impl=true )
-	public boolean isSearchable()
-	{
-		throw new EntityManagerRequiredException();
-	}
-
-	@Override
-	@Predicate( impl=true )
-	public boolean isSigned()
-	{
-		throw new EntityManagerRequiredException();
-	}
-
-	@Override
-	@Predicate( impl=true )
-	public boolean isWritable()
-	{
-		throw new EntityManagerRequiredException();
-	}
-	
-	@Predicate( impl=true )
-	public RDFNode getQuerySegments()
-	{
-		throw new EntityManagerRequiredException();
-	}
-	
-	public List<String> getQuerySegmentStrings()
-	{
-		if (querySegments == null)
-		{	
-			querySegments = new ArrayList<String>();
-			RDFList lst = getQuerySegments().as( RDFList.class );
-			for (RDFNode node : lst.asJavaList())
-			{
-				querySegments.add( node.asLiteral().toString() );
-			}
-		}
-		return querySegments;
-	}
-
 	public static class Builder implements ColumnDef
 	{
 		public static String getFQName( final ColumnDef colDef )
@@ -202,21 +68,25 @@ public class RdfColumnDef implements ColumnDef
 		private boolean searchable = false;
 
 		private boolean writable = false;
-		
-		private Class<? extends RdfColumnDef> typeClass = RdfColumnDef.class;
-		
+
+		private final Class<? extends RdfColumnDef> typeClass = RdfColumnDef.class;
+
 		private final List<String> querySegments = new ArrayList<String>();
 
 		public Builder()
-		{	
+		{
 		}
-		
-		
+
+		public Builder addQuerySegment( final String querySegment )
+		{
+			querySegments.add(querySegment);
+			return this;
+		}
+
 		public ColumnDef build( final Model model )
 		{
 			checkBuildState();
 
-			
 			final String fqName = Builder.getFQName(this);
 			final ResourceBuilder builder = new ResourceBuilder(model);
 			Resource columnDef = null;
@@ -228,20 +98,23 @@ public class RdfColumnDef implements ColumnDef
 			{
 				columnDef = builder.getResource(fqName, typeClass);
 
-				columnDef.addLiteral(builder.getProperty(typeClass, "displaySize"),
+				columnDef.addLiteral(
+						builder.getProperty(typeClass, "displaySize"),
 						displaySize);
-				columnDef.addLiteral(builder.getProperty(typeClass, "type"), type);
-				columnDef.addLiteral(builder.getProperty(typeClass, "precision"),
-						precision);
-				columnDef
-						.addLiteral(builder.getProperty(typeClass, "scale"), scale);
+				columnDef.addLiteral(builder.getProperty(typeClass, "type"),
+						type);
+				columnDef.addLiteral(
+						builder.getProperty(typeClass, "precision"), precision);
+				columnDef.addLiteral(builder.getProperty(typeClass, "scale"),
+						scale);
 				columnDef.addLiteral(builder.getProperty(typeClass, "signed"),
 						signed);
-				columnDef.addLiteral(builder.getProperty(typeClass, "nullable"),
-						nullable);
-				columnDef.addLiteral(builder.getProperty(typeClass, "typeName"),
-						StringUtils.defaultString(typeName, TypeConverter
-								.getJavaType(type).getSimpleName()));
+				columnDef.addLiteral(
+						builder.getProperty(typeClass, "nullable"), nullable);
+				columnDef.addLiteral(
+						builder.getProperty(typeClass, "typeName"), StringUtils
+								.defaultString(typeName, TypeConverter
+										.getJavaType(type).getSimpleName()));
 				columnDef.addLiteral(
 						builder.getProperty(typeClass, "columnClassName"),
 						columnClassName);
@@ -251,23 +124,24 @@ public class RdfColumnDef implements ColumnDef
 				columnDef.addLiteral(
 						builder.getProperty(typeClass, "caseSensitive"),
 						caseSensitive);
-				columnDef.addLiteral(builder.getProperty(typeClass, "currency"),
-						currency);
+				columnDef.addLiteral(
+						builder.getProperty(typeClass, "currency"), currency);
 				columnDef.addLiteral(
 						builder.getProperty(typeClass, "definitelyWritable"),
 						definitelyWritable);
-				columnDef.addLiteral(builder.getProperty(typeClass, "readOnly"),
-						readOnly);
-				columnDef.addLiteral(builder.getProperty(typeClass, "searchable"),
+				columnDef.addLiteral(
+						builder.getProperty(typeClass, "readOnly"), readOnly);
+				columnDef.addLiteral(
+						builder.getProperty(typeClass, "searchable"),
 						searchable);
-				columnDef.addLiteral(builder.getProperty(typeClass, "writable"),
-						writable);
-				
+				columnDef.addLiteral(
+						builder.getProperty(typeClass, "writable"), writable);
+
 				RDFList lst = null;
 
 				for (final String seg : querySegments)
 				{
-					final Literal l = model.createTypedLiteral( seg );
+					final Literal l = model.createTypedLiteral(seg);
 					if (lst == null)
 					{
 						lst = model.createList().with(l);
@@ -278,7 +152,8 @@ public class RdfColumnDef implements ColumnDef
 					}
 				}
 
-				Property querySegmentLst = builder.getProperty(typeClass, "querySegments");
+				final Property querySegmentLst = builder.getProperty(typeClass,
+						"querySegments");
 				columnDef.addProperty(querySegmentLst, lst);
 				querySegments.clear();
 
@@ -304,7 +179,7 @@ public class RdfColumnDef implements ColumnDef
 			}
 			if (querySegments.size() == 0)
 			{
-				querySegments.add( "# no query segments provided");
+				querySegments.add("# no query segments provided");
 			}
 		}
 
@@ -428,8 +303,7 @@ public class RdfColumnDef implements ColumnDef
 			return this;
 		}
 
-		public Builder setDefinitelyWritable(
-				final boolean definitelyWritable )
+		public Builder setDefinitelyWritable( final boolean definitelyWritable )
 		{
 			this.definitelyWritable = definitelyWritable;
 			return this;
@@ -494,12 +368,140 @@ public class RdfColumnDef implements ColumnDef
 			this.writable = writable;
 			return this;
 		}
-		
-		public Builder addQuerySegment( final String querySegment )
-		{
-			querySegments.add(querySegment);
-			return this;
-		}
 
+	}
+
+	private List<String> querySegments;
+
+	@Override
+	@Predicate( impl = true )
+	public String getColumnClassName()
+	{
+		throw new EntityManagerRequiredException();
+	}
+
+	@Override
+	@Predicate( impl = true )
+	public int getDisplaySize()
+	{
+		throw new EntityManagerRequiredException();
+	}
+
+	@Override
+	@Predicate( impl = true )
+	public int getNullable()
+	{
+		throw new EntityManagerRequiredException();
+	}
+
+	@Override
+	@Predicate( impl = true )
+	public int getPrecision()
+	{
+		throw new EntityManagerRequiredException();
+	}
+
+	@Predicate( impl = true )
+	public RDFNode getQuerySegments()
+	{
+		throw new EntityManagerRequiredException();
+	}
+
+	public List<String> getQuerySegmentStrings()
+	{
+		if (querySegments == null)
+		{
+			querySegments = new ArrayList<String>();
+			final RDFList lst = getQuerySegments().as(RDFList.class);
+			for (final RDFNode node : lst.asJavaList())
+			{
+				querySegments.add(node.asLiteral().toString());
+			}
+		}
+		return querySegments;
+	}
+
+	@Override
+	@Predicate( impl = true )
+	public Resource getResource()
+	{
+		throw new EntityManagerRequiredException();
+	}
+
+	@Override
+	@Predicate( impl = true )
+	public int getScale()
+	{
+		throw new EntityManagerRequiredException();
+	}
+
+	@Override
+	@Predicate( impl = true )
+	public int getType()
+	{
+		throw new EntityManagerRequiredException();
+	}
+
+	@Override
+	@Predicate( impl = true )
+	public String getTypeName()
+	{
+		throw new EntityManagerRequiredException();
+	}
+
+	@Override
+	@Predicate( impl = true )
+	public boolean isAutoIncrement()
+	{
+		throw new EntityManagerRequiredException();
+	}
+
+	@Override
+	@Predicate( impl = true )
+	public boolean isCaseSensitive()
+	{
+		throw new EntityManagerRequiredException();
+	}
+
+	@Override
+	@Predicate( impl = true )
+	public boolean isCurrency()
+	{
+		throw new EntityManagerRequiredException();
+	}
+
+	@Override
+	@Predicate( impl = true )
+	public boolean isDefinitelyWritable()
+	{
+		throw new EntityManagerRequiredException();
+	}
+
+	@Override
+	@Predicate( impl = true )
+	public boolean isReadOnly()
+	{
+		throw new EntityManagerRequiredException();
+	}
+
+	@Override
+	@Predicate( impl = true )
+	public boolean isSearchable()
+	{
+		throw new EntityManagerRequiredException();
+	}
+
+	@Override
+	@Predicate( impl = true )
+	public boolean isSigned()
+	{
+		throw new EntityManagerRequiredException();
+	}
+
+	@Override
+	@Predicate( impl = true )
+	public boolean isWritable()
+	{
+		throw new EntityManagerRequiredException();
 	}
 }

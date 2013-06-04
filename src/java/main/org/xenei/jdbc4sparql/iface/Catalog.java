@@ -19,15 +19,11 @@ package org.xenei.jdbc4sparql.iface;
 
 import java.util.Set;
 
-import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
 import org.xenei.jena.entities.ResourceWrapper;
-import org.xenei.jena.entities.annotations.Predicate;
-import org.xenei.jena.entities.annotations.Subject;
-
 
 public interface Catalog extends NamedObject, ResourceWrapper
 {
-	public static final String DEFAULT_SCHEMA="";
+	public static final String DEFAULT_SCHEMA = "";
 
 	/**
 	 * Close release all associated resources.

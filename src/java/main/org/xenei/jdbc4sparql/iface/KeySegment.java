@@ -20,11 +20,8 @@ package org.xenei.jdbc4sparql.iface;
 import java.util.Comparator;
 
 import org.xenei.jena.entities.ResourceWrapper;
-import org.xenei.jena.entities.annotations.Predicate;
-import org.xenei.jena.entities.annotations.Subject;
 
-public interface KeySegment extends Comparator<Object[]>,
-		ResourceWrapper
+public interface KeySegment extends Comparator<Object[]>, ResourceWrapper
 {
 
 	public String getId();

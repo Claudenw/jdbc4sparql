@@ -46,7 +46,8 @@ public class NameFilter<T extends NamedObject> implements Iterator<T>,
 	 * @param objs
 	 *            The collection of objects to filter.
 	 */
-	public NameFilter( final String namePattern, final Collection<? extends T> objs )
+	public NameFilter( final String namePattern,
+			final Collection<? extends T> objs )
 	{
 		this(namePattern, objs.iterator());
 	}

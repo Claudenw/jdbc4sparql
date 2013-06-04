@@ -57,13 +57,10 @@ import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
 import org.xenei.jdbc4sparql.meta.MetaCatalogBuilder;
-import org.xenei.jdbc4sparql.sparql.builders.SchemaBuilder;
 import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 
 public class J4SConnection implements Connection
 {
-	public static final String META_MODEL_FACTORY="MetaModelFactory";
-	
 	private class ConModelReader extends ModelReader
 	{
 
@@ -119,6 +116,8 @@ public class J4SConnection implements Connection
 
 	}
 
+	public static final String META_MODEL_FACTORY = "MetaModelFactory";
+
 	private Properties clientInfo;
 	private final J4SUrl url;
 	private final Map<String, Catalog> catalogMap;
@@ -137,7 +136,9 @@ public class J4SConnection implements Connection
 	private Dataset dataset;
 
 	public J4SConnection( final J4SDriver driver, final J4SUrl url,
-			final Properties properties ) throws IOException, InstantiationException, IllegalAccessException, ClassNotFoundException
+			final Properties properties ) throws IOException,
+			InstantiationException, IllegalAccessException,
+			ClassNotFoundException
 	{
 		this.catalogMap = new HashMap<String, Catalog>();
 		this.sqlWarnings = null;
@@ -151,7 +152,7 @@ public class J4SConnection implements Connection
 
 		this.holdability = ResultSet.HOLD_CURSORS_OVER_COMMIT;
 
-		configureModel( properties );
+		configureModel(properties);
 		configureCatalogMap(properties);
 
 		final Catalog c = MetaCatalogBuilder.getInstance(model);
@@ -166,29 +167,16 @@ public class J4SConnection implements Connection
 		this.sparqlParser = url.getParser() != null ? url.getParser()
 				: SparqlParser.Util.getDefaultParser();
 	}
-	
-	private void configureModel( final Properties properties ) throws InstantiationException, IllegalAccessException, ClassNotFoundException
-	{
-		if (properties.containsKey( META_MODEL_FACTORY))
-		{
-			Class<? extends ModelFactory> clazz = (Class<? extends ModelFactory>) J4SConnection.class.getClassLoader().loadClass( properties.getProperty( META_MODEL_FACTORY));
-			model = clazz.newInstance().createModel(properties);
-		}
-		else
-		{
-			model = com.hp.hpl.jena.rdf.model.ModelFactory.createDefaultModel();
-		}
-	}
 
-	public Catalog addCatalog( RdfCatalog.Builder catalogBuilder )
-	{
-		return catalogBuilder.build( model );
-	}
-	
 	@Override
 	public void abort( final Executor arg0 ) throws SQLException
 	{
 		close();
+	}
+
+	public Catalog addCatalog( final RdfCatalog.Builder catalogBuilder )
+	{
+		return catalogBuilder.build(model);
 	}
 
 	private void checkClosed() throws SQLException
@@ -235,16 +223,18 @@ public class J4SConnection implements Connection
 
 		if (url.getType().equals(J4SUrl.TYPE_CONFIG))
 		{
-			/*final ConfigSerializer serializer = new ConfigSerializer();
-			serializer.getLoader().read(
-					url.getEndpoint().toURL().toExternalForm());
-			for (final Catalog catalog : serializer.getCatalogs(getDataset()))
-			{
-				catalogMap.put(catalog.getName(), catalog);
-			}
-			*/
+			/*
+			 * final ConfigSerializer serializer = new ConfigSerializer();
+			 * serializer.getLoader().read(
+			 * url.getEndpoint().toURL().toExternalForm());
+			 * for (final Catalog catalog :
+			 * serializer.getCatalogs(getDataset()))
+			 * {
+			 * catalogMap.put(catalog.getName(), catalog);
+			 * }
+			 */
 			// TODO implement ths
-			throw new RuntimeException( "Not yet implemented");
+			throw new RuntimeException("Not yet implemented");
 		}
 		else
 		{
@@ -252,8 +242,8 @@ public class J4SConnection implements Connection
 			if (url.getType().equals(J4SUrl.TYPE_SPARQL))
 			{
 				catalog = new RdfCatalog.Builder()
-					.setSparqlEndpoint(url.getEndpoint().toURL())
-					.setName(currentCatalog).build( model );
+						.setSparqlEndpoint(url.getEndpoint().toURL())
+						.setName(currentCatalog).build(model);
 			}
 			else
 			{
@@ -270,22 +260,36 @@ public class J4SConnection implements Connection
 				model.removeAll();
 				model.read(url.getEndpoint().toString(), url.getType());
 				catalog = new RdfCatalog.Builder()
-					.setSparqlEndpoint(url.getEndpoint().toURL())
-					.setName(currentCatalog)
-					.build( model );
+						.setSparqlEndpoint(url.getEndpoint().toURL())
+						.setName(currentCatalog).build(model);
 			}
 
-			final SchemaBuilder builder = url.getBuilder() != null ? url
-					.getBuilder() : SchemaBuilder.Util.getBuilder(null);
 			final RdfSchema schema = new RdfSchema.Builder()
-				.setCatalog(catalog)
-				.setName("")
-				.build( model );
-			//schema.addTableDefs(builder.getTableDefs(catalog));
+					.setCatalog(catalog).setName("").build(model);
+			// schema.addTableDefs(builder.getTableDefs(catalog));
 			currentSchema = schema.getName();
 			catalogMap.put(catalog.getName(), catalog);
 		}
 
+	}
+
+	private void configureModel( final Properties properties )
+			throws InstantiationException, IllegalAccessException,
+			ClassNotFoundException
+	{
+		if (properties.containsKey(J4SConnection.META_MODEL_FACTORY))
+		{
+			final Class<? extends ModelFactory> clazz = (Class<? extends ModelFactory>) J4SConnection.class
+					.getClassLoader()
+					.loadClass(
+							properties
+									.getProperty(J4SConnection.META_MODEL_FACTORY));
+			model = clazz.newInstance().createModel(properties);
+		}
+		else
+		{
+			model = com.hp.hpl.jena.rdf.model.ModelFactory.createDefaultModel();
+		}
 	}
 
 	@Override
@@ -342,8 +346,8 @@ public class J4SConnection implements Connection
 		final Catalog catalog = catalogMap.get(currentCatalog);
 		if (catalog instanceof RdfCatalog)
 		{
-			return new J4SStatement(this, (RdfCatalog) catalog,
-					resultSetType, resultSetConcurrency, resultSetHoldability);
+			return new J4SStatement(this, (RdfCatalog) catalog, resultSetType,
+					resultSetConcurrency, resultSetHoldability);
 		}
 		else
 		{

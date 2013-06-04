@@ -425,8 +425,8 @@ public abstract class AbstractResultSet implements ResultSet
 		final Column c = getColumn(idx);
 		if (c.getColumnDef().getType() != type)
 		{
-			throw new SQLException("Column type (" + c.getColumnDef().getType() + ") is not "
-					+ type);
+			throw new SQLException("Column type (" + c.getColumnDef().getType()
+					+ ") is not " + type);
 		}
 	}
 

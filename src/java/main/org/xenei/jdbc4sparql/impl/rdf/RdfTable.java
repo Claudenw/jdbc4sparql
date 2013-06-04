@@ -265,21 +265,6 @@ public class RdfTable extends RdfNamespacedObject implements Table
 		{
 			return type;
 		}
-		
-		public Builder setColumns( List<String> colNames )
-		{
-			if (colNames.size() != tableDef.getColumnCount())
-			{
-				throw new IllegalArgumentException(String.format(
-						"There must be %s column names, %s provided", tableDef.getColumnCount(),
-						colNames.size()));
-			}
-			for (int i=0;i<colNames.size();i++)
-			{
-				setColumn( i, colNames.get(i));
-			}
-			return this;
-		}
 
 		public Builder setColumn( final int idx, final String name )
 		{
@@ -300,6 +285,21 @@ public class RdfTable extends RdfNamespacedObject implements Table
 					.setTable(this);
 
 			columns[idx] = builder;
+			return this;
+		}
+
+		public Builder setColumns( final List<String> colNames )
+		{
+			if (colNames.size() != tableDef.getColumnCount())
+			{
+				throw new IllegalArgumentException(String.format(
+						"There must be %s column names, %s provided",
+						tableDef.getColumnCount(), colNames.size()));
+			}
+			for (int i = 0; i < colNames.size(); i++)
+			{
+				setColumn(i, colNames.get(i));
+			}
 			return this;
 		}
 

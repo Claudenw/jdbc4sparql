@@ -32,7 +32,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.xenei.jdbc4sparql.iface.Key;
-import org.xenei.jdbc4sparql.iface.KeySegment;
 import org.xenei.jdbc4sparql.iface.TableDef;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfColumnDef;
@@ -78,7 +77,7 @@ public class RDFSBuilder implements SchemaBuilder
 				RdfTableDef idDef = tables.get(idTable);
 				if (idDef == null)
 				{
-					RdfTableDef.Builder builder = new RdfTableDef.Builder();
+					final RdfTableDef.Builder builder = new RdfTableDef.Builder();
 					idDef = new RdfTableDef(
 							r.asNode().getNameSpace(),
 							idTable,
@@ -87,14 +86,16 @@ public class RDFSBuilder implements SchemaBuilder
 					tables.put(idTable, idDef);
 					final RdfColumnDef.Builder bldr = new RdfColumnDef.Builder();
 					bldr.addQuerySegment("BIND( %2$s, %1$s )")
-							//.setNamespace(r.asNode().getNameSpace())
-							//.setLocalName(idTable)
-					.setType(Types.VARCHAR)
-							.setSigned(false)
+							// .setNamespace(r.asNode().getNameSpace())
+							// .setLocalName(idTable)
+							.setType(Types.VARCHAR).setSigned(false)
 							.setNullable(DatabaseMetaData.columnNoNulls);
 					idDef.add(bldr.build());
-					pk = new RdfKey.Builder().setUnique(true).addSegment(
-							new Builder().setIdx(0).setAscending(true) ).build(model);
+					pk = new RdfKey.Builder()
+							.setUnique(true)
+							.addSegment(
+									new Builder().setIdx(0).setAscending(true))
+							.build(model);
 					idDef.setPrimaryKey(pk);
 				}
 				else

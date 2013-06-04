@@ -16,7 +16,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.ColumnDef;
-import org.xenei.jdbc4sparql.iface.NamedObject;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.impl.NameUtils;
@@ -31,110 +30,24 @@ import org.xenei.jena.entities.annotations.Subject;
 @Subject( namespace = "http://org.xenei.jdbc4sparql/entity/Column#" )
 public class RdfColumn extends RdfNamespacedObject implements Column
 {
-	@Override
-	public RdfCatalog getCatalog()
-	{
-		return getSchema().getCatalog();
-	}
-
-	@Override
-	@Predicate( impl=true )
-	public RdfColumnDef getColumnDef()
-	{
-		throw new EntityManagerRequiredException();
-	}
-
-	@Override
-	@Predicate( impl=true, namespace = "http://www.w3.org/2000/01/rdf-schema#", name="label" )
-	public String getName()
-	{
-		throw new EntityManagerRequiredException();
-	}
-
-	@Override
-	@Predicate( impl= true )
-	public Resource getResource()
-	{
-		throw new EntityManagerRequiredException();
-	}
-
-	@Override
-	@Predicate( impl=true )
-	public RdfSchema getSchema()
-	{
-		throw new EntityManagerRequiredException();
-	}
-
-	@Override
-	public String getSPARQLName()
-	{
-		return NameUtils.getSPARQLName(this);
-	}
-
-	@Override
-	public String getSQLName()
-	{
-		return NameUtils.getDBName(this);
-	}
-
-	@Override
-	@Predicate( impl=true )
-	public RdfTable getTable()
-	{
-		throw new EntityManagerRequiredException();
-	}
-	
-	public List<Triple> getQuerySegments( final Node tableVar,
-			final Node columnVar )
-	{
-		final List<Triple> retval = new ArrayList<Triple>();
-		final String fqName = "<" + getFQName() + ">";
-		for (final String segment : getColumnDef().getQuerySegmentStrings())
-		{
-			if (!segment.trim().startsWith("#"))
-			{
-				final List<String> parts = SparqlParser.Util
-						.parseQuerySegment(String.format(segment, tableVar,
-								columnVar, fqName));
-				if (parts.size() != 3)
-				{
-					throw new IllegalStateException(getFQName()
-							+ " query segment " + segment
-							+ " does not parse into 3 components");
-				}
-				retval.add(new Triple(
-						SparqlParser.Util.parseNode(parts.get(0)),
-						SparqlParser.Util.parseNode(parts.get(1)),
-						SparqlParser.Util.parseNode(parts.get(2))));
-			}
-		}
-		return retval;
-	}
-
-	public boolean isOptional()
-	{
-		return getColumnDef().getNullable() != DatabaseMetaData.columnNoNulls;
-	}
-	
 	public static class Builder implements Column
 	{
 		private ColumnDef columnDef;
 		private Table table;
 		private String name;
 		private Class<? extends RdfColumn> typeClass = RdfColumn.class;
-		private Class<? extends RdfTable> tableTypeClass = RdfTable.class;
 
 		public Builder()
 		{
-			
+
 		}
-		
-		protected Builder(Class<? extends RdfColumn> typeClass, Class<? extends RdfTable> tableTypeClass)
+
+		protected Builder( final Class<? extends RdfColumn> typeClass,
+				final Class<? extends RdfTable> tableTypeClass )
 		{
 			this.typeClass = typeClass;
-			this.tableTypeClass = tableTypeClass;
 		}
-		
+
 		public Column build( final Model model )
 		{
 			checkBuildState();
@@ -264,6 +177,91 @@ public class RdfColumn extends RdfNamespacedObject implements Column
 			this.table = table;
 			return this;
 		}
+	}
+
+	@Override
+	public RdfCatalog getCatalog()
+	{
+		return getSchema().getCatalog();
+	}
+
+	@Override
+	@Predicate( impl = true )
+	public RdfColumnDef getColumnDef()
+	{
+		throw new EntityManagerRequiredException();
+	}
+
+	@Override
+	@Predicate( impl = true, namespace = "http://www.w3.org/2000/01/rdf-schema#", name = "label" )
+	public String getName()
+	{
+		throw new EntityManagerRequiredException();
+	}
+
+	public List<Triple> getQuerySegments( final Node tableVar,
+			final Node columnVar )
+	{
+		final List<Triple> retval = new ArrayList<Triple>();
+		final String fqName = "<" + getFQName() + ">";
+		for (final String segment : getColumnDef().getQuerySegmentStrings())
+		{
+			if (!segment.trim().startsWith("#"))
+			{
+				final List<String> parts = SparqlParser.Util
+						.parseQuerySegment(String.format(segment, tableVar,
+								columnVar, fqName));
+				if (parts.size() != 3)
+				{
+					throw new IllegalStateException(getFQName()
+							+ " query segment " + segment
+							+ " does not parse into 3 components");
+				}
+				retval.add(new Triple(
+						SparqlParser.Util.parseNode(parts.get(0)),
+						SparqlParser.Util.parseNode(parts.get(1)),
+						SparqlParser.Util.parseNode(parts.get(2))));
+			}
+		}
+		return retval;
+	}
+
+	@Override
+	@Predicate( impl = true )
+	public Resource getResource()
+	{
+		throw new EntityManagerRequiredException();
+	}
+
+	@Override
+	@Predicate( impl = true )
+	public RdfSchema getSchema()
+	{
+		throw new EntityManagerRequiredException();
+	}
+
+	@Override
+	public String getSPARQLName()
+	{
+		return NameUtils.getSPARQLName(this);
+	}
+
+	@Override
+	public String getSQLName()
+	{
+		return NameUtils.getDBName(this);
+	}
+
+	@Override
+	@Predicate( impl = true )
+	public RdfTable getTable()
+	{
+		throw new EntityManagerRequiredException();
+	}
+
+	public boolean isOptional()
+	{
+		return getColumnDef().getNullable() != DatabaseMetaData.columnNoNulls;
 	}
 
 }

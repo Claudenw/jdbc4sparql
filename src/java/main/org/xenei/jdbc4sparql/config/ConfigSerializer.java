@@ -27,11 +27,6 @@ import org.xenei.jdbc4sparql.iface.Key;
 import org.xenei.jdbc4sparql.iface.KeySegment;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
-import org.xenei.jdbc4sparql.sparql.SparqlCatalog;
-import org.xenei.jdbc4sparql.sparql.SparqlColumnDef;
-import org.xenei.jdbc4sparql.sparql.SparqlSchema;
-import org.xenei.jdbc4sparql.sparql.SparqlTable;
-import org.xenei.jdbc4sparql.sparql.SparqlTableDef;
 
 /**
  * A class to seriealize / deserialize configuration data.

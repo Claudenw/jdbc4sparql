@@ -10,6 +10,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.Schema;
+import org.xenei.jdbc4sparql.sparql.builders.SchemaBuilder;
 
 public class SchemaBuilderTest
 {

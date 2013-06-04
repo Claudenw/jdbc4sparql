@@ -2,13 +2,11 @@ package org.xenei.jdbc4sparql.impl.rdf;
 
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.rdf.model.ResourceFactory;
 
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.ColumnDef;
@@ -26,7 +24,8 @@ public class ColumnBuilderTests
 		model = ModelFactory.createDefaultModel();
 		columnDef = Builder.getStringBuilder().build(model);
 		mockTable = Mockito.mock(Table.class);
-		Mockito.when( mockTable.getResource()).thenReturn( model.createResource("http://example.com/mockTable"));
+		Mockito.when(mockTable.getResource()).thenReturn(
+				model.createResource("http://example.com/mockTable"));
 	}
 
 	@After
@@ -39,9 +38,7 @@ public class ColumnBuilderTests
 	public void testStandardCreation()
 	{
 		final ColumnBuilder builder = new ColumnBuilder()
-		.setColumnDef(columnDef)
-		.setName("test")
-		.setTable( mockTable );
+				.setColumnDef(columnDef).setName("test").setTable(mockTable);
 		final Column cd = builder.build(model);
 		model.write(System.out, "TURTLE");
 		Assert.assertEquals("test", cd.getName());

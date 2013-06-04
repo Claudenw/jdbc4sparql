@@ -34,9 +34,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.xenei.jdbc4sparql.iface.TableDef;
-import org.xenei.jdbc4sparql.sparql.SparqlCatalog;
-import org.xenei.jdbc4sparql.sparql.SparqlSchema;
-import org.xenei.jdbc4sparql.sparql.SparqlTable;
 
 public class SimpleBuilderTest
 {
@@ -85,8 +82,7 @@ public class SimpleBuilderTest
 		for (final TableDef td : tableDefs)
 		{
 			schema.addTableDef(td);
-			final SparqlTable t = (SparqlTable) schema.getTable(td
-					.getName());
+			final SparqlTable t = (SparqlTable) schema.getTable(td.getName());
 			final ResultSet rs = t.getResultSet();
 			int count = 0;
 			while (rs.next())
@@ -130,8 +126,7 @@ public class SimpleBuilderTest
 		for (final TableDef td : tableDefs)
 		{
 			schema.addTableDef(td);
-			final SparqlTable t = (SparqlTable) schema.getTable(td
-					.getName());
+			final SparqlTable t = (SparqlTable) schema.getTable(td.getName());
 			final ResultSet rs = t.getResultSet();
 			boolean foundNull = false;
 			while (rs.next() && !foundNull)

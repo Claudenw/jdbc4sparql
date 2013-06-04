@@ -70,8 +70,8 @@ public class NameUtils
 
 	public static String getSPARQLName( final Column column )
 	{
-		return NameUtils.getSPARQLName(column.getSchema().getName(),
-				column.getTable().getName(), column.getName());
+		return NameUtils.getSPARQLName(column.getSchema().getName(), column
+				.getTable().getName(), column.getName());
 	}
 
 	public static String getSPARQLName( final String schema,

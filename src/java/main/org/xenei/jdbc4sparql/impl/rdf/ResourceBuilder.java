@@ -8,7 +8,6 @@ import com.hp.hpl.jena.vocabulary.RDF;
 import org.xenei.jdbc4sparql.iface.NamespacedObject;
 import org.xenei.jena.entities.EntityManager;
 import org.xenei.jena.entities.EntityManagerFactory;
-import org.xenei.jena.entities.SubjectInfo;
 import org.xenei.jena.entities.annotations.Subject;
 
 public class ResourceBuilder
@@ -22,7 +21,7 @@ public class ResourceBuilder
 
 	public static String getNamespace( final Class<?> nsClass )
 	{
-		EntityManager em = EntityManagerFactory.getEntityManager();
+		final EntityManager em = EntityManagerFactory.getEntityManager();
 		final Subject subject = em.getSubject(nsClass);
 		if (subject == null)
 		{

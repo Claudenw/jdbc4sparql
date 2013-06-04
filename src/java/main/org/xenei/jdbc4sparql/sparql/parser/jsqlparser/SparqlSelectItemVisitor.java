@@ -26,7 +26,6 @@ import net.sf.jsqlparser.statement.select.AllTableColumns;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.SelectItemVisitor;
 
-import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.impl.NameUtils;
@@ -103,7 +102,7 @@ class SparqlSelectItemVisitor implements SelectItemVisitor
 		{
 			try
 			{
-				queryBuilder.addVar( c, null);
+				queryBuilder.addVar(c, null);
 			}
 			catch (final SQLException e)
 			{

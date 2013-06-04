@@ -75,33 +75,32 @@ public abstract class AbstractTable implements Table
 		return table.getColumnCount();
 	}
 
-
 	public ColumnDef getColumnDef( final int idx )
 	{
 		return table.getTableDef().getColumnDef(idx);
 	}
 
-	
 	public List<ColumnDef> getColumnDefs()
 	{
 		return table.getTableDef().getColumnDefs();
 	}
 
+	@Override
+	public int getColumnIndex( final Column column )
+	{
+		return table.getColumnIndex(column);
+	}
 
 	public int getColumnIndex( final ColumnDef column )
 	{
 		return table.getTableDef().getColumnIndex(column);
 	}
 
-	
-
 	@Override
 	public Iterator<? extends Column> getColumns()
 	{
 		return table.getColumns();
 	}
-
-
 
 	public Key getPrimaryKey()
 	{
@@ -115,7 +114,6 @@ public abstract class AbstractTable implements Table
 	{
 		return schema;
 	}
-
 
 	public Key getSortKey()
 	{
@@ -134,7 +132,6 @@ public abstract class AbstractTable implements Table
 		return NameUtils.getDBName(this);
 	}
 
-
 	public TableDef getSuperTableDef()
 	{
 		return table.getTableDef().getSuperTableDef();
@@ -143,6 +140,7 @@ public abstract class AbstractTable implements Table
 	/**
 	 * @return The table definition for this table.
 	 */
+	@Override
 	public TableDef getTableDef()
 	{
 		return table.getTableDef();
@@ -163,7 +161,7 @@ public abstract class AbstractTable implements Table
 
 	public void verify( final Object[] row )
 	{
-		List<ColumnDef> columns = table.getTableDef().getColumnDefs();
+		final List<ColumnDef> columns = table.getTableDef().getColumnDefs();
 		if (row.length != columns.size())
 		{
 			throw new IllegalArgumentException(String.format(
@@ -178,8 +176,9 @@ public abstract class AbstractTable implements Table
 			{
 				if (c.getNullable() == DatabaseMetaData.columnNoNulls)
 				{
-					throw new IllegalArgumentException(String.format(
-							"Column %s may not be null", getColumn(i).getName()));
+					throw new IllegalArgumentException(
+							String.format("Column %s may not be null",
+									getColumn(i).getName()));
 				}
 			}
 			else
@@ -194,10 +193,5 @@ public abstract class AbstractTable implements Table
 			}
 		}
 
-	}
-	@Override
-	public int getColumnIndex( Column column )
-	{
-		return table.getColumnIndex(column);
 	}
 }

@@ -23,24 +23,24 @@ import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 
 public class SparqlView extends RdfTable
 {
-	public static final String NAME_SPACE = "http://org.xenei.jdbc4sparql/vocab#View";
+	public static class Builder extends RdfTable.Builder
+	{
 
-	public static class Builder extends RdfTable.Builder {
-		
-		private SparqlQueryBuilder queryBuilder;
-		
-		public Builder setSparqlQueryBuilder( SparqlQueryBuilder queryBuilder)
+		@Override
+		public SparqlView build( final Model model )
 		{
-			this.queryBuilder = queryBuilder;
+
+		}
+
+		public Builder setSparqlQueryBuilder(
+				final SparqlQueryBuilder queryBuilder )
+		{
 			return this;
 		}
-		
-		public SparqlView build( Model model )
-		{
-			
-		}
 	}
-	
+
+	public static final String NAME_SPACE = "http://org.xenei.jdbc4sparql/vocab#View";
+
 	public SparqlView( final SparqlQueryBuilder builder )
 	{
 		super(builder);

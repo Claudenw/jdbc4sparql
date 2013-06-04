@@ -18,8 +18,8 @@ public class TableDefBuilderTest
 	{
 		new Builder();
 		final KeyBuilder builder = new KeyBuilder()
-				.addSegment(new Builder().build(model))
-				.setUnique(true).setKeyName("PK");
+				.addSegment(new Builder().build(model)).setUnique(true)
+				.setKeyName("PK");
 		return builder.build(model);
 	}
 
@@ -50,10 +50,8 @@ public class TableDefBuilderTest
 		try
 		{
 			new TableDefBuilder()
-					.addColumnDef(
-							Builder.getStringBuilder().build(model))
-					.addColumnDef(
-							Builder.getIntegerBuilder().build(model))
+					.addColumnDef(Builder.getStringBuilder().build(model))
+					.addColumnDef(Builder.getIntegerBuilder().build(model))
 					.setPrimaryKey(getSortKey());
 			Assert.fail("Should have thrown IllegalArgumentException");
 		}
@@ -66,9 +64,9 @@ public class TableDefBuilderTest
 	@Test
 	public void testDefault()
 	{
-		final TableDefBuilder builder = new TableDefBuilder()
-				.addColumnDef(Builder.getStringBuilder().build(model))
-				.addColumnDef(Builder.getIntegerBuilder().build(model));
+		final TableDefBuilder builder = new TableDefBuilder().addColumnDef(
+				Builder.getStringBuilder().build(model)).addColumnDef(
+				Builder.getIntegerBuilder().build(model));
 		final TableDef tableDef = builder.build(model);
 
 		Assert.assertEquals(2, tableDef.getColumnCount());
@@ -82,8 +80,8 @@ public class TableDefBuilderTest
 		Assert.assertNull(tableDef.getPrimaryKey());
 		Assert.assertNull(tableDef.getSortKey());
 		Assert.assertNull(tableDef.getSuperTableDef());
-		
-		model.write( System.out, "TURTLE" );
+
+		model.write(System.out, "TURTLE");
 	}
 
 	@Test
@@ -133,9 +131,9 @@ public class TableDefBuilderTest
 	@Test
 	public void testSuperTable()
 	{
-		TableDefBuilder builder = new TableDefBuilder()
-				.addColumnDef(Builder.getStringBuilder().build(model))
-				.addColumnDef(Builder.getIntegerBuilder().build(model));
+		TableDefBuilder builder = new TableDefBuilder().addColumnDef(
+				Builder.getStringBuilder().build(model)).addColumnDef(
+				Builder.getIntegerBuilder().build(model));
 		final TableDef tableDef2 = builder.build(model);
 
 		builder = new TableDefBuilder()

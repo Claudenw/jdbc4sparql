@@ -17,91 +17,87 @@
  */
 package org.xenei.jdbc4sparql.iface;
 
-import java.util.Collection;
 import java.util.Iterator;
 
-import org.xenei.jdbc4sparql.impl.rdf.RdfColumn;
-import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
-import org.xenei.jdbc4sparql.impl.rdf.RdfTableDef;
 import org.xenei.jena.entities.ResourceWrapper;
-import org.xenei.jena.entities.annotations.Predicate;
-import org.xenei.jena.entities.annotations.Subject;
-
 
 public interface Table extends NamedObject, ResourceWrapper
 {
-//	/**
-//	 * An iterator of the columns in the table.
-//	 * 
-//	 * Remove is not supported.
-//	 */
-//	public static class ColumnIterator implements Iterator<Column>
-//	{
-//		// the table
-//		private final Table table;
-//		// the namespace
-//		private final String namespace;
-//		// an iterator over the columnDefs
-//		private final Iterator<? extends ColumnDef> iter;
-//
-//		/**
-//		 * Constructor
-//		 * 
-//		 * @param namespace
-//		 *            The namespace of the table.
-//		 * @param table
-//		 *            The table.
-//		 * @param colDefs
-//		 *            The collection of column definitions.
-//		 */
-//		public ColumnIterator( final String namespace, final Table table,
-//				final Collection<? extends ColumnDef> colDefs )
-//		{
-//			this.table = table;
-//			this.namespace = namespace;
-//			iter = colDefs.iterator();
-//		}
-//
-//		/**
-//		 * Constructor
-//		 * 
-//		 * @param table
-//		 *            The table.
-//		 * @param colDefs
-//		 *            The collection of column definitions.
-//		 */
-//		public ColumnIterator( final Table table,
-//				final Collection<? extends ColumnDef> colDefs )
-//		{
-//			this(table.getResource().getURI(), table, colDefs);
-//		}
-//		
-//		@Override
-//		public boolean hasNext()
-//		{
-//			return iter.hasNext();
-//		}
-//
-//		@Override
-//		public Column next()
-//		{
-//			RdfColumn.Builder builder = new RdfColumn.Builder();
-//			builder.setColumnDef( iter.next() )
-//			.setName(name)
-//			.setTable( table );
-//			return builder.build();
-//		}
-//
-//		@Override
-//		public void remove()
-//		{
-//			throw new UnsupportedOperationException();
-//		}
-//
-//	}
-	
-	public TableDef getTableDef();
-	
+	// /**
+	// * An iterator of the columns in the table.
+	// *
+	// * Remove is not supported.
+	// */
+	// public static class ColumnIterator implements Iterator<Column>
+	// {
+	// // the table
+	// private final Table table;
+	// // the namespace
+	// private final String namespace;
+	// // an iterator over the columnDefs
+	// private final Iterator<? extends ColumnDef> iter;
+	//
+	// /**
+	// * Constructor
+	// *
+	// * @param namespace
+	// * The namespace of the table.
+	// * @param table
+	// * The table.
+	// * @param colDefs
+	// * The collection of column definitions.
+	// */
+	// public ColumnIterator( final String namespace, final Table table,
+	// final Collection<? extends ColumnDef> colDefs )
+	// {
+	// this.table = table;
+	// this.namespace = namespace;
+	// iter = colDefs.iterator();
+	// }
+	//
+	// /**
+	// * Constructor
+	// *
+	// * @param table
+	// * The table.
+	// * @param colDefs
+	// * The collection of column definitions.
+	// */
+	// public ColumnIterator( final Table table,
+	// final Collection<? extends ColumnDef> colDefs )
+	// {
+	// this(table.getResource().getURI(), table, colDefs);
+	// }
+	//
+	// @Override
+	// public boolean hasNext()
+	// {
+	// return iter.hasNext();
+	// }
+	//
+	// @Override
+	// public Column next()
+	// {
+	// RdfColumn.Builder builder = new RdfColumn.Builder();
+	// builder.setColumnDef( iter.next() )
+	// .setName(name)
+	// .setTable( table );
+	// return builder.build();
+	// }
+	//
+	// @Override
+	// public void remove()
+	// {
+	// throw new UnsupportedOperationException();
+	// }
+	//
+	// }
+
+	/**
+	 * delete the table. Removes the table from the schema.
+	 */
+	void delete();
+
 	/**
 	 * Find all columns with the columnNamePattern.
 	 * 
@@ -119,7 +115,6 @@ public interface Table extends NamedObject, ResourceWrapper
 	 */
 	Catalog getCatalog();
 
-	int getColumnCount();
 	/**
 	 * Get the column by index.
 	 * 
@@ -138,6 +133,19 @@ public interface Table extends NamedObject, ResourceWrapper
 	 * @return the column or null if name not found.
 	 */
 	Column getColumn( String name );
+
+	int getColumnCount();
+
+	public int getColumnIndex( Column column );
+
+	/**
+	 * Get the index (zero based) for the column name.
+	 * 
+	 * @param columnName
+	 *            The column name to search for
+	 * @return index for column name or -1 if not found.
+	 */
+	public int getColumnIndex( String columnName );
 
 	/**
 	 * Get an iterator over all the columns in order.
@@ -169,6 +177,8 @@ public interface Table extends NamedObject, ResourceWrapper
 	 */
 	Table getSuperTable();
 
+	public TableDef getTableDef();
+
 	/**
 	 * Get the type of table.
 	 * Typical types are "TABLE", "VIEW", "SYSTEM TABLE", "GLOBAL TEMPORARY",
@@ -177,19 +187,5 @@ public interface Table extends NamedObject, ResourceWrapper
 	 * @return The table type
 	 */
 	String getType();
-	
-	/**
-	 * delete the table.  Removes the table from the schema.
-	 */
-	void delete();
-	
-	/**
-	 * Get the index (zero based) for the column name.
-	 * @param columnName The column name to search for
-	 * @return index for column name or -1 if not found.
-	 */
-	public int getColumnIndex( String columnName );
-	
-	public int getColumnIndex( Column column );
 
 }

@@ -20,7 +20,6 @@ package org.xenei.jdbc4sparql.mock;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 
 import org.xenei.jdbc4sparql.iface.Schema;
-import org.xenei.jdbc4sparql.sparql.SparqlCatalog;
 
 public class MockCatalog extends SparqlCatalog
 {

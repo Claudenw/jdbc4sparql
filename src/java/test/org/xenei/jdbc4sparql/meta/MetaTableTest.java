@@ -24,9 +24,7 @@ import java.sql.SQLException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.xenei.jdbc4sparql.impl.ColumnDefImpl;
 import org.xenei.jdbc4sparql.impl.DataTable;
-import org.xenei.jdbc4sparql.impl.TableDefImpl;
 import org.xenei.jdbc4sparql.mock.MockSchema;
 
 public class MetaTableTest

@@ -10,136 +10,20 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-import org.apache.commons.lang3.StringUtils;
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.NameFilter;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
-import org.xenei.jdbc4sparql.iface.TableDef;
 import org.xenei.jena.entities.EntityManager;
 import org.xenei.jena.entities.EntityManagerFactory;
 import org.xenei.jena.entities.EntityManagerRequiredException;
 import org.xenei.jena.entities.MissingAnnotation;
-import org.xenei.jena.entities.ResourceWrapper;
 import org.xenei.jena.entities.annotations.Predicate;
 import org.xenei.jena.entities.annotations.Subject;
 
 @Subject( namespace = "http://org.xenei.jdbc4sparql/entity/Schema#" )
 public class RdfSchema extends RdfNamespacedObject implements Schema
 {
-	public class ChangeListener extends AbstractChangeListener<Schema,Table>
-	{
-
-		public ChangeListener()
-		{
-			super(RdfSchema.this.getResource(), RdfSchema.class, "tables",
-					RdfTable.class);
-		}
-
-		@Override
-		protected void addObject( final Table t )
-		{
-			tableList.add(t);
-		}
-
-		@Override
-		protected void clearObjects()
-		{
-			tableList = null;
-		}
-
-		@Override
-		protected boolean isListening()
-		{
-			return tableList != null;
-		}
-
-		@Override
-		protected void removeObject( final Table t )
-		{
-			tableList.remove(t);
-		}
-
-	}
-
-	private Set<Table> tableList;
-
-	@Predicate( impl=true )
-	public void addTables( final Table table )
-	{
-		throw new EntityManagerRequiredException();
-	}
-
-	public void delete()
-	{
-		for (final Table tbl : readTables())
-		{
-			tbl.delete();
-		}
-
-		final Model model = getResource().getModel();
-		model.enterCriticalSection(Lock.WRITE);
-		try
-		{
-			getResource().getModel().remove(null, null, getResource());
-			getResource().getModel().remove(getResource(), null, null);
-		}
-		finally
-		{
-			model.leaveCriticalSection();
-		}
-	}
-
-	@Override
-	public NameFilter<Table> findTables( final String tableNamePattern )
-	{
-		return new NameFilter<Table>(tableNamePattern, readTables());
-	}
-
-	@Override
-	@Predicate( impl=true )
-	public RdfCatalog getCatalog()
-	{
-		throw new EntityManagerRequiredException();
-	}
-
-	@Override
-	@Predicate( impl=true, namespace = "http://www.w3.org/2000/01/rdf-schema#", name="label" )
-	public String getName()
-	{
-		throw new EntityManagerRequiredException();
-	}
-
-	@Override
-	@Predicate( impl=true )
-	public Resource getResource()
-	{
-		throw new EntityManagerRequiredException();
-	}
-
-	@Override
-	public Table getTable( final String tableName )
-	{
-		final NameFilter<Table> nf = findTables(tableName);
-		return nf.hasNext() ? nf.next() : null;
-	}
-
-	@Override
-	@Predicate( impl=true, type=Table.class )
-	public Set<Table> getTables()
-	{
-		throw new EntityManagerRequiredException();
-	}
-
-	private Set<Table> readTables()
-	{
-		if (tableList == null)
-		{
-			tableList = getTables();
-		}
-		return tableList;
-	}
-	
 	public static class Builder implements Schema
 	{
 		private String name;
@@ -175,10 +59,11 @@ public class RdfSchema extends RdfNamespacedObject implements Schema
 
 			try
 			{
-				final RdfSchema retval = entityManager
-						.read(schema, RdfSchema.class);
+				final RdfSchema retval = entityManager.read(schema,
+						RdfSchema.class);
 				catalog.getResource().addProperty(
-						builder.getProperty(RdfCatalog.class, "schemas"), schema);
+						builder.getProperty(RdfCatalog.class, "schemas"),
+						schema);
 				model.register(retval.new ChangeListener());
 				return retval;
 			}
@@ -220,8 +105,9 @@ public class RdfSchema extends RdfNamespacedObject implements Schema
 					.append(catalog.getResource().getURI()).append(" ")
 					.append(name);
 
-			return String.format("%s/instance/N%s",
-					ResourceBuilder.getFQName(RdfSchema.class),
+			return String
+					.format("%s/instance/N%s", ResourceBuilder
+							.getFQName(RdfSchema.class),
 
 					UUID.nameUUIDFromBytes(sb.toString().getBytes()).toString());
 		}
@@ -263,8 +149,121 @@ public class RdfSchema extends RdfNamespacedObject implements Schema
 			this.name = name;
 			return this;
 		}
-		
-		
+
+	}
+
+	public class ChangeListener extends
+			AbstractChangeListener<Schema, RdfTable>
+	{
+
+		public ChangeListener()
+		{
+			super(RdfSchema.this.getResource(), RdfSchema.class, "tables",
+					RdfTable.class);
+		}
+
+		@Override
+		protected void addObject( final RdfTable t )
+		{
+			tableList.add(t);
+		}
+
+		@Override
+		protected void clearObjects()
+		{
+			tableList = null;
+		}
+
+		@Override
+		protected boolean isListening()
+		{
+			return tableList != null;
+		}
+
+		@Override
+		protected void removeObject( final RdfTable t )
+		{
+			tableList.remove(t);
+		}
+
+	}
+
+	private Set<RdfTable> tableList;
+
+	@Predicate( impl = true )
+	public void addTables( final RdfTable table )
+	{
+		throw new EntityManagerRequiredException();
+	}
+
+	public void delete()
+	{
+		for (final Table tbl : readTables())
+		{
+			tbl.delete();
+		}
+
+		final Model model = getResource().getModel();
+		model.enterCriticalSection(Lock.WRITE);
+		try
+		{
+			getResource().getModel().remove(null, null, getResource());
+			getResource().getModel().remove(getResource(), null, null);
+		}
+		finally
+		{
+			model.leaveCriticalSection();
+		}
+	}
+
+	@Override
+	public NameFilter<RdfTable> findTables( final String tableNamePattern )
+	{
+		return new NameFilter<RdfTable>(tableNamePattern, readTables());
+	}
+
+	@Override
+	@Predicate( impl = true )
+	public RdfCatalog getCatalog()
+	{
+		throw new EntityManagerRequiredException();
+	}
+
+	@Override
+	@Predicate( impl = true, namespace = "http://www.w3.org/2000/01/rdf-schema#", name = "label" )
+	public String getName()
+	{
+		throw new EntityManagerRequiredException();
+	}
+
+	@Override
+	@Predicate( impl = true )
+	public Resource getResource()
+	{
+		throw new EntityManagerRequiredException();
+	}
+
+	@Override
+	public RdfTable getTable( final String tableName )
+	{
+		final NameFilter<RdfTable> nf = findTables(tableName);
+		return nf.hasNext() ? nf.next() : null;
+	}
+
+	@Override
+	@Predicate( impl = true, type = RdfTable.class )
+	public Set<RdfTable> getTables()
+	{
+		throw new EntityManagerRequiredException();
+	}
+
+	private Set<RdfTable> readTables()
+	{
+		if (tableList == null)
+		{
+			tableList = getTables();
+		}
+		return tableList;
 	}
 
 }

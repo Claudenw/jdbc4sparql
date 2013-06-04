@@ -2,7 +2,6 @@ package org.xenei.jdbc4sparql.impl.rdf;
 
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.rdf.model.ResourceFactory;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -26,12 +25,13 @@ public class TableBuilderTest
 	public void setUp() throws Exception
 	{
 		model = ModelFactory.createDefaultModel();
-		final TableDefBuilder builder = new TableDefBuilder()
-				.addColumnDef(Builder.getStringBuilder().build(model))
-				.addColumnDef(Builder.getIntegerBuilder().build(model));
+		final TableDefBuilder builder = new TableDefBuilder().addColumnDef(
+				Builder.getStringBuilder().build(model)).addColumnDef(
+				Builder.getIntegerBuilder().build(model));
 		tableDef = builder.build(model);
 		mockSchema = Mockito.mock(Schema.class);
-		Mockito.when( mockSchema.getResource()).thenReturn( model.createResource("http://example.com/mockSchema"));
+		Mockito.when(mockSchema.getResource()).thenReturn(
+				model.createResource("http://example.com/mockSchema"));
 
 	}
 
@@ -44,25 +44,22 @@ public class TableBuilderTest
 	@Test
 	public void testDefaultBuilder()
 	{
-		TableBuilder builder = new TableBuilder()
-			.setTableDef(tableDef)
-			.setName( "table" )
-			.setColumn(0, "StringCol" )
-			.setColumn(1, "IntCol" )
-			.setSchema( mockSchema )
-			.setType( "testing Table");
-		Table table = builder.build( model );			
-		
-		model.write( System.out, "TURTLE");
-		
+		final TableBuilder builder = new TableBuilder().setTableDef(tableDef)
+				.setName("table").setColumn(0, "StringCol")
+				.setColumn(1, "IntCol").setSchema(mockSchema)
+				.setType("testing Table");
+		final Table table = builder.build(model);
+
+		model.write(System.out, "TURTLE");
+
 		Assert.assertEquals(2, table.getColumnCount());
-		Assert.assertEquals( "table", table.getName() );
-		NameFilter<Column> nf = table.findColumns( "StringCol");
-		Assert.assertTrue( nf.hasNext() );
-		Column c = nf.next();
-		Assert.assertEquals( "StringCol", c.getName());
+		Assert.assertEquals("table", table.getName());
+		final NameFilter<Column> nf = table.findColumns("StringCol");
+		Assert.assertTrue(nf.hasNext());
+		final Column c = nf.next();
+		Assert.assertEquals("StringCol", c.getName());
 		Assert.assertFalse(nf.hasNext());
-		
+
 	}
 
 }

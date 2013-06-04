@@ -28,7 +28,6 @@ import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfColumnDef;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTableDef;
 
-
 /**
  * A builder that looks for the phrase "nullable" in column localname to
  * determine

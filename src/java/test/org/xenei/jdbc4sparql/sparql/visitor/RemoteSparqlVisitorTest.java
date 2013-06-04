@@ -44,7 +44,6 @@ import org.xenei.jdbc4sparql.mock.MockCatalog;
 import org.xenei.jdbc4sparql.mock.MockColumn;
 import org.xenei.jdbc4sparql.mock.MockSchema;
 import org.xenei.jdbc4sparql.mock.MockTableDef;
-import org.xenei.jdbc4sparql.sparql.SparqlCatalog;
 import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlVisitor;
 
 public class RemoteSparqlVisitorTest

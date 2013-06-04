@@ -20,9 +20,6 @@ package org.xenei.jdbc4sparql.iface;
 import java.util.List;
 
 import org.xenei.jena.entities.ResourceWrapper;
-import org.xenei.jena.entities.annotations.Predicate;
-import org.xenei.jena.entities.annotations.Subject;
-
 
 public interface TableDef extends ResourceWrapper
 {

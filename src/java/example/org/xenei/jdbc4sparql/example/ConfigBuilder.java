@@ -17,8 +17,6 @@ import org.xenei.jdbc4sparql.J4SDriver;
 import org.xenei.jdbc4sparql.J4SUrl;
 import org.xenei.jdbc4sparql.config.ConfigSerializer;
 import org.xenei.jdbc4sparql.config.ModelWriter;
-import org.xenei.jdbc4sparql.sparql.SparqlCatalog;
-import org.xenei.jdbc4sparql.sparql.SparqlSchema;
 import org.xenei.jdbc4sparql.sparql.builders.RDFSBuilder;
 
 public class ConfigBuilder

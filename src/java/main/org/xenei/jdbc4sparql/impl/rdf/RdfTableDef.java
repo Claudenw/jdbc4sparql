@@ -149,7 +149,7 @@ public class RdfTableDef extends RdfNamespacedObject implements TableDef
 			}
 			if (querySegments.size() == 0)
 			{
-				querySegments.add( "# no query segments provided");
+				querySegments.add("# no query segments provided");
 			}
 		}
 
@@ -258,26 +258,6 @@ public class RdfTableDef extends RdfNamespacedObject implements TableDef
 
 	private Class<? extends RdfColumnDef> colDefClass;
 
-	@Predicate( impl=true )
-	public RDFNode getQuerySegments()
-	{
-		throw new EntityManagerRequiredException();
-	}
-	
-	public List<String> getQuerySegmentStrings()
-	{
-		if (querySegments == null)
-		{	
-			querySegments = new ArrayList<String>();
-			RDFList lst = getQuerySegments().as( RDFList.class );
-			for (RDFNode node : lst.asJavaList())
-			{
-				querySegments.add( node.asLiteral().toString() );
-			}
-		}
-		return querySegments;
-	}
-	
 	@Override
 	public int getColumnCount()
 	{
@@ -336,6 +316,26 @@ public class RdfTableDef extends RdfNamespacedObject implements TableDef
 	public Key getPrimaryKey()
 	{
 		throw new EntityManagerRequiredException();
+	}
+
+	@Predicate( impl = true )
+	public RDFNode getQuerySegments()
+	{
+		throw new EntityManagerRequiredException();
+	}
+
+	public List<String> getQuerySegmentStrings()
+	{
+		if (querySegments == null)
+		{
+			querySegments = new ArrayList<String>();
+			final RDFList lst = getQuerySegments().as(RDFList.class);
+			for (final RDFNode node : lst.asJavaList())
+			{
+				querySegments.add(node.asLiteral().toString());
+			}
+		}
+		return querySegments;
 	}
 
 	@Override

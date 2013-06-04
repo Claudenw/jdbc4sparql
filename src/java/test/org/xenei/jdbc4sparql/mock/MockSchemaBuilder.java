@@ -4,7 +4,6 @@ import java.util.Collections;
 import java.util.Set;
 
 import org.xenei.jdbc4sparql.iface.TableDef;
-import org.xenei.jdbc4sparql.sparql.SparqlCatalog;
 import org.xenei.jdbc4sparql.sparql.builders.SchemaBuilder;
 
 public class MockSchemaBuilder implements SchemaBuilder

@@ -19,16 +19,12 @@ package org.xenei.jdbc4sparql.iface;
 
 import java.util.Set;
 
-import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 import org.xenei.jena.entities.ResourceWrapper;
-import org.xenei.jena.entities.annotations.Predicate;
-import org.xenei.jena.entities.annotations.Subject;
-
 
 public interface Schema extends NamedObject, ResourceWrapper
 {
 
-	NameFilter<Table> findTables( String tableNamePattern );
+	NameFilter<? extends Table> findTables( String tableNamePattern );
 
 	/**
 	 * The catalog this schema is in.
@@ -39,8 +35,7 @@ public interface Schema extends NamedObject, ResourceWrapper
 	Catalog getCatalog();
 
 	Table getTable( String tableName );
-	
-	Set<Table> getTables();
 
-	
+	Set<? extends Table> getTables();
+
 }

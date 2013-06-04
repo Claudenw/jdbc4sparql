@@ -23,8 +23,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.xenei.jdbc4sparql.iface.ColumnDef;
-import org.xenei.jdbc4sparql.impl.ColumnDefImpl;
-import org.xenei.jdbc4sparql.impl.TableDefImpl;
 
 public class MetaTableDefTest
 {

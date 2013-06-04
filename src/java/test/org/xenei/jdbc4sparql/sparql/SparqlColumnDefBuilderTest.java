@@ -32,7 +32,7 @@ public class SparqlColumnDefBuilderTest
 	public void testCreation()
 	{
 		final SparqlColumnDef.Builder builder = new SparqlColumnDef.Builder();
-		
+
 		builder.setType(Types.VARCHAR).setAutoIncrement(true)
 				.setCaseSensitive(true).setColumnClassName("foo")
 				.setCurrency(true).setDefinitelyWritable(true)
@@ -41,7 +41,7 @@ public class SparqlColumnDefBuilderTest
 				.setPrecision(3).setReadOnly(true).setScale(10)
 				.setSearchable(true).setSigned(true).setTypeName("bar")
 				.setWritable(true);
-		builder.addQuerySegment( "Segment1").addQuerySegment("Segment2");
+		builder.addQuerySegment("Segment1").addQuerySegment("Segment2");
 
 		final SparqlColumnDef cd = builder.build(model);
 		model.write(System.out, "TURTLE");
@@ -61,13 +61,13 @@ public class SparqlColumnDefBuilderTest
 		Assert.assertEquals(true, cd.isSigned());
 		Assert.assertEquals("bar", cd.getTypeName());
 		Assert.assertEquals(true, cd.isWritable());
-		
-		List<String> lst = cd.getQuerySegments();
-		Assert.assertNotNull( lst );
-		Assert.assertEquals( 2, lst.size());
-		Assert.assertEquals( "Segment1", lst.get(0));
-		Assert.assertEquals( "Segment2", lst.get(1));
-		
+
+		final List<String> lst = cd.getQuerySegments();
+		Assert.assertNotNull(lst);
+		Assert.assertEquals(2, lst.size());
+		Assert.assertEquals("Segment1", lst.get(0));
+		Assert.assertEquals("Segment2", lst.get(1));
+
 	}
 
 }

@@ -18,9 +18,6 @@
 package org.xenei.jdbc4sparql.iface;
 
 import org.xenei.jena.entities.ResourceWrapper;
-import org.xenei.jena.entities.annotations.Predicate;
-import org.xenei.jena.entities.annotations.Subject;
-
 
 public interface Column extends NamedObject, ResourceWrapper
 {
@@ -28,7 +25,7 @@ public interface Column extends NamedObject, ResourceWrapper
 	 * @return the Catalog this table is in.
 	 */
 	public Catalog getCatalog();
-	
+
 	public ColumnDef getColumnDef();
 
 	/**
@@ -50,5 +47,5 @@ public interface Column extends NamedObject, ResourceWrapper
 	 * @return The table this column is in.
 	 */
 	public Table getTable();
-	
+
 }

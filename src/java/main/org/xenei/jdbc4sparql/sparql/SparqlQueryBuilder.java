@@ -120,8 +120,8 @@ public class SparqlQueryBuilder
 				return column.getColumnDef().getNullable() == ResultSetMetaData.columnNullable ? NodeValue.TRUE
 						: NodeValue.FALSE;
 			}
-			final Class<?> resultingClass = TypeConverter.getJavaType(column.getColumnDef()
-					.getType());
+			final Class<?> resultingClass = TypeConverter.getJavaType(column
+					.getColumnDef().getType());
 			Object columnObject;
 			if (n.isLiteral())
 			{
@@ -421,8 +421,8 @@ public class SparqlQueryBuilder
 		checkBuilt();
 		if (!columnsInQuery.containsKey(column.getSQLName()))
 		{
-			RdfTableInfo sti = tablesInQuery.get(column.getTable()
-					.getSQLName());
+			RdfTableInfo sti = tablesInQuery
+					.get(column.getTable().getSQLName());
 			if (sti == null)
 			{
 				sti = new RdfTableInfo(getElementGroup(), column.getTable(),
@@ -681,8 +681,7 @@ public class SparqlQueryBuilder
 	 *            Columns to add to the query as variables.
 	 * @throws SQLException
 	 */
-	public void addVars( final Iterator<RdfColumn> cols )
-			throws SQLException
+	public void addVars( final Iterator<RdfColumn> cols ) throws SQLException
 	{
 		checkBuilt();
 		while (cols.hasNext())
@@ -766,9 +765,8 @@ public class SparqlQueryBuilder
 	 *            The column name pattern. null = no restriction.
 	 * @return
 	 */
-	private Collection<RdfColumn> findColumns(
-			final String schemaNamePattern, final String tableNamePattern,
-			final String columnNamePattern )
+	private Collection<RdfColumn> findColumns( final String schemaNamePattern,
+			final String tableNamePattern, final String columnNamePattern )
 	{
 		final List<RdfColumn> columns = new ArrayList<RdfColumn>();
 		for (final Schema schema : catalog.findSchemas(schemaNamePattern))
@@ -946,14 +944,13 @@ public class SparqlQueryBuilder
 	public RdfTableDef getTableDef( final String namespace,
 			final String localName )
 	{
-		RdfTableDef.Builder builder = new RdfTableDef.Builder();
-		Model model = ModelFactory.createDefaultModel();	
-			
-		
-		//final RdfTableDef tableDef = new RdfTableDef(namespace,
-		//		localName, "", null);
+		final RdfTableDef.Builder builder = new RdfTableDef.Builder();
+		final Model model = ModelFactory.createDefaultModel();
+
+		// final RdfTableDef tableDef = new RdfTableDef(namespace,
+		// localName, "", null);
 		final VarExprList expLst = query.getProject();
-		List<Column> colLst = new ArrayList<Column>();
+		new ArrayList<Column>();
 		for (final Var var : expLst.getVars())
 		{
 			String varColName = null;
@@ -974,7 +971,7 @@ public class SparqlQueryBuilder
 						SparqlQueryBuilder.NOT_FOUND_IN_QUERY, var));
 			}
 			builder.addColumnDef(c.getColumnDef());
-			
+
 		}
 		return builder.build(model);
 	}

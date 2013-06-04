@@ -31,7 +31,6 @@ import java.util.Set;
 
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.Table;
-import org.xenei.jdbc4sparql.iface.TableDef;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfColumnDef;
 import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
@@ -54,7 +53,8 @@ public class SimpleBuilder implements SchemaBuilder
 	private static final String TABLE_SEGMENT = "%1$s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> %2$s";
 	protected static final String COLUMN_SEGMENT = "%1$s %3$s %2$s";
 
-	private Model model;
+	private final Model model;
+
 	public SimpleBuilder()
 	{
 		model = ModelFactory.createDefaultModel();
@@ -63,19 +63,19 @@ public class SimpleBuilder implements SchemaBuilder
 	protected List<String> addColumnDefs( final RdfCatalog catalog,
 			final RdfTableDef.Builder tableDefBuilder, final Resource tName )
 	{
-		List<String> colNames = new ArrayList<String>();
+		final List<String> colNames = new ArrayList<String>();
 		final List<QuerySolution> solns = catalog.executeQuery(String.format(
 				SimpleBuilder.COLUMN_QUERY, tName));
-		
+
 		for (final QuerySolution soln : solns)
 		{
-			RdfColumnDef.Builder builder = new RdfColumnDef.Builder();
+			final RdfColumnDef.Builder builder = new RdfColumnDef.Builder();
 			final Resource cName = soln.getResource("cName");
-			colNames.add( cName.getLocalName() );
+			colNames.add(cName.getLocalName());
 			builder.addQuerySegment(SimpleBuilder.COLUMN_SEGMENT)
 					.setType(Types.VARCHAR)
 					.setNullable(DatabaseMetaData.columnNullable);
-			tableDefBuilder.addColumnDef(builder.build( model ));
+			tableDefBuilder.addColumnDef(builder.build(model));
 		}
 		return colNames;
 	}
@@ -86,21 +86,18 @@ public class SimpleBuilder implements SchemaBuilder
 		final HashSet<Table> retval = new HashSet<Table>();
 		final List<QuerySolution> solns = catalog
 				.executeQuery(SimpleBuilder.TABLE_QUERY);
-		RdfSchema schema = catalog.getSchema(Catalog.DEFAULT_SCHEMA);
+		final RdfSchema schema = catalog.getSchema(Catalog.DEFAULT_SCHEMA);
 		for (final QuerySolution soln : solns)
 		{
 			final Resource tName = soln.getResource("tName");
-			RdfTableDef.Builder builder = new RdfTableDef.Builder();
-			builder.addQuerySegment(SimpleBuilder.TABLE_SEGMENT );
-			List<String> colNames = addColumnDefs(catalog, builder, tName);
-			RdfTableDef tableDef = builder.build(model);
-			RdfTable table = new RdfTable.Builder()
-			.setTableDef(tableDef)
-			.setName(tName.getLocalName())
-			.setSchema( schema )
-			.setColumns(colNames)
-			.build( model );
-			
+			final RdfTableDef.Builder builder = new RdfTableDef.Builder();
+			builder.addQuerySegment(SimpleBuilder.TABLE_SEGMENT);
+			final List<String> colNames = addColumnDefs(catalog, builder, tName);
+			final RdfTableDef tableDef = builder.build(model);
+			final RdfTable table = new RdfTable.Builder().setTableDef(tableDef)
+					.setName(tName.getLocalName()).setSchema(schema)
+					.setColumns(colNames).build(model);
+
 			retval.add(table);
 		}
 		return retval;

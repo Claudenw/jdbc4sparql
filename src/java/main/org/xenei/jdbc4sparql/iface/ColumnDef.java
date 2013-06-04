@@ -21,9 +21,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.UUID;
 
 import org.xenei.jena.entities.ResourceWrapper;
-import org.xenei.jena.entities.annotations.Predicate;
-import org.xenei.jena.entities.annotations.Subject;
-
 
 public interface ColumnDef extends ResourceWrapper
 {

@@ -25,13 +25,10 @@ import java.sql.Types;
 
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.ColumnDef;
-import org.xenei.jdbc4sparql.iface.Schema;
-import org.xenei.jdbc4sparql.iface.TableDef;
+import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfColumnDef;
-import org.xenei.jdbc4sparql.impl.rdf.RdfColumnDef.Builder;
 import org.xenei.jdbc4sparql.impl.rdf.RdfKey;
 import org.xenei.jdbc4sparql.impl.rdf.RdfKeySegment;
-import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTableDef;
@@ -41,7 +38,7 @@ public class MetaCatalogBuilder
 	public static final String NS = "http://org.xenei.jdbc4sparql/meta#";
 	public static final String LOCAL_NAME = "METADATA";
 	public static final String SCHEMA_LOCAL_NAME = "Schema";
-	public static final String TABLE_TYPE="SYSTEM TABLE";
+	public static final String TABLE_TYPE = "SYSTEM TABLE";
 
 	public static final String CATALOGS_TABLE = "Catalogs";
 	public static final String COLUMNS_TABLE = "Columns";
@@ -71,12 +68,11 @@ public class MetaCatalogBuilder
 	public static Catalog getInstance( final Model model )
 	{
 		final RdfCatalog cat = new RdfCatalog.Builder()
-				.setName( LOCAL_NAME )
-				.setLocalModel( ModelFactory.createDefaultModel() )
-				.build(model);
+				.setName(MetaCatalogBuilder.LOCAL_NAME)
+				.setLocalModel(ModelFactory.createDefaultModel()).build(model);
 
 		final RdfSchema schema = new RdfSchema.Builder().setCatalog(cat)
-				.setName( SCHEMA_LOCAL_NAME ).build(model);
+				.setName(MetaCatalogBuilder.SCHEMA_LOCAL_NAME).build(model);
 		// populate the catalog
 		new MetaCatalogBuilder(schema, model).build();
 		return cat;
@@ -107,8 +103,8 @@ public class MetaCatalogBuilder
 		nonNullShort = RdfColumnDef.Builder.getSmallIntBuilder()
 				.setNullable(DatabaseMetaData.columnNoNulls).build(model);
 		nullableShort = RdfColumnDef.Builder.getSmallIntBuilder().build(model);
-		nullableBoolean = new RdfColumnDef.Builder().setType(Types.BOOLEAN).build(
-				model);
+		nullableBoolean = new RdfColumnDef.Builder().setType(Types.BOOLEAN)
+				.build(model);
 		nonNullBoolean = new RdfColumnDef.Builder().setType(Types.BOOLEAN)
 				.setNullable(DatabaseMetaData.columnNoNulls).build(model);
 	}
@@ -139,29 +135,20 @@ public class MetaCatalogBuilder
 				.build(model);
 
 		new RdfTable.Builder().setSchema(schema).setTableDef(tableDef)
-				.setType( TABLE_TYPE )
-				.setName( ATTRIBUTES_TABLE )
-				.setColumn( 0, "TYPE_CAT" )
-				.setColumn( 1, "TYPE_SCHEM" )
-				.setColumn( 2, "TYPE_NAME" )
-				.setColumn( 3, "ATTR_NAME" )
-				.setColumn( 4, "DATA_TYPE" )
-				.setColumn( 5, "ATTR_TYPE_NAME" )
-				.setColumn( 6, "ATTR_SIZE" )
-				.setColumn( 7, "DECIMAL_DIGITS" )
-				.setColumn( 8, "NUM_PREC_RADIX" )
-				.setColumn( 9, "NULLABLE" )
-				.setColumn( 10, "REMARKS" )
-				.setColumn( 11, "ATTR_DEF" )
-				.setColumn( 12, "SQL_DATA_TYPE" )
-				.setColumn( 13, "SQL_DATETIME_SUB" )
-				.setColumn( 14, "CHAR_OCTET_LENGTH" )
-				.setColumn( 15, "ORDINAL_POSITION" )
-				.setColumn( 16, "IS_NULLABLE" )
-				.setColumn( 17, "SCOPE_CATALOG" )
-				.setColumn( 18, "SCOPE_SCHEMA" )
-				.setColumn( 19, "SOURCE_DATA_TYPE" )
-				.build(model);
+				.setType(MetaCatalogBuilder.TABLE_TYPE)
+				.setName(MetaCatalogBuilder.ATTRIBUTES_TABLE)
+				.setColumn(0, "TYPE_CAT").setColumn(1, "TYPE_SCHEM")
+				.setColumn(2, "TYPE_NAME").setColumn(3, "ATTR_NAME")
+				.setColumn(4, "DATA_TYPE").setColumn(5, "ATTR_TYPE_NAME")
+				.setColumn(6, "ATTR_SIZE").setColumn(7, "DECIMAL_DIGITS")
+				.setColumn(8, "NUM_PREC_RADIX").setColumn(9, "NULLABLE")
+				.setColumn(10, "REMARKS").setColumn(11, "ATTR_DEF")
+				.setColumn(12, "SQL_DATA_TYPE")
+				.setColumn(13, "SQL_DATETIME_SUB")
+				.setColumn(14, "CHAR_OCTET_LENGTH")
+				.setColumn(15, "ORDINAL_POSITION").setColumn(16, "IS_NULLABLE")
+				.setColumn(17, "SCOPE_CATALOG").setColumn(18, "SCOPE_SCHEMA")
+				.setColumn(19, "SOURCE_DATA_TYPE").build(model);
 	}
 
 	private void addBestRowTable()
@@ -190,16 +177,13 @@ public class MetaCatalogBuilder
 				.build(model);
 
 		new RdfTable.Builder().setSchema(schema).setTableDef(tableDef)
-				.setType( TABLE_TYPE )
-				.setName( BEST_ROW_TABLE )
-				.setColumn( 0, "SCOPE" )
-				.setColumn( 1, "COLUMN_NAME" )
-				.setColumn( 2, "DATA_TYPE" )
-				.setColumn( 3, "TYPE_NAME" )
-				.setColumn( 4, "COLUMN_SIZE" )
-				.setColumn( 5, "BUFFER_LENGTH" )
-				.setColumn( 6, "DECIMAL_DIGITS" )
-				.setColumn( 7, "PSEUDO_COLUMN" ).build(model);
+				.setType(MetaCatalogBuilder.TABLE_TYPE)
+				.setName(MetaCatalogBuilder.BEST_ROW_TABLE)
+				.setColumn(0, "SCOPE").setColumn(1, "COLUMN_NAME")
+				.setColumn(2, "DATA_TYPE").setColumn(3, "TYPE_NAME")
+				.setColumn(4, "COLUMN_SIZE").setColumn(5, "BUFFER_LENGTH")
+				.setColumn(6, "DECIMAL_DIGITS").setColumn(7, "PSEUDO_COLUMN")
+				.build(model);
 	}
 
 	private void addCatalogsTable()
@@ -215,9 +199,9 @@ public class MetaCatalogBuilder
 								.build(model)).build(model);
 
 		new RdfTable.Builder().setSchema(schema).setTableDef(tableDef)
-				.setType( TABLE_TYPE )
-				.setName( CATALOGS_TABLE )
-				.setColumn( 0, "TABLE_CAT" ).build(model);
+				.setType(MetaCatalogBuilder.TABLE_TYPE)
+				.setName(MetaCatalogBuilder.CATALOGS_TABLE)
+				.setColumn(0, "TABLE_CAT").build(model);
 	}
 
 	private void addClientInfoTable()
@@ -236,12 +220,10 @@ public class MetaCatalogBuilder
 								.build(model)).build(model);
 
 		new RdfTable.Builder().setSchema(schema).setTableDef(tableDef)
-				.setType( TABLE_TYPE )
-				.setName( CLIENT_INFO_TABLE )
-				.setColumn( 0, "NAME" )
-				.setColumn( 1, "MAX_LEN" )
-				.setColumn( 2, "DEFAULT_VALUE" )
-				.setColumn( 3, "DESCRIPTION" )
+				.setType(MetaCatalogBuilder.TABLE_TYPE)
+				.setName(MetaCatalogBuilder.CLIENT_INFO_TABLE)
+				.setColumn(0, "NAME").setColumn(1, "MAX_LEN")
+				.setColumn(2, "DEFAULT_VALUE").setColumn(3, "DESCRIPTION")
 				.build(model);
 
 	}
@@ -269,16 +251,14 @@ public class MetaCatalogBuilder
 												.build(model)).setUnique(false)
 								.build(model)).build(model);
 
-		new RdfTable.Builder().setType( TABLE_TYPE ).setName( COLUMN_PRIVILIGES_TABLE )
+		new RdfTable.Builder().setType(MetaCatalogBuilder.TABLE_TYPE)
+				.setName(MetaCatalogBuilder.COLUMN_PRIVILIGES_TABLE)
 				.setSchema(schema).setTableDef(tableDef)
-				.setColumn( 0, "TABLE_CAT" )
-				.setColumn( 1, "TABLE_SCHEM" )
-				.setColumn( 2, "TABLE_NAME" )
-				.setColumn( 3, "COLUMN_NAME" )
-				.setColumn( 4, "GRANTOR" )
-				.setColumn( 5, "GRANTEE" )
-				.setColumn( 6, "PRIVILEGE" )
-				.setColumn( 7, "IS_GRANTABLE" ).build(model);
+				.setColumn(0, "TABLE_CAT").setColumn(1, "TABLE_SCHEM")
+				.setColumn(2, "TABLE_NAME").setColumn(3, "COLUMN_NAME")
+				.setColumn(4, "GRANTOR").setColumn(5, "GRANTEE")
+				.setColumn(6, "PRIVILEGE").setColumn(7, "IS_GRANTABLE")
+				.build(model);
 
 	}
 
@@ -330,32 +310,21 @@ public class MetaCatalogBuilder
 								.build(model)).build(model);
 
 		new RdfTable.Builder().setSchema(schema).setTableDef(tableDef)
-				.setType( TABLE_TYPE )
-				.setName( COLUMNS_TABLE )
-				.setColumn( 0, "TABLE_CAT" )
-				.setColumn( 1, "TABLE_SCHEM" )
-				.setColumn( 2, "TABLE_NAME" )
-				.setColumn( 3, "COLUMN_NAME" )
-				.setColumn( 4, "DATA_TYPE" )
-				.setColumn( 5, "TYPE_NAME" )
-				.setColumn( 6, "COLUMN_SIZE" )
-				.setColumn( 7, "BUFFER_LENGTH" )
-				.setColumn( 8, "DECIMAL_DIGITS" )
-				.setColumn( 9, "NUM_PREC_RADIX" )
-				.setColumn( 10, "NULLABLE" )
-				.setColumn( 11, "REMARKS" )
-				.setColumn( 12, "COLUMN_DEF" )
-				.setColumn( 13, "SQL_DATA_TYPE" )
-				.setColumn( 14, "SQL_DATETIME_SUB" )
-				.setColumn( 15, "CHAR_OCTET_LENGTH" )
-				.setColumn( 16, "ORDINAL_POSITION" )
-				.setColumn( 17, "IS_NULLABLE" )
-				.setColumn( 18, "SCOPE_CATLOG" )
-				.setColumn( 19, "SCOPE_SCHEMA" )
-				.setColumn( 20, "SCOPE_TABLE" )
-				.setColumn( 21, "SOURCE_DATA_TYPE" )
-				.setColumn( 22, "IS_AUTOINCREMENT" )
-				.build(model);
+				.setType(MetaCatalogBuilder.TABLE_TYPE)
+				.setName(MetaCatalogBuilder.COLUMNS_TABLE)
+				.setColumn(0, "TABLE_CAT").setColumn(1, "TABLE_SCHEM")
+				.setColumn(2, "TABLE_NAME").setColumn(3, "COLUMN_NAME")
+				.setColumn(4, "DATA_TYPE").setColumn(5, "TYPE_NAME")
+				.setColumn(6, "COLUMN_SIZE").setColumn(7, "BUFFER_LENGTH")
+				.setColumn(8, "DECIMAL_DIGITS").setColumn(9, "NUM_PREC_RADIX")
+				.setColumn(10, "NULLABLE").setColumn(11, "REMARKS")
+				.setColumn(12, "COLUMN_DEF").setColumn(13, "SQL_DATA_TYPE")
+				.setColumn(14, "SQL_DATETIME_SUB")
+				.setColumn(15, "CHAR_OCTET_LENGTH")
+				.setColumn(16, "ORDINAL_POSITION").setColumn(17, "IS_NULLABLE")
+				.setColumn(18, "SCOPE_CATLOG").setColumn(19, "SCOPE_SCHEMA")
+				.setColumn(20, "SCOPE_TABLE").setColumn(21, "SOURCE_DATA_TYPE")
+				.setColumn(22, "IS_AUTOINCREMENT").build(model);
 	}
 
 	private void addExportedKeysTable()
@@ -395,22 +364,17 @@ public class MetaCatalogBuilder
 												.build(model)).setUnique(true)
 								.build(model)).build(model);
 
-		new RdfTable.Builder().setType( TABLE_TYPE ).setName( EXPORTED_KEYS_TABLE )
+		new RdfTable.Builder().setType(MetaCatalogBuilder.TABLE_TYPE)
+				.setName(MetaCatalogBuilder.EXPORTED_KEYS_TABLE)
 				.setSchema(schema).setTableDef(tableDef)
-				.setColumn( 0, "PKTABLE_CAT" )
-				.setColumn( 1, "PKTABLE_SCHEM" )
-				.setColumn( 2, "PKTABLE_NAME" )
-				.setColumn( 3, "PKCOLUMN_NAME" )
-				.setColumn( 4, "FKTABLE_CAT" )
-				.setColumn( 5, "FKTABLE_SCHEM" )
-				.setColumn( 6, "FKTABLE_NAME" )
-				.setColumn( 7, "FKCOLUMN_NAME" )
-				.setColumn( 8, "KEY_SEQ" )
-				.setColumn( 9, "UPDATE_RULE" )
-				.setColumn( 10, "DELETE_RULE" )
-				.setColumn( 11, "FK_NAME" )
-				.setColumn( 12, "PK_NAME" )
-				.setColumn( 13, "DEFERRABILITY" ).build(model);
+				.setColumn(0, "PKTABLE_CAT").setColumn(1, "PKTABLE_SCHEM")
+				.setColumn(2, "PKTABLE_NAME").setColumn(3, "PKCOLUMN_NAME")
+				.setColumn(4, "FKTABLE_CAT").setColumn(5, "FKTABLE_SCHEM")
+				.setColumn(6, "FKTABLE_NAME").setColumn(7, "FKCOLUMN_NAME")
+				.setColumn(8, "KEY_SEQ").setColumn(9, "UPDATE_RULE")
+				.setColumn(10, "DELETE_RULE").setColumn(11, "FK_NAME")
+				.setColumn(12, "PK_NAME").setColumn(13, "DEFERRABILITY")
+				.build(model);
 	}
 
 	private void addFunctionColumnsTable()
@@ -453,25 +417,18 @@ public class MetaCatalogBuilder
 												.build(model)).setUnique(true)
 								.build(model)).build(model);
 
-		new RdfTable.Builder().setType( TABLE_TYPE ).setName( FUNCTION_COLUMNS_TABLE )
+		new RdfTable.Builder().setType(MetaCatalogBuilder.TABLE_TYPE)
+				.setName(MetaCatalogBuilder.FUNCTION_COLUMNS_TABLE)
 				.setSchema(schema).setTableDef(tableDef)
-				.setColumn( 0, "FUNCTION_CAT" )
-				.setColumn( 1, "FUNCTION_SCHEM" )
-				.setColumn( 2, "FUNCTION_NAME" )
-				.setColumn( 3, "COLUMN_NAME" )
-				.setColumn( 4, "COLUMN_TYPE" )
-				.setColumn( 5, "DATA_TYPE" )
-				.setColumn( 6, "TYPE_NAME" )
-				.setColumn( 7, "PRECISION" )
-				.setColumn( 8, "LENGTH" )
-				.setColumn( 9, "SCALE" )
-				.setColumn( 10, "RADIX" )
-				.setColumn( 11, "NULLABLE" )
-				.setColumn( 12, "REMARKS" )
-				.setColumn( 13, "CHAR_OCTET_LENGTH" )
-				.setColumn( 14, "ORDINAL_POSITION" )
-				.setColumn( 15, "IS_NULLABLE" )
-				.setColumn( 16, "SPECIFIC_NAME" ).build(model);
+				.setColumn(0, "FUNCTION_CAT").setColumn(1, "FUNCTION_SCHEM")
+				.setColumn(2, "FUNCTION_NAME").setColumn(3, "COLUMN_NAME")
+				.setColumn(4, "COLUMN_TYPE").setColumn(5, "DATA_TYPE")
+				.setColumn(6, "TYPE_NAME").setColumn(7, "PRECISION")
+				.setColumn(8, "LENGTH").setColumn(9, "SCALE")
+				.setColumn(10, "RADIX").setColumn(11, "NULLABLE")
+				.setColumn(12, "REMARKS").setColumn(13, "CHAR_OCTET_LENGTH")
+				.setColumn(14, "ORDINAL_POSITION").setColumn(15, "IS_NULLABLE")
+				.setColumn(16, "SPECIFIC_NAME").build(model);
 
 	}
 
@@ -504,14 +461,12 @@ public class MetaCatalogBuilder
 												.build(model)).setUnique(true)
 								.build(model)).build(model);
 
-		new RdfTable.Builder().setType( TABLE_TYPE ).setName( FUNCTIONS_TABLE ).setSchema(schema)
-				.setTableDef(tableDef)
-				.setColumn( 0, "FUNCTION_CAT" )
-				.setColumn( 1, "FUNCTION_SCHEM" )
-				.setColumn( 2, "FUNCTION_NAME" )
-				.setColumn( 3, "REMARKS" )
-				.setColumn( 4, "FUNCTION_TYPE" )
-				.setColumn( 5, "SPECIFIC_NAME" ).build(model);
+		new RdfTable.Builder().setType(MetaCatalogBuilder.TABLE_TYPE)
+				.setName(MetaCatalogBuilder.FUNCTIONS_TABLE).setSchema(schema)
+				.setTableDef(tableDef).setColumn(0, "FUNCTION_CAT")
+				.setColumn(1, "FUNCTION_SCHEM").setColumn(2, "FUNCTION_NAME")
+				.setColumn(3, "REMARKS").setColumn(4, "FUNCTION_TYPE")
+				.setColumn(5, "SPECIFIC_NAME").build(model);
 
 	}
 
@@ -552,22 +507,17 @@ public class MetaCatalogBuilder
 												.build(model)).setUnique(true)
 								.build(model)).build(model);
 
-		new RdfTable.Builder().setType( TABLE_TYPE ).setName( IMPORTED_KEYS_TABLE )
+		new RdfTable.Builder().setType(MetaCatalogBuilder.TABLE_TYPE)
+				.setName(MetaCatalogBuilder.IMPORTED_KEYS_TABLE)
 				.setSchema(schema).setTableDef(tableDef)
-				.setColumn( 0, "PKTABLE_CAT" )
-				.setColumn( 1, "PKTABLE_SCHEM" )
-				.setColumn( 2, "PKTABLE_NAME" )
-				.setColumn( 3, "PKCOLUMN_NAME" )
-				.setColumn( 4, "FKTABLE_CAT" )
-				.setColumn( 5, "FKTABLE_SCHEM" )
-				.setColumn( 6, "FKTABLE_NAME" )
-				.setColumn( 7, "FKCOLUMN_NAME" )
-				.setColumn( 8, "KEY_SEQ" )
-				.setColumn( 9, "UPDATE_RULE" )
-				.setColumn( 10, "DELETE_RULE" )
-				.setColumn( 11, "FK_NAME" )
-				.setColumn( 12, "PK_NAME" )
-				.setColumn( 13, "DEFERRABILITY" ).build(model);
+				.setColumn(0, "PKTABLE_CAT").setColumn(1, "PKTABLE_SCHEM")
+				.setColumn(2, "PKTABLE_NAME").setColumn(3, "PKCOLUMN_NAME")
+				.setColumn(4, "FKTABLE_CAT").setColumn(5, "FKTABLE_SCHEM")
+				.setColumn(6, "FKTABLE_NAME").setColumn(7, "FKCOLUMN_NAME")
+				.setColumn(8, "KEY_SEQ").setColumn(9, "UPDATE_RULE")
+				.setColumn(10, "DELETE_RULE").setColumn(11, "FK_NAME")
+				.setColumn(12, "PK_NAME").setColumn(13, "DEFERRABILITY")
+				.build(model);
 	}
 
 	private void addIndexInfoTable()
@@ -602,21 +552,15 @@ public class MetaCatalogBuilder
 												.build(model)).setUnique(false)
 								.build(model)).build(model);
 
-		new RdfTable.Builder().setType( TABLE_TYPE ).setName( INDEXINFO_TABLE ).setSchema(schema)
-				.setTableDef(tableDef)
-				.setColumn( 0, "TABLE_CAT" )
-				.setColumn( 1, "TABLE_SCHEM" )
-				.setColumn( 2, "TABLE_NAME" )
-				.setColumn( 3, "NON_UNIQUE" )
-				.setColumn( 4, "INDEX_QUALIFIER" )
-				.setColumn( 5, "INDEX_NAME" )
-				.setColumn( 6, "TYPE" )
-				.setColumn( 7, "ORDINAL_POSITION" )
-				.setColumn( 8, "COLUMN_NAME" )
-				.setColumn( 9, "ASC_OR_DESC" )
-				.setColumn( 10, "CARDINALITY" )
-				.setColumn( 11, "PAGES" )
-				.setColumn( 12, "FILTER_CONDITION" )
+		new RdfTable.Builder().setType(MetaCatalogBuilder.TABLE_TYPE)
+				.setName(MetaCatalogBuilder.INDEXINFO_TABLE).setSchema(schema)
+				.setTableDef(tableDef).setColumn(0, "TABLE_CAT")
+				.setColumn(1, "TABLE_SCHEM").setColumn(2, "TABLE_NAME")
+				.setColumn(3, "NON_UNIQUE").setColumn(4, "INDEX_QUALIFIER")
+				.setColumn(5, "INDEX_NAME").setColumn(6, "TYPE")
+				.setColumn(7, "ORDINAL_POSITION").setColumn(8, "COLUMN_NAME")
+				.setColumn(9, "ASC_OR_DESC").setColumn(10, "CARDINALITY")
+				.setColumn(11, "PAGES").setColumn(12, "FILTER_CONDITION")
 				.build(model);
 
 	}
@@ -638,14 +582,12 @@ public class MetaCatalogBuilder
 												.build(model)).setUnique(false)
 								.build(model)).build(model);
 
-		new RdfTable.Builder().setType( TABLE_TYPE ).setName( PRIMARY_KEY_TABLE ).setSchema(schema)
-				.setTableDef(tableDef)
-				.setColumn( 0, "TABLE_CAT" )
-				.setColumn( 1, "TABLE_SCHEM" )
-				.setColumn( 2, "TABLE_NAME" )
-				.setColumn( 3, "COLUMN_NAME" )
-				.setColumn( 4, "KEY_SEQ" )
-				.setColumn( 5, "PK_NAME" ).build(model);
+		new RdfTable.Builder().setType(MetaCatalogBuilder.TABLE_TYPE)
+				.setName(MetaCatalogBuilder.PRIMARY_KEY_TABLE)
+				.setSchema(schema).setTableDef(tableDef)
+				.setColumn(0, "TABLE_CAT").setColumn(1, "TABLE_SCHEM")
+				.setColumn(2, "TABLE_NAME").setColumn(3, "COLUMN_NAME")
+				.setColumn(4, "KEY_SEQ").setColumn(5, "PK_NAME").build(model);
 	}
 
 	private void addProcedureColumnsTable()
@@ -691,28 +633,21 @@ public class MetaCatalogBuilder
 												.build(model)).setUnique(false)
 								.build(model)).build(model);
 
-		new RdfTable.Builder().setType( TABLE_TYPE ).setName( PROCEDURE_COLUMNS_TABLE )
+		new RdfTable.Builder().setType(MetaCatalogBuilder.TABLE_TYPE)
+				.setName(MetaCatalogBuilder.PROCEDURE_COLUMNS_TABLE)
 				.setSchema(schema).setTableDef(tableDef)
-				.setColumn( 0, "PROCEDURE_CAT" )
-				.setColumn( 1, "PROCEDURE_SCHEM" )
-				.setColumn( 2, "PROCEDURE_NAME" )
-				.setColumn( 3, "COLUMN_NAME" )
-				.setColumn( 4, "COLUMN_TYPE" )
-				.setColumn( 5, "DATA_TYPE" )
-				.setColumn( 6, "TYPE_NAME" )
-				.setColumn( 7, "PRECISION" )
-				.setColumn( 8, "LENGTH" )
-				.setColumn( 9, "SCALE" )
-				.setColumn( 10, "RADIX" )
-				.setColumn( 11, "NULLABLE" )
-				.setColumn( 12, "REMARKS" )
-				.setColumn( 13, "COLUMN_DEF" )
-				.setColumn( 14, "SQL_DATA_TYPE" )
-				.setColumn( 15, "SQL_DATETIME_SUB" )
-				.setColumn( 16, "CHAR_OCTET_LENGTH" )
-				.setColumn( 17, "ORDINAL_POSITION" )
-				.setColumn( 18, "IS_NULLABLE" )
-				.setColumn( 19, "SPECIFIC_NAME" ).build(model);
+				.setColumn(0, "PROCEDURE_CAT").setColumn(1, "PROCEDURE_SCHEM")
+				.setColumn(2, "PROCEDURE_NAME").setColumn(3, "COLUMN_NAME")
+				.setColumn(4, "COLUMN_TYPE").setColumn(5, "DATA_TYPE")
+				.setColumn(6, "TYPE_NAME").setColumn(7, "PRECISION")
+				.setColumn(8, "LENGTH").setColumn(9, "SCALE")
+				.setColumn(10, "RADIX").setColumn(11, "NULLABLE")
+				.setColumn(12, "REMARKS").setColumn(13, "COLUMN_DEF")
+				.setColumn(14, "SQL_DATA_TYPE")
+				.setColumn(15, "SQL_DATETIME_SUB")
+				.setColumn(16, "CHAR_OCTET_LENGTH")
+				.setColumn(17, "ORDINAL_POSITION").setColumn(18, "IS_NULLABLE")
+				.setColumn(19, "SPECIFIC_NAME").build(model);
 
 	}
 
@@ -748,17 +683,14 @@ public class MetaCatalogBuilder
 												.build(model)).setUnique(false)
 								.build(model)).build(model);
 
-		new RdfTable.Builder().setType( TABLE_TYPE ).setName( PROCEDURES_TABLE ).setSchema(schema)
-				.setTableDef(tableDef)
-				.setColumn( 0, "PROCEDURE_CAT" )
-				.setColumn( 1, "PROCEDURE_SCHEM" )
-				.setColumn( 2, "PROCEDURE_NAME" )
-				.setColumn( 3, "FUTURE1" )
-				.setColumn( 4, "FUTURE2" )
-				.setColumn( 5, "FUTURE3" )
-				.setColumn( 6, "REMARKS" )
-				.setColumn( 7, "PROCEDURE_TYPE" )
-				.setColumn( 8, "SPECIFIC_NAME" ).build(model);
+		new RdfTable.Builder().setType(MetaCatalogBuilder.TABLE_TYPE)
+				.setName(MetaCatalogBuilder.PROCEDURES_TABLE).setSchema(schema)
+				.setTableDef(tableDef).setColumn(0, "PROCEDURE_CAT")
+				.setColumn(1, "PROCEDURE_SCHEM").setColumn(2, "PROCEDURE_NAME")
+				.setColumn(3, "FUTURE1").setColumn(4, "FUTURE2")
+				.setColumn(5, "FUTURE3").setColumn(6, "REMARKS")
+				.setColumn(7, "PROCEDURE_TYPE").setColumn(8, "SPECIFIC_NAME")
+				.build(model);
 
 	}
 
@@ -779,10 +711,10 @@ public class MetaCatalogBuilder
 												.build(model)).setUnique(false)
 								.build(model)).build(model);
 
-		new RdfTable.Builder().setType( TABLE_TYPE ).setName( SCHEMAS_TABLE ).setSchema(schema)
-				.setTableDef(tableDef)
-				.setColumn( 0, "TABLE_SCHEM" )
-				.setColumn( 1, "TABLE_CATALOG" ).build(model);
+		new RdfTable.Builder().setType(MetaCatalogBuilder.TABLE_TYPE)
+				.setName(MetaCatalogBuilder.SCHEMAS_TABLE).setSchema(schema)
+				.setTableDef(tableDef).setColumn(0, "TABLE_SCHEM")
+				.setColumn(1, "TABLE_CATALOG").build(model);
 	}
 
 	private void addSuperTablesTable()
@@ -794,12 +726,12 @@ public class MetaCatalogBuilder
 				.addColumnDef(nonNullString) // SUPERTABLE_NAME
 				.build(model);
 
-		new RdfTable.Builder().setType( TABLE_TYPE ).setName( SUPER_TABLES_TABLE ).setSchema(schema)
-				.setTableDef(tableDef)
-				.setColumn( 0, "TABLE_CAT" )
-				.setColumn( 1, "TABLE_SCHEM" )
-				.setColumn( 2, "TABLE_NAME" )
-				.setColumn( 3, "SUPERTABLE_NAME" ).build(model);
+		new RdfTable.Builder().setType(MetaCatalogBuilder.TABLE_TYPE)
+				.setName(MetaCatalogBuilder.SUPER_TABLES_TABLE)
+				.setSchema(schema).setTableDef(tableDef)
+				.setColumn(0, "TABLE_CAT").setColumn(1, "TABLE_SCHEM")
+				.setColumn(2, "TABLE_NAME").setColumn(3, "SUPERTABLE_NAME")
+				.build(model);
 	}
 
 	private void addSuperTypesTable()
@@ -813,14 +745,13 @@ public class MetaCatalogBuilder
 				.addColumnDef(nonNullString) // SUPERTYPE_NAME
 				.build(model);
 
-		new RdfTable.Builder().setType( TABLE_TYPE ).setName( SUPER_TYPES_TABLE ).setSchema(schema)
-				.setTableDef(tableDef)
-				.setColumn( 0, "TYPE_CAT" )
-				.setColumn( 1, "TYPE_SCHEM" )
-				.setColumn( 2, "TYPE_NAME" )
-				.setColumn( 3, "SUPERTYPE_CAT" )
-				.setColumn( 4, "SUPERTYPE_SCHEM" )
-				.setColumn( 5, "SUPERTYPE_NAME" ).build(model);
+		new RdfTable.Builder().setType(MetaCatalogBuilder.TABLE_TYPE)
+				.setName(MetaCatalogBuilder.SUPER_TYPES_TABLE)
+				.setSchema(schema).setTableDef(tableDef)
+				.setColumn(0, "TYPE_CAT").setColumn(1, "TYPE_SCHEM")
+				.setColumn(2, "TYPE_NAME").setColumn(3, "SUPERTYPE_CAT")
+				.setColumn(4, "SUPERTYPE_SCHEM").setColumn(5, "SUPERTYPE_NAME")
+				.build(model);
 	}
 
 	private void addTablePrivilegesTable()
@@ -853,15 +784,13 @@ public class MetaCatalogBuilder
 												.build(model)).setUnique(false)
 								.build(model)).build(model);
 
-		new RdfTable.Builder().setType( TABLE_TYPE ).setName( TABLE_PRIVILEGES_TABLE )
+		new RdfTable.Builder().setType(MetaCatalogBuilder.TABLE_TYPE)
+				.setName(MetaCatalogBuilder.TABLE_PRIVILEGES_TABLE)
 				.setSchema(schema).setTableDef(tableDef)
-				.setColumn( 0, "TABLE_CAT" )
-				.setColumn( 1, "TABLE_SCHEM" )
-				.setColumn( 2, "TABLE_NAME" )
-				.setColumn( 3, "GRANTOR" )
-				.setColumn( 4, "GRANTEE" )
-				.setColumn( 5, "PRIVILEGE" )
-				.setColumn( 6, "IS_GRANTABLE" ).build(model);
+				.setColumn(0, "TABLE_CAT").setColumn(1, "TABLE_SCHEM")
+				.setColumn(2, "TABLE_NAME").setColumn(3, "GRANTOR")
+				.setColumn(4, "GRANTEE").setColumn(5, "PRIVILEGE")
+				.setColumn(6, "IS_GRANTABLE").build(model);
 	}
 
 	private void addTablesTable()
@@ -897,18 +826,15 @@ public class MetaCatalogBuilder
 												.build(model)).setUnique(false)
 								.build(model)).build(model);
 
-		new RdfTable.Builder().setType( TABLE_TYPE ).setName( TABLES_TABLE ).setSchema(schema)
-				.setTableDef(tableDef)
-				.setColumn( 0, "TABLE_CAT" )
-				.setColumn( 1, "TABLE_SCHEM" )
-				.setColumn( 2, "TABLE_NAME" )
-				.setColumn( 3, "TABLE_TYPE" )
-				.setColumn( 4, "REMARKS" )
-				.setColumn( 5, "TYPE_CAT" )
-				.setColumn( 6, "TYPE_SCHEM" )
-				.setColumn( 7, "TYPE_NAME" )
-				.setColumn( 8, "SELF_REFERENCING_COL_NAME" )
-				.setColumn( 9, "REF_GENERATION" ).build(model);
+		new RdfTable.Builder().setType(MetaCatalogBuilder.TABLE_TYPE)
+				.setName(MetaCatalogBuilder.TABLES_TABLE).setSchema(schema)
+				.setTableDef(tableDef).setColumn(0, "TABLE_CAT")
+				.setColumn(1, "TABLE_SCHEM").setColumn(2, "TABLE_NAME")
+				.setColumn(3, "TABLE_TYPE").setColumn(4, "REMARKS")
+				.setColumn(5, "TYPE_CAT").setColumn(6, "TYPE_SCHEM")
+				.setColumn(7, "TYPE_NAME")
+				.setColumn(8, "SELF_REFERENCING_COL_NAME")
+				.setColumn(9, "REF_GENERATION").build(model);
 
 	}
 
@@ -924,9 +850,10 @@ public class MetaCatalogBuilder
 												.build(model)).setUnique(true)
 								.build(model)).build(model);
 
-		new RdfTable.Builder().setType( TABLE_TYPE ).setName( TABLE_TYPES_TABLE ).setSchema(schema)
-				.setTableDef(tableDef)
-				.setColumn( 0, "TABLE_TYPE" ).build(model);
+		new RdfTable.Builder().setType(MetaCatalogBuilder.TABLE_TYPE)
+				.setName(MetaCatalogBuilder.TABLE_TYPES_TABLE)
+				.setSchema(schema).setTableDef(tableDef)
+				.setColumn(0, "TABLE_TYPE").build(model);
 
 	}
 
@@ -953,26 +880,21 @@ public class MetaCatalogBuilder
 				.addColumnDef(nullableInt) // NUM_PREC_RADIX
 				.build(model);
 
-		new RdfTable.Builder().setType( TABLE_TYPE ).setName( TYPEINFO_TABLE ).setSchema(schema)
-				.setTableDef(tableDef)
-				.setColumn( 0, "TYPE_NAME" )
-				.setColumn( 1, "DATA_TYPE" )
-				.setColumn( 2, "PRECISION" )
-				.setColumn( 3, "LITERAL_PREFIX" )
-				.setColumn( 4, "LITERAL_SUFFIX" )
-				.setColumn( 5, "CREATE_PARAMS" )
-				.setColumn( 6, "NULLABLE" )
-				.setColumn( 7, "CASE_SENSITIVE" )
-				.setColumn( 8, "SEARCHABLE" )
-				.setColumn( 9, "UNSIGNED_ATTRIBUTE" )
-				.setColumn( 10, "FIXED_PREC_SCALE" )
-				.setColumn( 11, "AUTO_INCREMENT" )
-				.setColumn( 12, "LOCAL_TYPE_NAME" )
-				.setColumn( 13, "MINIMUM_SCALE" )
-				.setColumn( 14, "MAXIMUM_SCALE" )
-				.setColumn( 15, "SQL_DATA_TYPE" )
-				.setColumn( 16, "SQL_DATETIME_SUB" )
-				.setColumn( 17, "NUM_PREC_RADIX" ).build(model);
+		new RdfTable.Builder().setType(MetaCatalogBuilder.TABLE_TYPE)
+				.setName(MetaCatalogBuilder.TYPEINFO_TABLE).setSchema(schema)
+				.setTableDef(tableDef).setColumn(0, "TYPE_NAME")
+				.setColumn(1, "DATA_TYPE").setColumn(2, "PRECISION")
+				.setColumn(3, "LITERAL_PREFIX").setColumn(4, "LITERAL_SUFFIX")
+				.setColumn(5, "CREATE_PARAMS").setColumn(6, "NULLABLE")
+				.setColumn(7, "CASE_SENSITIVE").setColumn(8, "SEARCHABLE")
+				.setColumn(9, "UNSIGNED_ATTRIBUTE")
+				.setColumn(10, "FIXED_PREC_SCALE")
+				.setColumn(11, "AUTO_INCREMENT")
+				.setColumn(12, "LOCAL_TYPE_NAME")
+				.setColumn(13, "MINIMUM_SCALE").setColumn(14, "MAXIMUM_SCALE")
+				.setColumn(15, "SQL_DATA_TYPE")
+				.setColumn(16, "SQL_DATETIME_SUB")
+				.setColumn(17, "NUM_PREC_RADIX").build(model);
 	}
 
 	private void addUDTTable()
@@ -1005,15 +927,12 @@ public class MetaCatalogBuilder
 												.build(model)).setUnique(false)
 								.build(model)).build(model);
 
-		new RdfTable.Builder().setType( TABLE_TYPE ).setName( UDT_TABLES ).setSchema(schema)
-				.setTableDef(tableDef)
-				.setColumn( 0, "TYPE_CAT" )
-				.setColumn( 1, "TYPE_SCHEM" )
-				.setColumn( 2, "TYPE_NAME" )
-				.setColumn( 3, "CLASS_NAME" )
-				.setColumn( 4, "DATA_TYPE" )
-				.setColumn( 5, "REMARKS" )
-				.setColumn( 6, "BASE_TYPE" ).build(model);
+		new RdfTable.Builder().setType(MetaCatalogBuilder.TABLE_TYPE)
+				.setName(MetaCatalogBuilder.UDT_TABLES).setSchema(schema)
+				.setTableDef(tableDef).setColumn(0, "TYPE_CAT")
+				.setColumn(1, "TYPE_SCHEM").setColumn(2, "TYPE_NAME")
+				.setColumn(3, "CLASS_NAME").setColumn(4, "DATA_TYPE")
+				.setColumn(5, "REMARKS").setColumn(6, "BASE_TYPE").build(model);
 
 	}
 
@@ -1030,16 +949,13 @@ public class MetaCatalogBuilder
 				.addColumnDef(nullableShort) // PSEUDO_COLUMN
 				.build(model);
 
-		new RdfTable.Builder().setType( TABLE_TYPE ).setName( VERSION_COLUMNS_TABLE )
-				.setSchema(schema).setTableDef(tableDef)
-				.setColumn( 0, "SCOPE" )
-				.setColumn( 1, "COLUMN_NAME" )
-				.setColumn( 2, "DATA_TYPE" )
-				.setColumn( 3, "TYPE_NAME" )
-				.setColumn( 4, "COLUMN_SIZE" )
-				.setColumn( 5, "BUFFER_LENGTH" )
-				.setColumn( 6, "DECIMAL_DIGITS" )
-				.setColumn( 7, "PSEUDO_COLUMN" ).build(model);
+		new RdfTable.Builder().setType(MetaCatalogBuilder.TABLE_TYPE)
+				.setName(MetaCatalogBuilder.VERSION_COLUMNS_TABLE)
+				.setSchema(schema).setTableDef(tableDef).setColumn(0, "SCOPE")
+				.setColumn(1, "COLUMN_NAME").setColumn(2, "DATA_TYPE")
+				.setColumn(3, "TYPE_NAME").setColumn(4, "COLUMN_SIZE")
+				.setColumn(5, "BUFFER_LENGTH").setColumn(6, "DECIMAL_DIGITS")
+				.setColumn(7, "PSEUDO_COLUMN").build(model);
 	}
 
 	private void addXrefTable()
@@ -1079,22 +995,16 @@ public class MetaCatalogBuilder
 												.build(model)).setUnique(false)
 								.build(model)).build(model);
 
-		new RdfTable.Builder().setType( TABLE_TYPE ).setName( XREF_TABLE ).setSchema(schema)
-				.setTableDef(tableDef)
-				.setColumn( 0, "PKTABLE_CAT" )
-				.setColumn( 1, "PKTABLE_SCHEM" )
-				.setColumn( 2, "PKTABLE_NAME" )
-				.setColumn( 3, "PKCOLUMN_NAME" )
-				.setColumn( 4, "FKTABLE_CAT" )
-				.setColumn( 5, "FKTABLE_SCHEM" )
-				.setColumn( 6, "FKTABLE_NAME" )
-				.setColumn( 7, "FKCOLUMN_NAME" )
-				.setColumn( 8, "KEY_SEQ" )
-				.setColumn( 9, "UPDATE_RULE" )
-				.setColumn( 10, "DELETE_RULE" )
-				.setColumn( 11, "FK_NAME" )
-				.setColumn( 12, "PK_NAME" )
-				.setColumn( 13, "DEFERRABILITY" ).build(model);
+		new RdfTable.Builder().setType(MetaCatalogBuilder.TABLE_TYPE)
+				.setName(MetaCatalogBuilder.XREF_TABLE).setSchema(schema)
+				.setTableDef(tableDef).setColumn(0, "PKTABLE_CAT")
+				.setColumn(1, "PKTABLE_SCHEM").setColumn(2, "PKTABLE_NAME")
+				.setColumn(3, "PKCOLUMN_NAME").setColumn(4, "FKTABLE_CAT")
+				.setColumn(5, "FKTABLE_SCHEM").setColumn(6, "FKTABLE_NAME")
+				.setColumn(7, "FKCOLUMN_NAME").setColumn(8, "KEY_SEQ")
+				.setColumn(9, "UPDATE_RULE").setColumn(10, "DELETE_RULE")
+				.setColumn(11, "FK_NAME").setColumn(12, "PK_NAME")
+				.setColumn(13, "DEFERRABILITY").build(model);
 	}
 
 	public void build()

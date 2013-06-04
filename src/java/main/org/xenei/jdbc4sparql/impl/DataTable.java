@@ -19,7 +19,6 @@ package org.xenei.jdbc4sparql.impl;
 
 import com.hp.hpl.jena.rdf.model.Resource;
 
-import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -29,12 +28,8 @@ import java.util.NavigableSet;
 import java.util.TreeSet;
 
 import org.xenei.jdbc4sparql.iface.Column;
-import org.xenei.jdbc4sparql.iface.ColumnDef;
 import org.xenei.jdbc4sparql.iface.Key;
-import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
-import org.xenei.jdbc4sparql.iface.TableDef;
-import org.xenei.jdbc4sparql.iface.TypeConverter;
 
 /**
  * An implementation of AbstractTable that stores the data
@@ -46,7 +41,7 @@ public class DataTable extends AbstractTable
 {
 	private Collection<Object[]> data;
 	private DataTable superDataTable;
-	private Table table;
+	private final Table table;
 
 	/**
 	 * Constructor.
@@ -60,7 +55,7 @@ public class DataTable extends AbstractTable
 	{
 		super(table.getSchema(), table);
 		this.table = table;
-		Key key = table.getTableDef().getSortKey();
+		final Key key = table.getTableDef().getSortKey();
 		if (key == null)
 		{
 			data = new ArrayList<Object[]>();
@@ -80,12 +75,7 @@ public class DataTable extends AbstractTable
 		}
 
 	}
-	
-	public Resource getResource()
-	{
-		return table.getResource();
-	}
-	
+
 	/**
 	 * Add an object array as a row in the table.
 	 * 
@@ -100,6 +90,42 @@ public class DataTable extends AbstractTable
 		data.add(args);
 	}
 
+	@Override
+	public void delete()
+	{
+		table.delete();
+	}
+
+	@Override
+	public Column getColumn( final int idx )
+	{
+		return table.getColumn(idx);
+	}
+
+	@Override
+	public Column getColumn( final String name )
+	{
+		return table.getColumn(name);
+	}
+
+	@Override
+	public int getColumnIndex( final String name )
+	{
+		return table.getColumnIndex(name);
+	}
+
+	@Override
+	public String getName()
+	{
+		return table.getName();
+	}
+
+	@Override
+	public Resource getResource()
+	{
+		return table.getResource();
+	}
+
 	/**
 	 * Get a result set that iterates over this table.
 	 * 
@@ -109,7 +135,7 @@ public class DataTable extends AbstractTable
 	public ResultSet getResultSet() throws SQLException
 	{
 		ResultSet retval = null;
-		
+
 		if (data instanceof TreeSet)
 		{
 			final NavigableSet<Object[]> ns = (TreeSet<Object[]>) data;
@@ -174,34 +200,5 @@ public class DataTable extends AbstractTable
 	public boolean isEmpty()
 	{
 		return data.isEmpty();
-	}
-
-	@Override
-	public Column getColumn( int idx )
-	{
-		return table.getColumn(idx);
-	}
-
-	public int getColumnIndex( String name )
-	{
-		return table.getColumnIndex(name);
-	}
-	
-	@Override
-	public Column getColumn( String name )
-	{
-		return table.getColumn( name );
-	}
-
-	@Override
-	public void delete()
-	{
-		table.delete();
-	}
-
-	@Override
-	public String getName()
-	{
-		return table.getName();
 	}
 }
