@@ -96,7 +96,7 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 		if (expr instanceof ExprVar)
 		{
 			final Node n = ((ExprVar) expr).getAsNode();
-			final SparqlQueryBuilder.SparqlTableInfo sti = queryBuilder
+			final SparqlQueryBuilder.RdfTableInfo sti = queryBuilder
 					.getNodeTable(n);
 			if ((sti != null) && sti.isOptional())
 			{

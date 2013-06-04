@@ -40,7 +40,7 @@ import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.TableDef;
 import org.xenei.jdbc4sparql.impl.DataTable;
 import org.xenei.jdbc4sparql.meta.MetaCatalogBuilder;
-import org.xenei.jdbc4sparql.meta.MetaSchema;
+import org.xenei.jdbc4sparql.meta.MetaCatalogBuilder;
 
 public class J4SDatabaseMetaData implements DatabaseMetaData
 {
@@ -123,7 +123,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 			final String schemaPattern, final String typePattern,
 			final String attributeNamePattern ) throws SQLException
 	{
-		final DataTable table = (DataTable) new DataTable( metaSchema.getTable(MetaSchema.ATTRIBUTES_TABLE));
+		final DataTable table = (DataTable) new DataTable( metaSchema.getTable(MetaCatalogBuilder.ATTRIBUTES_TABLE));
 		// TODO populate table here.
 		return table.getResultSet();
 	}
@@ -133,7 +133,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 			final String arg1, final String arg2, final int arg3,
 			final boolean arg4 ) throws SQLException
 	{
-		final DataTable table = new DataTable( metaSchema.getTable( MetaSchema.BEST_ROW_TABLE));
+		final DataTable table = new DataTable( metaSchema.getTable( MetaCatalogBuilder.BEST_ROW_TABLE));
 		// TODO populate table here.
 		return table.getResultSet();
 	}
@@ -159,7 +159,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	@Override
 	public ResultSet getClientInfoProperties() throws SQLException
 	{
-		final DataTable table = new DataTable( metaSchema.getTable( MetaSchema.CLIENT_INFO_TABLE));
+		final DataTable table = new DataTable( metaSchema.getTable( MetaCatalogBuilder.CLIENT_INFO_TABLE));
 		// TODO populate table here.
 		return table.getResultSet();
 	}
@@ -168,7 +168,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	public ResultSet getColumnPrivileges( final String arg0, final String arg1,
 			final String arg2, final String arg3 ) throws SQLException
 	{
-		final DataTable table = new DataTable( metaSchema.getTable( MetaSchema.COLUMN_PRIVILIGES_TABLE));
+		final DataTable table = new DataTable( metaSchema.getTable( MetaCatalogBuilder.COLUMN_PRIVILIGES_TABLE));
 		// TODO populate table here.
 		return table.getResultSet();
 	}
@@ -179,7 +179,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 			final String columnNamePattern ) throws SQLException
 	{
 
-		final DataTable colTbl = new DataTable( metaSchema.getTable( MetaSchema.COLUMNS_TABLE));
+		final DataTable colTbl = new DataTable( metaSchema.getTable( MetaCatalogBuilder.COLUMNS_TABLE));
 
 		for (final Catalog catalog : new NameFilter<Catalog>(catalogPattern,
 				catalogs.values()))
@@ -239,7 +239,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 			final String foreignCatalog, final String foreignSchema,
 			final String foreignTable ) throws SQLException
 	{
-		final DataTable table = new DataTable( metaSchema.getTable( MetaSchema.XREF_TABLE));
+		final DataTable table = new DataTable( metaSchema.getTable( MetaCatalogBuilder.XREF_TABLE));
 
 		// TODO populate table here.
 		return table.getResultSet();
@@ -305,7 +305,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	public ResultSet getExportedKeys( final String arg0, final String arg1,
 			final String arg2 ) throws SQLException
 	{
-		final DataTable table = new DataTable( metaSchema.getTable( MetaSchema.EXPORTED_KEYS_TABLE));
+		final DataTable table = new DataTable( metaSchema.getTable( MetaCatalogBuilder.EXPORTED_KEYS_TABLE));
 		// TODO populate table here.
 		return table.getResultSet();
 
@@ -321,7 +321,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	public ResultSet getFunctionColumns( final String arg0, final String arg1,
 			final String arg2, final String arg3 ) throws SQLException
 	{
-		final DataTable table = new DataTable( metaSchema.getTable( MetaSchema.FUNCTION_COLUMNS_TABLE));
+		final DataTable table = new DataTable( metaSchema.getTable( MetaCatalogBuilder.FUNCTION_COLUMNS_TABLE));
 		// TODO populate table here.
 		return table.getResultSet();
 
@@ -331,7 +331,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	public ResultSet getFunctions( final String arg0, final String arg1,
 			final String arg2 ) throws SQLException
 	{
-		final DataTable table = new DataTable( metaSchema.getTable( MetaSchema.FUNCTIONS_TABLE));
+		final DataTable table = new DataTable( metaSchema.getTable( MetaCatalogBuilder.FUNCTIONS_TABLE));
 		// TODO populate table here.
 		return table.getResultSet();
 
@@ -347,7 +347,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	public ResultSet getImportedKeys( final String arg0, final String arg1,
 			final String arg2 ) throws SQLException
 	{
-		final DataTable table = new DataTable( metaSchema.getTable( MetaSchema.IMPORTED_KEYS_TABLE));
+		final DataTable table = new DataTable( metaSchema.getTable( MetaCatalogBuilder.IMPORTED_KEYS_TABLE));
 		// TODO populate table here.
 		return table.getResultSet();
 	}
@@ -357,7 +357,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 			final String arg2, final boolean arg3, final boolean arg4 )
 			throws SQLException
 	{
-		final DataTable table = new DataTable( metaSchema.getTable( MetaSchema.INDEXINFO_TABLE));
+		final DataTable table = new DataTable( metaSchema.getTable( MetaCatalogBuilder.INDEXINFO_TABLE));
 		// TODO populate table here.
 		return table.getResultSet();
 	}
@@ -541,7 +541,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 			final String schemaPattern, final String tableNamePattern )
 			throws SQLException
 	{
-		final DataTable table = new DataTable( metaSchema.getTable( MetaSchema.PRIMARY_KEY_TABLE));
+		final DataTable table = new DataTable( metaSchema.getTable( MetaCatalogBuilder.PRIMARY_KEY_TABLE));
 		for (final Catalog catalog : new NameFilter<Catalog>(catalogPattern,
 				catalogs.values()))
 		{
@@ -577,7 +577,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	public ResultSet getProcedureColumns( final String arg0, final String arg1,
 			final String arg2, final String arg3 ) throws SQLException
 	{
-		final DataTable table = new DataTable( metaSchema.getTable( MetaSchema.PROCEDURE_COLUMNS_TABLE));
+		final DataTable table = new DataTable( metaSchema.getTable( MetaCatalogBuilder.PROCEDURE_COLUMNS_TABLE));
 		// TODO populate table here.
 		return table.getResultSet();
 	}
@@ -586,7 +586,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	public ResultSet getProcedures( final String arg0, final String arg1,
 			final String arg2 ) throws SQLException
 	{
-		final DataTable table = new DataTable( metaSchema.getTable( MetaSchema.PROCEDURES_TABLE));
+		final DataTable table = new DataTable( metaSchema.getTable( MetaCatalogBuilder.PROCEDURES_TABLE));
 		// TODO populate table here.
 		return table.getResultSet();
 	}
@@ -629,7 +629,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	public ResultSet getSchemas( final String catalogPattern,
 			final String schemaPattern ) throws SQLException
 	{
-		final DataTable table = new DataTable( metaSchema.getTable( MetaSchema.SCHEMAS_TABLE));
+		final DataTable table = new DataTable( metaSchema.getTable( MetaCatalogBuilder.SCHEMAS_TABLE));
 		for (final Catalog catalog : new NameFilter<Catalog>(catalogPattern,
 				catalogs.values()))
 		{
@@ -702,7 +702,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 				tableNamePattern = parts[1];
 			}
 		}
-		final DataTable table = new DataTable( metaSchema.getTable( MetaSchema.SUPER_TABLES_TABLE));
+		final DataTable table = new DataTable( metaSchema.getTable( MetaCatalogBuilder.SUPER_TABLES_TABLE));
 
 		for (final Catalog catalog : new NameFilter<Catalog>(catalogPattern,
 				catalogs.values()))
@@ -732,7 +732,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	public ResultSet getSuperTypes( final String arg0, final String arg1,
 			final String arg2 ) throws SQLException
 	{
-		final DataTable table = new DataTable( metaSchema.getTable( MetaSchema.SUPER_TYPES_TABLE));
+		final DataTable table = new DataTable( metaSchema.getTable( MetaCatalogBuilder.SUPER_TYPES_TABLE));
 		// TODO populate table here.
 		return table.getResultSet();
 	}
@@ -748,7 +748,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 			final String schemaPattern, final String tablePattern )
 			throws SQLException
 	{
-		final DataTable table = new DataTable( metaSchema.getTable( MetaSchema.TABLE_PRIVILEGES_TABLE));
+		final DataTable table = new DataTable( metaSchema.getTable( MetaCatalogBuilder.TABLE_PRIVILEGES_TABLE));
 		for (final Catalog catalog : new NameFilter<Catalog>(catalogPattern,
 				catalogs.values()))
 		{
@@ -774,7 +774,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 		final List<String> typeList = types == null ? null : Arrays
 				.asList(types);
 
-		final DataTable table = new DataTable( metaSchema.getTable( MetaSchema.TABLES_TABLE));
+		final DataTable table = new DataTable( metaSchema.getTable( MetaCatalogBuilder.TABLES_TABLE));
 		for (final Catalog catalog : new NameFilter<Catalog>(catalogPattern,
 				catalogs.values()))
 		{
@@ -814,7 +814,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	@Override
 	public ResultSet getTableTypes() throws SQLException
 	{
-		final DataTable table = (DataTable) metaSchema.getTable(MetaSchema.TABLE_TYPES_TABLE);
+		final DataTable table = (DataTable) metaSchema.getTable(MetaCatalogBuilder.TABLE_TYPES_TABLE);
 		if (table.isEmpty())
 		{
 			for (final Catalog catalog : catalogs.values())
@@ -841,7 +841,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	@Override
 	public ResultSet getTypeInfo() throws SQLException
 	{
-		final DataTable table = new DataTable( metaSchema.getTable( MetaSchema.TYPEINFO_TABLE));
+		final DataTable table = new DataTable( metaSchema.getTable( MetaCatalogBuilder.TYPEINFO_TABLE));
 		// TODO populate table here.
 		return table.getResultSet();
 	}
@@ -850,7 +850,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	public ResultSet getUDTs( final String arg0, final String arg1,
 			final String arg2, final int[] arg3 ) throws SQLException
 	{
-		final DataTable table = new DataTable( metaSchema.getTable( MetaSchema.UDT_TABLES));
+		final DataTable table = new DataTable( metaSchema.getTable( MetaCatalogBuilder.UDT_TABLES));
 		// TODO populate table here.
 		return table.getResultSet();
 	}
@@ -873,7 +873,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	public ResultSet getVersionColumns( final String arg0, final String arg1,
 			final String arg2 ) throws SQLException
 	{
-		final DataTable table = new DataTable( metaSchema.getTable( MetaSchema.VERSION_COLUMNS_TABLE));
+		final DataTable table = new DataTable( metaSchema.getTable( MetaCatalogBuilder.VERSION_COLUMNS_TABLE));
 		// TODO populate table here.
 		return table.getResultSet();
 	}

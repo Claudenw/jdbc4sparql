@@ -24,19 +24,21 @@ import java.sql.SQLException;
 
 import org.xenei.jdbc4sparql.iface.TypeConverter;
 import org.xenei.jdbc4sparql.impl.ListResultSet;
+import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
+import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 
 public class SparqlResultSet extends ListResultSet
 {
 
-	public SparqlResultSet( final SparqlTable table ) throws SQLException
+	public SparqlResultSet( final RdfTable table ) throws SQLException
 	{
-		super(((SparqlCatalog)table.getCatalog()).executeLocalQuery(table.getQuery()), table);
+		super(((RdfCatalog)table.getCatalog()).executeLocalQuery(table.getQuery()), table);
 	}
 
 	@Override
-	protected SparqlTable getTable()
+	protected RdfTable getTable()
 	{
-		return (SparqlTable) super.getTable();
+		return (RdfTable) super.getTable();
 	}
 
 	@Override

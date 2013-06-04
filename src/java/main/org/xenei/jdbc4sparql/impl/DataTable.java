@@ -30,6 +30,7 @@ import java.util.TreeSet;
 
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.ColumnDef;
+import org.xenei.jdbc4sparql.iface.Key;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.TableDef;
@@ -59,21 +60,22 @@ public class DataTable extends AbstractTable
 	{
 		super(table.getSchema(), table);
 		this.table = table;
-		if (table.getSortKey() == null)
+		Key key = table.getTableDef().getSortKey();
+		if (key == null)
 		{
 			data = new ArrayList<Object[]>();
 		}
 		else
 		{
-			if (table.getSortKey().isUnique())
+			if (key.isUnique())
 			{
-				data = new TreeSet<Object[]>(table.getSortKey());
+				data = new TreeSet<Object[]>(key);
 			}
 			else
 			{
 				// supress warning is for this conversion as TreeBag is not
 				// generic.
-				data = new SortedBag<Object[]>(table.getSortKey());
+				data = new SortedBag<Object[]>(key);
 			}
 		}
 
@@ -107,7 +109,7 @@ public class DataTable extends AbstractTable
 	public ResultSet getResultSet() throws SQLException
 	{
 		ResultSet retval = null;
-		;
+		
 		if (data instanceof TreeSet)
 		{
 			final NavigableSet<Object[]> ns = (TreeSet<Object[]>) data;
@@ -202,6 +204,4 @@ public class DataTable extends AbstractTable
 	{
 		return table.getName();
 	}
-
-	
 }

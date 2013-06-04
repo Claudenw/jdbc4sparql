@@ -49,7 +49,7 @@ public class J4SResultSetMetaData implements ResultSetMetaData
 	public String getColumnClassName( final int columnOrdinal )
 			throws SQLException
 	{
-		return getColumn(columnOrdinal).getColumnClassName();
+		return getColumn(columnOrdinal).getColumnDef().getColumnClassName();
 	}
 
 	@Override
@@ -62,13 +62,13 @@ public class J4SResultSetMetaData implements ResultSetMetaData
 	public int getColumnDisplaySize( final int columnOrdinal )
 			throws SQLException
 	{
-		return getColumn(columnOrdinal).getDisplaySize();
+		return getColumn(columnOrdinal).getColumnDef().getDisplaySize();
 	}
 
 	@Override
 	public String getColumnLabel( final int columnOrdinal ) throws SQLException
 	{
-		return getColumn(columnOrdinal).getLabel();
+		return getColumnName(columnOrdinal);
 	}
 
 	@Override
@@ -80,7 +80,7 @@ public class J4SResultSetMetaData implements ResultSetMetaData
 	@Override
 	public int getColumnType( final int columnOrdinal ) throws SQLException
 	{
-		return getColumn(columnOrdinal).getType();
+		return getColumn(columnOrdinal).getColumnDef().getType();
 	}
 
 	@Override
@@ -95,13 +95,13 @@ public class J4SResultSetMetaData implements ResultSetMetaData
 	@Override
 	public int getPrecision( final int columnOrdinal ) throws SQLException
 	{
-		return getColumn(columnOrdinal).getPrecision();
+		return getColumn(columnOrdinal).getColumnDef().getPrecision();
 	}
 
 	@Override
 	public int getScale( final int columnOrdinal ) throws SQLException
 	{
-		return getColumn(columnOrdinal).getScale();
+		return getColumn(columnOrdinal).getColumnDef().getScale();
 	}
 
 	@Override
@@ -120,51 +120,51 @@ public class J4SResultSetMetaData implements ResultSetMetaData
 	public boolean isAutoIncrement( final int columnOrdinal )
 			throws SQLException
 	{
-		return getColumn(columnOrdinal).isAutoIncrement();
+		return getColumn(columnOrdinal).getColumnDef().isAutoIncrement();
 	}
 
 	@Override
 	public boolean isCaseSensitive( final int columnOrdinal )
 			throws SQLException
 	{
-		return getColumn(columnOrdinal).isCaseSensitive();
+		return getColumn(columnOrdinal).getColumnDef().isCaseSensitive();
 	}
 
 	@Override
 	public boolean isCurrency( final int columnOrdinal ) throws SQLException
 	{
-		return getColumn(columnOrdinal).isCurrency();
+		return getColumn(columnOrdinal).getColumnDef().isCurrency();
 	}
 
 	@Override
 	public boolean isDefinitelyWritable( final int columnOrdinal )
 			throws SQLException
 	{
-		return getColumn(columnOrdinal).isDefinitelyWritable();
+		return getColumn(columnOrdinal).getColumnDef().isDefinitelyWritable();
 	}
 
 	@Override
 	public int isNullable( final int columnOrdinal ) throws SQLException
 	{
-		return getColumn(columnOrdinal).getNullable();
+		return getColumn(columnOrdinal).getColumnDef().getNullable();
 	}
 
 	@Override
 	public boolean isReadOnly( final int columnOrdinal ) throws SQLException
 	{
-		return getColumn(columnOrdinal).isReadOnly();
+		return getColumn(columnOrdinal).getColumnDef().isReadOnly();
 	}
 
 	@Override
 	public boolean isSearchable( final int columnOrdinal ) throws SQLException
 	{
-		return getColumn(columnOrdinal).isSearchable();
+		return getColumn(columnOrdinal).getColumnDef().isSearchable();
 	}
 
 	@Override
 	public boolean isSigned( final int columnOrdinal ) throws SQLException
 	{
-		return getColumn(columnOrdinal).isSigned();
+		return getColumn(columnOrdinal).getColumnDef().isSigned();
 	}
 
 	@Override
@@ -176,7 +176,7 @@ public class J4SResultSetMetaData implements ResultSetMetaData
 	@Override
 	public boolean isWritable( final int columnOrdinal ) throws SQLException
 	{
-		return getColumn(columnOrdinal).isWritable();
+		return getColumn(columnOrdinal).getColumnDef().isWritable();
 	}
 
 	@Override

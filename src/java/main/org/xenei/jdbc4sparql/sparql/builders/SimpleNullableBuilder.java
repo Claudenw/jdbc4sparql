@@ -24,9 +24,10 @@ import java.sql.DatabaseMetaData;
 import java.sql.Types;
 import java.util.List;
 
-import org.xenei.jdbc4sparql.sparql.SparqlCatalog;
-import org.xenei.jdbc4sparql.sparql.SparqlColumnDef;
-import org.xenei.jdbc4sparql.sparql.SparqlTableDef;
+import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
+import org.xenei.jdbc4sparql.impl.rdf.RdfColumnDef;
+import org.xenei.jdbc4sparql.impl.rdf.RdfTableDef;
+
 
 /**
  * A builder that looks for the phrase "nullable" in column localname to
@@ -46,8 +47,8 @@ public class SimpleNullableBuilder extends SimpleBuilder
 	}
 
 	@Override
-	protected void addColumnDefs( final SparqlCatalog catalog,
-			final SparqlTableDef tableDef, final Resource tName )
+	protected void addColumnDefs( final RdfCatalog catalog,
+			final RdfTableDef tableDef, final Resource tName )
 	{
 		final List<QuerySolution> solns = catalog.executeQuery(String.format(
 				SimpleBuilder.COLUMN_QUERY, tName));
@@ -60,10 +61,9 @@ public class SimpleNullableBuilder extends SimpleBuilder
 				type = Types.INTEGER;
 			}
 
-			final SparqlColumnDef.Builder builder = new SparqlColumnDef.Builder();
+			final RdfColumnDef.Builder builder = new RdfColumnDef.Builder();
 			builder.addQuerySegment(SimpleBuilder.COLUMN_SEGMENT)
-					.setNamespace(cName.getNameSpace())
-					.setLocalName(cName.getLocalName()).setType(type);
+					.setName(cName.getLocalName()).setType(type);
 
 			if (cName.getLocalName().toLowerCase().contains("nullable"))
 			{

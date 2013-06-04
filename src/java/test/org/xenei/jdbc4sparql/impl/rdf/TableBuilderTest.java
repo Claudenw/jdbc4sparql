@@ -27,8 +27,8 @@ public class TableBuilderTest
 	{
 		model = ModelFactory.createDefaultModel();
 		final TableDefBuilder builder = new TableDefBuilder()
-				.addColumnDef(ColumnDefBuilder.getStringBuilder().build(model))
-				.addColumnDef(ColumnDefBuilder.getIntegerBuilder().build(model));
+				.addColumnDef(Builder.getStringBuilder().build(model))
+				.addColumnDef(Builder.getIntegerBuilder().build(model));
 		tableDef = builder.build(model);
 		mockSchema = Mockito.mock(Schema.class);
 		Mockito.when( mockSchema.getResource()).thenReturn( model.createResource("http://example.com/mockSchema"));

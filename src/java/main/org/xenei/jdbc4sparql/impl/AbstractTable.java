@@ -39,7 +39,7 @@ import org.xenei.jdbc4sparql.iface.TypeConverter;
 public abstract class AbstractTable implements Table
 {
 	// the table definition
-	private final TableDef tableDef;
+	private final Table table;
 	// the schema this table is in.
 	private final Schema schema;
 
@@ -48,13 +48,13 @@ public abstract class AbstractTable implements Table
 	 * 
 	 * @param schema
 	 *            The schema that table is in
-	 * @param tableDef
+	 * @param table
 	 *            The definition of the table.
 	 */
-	public AbstractTable( final Schema schema, final TableDef tableDef )
+	public AbstractTable( final Schema schema, final Table table )
 	{
 		this.schema = schema;
-		this.tableDef = tableDef;
+		this.table = table;
 	}
 
 	@Override
@@ -72,25 +72,25 @@ public abstract class AbstractTable implements Table
 	@Override
 	public int getColumnCount()
 	{
-		return tableDef.getColumnCount();
+		return table.getColumnCount();
 	}
 
 
 	public ColumnDef getColumnDef( final int idx )
 	{
-		return tableDef.getColumnDef(idx);
+		return table.getTableDef().getColumnDef(idx);
 	}
 
 	
 	public List<ColumnDef> getColumnDefs()
 	{
-		return tableDef.getColumnDefs();
+		return table.getTableDef().getColumnDefs();
 	}
 
 
 	public int getColumnIndex( final ColumnDef column )
 	{
-		return tableDef.getColumnIndex(column);
+		return table.getTableDef().getColumnIndex(column);
 	}
 
 	
@@ -98,14 +98,14 @@ public abstract class AbstractTable implements Table
 	@Override
 	public Iterator<? extends Column> getColumns()
 	{
-		return new Table.ColumnIterator(this, getColumnDefs());
+		return table.getColumns();
 	}
 
 
 
 	public Key getPrimaryKey()
 	{
-		return tableDef.getPrimaryKey();
+		return table.getTableDef().getPrimaryKey();
 	}
 
 	abstract public ResultSet getResultSet() throws SQLException;
@@ -119,7 +119,7 @@ public abstract class AbstractTable implements Table
 
 	public Key getSortKey()
 	{
-		return tableDef.getSortKey();
+		return table.getTableDef().getSortKey();
 	}
 
 	@Override
@@ -137,7 +137,7 @@ public abstract class AbstractTable implements Table
 
 	public TableDef getSuperTableDef()
 	{
-		return tableDef.getSuperTableDef();
+		return table.getTableDef().getSuperTableDef();
 	}
 
 	/**
@@ -145,13 +145,13 @@ public abstract class AbstractTable implements Table
 	 */
 	public TableDef getTableDef()
 	{
-		return tableDef;
+		return table.getTableDef();
 	}
 
 	@Override
 	public String getType()
 	{
-		return "TABLE";
+		return table.getType();
 	}
 
 	@Override
@@ -163,7 +163,7 @@ public abstract class AbstractTable implements Table
 
 	public void verify( final Object[] row )
 	{
-		List<ColumnDef> columns = tableDef.getColumnDefs();
+		List<ColumnDef> columns = table.getTableDef().getColumnDefs();
 		if (row.length != columns.size())
 		{
 			throw new IllegalArgumentException(String.format(
@@ -194,5 +194,10 @@ public abstract class AbstractTable implements Table
 			}
 		}
 
+	}
+	@Override
+	public int getColumnIndex( Column column )
+	{
+		return table.getColumnIndex(column);
 	}
 }

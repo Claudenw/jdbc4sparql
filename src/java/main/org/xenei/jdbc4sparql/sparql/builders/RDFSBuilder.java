@@ -34,11 +34,10 @@ import java.util.Set;
 import org.xenei.jdbc4sparql.iface.Key;
 import org.xenei.jdbc4sparql.iface.KeySegment;
 import org.xenei.jdbc4sparql.iface.TableDef;
-import org.xenei.jdbc4sparql.impl.rdf.KeyBuilder;
-import org.xenei.jdbc4sparql.impl.rdf.KeySegmentBuilder;
-import org.xenei.jdbc4sparql.sparql.SparqlCatalog;
-import org.xenei.jdbc4sparql.sparql.SparqlColumnDef;
-import org.xenei.jdbc4sparql.sparql.SparqlTableDef;
+import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
+import org.xenei.jdbc4sparql.impl.rdf.RdfColumnDef;
+import org.xenei.jdbc4sparql.impl.rdf.RdfKey;
+import org.xenei.jdbc4sparql.impl.rdf.RdfTableDef;
 
 /**
  *
@@ -64,9 +63,9 @@ public class RDFSBuilder implements SchemaBuilder
 	 * xenei.jdbc4sparql.sparql.SparqlCatalog)
 	 */
 	@Override
-	public Set<TableDef> getTableDefs( final SparqlCatalog catalog )
+	public Set<TableDef> getTableDefs( final RdfCatalog catalog )
 	{
-		final Map<String, SparqlTableDef> tables = new HashMap<String, SparqlTableDef>();
+		final Map<String, RdfTableDef> tables = new HashMap<String, RdfTableDef>();
 		for (final Statement stmt : rdfsOntology.listStatements(null,
 				RDFS.domain, (RDFNode) null).toList())
 		{
@@ -76,24 +75,26 @@ public class RDFSBuilder implements SchemaBuilder
 			if (!skip.contains(r.asNode().getNameSpace()))
 			{
 				Key pk = null;
-				SparqlTableDef idDef = tables.get(idTable);
+				RdfTableDef idDef = tables.get(idTable);
 				if (idDef == null)
 				{
-					idDef = new SparqlTableDef(
+					RdfTableDef.Builder builder = new RdfTableDef.Builder();
+					idDef = new RdfTableDef(
 							r.asNode().getNameSpace(),
 							idTable,
 							"%1$s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> %2$s",
 							null);
 					tables.put(idTable, idDef);
-					final SparqlColumnDef.Builder bldr = new SparqlColumnDef.Builder();
+					final RdfColumnDef.Builder bldr = new RdfColumnDef.Builder();
 					bldr.addQuerySegment("BIND( %2$s, %1$s )")
-							.setNamespace(r.asNode().getNameSpace())
-							.setLocalName(idTable).setType(Types.VARCHAR)
+							//.setNamespace(r.asNode().getNameSpace())
+							//.setLocalName(idTable)
+					.setType(Types.VARCHAR)
 							.setSigned(false)
 							.setNullable(DatabaseMetaData.columnNoNulls);
 					idDef.add(bldr.build());
-					pk = new KeyBuilder().setUnique(true).addSegment(
-							new KeySegmentBuilder().setIdx(0).setAscending(true) ).build(model);
+					pk = new RdfKey.Builder().setUnique(true).addSegment(
+							new Builder().setIdx(0).setAscending(true) ).build(model);
 					idDef.setPrimaryKey(pk);
 				}
 				else
@@ -101,10 +102,10 @@ public class RDFSBuilder implements SchemaBuilder
 					pk = idDef.getPrimaryKey();
 				}
 
-				SparqlTableDef idData = tables.get(dataTbl);
+				RdfTableDef idData = tables.get(dataTbl);
 				if (idData == null)
 				{
-					idData = new SparqlTableDef(
+					idData = new RdfTableDef(
 							r.asNode().getNameSpace(),
 							dataTbl,
 							"%1$s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> %2$s",

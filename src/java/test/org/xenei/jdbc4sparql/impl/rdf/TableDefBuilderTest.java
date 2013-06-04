@@ -16,18 +16,18 @@ public class TableDefBuilderTest
 
 	private Key getPrimaryKey()
 	{
-		new KeySegmentBuilder();
+		new Builder();
 		final KeyBuilder builder = new KeyBuilder()
-				.addSegment(new KeySegmentBuilder().build(model))
+				.addSegment(new Builder().build(model))
 				.setUnique(true).setKeyName("PK");
 		return builder.build(model);
 	}
 
 	private Key getSortKey()
 	{
-		new KeySegmentBuilder();
+		new Builder();
 		final KeyBuilder builder = new KeyBuilder()
-				.addSegment(new KeySegmentBuilder().setIdx(1).build(model))
+				.addSegment(new Builder().setIdx(1).build(model))
 				.setUnique(false).setKeyName("SK");
 		return builder.build(model);
 	}
@@ -51,9 +51,9 @@ public class TableDefBuilderTest
 		{
 			new TableDefBuilder()
 					.addColumnDef(
-							ColumnDefBuilder.getStringBuilder().build(model))
+							Builder.getStringBuilder().build(model))
 					.addColumnDef(
-							ColumnDefBuilder.getIntegerBuilder().build(model))
+							Builder.getIntegerBuilder().build(model))
 					.setPrimaryKey(getSortKey());
 			Assert.fail("Should have thrown IllegalArgumentException");
 		}
@@ -67,16 +67,16 @@ public class TableDefBuilderTest
 	public void testDefault()
 	{
 		final TableDefBuilder builder = new TableDefBuilder()
-				.addColumnDef(ColumnDefBuilder.getStringBuilder().build(model))
-				.addColumnDef(ColumnDefBuilder.getIntegerBuilder().build(model));
+				.addColumnDef(Builder.getStringBuilder().build(model))
+				.addColumnDef(Builder.getIntegerBuilder().build(model));
 		final TableDef tableDef = builder.build(model);
 
 		Assert.assertEquals(2, tableDef.getColumnCount());
-		Assert.assertEquals(ColumnDefBuilder.getStringBuilder().build(model),
+		Assert.assertEquals(Builder.getStringBuilder().build(model),
 				tableDef.getColumnDef(0));
-		Assert.assertEquals(ColumnDefBuilder.getIntegerBuilder().build(model),
+		Assert.assertEquals(Builder.getIntegerBuilder().build(model),
 				tableDef.getColumnDef(1));
-		Assert.assertEquals(1, tableDef.getColumnIndex(ColumnDefBuilder
+		Assert.assertEquals(1, tableDef.getColumnIndex(Builder
 				.getIntegerBuilder().build(model)));
 		Assert.assertNotNull(tableDef.getColumnDefs());
 		Assert.assertNull(tableDef.getPrimaryKey());
@@ -90,17 +90,17 @@ public class TableDefBuilderTest
 	public void testPrimaryKey()
 	{
 		final TableDefBuilder builder = new TableDefBuilder()
-				.addColumnDef(ColumnDefBuilder.getStringBuilder().build(model))
-				.addColumnDef(ColumnDefBuilder.getIntegerBuilder().build(model))
+				.addColumnDef(Builder.getStringBuilder().build(model))
+				.addColumnDef(Builder.getIntegerBuilder().build(model))
 				.setPrimaryKey(getPrimaryKey());
 		final TableDef tableDef = builder.build(model);
 
 		Assert.assertEquals(2, tableDef.getColumnCount());
-		Assert.assertEquals(ColumnDefBuilder.getStringBuilder().build(model),
+		Assert.assertEquals(Builder.getStringBuilder().build(model),
 				tableDef.getColumnDef(0));
-		Assert.assertEquals(ColumnDefBuilder.getIntegerBuilder().build(model),
+		Assert.assertEquals(Builder.getIntegerBuilder().build(model),
 				tableDef.getColumnDef(1));
-		Assert.assertEquals(1, tableDef.getColumnIndex(ColumnDefBuilder
+		Assert.assertEquals(1, tableDef.getColumnIndex(Builder
 				.getIntegerBuilder().build(model)));
 		Assert.assertNotNull(tableDef.getColumnDefs());
 		Assert.assertEquals(getPrimaryKey(), tableDef.getPrimaryKey());
@@ -112,17 +112,17 @@ public class TableDefBuilderTest
 	public void testSortKey()
 	{
 		final TableDefBuilder builder = new TableDefBuilder()
-				.addColumnDef(ColumnDefBuilder.getStringBuilder().build(model))
-				.addColumnDef(ColumnDefBuilder.getIntegerBuilder().build(model))
+				.addColumnDef(Builder.getStringBuilder().build(model))
+				.addColumnDef(Builder.getIntegerBuilder().build(model))
 				.setSortKey(getSortKey());
 		final TableDef tableDef = builder.build(model);
 
 		Assert.assertEquals(2, tableDef.getColumnCount());
-		Assert.assertEquals(ColumnDefBuilder.getStringBuilder().build(model),
+		Assert.assertEquals(Builder.getStringBuilder().build(model),
 				tableDef.getColumnDef(0));
-		Assert.assertEquals(ColumnDefBuilder.getIntegerBuilder().build(model),
+		Assert.assertEquals(Builder.getIntegerBuilder().build(model),
 				tableDef.getColumnDef(1));
-		Assert.assertEquals(1, tableDef.getColumnIndex(ColumnDefBuilder
+		Assert.assertEquals(1, tableDef.getColumnIndex(Builder
 				.getIntegerBuilder().build(model)));
 		Assert.assertNotNull(tableDef.getColumnDefs());
 		Assert.assertNull(tableDef.getPrimaryKey());
@@ -134,22 +134,22 @@ public class TableDefBuilderTest
 	public void testSuperTable()
 	{
 		TableDefBuilder builder = new TableDefBuilder()
-				.addColumnDef(ColumnDefBuilder.getStringBuilder().build(model))
-				.addColumnDef(ColumnDefBuilder.getIntegerBuilder().build(model));
+				.addColumnDef(Builder.getStringBuilder().build(model))
+				.addColumnDef(Builder.getIntegerBuilder().build(model));
 		final TableDef tableDef2 = builder.build(model);
 
 		builder = new TableDefBuilder()
-				.addColumnDef(ColumnDefBuilder.getStringBuilder().build(model))
-				.addColumnDef(ColumnDefBuilder.getIntegerBuilder().build(model))
+				.addColumnDef(Builder.getStringBuilder().build(model))
+				.addColumnDef(Builder.getIntegerBuilder().build(model))
 				.setSuperTableDef(tableDef2);
 		final TableDef tableDef = builder.build(model);
 
 		Assert.assertEquals(2, tableDef.getColumnCount());
-		Assert.assertEquals(ColumnDefBuilder.getStringBuilder().build(model),
+		Assert.assertEquals(Builder.getStringBuilder().build(model),
 				tableDef.getColumnDef(0));
-		Assert.assertEquals(ColumnDefBuilder.getIntegerBuilder().build(model),
+		Assert.assertEquals(Builder.getIntegerBuilder().build(model),
 				tableDef.getColumnDef(1));
-		Assert.assertEquals(1, tableDef.getColumnIndex(ColumnDefBuilder
+		Assert.assertEquals(1, tableDef.getColumnIndex(Builder
 				.getIntegerBuilder().build(model)));
 		Assert.assertNotNull(tableDef.getColumnDefs());
 		Assert.assertNull(tableDef.getPrimaryKey());

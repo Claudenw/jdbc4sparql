@@ -23,41 +23,13 @@ import org.xenei.jena.entities.ResourceWrapper;
 import org.xenei.jena.entities.annotations.Predicate;
 import org.xenei.jena.entities.annotations.Subject;
 
-@Subject( namespace = "http://org.xenei.jdbc4sparql/entity/KeySegment#" )
-public abstract class KeySegment implements Comparator<Object[]>,
+public interface KeySegment extends Comparator<Object[]>,
 		ResourceWrapper
 {
 
-	@Override
-	public final int compare( final Object[] data1, final Object[] data2 )
-	{
-		final int idx = getIdx();
-		final Object o1 = data1[idx];
-		final Object o2 = data2[idx];
-		int retval;
-		if (o1 == null)
-		{
-			retval = o2 == null ? 0 : -1;
-		}
-		else if (o2 == null)
-		{
-			retval = 1;
-		}
-		else
-		{
-			retval = Comparable.class.cast(data1[idx]).compareTo(data2[idx]);
-		}
-		return isAscending() ? retval : -1 * retval;
-	}
+	public String getId();
 
-	public final String getId()
-	{
-		return (isAscending() ? "A" : "D") + getIdx();
-	}
+	public short getIdx();
 
-	@Predicate
-	abstract public short getIdx();
-
-	@Predicate
-	abstract public boolean isAscending();
+	public boolean isAscending();
 }

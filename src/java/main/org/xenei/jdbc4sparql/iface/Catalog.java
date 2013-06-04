@@ -27,6 +27,7 @@ import org.xenei.jena.entities.annotations.Subject;
 
 public interface Catalog extends NamedObject, ResourceWrapper
 {
+	public static final String DEFAULT_SCHEMA="";
 
 	/**
 	 * Close release all associated resources.
@@ -42,7 +43,7 @@ public interface Catalog extends NamedObject, ResourceWrapper
 	 * @param schemaNamePattern
 	 * @return
 	 */
-	NameFilter<Schema> findSchemas( String schemaNamePattern );
+	NameFilter<? extends Schema> findSchemas( String schemaNamePattern );
 
 	/**
 	 * Get the schema
@@ -61,6 +62,6 @@ public interface Catalog extends NamedObject, ResourceWrapper
 	 *            schemas should be returned
 	 * @return
 	 */
-	Set<Schema> getSchemas();
+	Set<? extends Schema> getSchemas();
 
 }

@@ -24,14 +24,15 @@ import java.sql.SQLFeatureNotSupportedException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
 
-import org.xenei.jdbc4sparql.sparql.SparqlCatalog;
+
+import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.sparql.SparqlView;
 import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 
 public class J4SStatement implements Statement
 {
 	private final J4SConnection connection;
-	private final SparqlCatalog catalog;
+	private final RdfCatalog catalog;
 	private SQLWarning warnings = null;
 	private boolean closed = false;
 	private final SparqlParser parser;
@@ -44,7 +45,7 @@ public class J4SStatement implements Statement
 	private boolean poolable;
 
 	public J4SStatement( final J4SConnection connection,
-			final SparqlCatalog catalog, final int resultSetType,
+			final RdfCatalog catalog, final int resultSetType,
 			final int resultSetConcurrency, final int resultSetHoldability )
 			throws SQLException
 	{

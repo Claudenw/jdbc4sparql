@@ -1,15 +1,31 @@
 package org.xenei.jdbc4sparql.impl.rdf;
 
+import com.hp.hpl.jena.rdf.model.Literal;
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.Property;
+import com.hp.hpl.jena.rdf.model.RDFList;
+import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
 
+import java.sql.DatabaseMetaData;
+import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.commons.lang3.StringUtils;
 import org.xenei.jdbc4sparql.iface.ColumnDef;
+import org.xenei.jdbc4sparql.iface.TypeConverter;
+import org.xenei.jena.entities.EntityManager;
+import org.xenei.jena.entities.EntityManagerFactory;
 import org.xenei.jena.entities.EntityManagerRequiredException;
+import org.xenei.jena.entities.MissingAnnotation;
 import org.xenei.jena.entities.annotations.Predicate;
 import org.xenei.jena.entities.annotations.Subject;
 
 @Subject( namespace = "http://org.xenei.jdbc4sparql/entity/ColumnDef#" )
 public class RdfColumnDef implements ColumnDef
 {
+	private List<String> querySegments;
 
 	@Override
 	@Predicate( impl=true )
@@ -122,5 +138,368 @@ public class RdfColumnDef implements ColumnDef
 	{
 		throw new EntityManagerRequiredException();
 	}
+	
+	@Predicate( impl=true )
+	public RDFNode getQuerySegments()
+	{
+		throw new EntityManagerRequiredException();
+	}
+	
+	public List<String> getQuerySegmentStrings()
+	{
+		if (querySegments == null)
+		{	
+			querySegments = new ArrayList<String>();
+			RDFList lst = getQuerySegments().as( RDFList.class );
+			for (RDFNode node : lst.asJavaList())
+			{
+				querySegments.add( node.asLiteral().toString() );
+			}
+		}
+		return querySegments;
+	}
 
+	public static class Builder implements ColumnDef
+	{
+		public static String getFQName( final ColumnDef colDef )
+		{
+			return String.format("%s/instance/UUID-%s",
+					ResourceBuilder.getFQName(RdfColumnDef.class),
+					ColumnDef.Util.createID(colDef));
+		}
+
+		public static Builder getIntegerBuilder()
+		{
+			return new Builder().setType(Types.INTEGER).setSigned(true);
+		}
+
+		public static Builder getSmallIntBuilder()
+		{
+			return new Builder().setType(Types.SMALLINT).setSigned(true);
+		}
+
+		public static Builder getStringBuilder()
+		{
+			return new Builder().setType(Types.VARCHAR).setSigned(false);
+		}
+
+		private String columnClassName = "";
+		private int displaySize = 0;
+		private Integer type = null;
+		private int precision = 0;
+		private int scale = 0;
+		private boolean signed = false;
+		private int nullable = DatabaseMetaData.columnNoNulls;
+		private String typeName;
+		private boolean autoIncrement = false;
+		private boolean caseSensitive = false;
+		private boolean currency = false;
+
+		private boolean definitelyWritable = false;
+
+		private boolean readOnly = false;
+
+		private boolean searchable = false;
+
+		private boolean writable = false;
+		
+		private Class<? extends RdfColumnDef> typeClass = RdfColumnDef.class;
+		
+		private final List<String> querySegments = new ArrayList<String>();
+
+		public Builder()
+		{	
+		}
+		
+		
+		public ColumnDef build( final Model model )
+		{
+			checkBuildState();
+
+			
+			final String fqName = Builder.getFQName(this);
+			final ResourceBuilder builder = new ResourceBuilder(model);
+			Resource columnDef = null;
+			if (builder.hasResource(fqName))
+			{
+				columnDef = builder.getResource(fqName, typeClass);
+			}
+			else
+			{
+				columnDef = builder.getResource(fqName, typeClass);
+
+				columnDef.addLiteral(builder.getProperty(typeClass, "displaySize"),
+						displaySize);
+				columnDef.addLiteral(builder.getProperty(typeClass, "type"), type);
+				columnDef.addLiteral(builder.getProperty(typeClass, "precision"),
+						precision);
+				columnDef
+						.addLiteral(builder.getProperty(typeClass, "scale"), scale);
+				columnDef.addLiteral(builder.getProperty(typeClass, "signed"),
+						signed);
+				columnDef.addLiteral(builder.getProperty(typeClass, "nullable"),
+						nullable);
+				columnDef.addLiteral(builder.getProperty(typeClass, "typeName"),
+						StringUtils.defaultString(typeName, TypeConverter
+								.getJavaType(type).getSimpleName()));
+				columnDef.addLiteral(
+						builder.getProperty(typeClass, "columnClassName"),
+						columnClassName);
+				columnDef.addLiteral(
+						builder.getProperty(typeClass, "autoIncrement"),
+						autoIncrement);
+				columnDef.addLiteral(
+						builder.getProperty(typeClass, "caseSensitive"),
+						caseSensitive);
+				columnDef.addLiteral(builder.getProperty(typeClass, "currency"),
+						currency);
+				columnDef.addLiteral(
+						builder.getProperty(typeClass, "definitelyWritable"),
+						definitelyWritable);
+				columnDef.addLiteral(builder.getProperty(typeClass, "readOnly"),
+						readOnly);
+				columnDef.addLiteral(builder.getProperty(typeClass, "searchable"),
+						searchable);
+				columnDef.addLiteral(builder.getProperty(typeClass, "writable"),
+						writable);
+				
+				RDFList lst = null;
+
+				for (final String seg : querySegments)
+				{
+					final Literal l = model.createTypedLiteral( seg );
+					if (lst == null)
+					{
+						lst = model.createList().with(l);
+					}
+					else
+					{
+						lst.add(l);
+					}
+				}
+
+				Property querySegmentLst = builder.getProperty(typeClass, "querySegments");
+				columnDef.addProperty(querySegmentLst, lst);
+				querySegments.clear();
+
+			}
+
+			final EntityManager entityManager = EntityManagerFactory
+					.getEntityManager();
+			try
+			{
+				return entityManager.read(columnDef, typeClass);
+			}
+			catch (final MissingAnnotation e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
+
+		protected void checkBuildState()
+		{
+			if (type == null)
+			{
+				throw new IllegalStateException("type must be set");
+			}
+			if (querySegments.size() == 0)
+			{
+				querySegments.add( "# no query segments provided");
+			}
+		}
+
+		@Override
+		public String getColumnClassName()
+		{
+			return columnClassName;
+		}
+
+		@Override
+		public int getDisplaySize()
+		{
+			return displaySize;
+		}
+
+		@Override
+		public int getNullable()
+		{
+			return nullable;
+		}
+
+		@Override
+		public int getPrecision()
+		{
+			return precision;
+		}
+
+		@Override
+		public Resource getResource()
+		{
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public int getScale()
+		{
+			return scale;
+		}
+
+		@Override
+		public int getType()
+		{
+			return type;
+		}
+
+		@Override
+		public String getTypeName()
+		{
+			return typeName;
+		}
+
+		@Override
+		public boolean isAutoIncrement()
+		{
+			return autoIncrement;
+		}
+
+		@Override
+		public boolean isCaseSensitive()
+		{
+			return caseSensitive;
+		}
+
+		@Override
+		public boolean isCurrency()
+		{
+			return currency;
+		}
+
+		@Override
+		public boolean isDefinitelyWritable()
+		{
+			return definitelyWritable;
+		}
+
+		@Override
+		public boolean isReadOnly()
+		{
+			return readOnly;
+		}
+
+		@Override
+		public boolean isSearchable()
+		{
+			return searchable;
+		}
+
+		@Override
+		public boolean isSigned()
+		{
+			return signed;
+		}
+
+		@Override
+		public boolean isWritable()
+		{
+			return writable;
+		}
+
+		public Builder setAutoIncrement( final boolean autoIncrement )
+		{
+			this.autoIncrement = autoIncrement;
+			return this;
+		}
+
+		public Builder setCaseSensitive( final boolean caseSensitive )
+		{
+			this.caseSensitive = caseSensitive;
+			return this;
+		}
+
+		public Builder setColumnClassName( final String columnClassName )
+		{
+			this.columnClassName = columnClassName;
+			return this;
+		}
+
+		public Builder setCurrency( final boolean currency )
+		{
+			this.currency = currency;
+			return this;
+		}
+
+		public Builder setDefinitelyWritable(
+				final boolean definitelyWritable )
+		{
+			this.definitelyWritable = definitelyWritable;
+			return this;
+		}
+
+		public Builder setDisplaySize( final int displaySize )
+		{
+			this.displaySize = displaySize;
+			return this;
+		}
+
+		public Builder setNullable( final int nullable )
+		{
+			this.nullable = nullable;
+			return this;
+		}
+
+		public Builder setPrecision( final int precision )
+		{
+			this.precision = precision;
+			return this;
+		}
+
+		public Builder setReadOnly( final boolean readOnly )
+		{
+			this.readOnly = readOnly;
+			return this;
+		}
+
+		public Builder setScale( final int scale )
+		{
+			this.scale = scale;
+			return this;
+		}
+
+		public Builder setSearchable( final boolean searchable )
+		{
+			this.searchable = searchable;
+			return this;
+		}
+
+		public Builder setSigned( final boolean signed )
+		{
+			this.signed = signed;
+			return this;
+		}
+
+		public Builder setType( final int type )
+		{
+			this.type = type;
+			return this;
+		}
+
+		public Builder setTypeName( final String typeName )
+		{
+			this.typeName = typeName;
+			return this;
+		}
+
+		public Builder setWritable( final boolean writable )
+		{
+			this.writable = writable;
+			return this;
+		}
+		
+		public Builder addQuerySegment( final String querySegment )
+		{
+			querySegments.add(querySegment);
+			return this;
+		}
+
+	}
 }

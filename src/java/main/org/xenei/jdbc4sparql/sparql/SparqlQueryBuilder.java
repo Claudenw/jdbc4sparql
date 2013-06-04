@@ -59,6 +59,10 @@ import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.TypeConverter;
 import org.xenei.jdbc4sparql.impl.AbstractResultSet;
 import org.xenei.jdbc4sparql.impl.NameUtils;
+import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
+import org.xenei.jdbc4sparql.impl.rdf.RdfColumn;
+import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
+import org.xenei.jdbc4sparql.impl.rdf.RdfTableDef;
 
 /**
  * Creates a SparqlQuery while tracking naming changes between nomenclatures.
@@ -73,9 +77,9 @@ public class SparqlQueryBuilder
 	 */
 	public class CheckTypeF extends ExprFunction1
 	{
-		private final SparqlColumn column;
+		private final RdfColumn column;
 
-		public CheckTypeF( final SparqlColumn column, final Node columnVar )
+		public CheckTypeF( final RdfColumn column, final Node columnVar )
 		{
 			super(new ExprVar(columnVar), "checkTypeF");
 			this.column = column;
@@ -113,10 +117,10 @@ public class SparqlQueryBuilder
 			final Node n = binding.get(v);
 			if (n == null)
 			{
-				return column.getNullable() == ResultSetMetaData.columnNullable ? NodeValue.TRUE
+				return column.getColumnDef().getNullable() == ResultSetMetaData.columnNullable ? NodeValue.TRUE
 						: NodeValue.FALSE;
 			}
-			final Class<?> resultingClass = TypeConverter.getJavaType(column
+			final Class<?> resultingClass = TypeConverter.getJavaType(column.getColumnDef()
 					.getType());
 			Object columnObject;
 			if (n.isLiteral())
@@ -153,9 +157,9 @@ public class SparqlQueryBuilder
 		}
 	}
 
-	public class SparqlTableInfo
+	public class RdfTableInfo
 	{
-		private final SparqlTable table;
+		private final RdfTable table;
 		private final ElementTriplesBlock etb;
 		private final ElementGroup eg;
 		private final Node tableVar;
@@ -163,8 +167,8 @@ public class SparqlQueryBuilder
 		// list of type filters to add at the end of the query
 		private final Set<CheckTypeF> typeFilterList;
 
-		private SparqlTableInfo( final ElementGroup queryElementGroup,
-				final SparqlTable table, final boolean optional )
+		private RdfTableInfo( final ElementGroup queryElementGroup,
+				final RdfTable table, final boolean optional )
 		{
 			this.table = table;
 			this.eg = new ElementGroup();
@@ -182,10 +186,10 @@ public class SparqlQueryBuilder
 				etb.addTriple(t);
 			}
 			// add all the required columns
-			for (final Iterator<SparqlColumn> colIter = table.getColumns(); colIter
+			for (final Iterator<RdfColumn> colIter = table.getColumns(); colIter
 					.hasNext();)
 			{
-				final SparqlColumn column = colIter.next();
+				final RdfColumn column = colIter.next();
 				if (!column.isOptional())
 				{
 					addColumn(column);
@@ -210,7 +214,7 @@ public class SparqlQueryBuilder
 		 * @return The columnVar node.
 		 * @Throws IllegalArgumentException if column is not from this table.
 		 */
-		public Node addColumn( final SparqlColumn column )
+		public Node addColumn( final RdfColumn column )
 		{
 			if (!column.getTable().equals(table))
 			{
@@ -259,7 +263,7 @@ public class SparqlQueryBuilder
 			etb.addTriple(t);
 		}
 
-		public Iterator<SparqlColumn> getColumns()
+		public Iterator<RdfColumn> getColumns()
 		{
 			return table.getColumns();
 		}
@@ -329,16 +333,16 @@ public class SparqlQueryBuilder
 	private boolean isBuilt;
 
 	// sparql catalog we are running against.
-	private final SparqlCatalog catalog;
+	private final RdfCatalog catalog;
 
 	// the list of tables in the query indexed by SQL name.
-	private final Map<String, SparqlTableInfo> tablesInQuery;
+	private final Map<String, RdfTableInfo> tablesInQuery;
 
 	// the list of nodes in the query indexed by SQL name.
 	private final Map<String, Node> nodesInQuery;
 
 	// the list of columns in the query indexed by SQL name.
-	private final Map<String, SparqlColumn> columnsInQuery;
+	private final Map<String, RdfColumn> columnsInQuery;
 
 	/**
 	 * Create a query builder for a catalog
@@ -346,14 +350,14 @@ public class SparqlQueryBuilder
 	 * @param catalog
 	 *            The catalog to build the query for.
 	 */
-	public SparqlQueryBuilder( final SparqlCatalog catalog )
+	public SparqlQueryBuilder( final RdfCatalog catalog )
 	{
 		this.catalog = catalog;
 		this.query = new Query();
 		this.isBuilt = false;
-		this.tablesInQuery = new HashMap<String, SparqlTableInfo>();
+		this.tablesInQuery = new HashMap<String, RdfTableInfo>();
 		this.nodesInQuery = new HashMap<String, Node>();
-		this.columnsInQuery = new HashMap<String, SparqlColumn>();
+		this.columnsInQuery = new HashMap<String, RdfColumn>();
 		query.setQuerySelectType();
 		// query.getPrefixMapping().setNsPrefix("f", String.format(
 		// "java:%s.",SparqlQueryBuilder.class.getName()));
@@ -412,16 +416,16 @@ public class SparqlQueryBuilder
 	 * @return The SPARQL based node name for the column.
 	 * @throws SQLException
 	 */
-	public Node addColumn( final SparqlColumn column ) throws SQLException
+	public Node addColumn( final RdfColumn column ) throws SQLException
 	{
 		checkBuilt();
 		if (!columnsInQuery.containsKey(column.getSQLName()))
 		{
-			SparqlTableInfo sti = tablesInQuery.get(column.getTable()
+			RdfTableInfo sti = tablesInQuery.get(column.getTable()
 					.getSQLName());
 			if (sti == null)
 			{
-				sti = new SparqlTableInfo(getElementGroup(), column.getTable(),
+				sti = new RdfTableInfo(getElementGroup(), column.getTable(),
 						false);
 			}
 			return sti.addColumn(column);
@@ -450,7 +454,7 @@ public class SparqlQueryBuilder
 	{
 		checkBuilt();
 		// get all the columns that match the name patterns
-		final Collection<SparqlColumn> columns = findColumns(schemaName,
+		final Collection<RdfColumn> columns = findColumns(schemaName,
 				tableName, columnName);
 
 		// if there are more than one see if only one is specified in the list
@@ -463,17 +467,17 @@ public class SparqlQueryBuilder
 				// get the set of table names.
 				final Set<String> tblNames = WrappedIterator
 						.create(tablesInQuery.values().iterator())
-						.mapWith(new Map1<SparqlTableInfo, String>() {
+						.mapWith(new Map1<RdfTableInfo, String>() {
 
 							@Override
-							public String map1( final SparqlTableInfo o )
+							public String map1( final RdfTableInfo o )
 							{
 								return o.getSQLName();
 							}
 						}).toSet();
-				SparqlColumn col = null;
-				SparqlColumn thisCol = null;
-				final Iterator<SparqlColumn> iter = columns.iterator();
+				RdfColumn col = null;
+				RdfColumn thisCol = null;
+				final Iterator<RdfColumn> iter = columns.iterator();
 				while (iter.hasNext())
 				{
 					thisCol = iter.next();
@@ -576,7 +580,7 @@ public class SparqlQueryBuilder
 			final boolean optional ) throws SQLException
 	{
 		checkBuilt();
-		final Collection<SparqlTable> tables = findTables(schemaName, tableName);
+		final Collection<RdfTable> tables = findTables(schemaName, tableName);
 
 		if (tables.size() > 1)
 		{
@@ -589,12 +593,12 @@ public class SparqlQueryBuilder
 			throw new SQLException(String.format(
 					SparqlQueryBuilder.NOT_FOUND_IN_ANY_, tableName, "schema"));
 		}
-		final SparqlTable table = tables.iterator().next();
+		final RdfTable table = tables.iterator().next();
 		// make sure the table is in the query.
-		SparqlTableInfo sti = tablesInQuery.get(table.getSQLName());
+		RdfTableInfo sti = tablesInQuery.get(table.getSQLName());
 		if (sti == null)
 		{
-			sti = new SparqlTableInfo(getElementGroup(), table, optional);
+			sti = new RdfTableInfo(getElementGroup(), table, optional);
 		}
 		return sti.getTableVar();
 	}
@@ -640,7 +644,7 @@ public class SparqlQueryBuilder
 	 *            the alias for the expression, if null no alias is used.
 	 * @throws SQLException
 	 */
-	public void addVar( final SparqlColumn col, final String alias )
+	public void addVar( final RdfColumn col, final String alias )
 			throws SQLException
 	{
 		checkBuilt();
@@ -677,13 +681,13 @@ public class SparqlQueryBuilder
 	 *            Columns to add to the query as variables.
 	 * @throws SQLException
 	 */
-	public void addVars( final Iterator<SparqlColumn> cols )
+	public void addVars( final Iterator<RdfColumn> cols )
 			throws SQLException
 	{
 		checkBuilt();
 		while (cols.hasNext())
 		{
-			final SparqlColumn col = cols.next();
+			final RdfColumn col = cols.next();
 			addVar(col, getColCount(col) > 1 ? null : col.getLocalName());
 		}
 	}
@@ -730,7 +734,7 @@ public class SparqlQueryBuilder
 				// good.
 				query.cloneQuery();
 				// apply the type filters to each subpart.
-				for (final SparqlTableInfo sti : tablesInQuery.values())
+				for (final RdfTableInfo sti : tablesInQuery.values())
 				{
 					for (final CheckTypeF f : sti.getTypeFilterList())
 					{
@@ -762,20 +766,20 @@ public class SparqlQueryBuilder
 	 *            The column name pattern. null = no restriction.
 	 * @return
 	 */
-	private Collection<SparqlColumn> findColumns(
+	private Collection<RdfColumn> findColumns(
 			final String schemaNamePattern, final String tableNamePattern,
 			final String columnNamePattern )
 	{
-		final List<SparqlColumn> columns = new ArrayList<SparqlColumn>();
+		final List<RdfColumn> columns = new ArrayList<RdfColumn>();
 		for (final Schema schema : catalog.findSchemas(schemaNamePattern))
 		{
 			for (final Table table : schema.findTables(tableNamePattern))
 			{
 				for (final Column column : table.findColumns(columnNamePattern))
 				{
-					if (column instanceof SparqlColumn)
+					if (column instanceof RdfColumn)
 					{
-						columns.add((SparqlColumn) column);
+						columns.add((RdfColumn) column);
 					}
 				}
 			}
@@ -783,17 +787,17 @@ public class SparqlQueryBuilder
 		return columns;
 	}
 
-	private Collection<SparqlTable> findTables( final String schemaName,
+	private Collection<RdfTable> findTables( final String schemaName,
 			final String tableName )
 	{
-		final List<SparqlTable> tables = new ArrayList<SparqlTable>();
+		final List<RdfTable> tables = new ArrayList<RdfTable>();
 		for (final Schema schema : catalog.findSchemas(schemaName))
 		{
 			for (final Table table : schema.findTables(tableName))
 			{
-				if (table instanceof SparqlTable)
+				if (table instanceof RdfTable)
 				{
-					tables.add((SparqlTable) table);
+					tables.add((RdfTable) table);
 				}
 			}
 		}
@@ -805,7 +809,7 @@ public class SparqlQueryBuilder
 	 * 
 	 * @return a Catalog.
 	 */
-	public SparqlCatalog getCatalog()
+	public RdfCatalog getCatalog()
 	{
 		return catalog;
 	}
@@ -835,9 +839,9 @@ public class SparqlQueryBuilder
 	 *            The table name
 	 * @param columnName
 	 *            The column name
-	 * @return The SparqlColumn or null if no column is defined in the query.
+	 * @return The RdfColumn or null if no column is defined in the query.
 	 */
-	public SparqlColumn getColumn( final String schemaName,
+	public RdfColumn getColumn( final String schemaName,
 			final String tableName, final String columnName )
 	{
 		if (schemaName == null)
@@ -852,7 +856,7 @@ public class SparqlQueryBuilder
 		{
 			throw new IllegalArgumentException("Column name may not be null");
 		}
-		final Iterator<SparqlColumn> iter = findColumns(schemaName, tableName,
+		final Iterator<RdfColumn> iter = findColumns(schemaName, tableName,
 				columnName).iterator();
 		return (iter.hasNext()) ? iter.next() : null;
 	}
@@ -881,7 +885,7 @@ public class SparqlQueryBuilder
 		return n;
 	}
 
-	public SparqlColumn getNodeColumn( final Node n )
+	public RdfColumn getNodeColumn( final Node n )
 	{
 		checkBuilt();
 		for (final Map.Entry<String, Node> entry : nodesInQuery.entrySet())
@@ -895,7 +899,7 @@ public class SparqlQueryBuilder
 		return null;
 	}
 
-	public SparqlTableInfo getNodeTable( final Node n )
+	public RdfTableInfo getNodeTable( final Node n )
 	{
 		checkBuilt();
 		for (final Map.Entry<String, Node> entry : nodesInQuery.entrySet())
@@ -903,10 +907,10 @@ public class SparqlQueryBuilder
 			if (entry.getValue().equals(n))
 			{
 				final String objectSQLName = entry.getKey();
-				SparqlTableInfo sti = tablesInQuery.get(objectSQLName);
+				RdfTableInfo sti = tablesInQuery.get(objectSQLName);
 				if (sti == null)
 				{
-					final SparqlColumn col = columnsInQuery.get(objectSQLName);
+					final RdfColumn col = columnsInQuery.get(objectSQLName);
 					if (col != null)
 					{
 						sti = tablesInQuery.get(col.getTable().getSQLName());
@@ -939,14 +943,14 @@ public class SparqlQueryBuilder
 	 *            The name for the table definition.
 	 * @return The table definition.
 	 */
-	public SparqlTableDef getTableDef( final String namespace,
+	public RdfTableDef getTableDef( final String namespace,
 			final String localName )
 	{
-		SparqlTableDef.Builder builder = new SparqlTableDef.Builder();
+		RdfTableDef.Builder builder = new RdfTableDef.Builder();
 		Model model = ModelFactory.createDefaultModel();	
 			
 		
-		//final SparqlTableDef tableDef = new SparqlTableDef(namespace,
+		//final RdfTableDef tableDef = new RdfTableDef(namespace,
 		//		localName, "", null);
 		final VarExprList expLst = query.getProject();
 		List<Column> colLst = new ArrayList<Column>();
@@ -978,7 +982,7 @@ public class SparqlQueryBuilder
 	private Set<CheckTypeF> getTypeFilterList()
 	{
 		final Set<CheckTypeF> retval = new HashSet<CheckTypeF>();
-		for (final SparqlTableInfo sti : tablesInQuery.values())
+		for (final RdfTableInfo sti : tablesInQuery.values())
 		{
 			retval.addAll(sti.getTypeFilterList());
 		}
@@ -1006,9 +1010,9 @@ public class SparqlQueryBuilder
 	{
 		checkBuilt();
 		// query.setQueryResultStar(true);
-		for (final SparqlTableInfo t : tablesInQuery.values())
+		for (final RdfTableInfo t : tablesInQuery.values())
 		{
-			final Iterator<SparqlColumn> iter = t.getColumns();
+			final Iterator<RdfColumn> iter = t.getColumns();
 			while (iter.hasNext())
 			{
 				addColumn(iter.next());

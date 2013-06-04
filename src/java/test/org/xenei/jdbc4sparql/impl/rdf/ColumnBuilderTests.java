@@ -24,7 +24,7 @@ public class ColumnBuilderTests
 	public void setUp() throws Exception
 	{
 		model = ModelFactory.createDefaultModel();
-		columnDef = ColumnDefBuilder.getStringBuilder().build(model);
+		columnDef = Builder.getStringBuilder().build(model);
 		mockTable = Mockito.mock(Table.class);
 		Mockito.when( mockTable.getResource()).thenReturn( model.createResource("http://example.com/mockTable"));
 	}

@@ -20,7 +20,7 @@ package org.xenei.jdbc4sparql.iface;
 import java.util.Collection;
 import java.util.Iterator;
 
-import org.xenei.jdbc4sparql.impl.ColumnImpl;
+import org.xenei.jdbc4sparql.impl.rdf.RdfColumn;
 import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTableDef;
 import org.xenei.jena.entities.ResourceWrapper;
@@ -30,71 +30,75 @@ import org.xenei.jena.entities.annotations.Subject;
 
 public interface Table extends NamedObject, ResourceWrapper
 {
-	/**
-	 * An iterator of the columns in the table.
-	 * 
-	 * Remove is not supported.
-	 */
-	public static class ColumnIterator implements Iterator<Column>
-	{
-		// the table
-		private final Table table;
-		// the namespace
-		private final String namespace;
-		// an iterator over the columnDefs
-		private final Iterator<? extends ColumnDef> iter;
-
-		/**
-		 * Constructor
-		 * 
-		 * @param namespace
-		 *            The namespace of the table.
-		 * @param table
-		 *            The table.
-		 * @param colDefs
-		 *            The collection of column definitions.
-		 */
-		public ColumnIterator( final String namespace, final Table table,
-				final Collection<? extends ColumnDef> colDefs )
-		{
-			this.table = table;
-			this.namespace = namespace;
-			iter = colDefs.iterator();
-		}
-
-		/**
-		 * Constructor
-		 * 
-		 * @param table
-		 *            The table.
-		 * @param colDefs
-		 *            The collection of column definitions.
-		 */
-		public ColumnIterator( final Table table,
-				final Collection<? extends ColumnDef> colDefs )
-		{
-			this(table.getResource().getURI(), table, colDefs);
-		}
-		
-		@Override
-		public boolean hasNext()
-		{
-			return iter.hasNext();
-		}
-
-		@Override
-		public Column next()
-		{
-			return new ColumnImpl(namespace, table, iter.next());
-		}
-
-		@Override
-		public void remove()
-		{
-			throw new UnsupportedOperationException();
-		}
-
-	}
+//	/**
+//	 * An iterator of the columns in the table.
+//	 * 
+//	 * Remove is not supported.
+//	 */
+//	public static class ColumnIterator implements Iterator<Column>
+//	{
+//		// the table
+//		private final Table table;
+//		// the namespace
+//		private final String namespace;
+//		// an iterator over the columnDefs
+//		private final Iterator<? extends ColumnDef> iter;
+//
+//		/**
+//		 * Constructor
+//		 * 
+//		 * @param namespace
+//		 *            The namespace of the table.
+//		 * @param table
+//		 *            The table.
+//		 * @param colDefs
+//		 *            The collection of column definitions.
+//		 */
+//		public ColumnIterator( final String namespace, final Table table,
+//				final Collection<? extends ColumnDef> colDefs )
+//		{
+//			this.table = table;
+//			this.namespace = namespace;
+//			iter = colDefs.iterator();
+//		}
+//
+//		/**
+//		 * Constructor
+//		 * 
+//		 * @param table
+//		 *            The table.
+//		 * @param colDefs
+//		 *            The collection of column definitions.
+//		 */
+//		public ColumnIterator( final Table table,
+//				final Collection<? extends ColumnDef> colDefs )
+//		{
+//			this(table.getResource().getURI(), table, colDefs);
+//		}
+//		
+//		@Override
+//		public boolean hasNext()
+//		{
+//			return iter.hasNext();
+//		}
+//
+//		@Override
+//		public Column next()
+//		{
+//			RdfColumn.Builder builder = new RdfColumn.Builder();
+//			builder.setColumnDef( iter.next() )
+//			.setName(name)
+//			.setTable( table );
+//			return builder.build();
+//		}
+//
+//		@Override
+//		public void remove()
+//		{
+//			throw new UnsupportedOperationException();
+//		}
+//
+//	}
 	
 	public TableDef getTableDef();
 	
@@ -107,7 +111,7 @@ public interface Table extends NamedObject, ResourceWrapper
 	 *            The pattern to match or null.
 	 * @return
 	 */
-	NameFilter<Column> findColumns( String columnNamePattern );
+	NameFilter<? extends Column> findColumns( String columnNamePattern );
 
 	/**
 	 * 

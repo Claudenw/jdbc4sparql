@@ -31,7 +31,7 @@ public class ColumnDefBuilderTests
 	@Test
 	public void testIntegerCreation()
 	{
-		final ColumnDefBuilder builder = ColumnDefBuilder.getIntegerBuilder();
+		final Builder builder = Builder.getIntegerBuilder();
 		final ColumnDef cd = builder.build(model);
 		model.write(System.out, "TURTLE");
 
@@ -54,7 +54,7 @@ public class ColumnDefBuilderTests
 	@Test
 	public void testSetValuesCreation()
 	{
-		final ColumnDefBuilder builder = new ColumnDefBuilder();
+		final Builder builder = new Builder();
 		builder.setType(Types.VARCHAR).setAutoIncrement(true)
 				.setCaseSensitive(true).setColumnClassName("foo")
 				.setCurrency(true).setDefinitelyWritable(true)
@@ -87,7 +87,7 @@ public class ColumnDefBuilderTests
 	@Test
 	public void testSmallIntCreation()
 	{
-		final ColumnDefBuilder builder = ColumnDefBuilder.getSmallIntBuilder();
+		final Builder builder = Builder.getSmallIntBuilder();
 		final ColumnDef cd = builder.build(model);
 		model.write(System.out, "TURTLE");
 
@@ -110,7 +110,7 @@ public class ColumnDefBuilderTests
 	@Test
 	public void testStandardCreation()
 	{
-		final ColumnDefBuilder builder = new ColumnDefBuilder();
+		final Builder builder = new Builder();
 		builder.setType(Types.VARCHAR);
 		final ColumnDef cd = builder.build(model);
 		model.write(System.out, "TURTLE");
@@ -134,7 +134,7 @@ public class ColumnDefBuilderTests
 	@Test
 	public void testStringCreation()
 	{
-		final ColumnDefBuilder builder = ColumnDefBuilder.getStringBuilder();
+		final Builder builder = Builder.getStringBuilder();
 		final ColumnDef cd = builder.build(model);
 		model.write(System.out, "TURTLE");
 

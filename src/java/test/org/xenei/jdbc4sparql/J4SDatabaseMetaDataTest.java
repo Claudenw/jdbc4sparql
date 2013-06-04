@@ -36,12 +36,8 @@ import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.ColumnDef;
 import org.xenei.jdbc4sparql.iface.Key;
 import org.xenei.jdbc4sparql.iface.KeySegment;
-import org.xenei.jdbc4sparql.impl.ColumnDefImpl;
-import org.xenei.jdbc4sparql.impl.TableDefImpl;
-import org.xenei.jdbc4sparql.impl.rdf.CatalogBuilder;
 import org.xenei.jdbc4sparql.meta.MetaCatalogBuilder;
 
-import org.xenei.jdbc4sparql.sparql.SparqlTableDef;
 
 public class J4SDatabaseMetaDataTest
 {

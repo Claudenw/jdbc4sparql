@@ -54,10 +54,9 @@ import org.xenei.jdbc4sparql.config.ModelFactory;
 import org.xenei.jdbc4sparql.config.ModelReader;
 import org.xenei.jdbc4sparql.config.ModelWriter;
 import org.xenei.jdbc4sparql.iface.Catalog;
-import org.xenei.jdbc4sparql.impl.rdf.CatalogBuilder;
+import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
+import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
 import org.xenei.jdbc4sparql.meta.MetaCatalogBuilder;
-import org.xenei.jdbc4sparql.sparql.SparqlCatalog;
-import org.xenei.jdbc4sparql.sparql.SparqlSchema;
 import org.xenei.jdbc4sparql.sparql.builders.SchemaBuilder;
 import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 
@@ -75,9 +74,9 @@ public class J4SConnection implements Connection
 		{
 			for (final Catalog catalog : catalogMap.values())
 			{
-				if (catalog instanceof SparqlCatalog)
+				if (catalog instanceof RdfCatalog)
 				{
-					((SparqlCatalog) catalog).getModelReader().read(model);
+					((RdfCatalog) catalog).getModelReader().read(model);
 				}
 			}
 		}
@@ -181,7 +180,7 @@ public class J4SConnection implements Connection
 		}
 	}
 
-	public Catalog addCatalog( CatalogBuilder catalogBuilder )
+	public Catalog addCatalog( RdfCatalog.Builder catalogBuilder )
 	{
 		return catalogBuilder.build( model );
 	}
@@ -236,21 +235,25 @@ public class J4SConnection implements Connection
 
 		if (url.getType().equals(J4SUrl.TYPE_CONFIG))
 		{
-			final ConfigSerializer serializer = new ConfigSerializer();
+			/*final ConfigSerializer serializer = new ConfigSerializer();
 			serializer.getLoader().read(
 					url.getEndpoint().toURL().toExternalForm());
 			for (final Catalog catalog : serializer.getCatalogs(getDataset()))
 			{
 				catalogMap.put(catalog.getName(), catalog);
 			}
+			*/
+			// TODO implement ths
+			throw new RuntimeException( "Not yet implemented");
 		}
 		else
 		{
-			SparqlCatalog catalog = null;
+			RdfCatalog catalog = null;
 			if (url.getType().equals(J4SUrl.TYPE_SPARQL))
 			{
-				catalog = new SparqlCatalog(url.getEndpoint().toURL(),
-						currentCatalog);
+				catalog = new RdfCatalog.Builder()
+					.setSparqlEndpoint(url.getEndpoint().toURL())
+					.setName(currentCatalog).build( model );
 			}
 			else
 			{
@@ -266,16 +269,19 @@ public class J4SConnection implements Connection
 				}
 				model.removeAll();
 				model.read(url.getEndpoint().toString(), url.getType());
-				catalog = new SparqlCatalog(url.getEndpoint().toString(),
-						model, currentCatalog);
+				catalog = new RdfCatalog.Builder()
+					.setSparqlEndpoint(url.getEndpoint().toURL())
+					.setName(currentCatalog)
+					.build( model );
 			}
 
 			final SchemaBuilder builder = url.getBuilder() != null ? url
 					.getBuilder() : SchemaBuilder.Util.getBuilder(null);
-			final SparqlSchema schema = new SparqlSchema(catalog,
-					SparqlSchema.DEFAULT_NAMESPACE, "");
-			catalog.addSchema(schema);
-			schema.addTableDefs(builder.getTableDefs(catalog));
+			final RdfSchema schema = new RdfSchema.Builder()
+				.setCatalog(catalog)
+				.setName("")
+				.build( model );
+			//schema.addTableDefs(builder.getTableDefs(catalog));
 			currentSchema = schema.getName();
 			catalogMap.put(catalog.getName(), catalog);
 		}
@@ -334,9 +340,9 @@ public class J4SConnection implements Connection
 			throws SQLException
 	{
 		final Catalog catalog = catalogMap.get(currentCatalog);
-		if (catalog instanceof SparqlCatalog)
+		if (catalog instanceof RdfCatalog)
 		{
-			return new J4SStatement(this, (SparqlCatalog) catalog,
+			return new J4SStatement(this, (RdfCatalog) catalog,
 					resultSetType, resultSetConcurrency, resultSetHoldability);
 		}
 		else
@@ -575,7 +581,7 @@ public class J4SConnection implements Connection
 	}
 
 	/**
-	 * Save all the current SparqlCatalogs to a configuration file.
+	 * Save all the current RdfCatalogs to a configuration file.
 	 * 
 	 * Reloading this file may be used in the URL as the configuration location.
 	 * 

@@ -46,8 +46,8 @@ public class NameUtils
 
 	public static String getDBName( final Column column )
 	{
-		return NameUtils.getDBName(column.getSchema().getLocalName(), column
-				.getTable().getLocalName(), column.getLocalName());
+		return NameUtils.getDBName(column.getSchema().getName(), column
+				.getTable().getName(), column.getName());
 	}
 
 	public static String getDBName( final String schema, final String table,
@@ -58,8 +58,8 @@ public class NameUtils
 
 	public static String getDBName( final Table table )
 	{
-		return NameUtils.getDBName(table.getSchema().getLocalName(),
-				table.getLocalName(), null);
+		return NameUtils.getDBName(table.getSchema().getName(),
+				table.getName(), null);
 	}
 
 	public static String getDBName( final Var var )
@@ -70,8 +70,8 @@ public class NameUtils
 
 	public static String getSPARQLName( final Column column )
 	{
-		return NameUtils.getSPARQLName(column.getSchema().getLocalName(),
-				column.getTable().getLocalName(), column.getLocalName());
+		return NameUtils.getSPARQLName(column.getSchema().getName(),
+				column.getTable().getName(), column.getName());
 	}
 
 	public static String getSPARQLName( final String schema,
@@ -82,8 +82,8 @@ public class NameUtils
 
 	public static String getSPARQLName( final Table table )
 	{
-		return NameUtils.getSPARQLName(table.getSchema().getLocalName(),
-				table.getLocalName(), null);
+		return NameUtils.getSPARQLName(table.getSchema().getName(),
+				table.getName(), null);
 	}
 
 }

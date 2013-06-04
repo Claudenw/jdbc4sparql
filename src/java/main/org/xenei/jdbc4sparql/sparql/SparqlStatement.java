@@ -23,14 +23,15 @@ import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
 
+import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 
 public class SparqlStatement implements Statement
 {
 	private final SparqlParser parser;
-	private final SparqlCatalog catalog;
+	private final RdfCatalog catalog;
 
-	SparqlStatement( final SparqlCatalog catalog, final SparqlParser parser )
+	SparqlStatement( final RdfCatalog catalog, final SparqlParser parser )
 	{
 		this.parser = parser;
 		this.catalog = catalog;

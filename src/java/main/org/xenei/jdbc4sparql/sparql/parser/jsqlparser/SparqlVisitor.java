@@ -29,14 +29,14 @@ import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
 
-import org.xenei.jdbc4sparql.sparql.SparqlCatalog;
+import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 
 public class SparqlVisitor implements StatementVisitor
 {
 	private final SparqlQueryBuilder sparqlQueryBuilder;
 
-	public SparqlVisitor( final SparqlCatalog catalog )
+	public SparqlVisitor( final RdfCatalog catalog )
 	{
 		sparqlQueryBuilder = new SparqlQueryBuilder(catalog);
 	}

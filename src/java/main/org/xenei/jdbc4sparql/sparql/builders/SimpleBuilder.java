@@ -18,18 +18,25 @@
 package org.xenei.jdbc4sparql.sparql.builders;
 
 import com.hp.hpl.jena.query.QuerySolution;
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 import java.sql.DatabaseMetaData;
 import java.sql.Types;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.xenei.jdbc4sparql.iface.Catalog;
+import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.TableDef;
-import org.xenei.jdbc4sparql.sparql.SparqlCatalog;
-import org.xenei.jdbc4sparql.sparql.SparqlColumnDef;
-import org.xenei.jdbc4sparql.sparql.SparqlTableDef;
+import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
+import org.xenei.jdbc4sparql.impl.rdf.RdfColumnDef;
+import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
+import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
+import org.xenei.jdbc4sparql.impl.rdf.RdfTableDef;
 
 public class SimpleBuilder implements SchemaBuilder
 {
@@ -47,41 +54,54 @@ public class SimpleBuilder implements SchemaBuilder
 	private static final String TABLE_SEGMENT = "%1$s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> %2$s";
 	protected static final String COLUMN_SEGMENT = "%1$s %3$s %2$s";
 
+	private Model model;
 	public SimpleBuilder()
 	{
+		model = ModelFactory.createDefaultModel();
 	}
 
-	protected void addColumnDefs( final SparqlCatalog catalog,
-			final SparqlTableDef tableDef, final Resource tName )
+	protected List<String> addColumnDefs( final RdfCatalog catalog,
+			final RdfTableDef.Builder tableDefBuilder, final Resource tName )
 	{
+		List<String> colNames = new ArrayList<String>();
 		final List<QuerySolution> solns = catalog.executeQuery(String.format(
 				SimpleBuilder.COLUMN_QUERY, tName));
-		final SparqlColumnDef.Builder builder = new SparqlColumnDef.Builder();
+		
 		for (final QuerySolution soln : solns)
 		{
+			RdfColumnDef.Builder builder = new RdfColumnDef.Builder();
 			final Resource cName = soln.getResource("cName");
+			colNames.add( cName.getLocalName() );
 			builder.addQuerySegment(SimpleBuilder.COLUMN_SEGMENT)
-					.setNamespace(cName.getNameSpace())
-					.setLocalName(cName.getLocalName()).setType(Types.VARCHAR)
+					.setType(Types.VARCHAR)
 					.setNullable(DatabaseMetaData.columnNullable);
-			tableDef.add(builder.build());
+			tableDefBuilder.addColumnDef(builder.build( model ));
 		}
+		return colNames;
 	}
 
 	@Override
-	public Set<TableDef> getTableDefs( final SparqlCatalog catalog )
+	public Set<Table> getTableDefs( final RdfCatalog catalog )
 	{
-		final HashSet<TableDef> retval = new HashSet<TableDef>();
+		final HashSet<Table> retval = new HashSet<Table>();
 		final List<QuerySolution> solns = catalog
 				.executeQuery(SimpleBuilder.TABLE_QUERY);
+		RdfSchema schema = catalog.getSchema(Catalog.DEFAULT_SCHEMA);
 		for (final QuerySolution soln : solns)
 		{
 			final Resource tName = soln.getResource("tName");
-			final SparqlTableDef tableDef = new SparqlTableDef(
-					tName.getNameSpace(), tName.getLocalName(),
-					SimpleBuilder.TABLE_SEGMENT, null);
-			addColumnDefs(catalog, tableDef, tName);
-			retval.add(tableDef);
+			RdfTableDef.Builder builder = new RdfTableDef.Builder();
+			builder.addQuerySegment(SimpleBuilder.TABLE_SEGMENT );
+			List<String> colNames = addColumnDefs(catalog, builder, tName);
+			RdfTableDef tableDef = builder.build(model);
+			RdfTable table = new RdfTable.Builder()
+			.setTableDef(tableDef)
+			.setName(tName.getLocalName())
+			.setSchema( schema )
+			.setColumns(colNames)
+			.build( model );
+			
+			retval.add(table);
 		}
 		return retval;
 	}

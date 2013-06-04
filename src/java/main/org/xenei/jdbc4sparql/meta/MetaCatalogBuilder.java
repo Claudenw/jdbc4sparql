@@ -18,6 +18,7 @@
 package org.xenei.jdbc4sparql.meta;
 
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
 
 import java.sql.DatabaseMetaData;
 import java.sql.Types;
@@ -26,13 +27,14 @@ import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.ColumnDef;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.TableDef;
-import org.xenei.jdbc4sparql.impl.rdf.CatalogBuilder;
-import org.xenei.jdbc4sparql.impl.rdf.ColumnDefBuilder;
-import org.xenei.jdbc4sparql.impl.rdf.KeyBuilder;
-import org.xenei.jdbc4sparql.impl.rdf.KeySegmentBuilder;
-import org.xenei.jdbc4sparql.impl.rdf.SchemaBuilder;
-import org.xenei.jdbc4sparql.impl.rdf.TableBuilder;
-import org.xenei.jdbc4sparql.impl.rdf.TableDefBuilder;
+import org.xenei.jdbc4sparql.impl.rdf.RdfColumnDef;
+import org.xenei.jdbc4sparql.impl.rdf.RdfColumnDef.Builder;
+import org.xenei.jdbc4sparql.impl.rdf.RdfKey;
+import org.xenei.jdbc4sparql.impl.rdf.RdfKeySegment;
+import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
+import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
+import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
+import org.xenei.jdbc4sparql.impl.rdf.RdfTableDef;
 
 public class MetaCatalogBuilder
 {
@@ -68,10 +70,12 @@ public class MetaCatalogBuilder
 
 	public static Catalog getInstance( final Model model )
 	{
-		final Catalog cat = new CatalogBuilder()
-				.setName( LOCAL_NAME ).build(model);
+		final RdfCatalog cat = new RdfCatalog.Builder()
+				.setName( LOCAL_NAME )
+				.setLocalModel( ModelFactory.createDefaultModel() )
+				.build(model);
 
-		final Schema schema = new SchemaBuilder().setCatalog(cat)
+		final RdfSchema schema = new RdfSchema.Builder().setCatalog(cat)
 				.setName( SCHEMA_LOCAL_NAME ).build(model);
 		// populate the catalog
 		new MetaCatalogBuilder(schema, model).build();
@@ -88,30 +92,30 @@ public class MetaCatalogBuilder
 	private final ColumnDef nonNullBoolean;
 	private final Model model;
 
-	private final Schema schema;
+	private final RdfSchema schema;
 
-	private MetaCatalogBuilder( final Schema schema, final Model model )
+	private MetaCatalogBuilder( final RdfSchema schema, final Model model )
 	{
 		this.schema = schema;
 		this.model = model;
-		nonNullString = ColumnDefBuilder.getStringBuilder()
+		nonNullString = RdfColumnDef.Builder.getStringBuilder()
 				.setNullable(DatabaseMetaData.columnNoNulls).build(model);
-		nullableString = ColumnDefBuilder.getStringBuilder().build(model);
-		nonNullInt = ColumnDefBuilder.getIntegerBuilder()
+		nullableString = RdfColumnDef.Builder.getStringBuilder().build(model);
+		nonNullInt = RdfColumnDef.Builder.getIntegerBuilder()
 				.setNullable(DatabaseMetaData.columnNoNulls).build(model);
-		nullableInt = ColumnDefBuilder.getIntegerBuilder().build(model);
-		nonNullShort = ColumnDefBuilder.getSmallIntBuilder()
+		nullableInt = RdfColumnDef.Builder.getIntegerBuilder().build(model);
+		nonNullShort = RdfColumnDef.Builder.getSmallIntBuilder()
 				.setNullable(DatabaseMetaData.columnNoNulls).build(model);
-		nullableShort = ColumnDefBuilder.getSmallIntBuilder().build(model);
-		nullableBoolean = new ColumnDefBuilder().setType(Types.BOOLEAN).build(
+		nullableShort = RdfColumnDef.Builder.getSmallIntBuilder().build(model);
+		nullableBoolean = new RdfColumnDef.Builder().setType(Types.BOOLEAN).build(
 				model);
-		nonNullBoolean = new ColumnDefBuilder().setType(Types.BOOLEAN)
+		nonNullBoolean = new RdfColumnDef.Builder().setType(Types.BOOLEAN)
 				.setNullable(DatabaseMetaData.columnNoNulls).build(model);
 	}
 
 	private void addAttributesTable()
 	{
-		final TableDef tableDef = new TableDefBuilder()
+		final RdfTableDef tableDef = new RdfTableDef.Builder()
 				.addColumnDef(nonNullString) // TYPE_CAT
 				.addColumnDef(nonNullString) // TYPE_SCHEM
 				.addColumnDef(nonNullString) // TYPE_NAME
@@ -134,7 +138,7 @@ public class MetaCatalogBuilder
 				.addColumnDef(nullableShort) // SOURCE_DATA_TYPE
 				.build(model);
 
-		new TableBuilder().setSchema(schema).setTableDef(tableDef)
+		new RdfTable.Builder().setSchema(schema).setTableDef(tableDef)
 				.setType( TABLE_TYPE )
 				.setName( ATTRIBUTES_TABLE )
 				.setColumn( 0, "TYPE_CAT" )
@@ -162,7 +166,7 @@ public class MetaCatalogBuilder
 
 	private void addBestRowTable()
 	{
-		final TableDef tableDef = new TableDefBuilder()
+		final RdfTableDef tableDef = new RdfTableDef.Builder()
 				.addColumnDef(nonNullString)
 				// SCOPE
 				.addColumnDef(nonNullString)
@@ -180,12 +184,12 @@ public class MetaCatalogBuilder
 				.addColumnDef(nullableInt)
 				// PSEUDO_COLUMN
 				.setSortKey(
-						new KeyBuilder().addSegment(
-								new KeySegmentBuilder().setAscending(true)
+						new RdfKey.Builder().addSegment(
+								new RdfKeySegment.Builder().setAscending(true)
 										.setIdx(0).build(model)).build(model))
 				.build(model);
 
-		new TableBuilder().setSchema(schema).setTableDef(tableDef)
+		new RdfTable.Builder().setSchema(schema).setTableDef(tableDef)
 				.setType( TABLE_TYPE )
 				.setName( BEST_ROW_TABLE )
 				.setColumn( 0, "SCOPE" )
@@ -200,17 +204,17 @@ public class MetaCatalogBuilder
 
 	private void addCatalogsTable()
 	{
-		final TableDef tableDef = new TableDefBuilder()
+		final RdfTableDef tableDef = new RdfTableDef.Builder()
 				.addColumnDef(nonNullString)
 				.setSortKey(
-						new KeyBuilder()
+						new RdfKey.Builder()
 								.addSegment(
-										new KeySegmentBuilder()
+										new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(0)
 												.build(model)).setUnique(true)
 								.build(model)).build(model);
 
-		new TableBuilder().setSchema(schema).setTableDef(tableDef)
+		new RdfTable.Builder().setSchema(schema).setTableDef(tableDef)
 				.setType( TABLE_TYPE )
 				.setName( CATALOGS_TABLE )
 				.setColumn( 0, "TABLE_CAT" ).build(model);
@@ -218,20 +222,20 @@ public class MetaCatalogBuilder
 
 	private void addClientInfoTable()
 	{
-		final TableDef tableDef = new TableDefBuilder()
+		final RdfTableDef tableDef = new RdfTableDef.Builder()
 				.addColumnDef(nonNullString) // NAME
 				.addColumnDef(nullableInt) // MAX_LEN
 				.addColumnDef(nullableString) // DEFAULT_VALUE
 				.addColumnDef(nullableString) // DESCRIPTION
 				.setSortKey(
-						new KeyBuilder()
+						new RdfKey.Builder()
 								.addSegment(
-										new KeySegmentBuilder()
+										new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(0)
 												.build(model)).setUnique(true)
 								.build(model)).build(model);
 
-		new TableBuilder().setSchema(schema).setTableDef(tableDef)
+		new RdfTable.Builder().setSchema(schema).setTableDef(tableDef)
 				.setType( TABLE_TYPE )
 				.setName( CLIENT_INFO_TABLE )
 				.setColumn( 0, "NAME" )
@@ -244,7 +248,7 @@ public class MetaCatalogBuilder
 
 	private void addColumnPriviligesTable()
 	{
-		final TableDef tableDef = new TableDefBuilder()
+		final RdfTableDef tableDef = new RdfTableDef.Builder()
 				.addColumnDef(nullableString) // TABLE_CAT
 				.addColumnDef(nullableString) // TABLE_SCHEM
 				.addColumnDef(nonNullString) // TABLE_NAME
@@ -254,18 +258,18 @@ public class MetaCatalogBuilder
 				.addColumnDef(nonNullString) // PRIVILEGE
 				.addColumnDef(nonNullString) // IS_GRANTABLE
 				.setSortKey(
-						new KeyBuilder()
+						new RdfKey.Builder()
 								.addSegment(
-										new KeySegmentBuilder()
+										new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(3)
 												.build(model))
 								.addSegment(
-										new KeySegmentBuilder()
+										new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(6)
 												.build(model)).setUnique(false)
 								.build(model)).build(model);
 
-		new TableBuilder().setType( TABLE_TYPE ).setName( COLUMN_PRIVILIGES_TABLE )
+		new RdfTable.Builder().setType( TABLE_TYPE ).setName( COLUMN_PRIVILIGES_TABLE )
 				.setSchema(schema).setTableDef(tableDef)
 				.setColumn( 0, "TABLE_CAT" )
 				.setColumn( 1, "TABLE_SCHEM" )
@@ -280,7 +284,7 @@ public class MetaCatalogBuilder
 
 	private void addColumnsTable()
 	{
-		final TableDef tableDef = new TableDefBuilder()
+		final RdfTableDef tableDef = new RdfTableDef.Builder()
 				.addColumnDef(nonNullString) // TABLE_CAT
 				.addColumnDef(nonNullString) // TABLE_SCHEM
 				.addColumnDef(nonNullString) // TABLE_NAME
@@ -306,26 +310,26 @@ public class MetaCatalogBuilder
 				.addColumnDef(nonNullInt) // IS_AUTOINCREMENT
 
 				.setSortKey(
-						new KeyBuilder()
+						new RdfKey.Builder()
 								.addSegment(
-										new KeySegmentBuilder()
+										new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(0)
 												.build(model))
 								.addSegment(
-										new KeySegmentBuilder()
+										new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(1)
 												.build(model))
 								.addSegment(
-										new KeySegmentBuilder()
+										new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(2)
 												.build(model))
 								.addSegment(
-										new KeySegmentBuilder()
+										new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(16)
 												.build(model)).setUnique(true)
 								.build(model)).build(model);
 
-		new TableBuilder().setSchema(schema).setTableDef(tableDef)
+		new RdfTable.Builder().setSchema(schema).setTableDef(tableDef)
 				.setType( TABLE_TYPE )
 				.setName( COLUMNS_TABLE )
 				.setColumn( 0, "TABLE_CAT" )
@@ -356,7 +360,7 @@ public class MetaCatalogBuilder
 
 	private void addExportedKeysTable()
 	{
-		final TableDef tableDef = new TableDefBuilder()
+		final RdfTableDef tableDef = new RdfTableDef.Builder()
 				.addColumnDef(nullableString) // PKTABLE_CAT
 				.addColumnDef(nullableString) // PKTABLE_SCHEM
 				.addColumnDef(nonNullString) // PKTABLE_NAME
@@ -372,26 +376,26 @@ public class MetaCatalogBuilder
 				.addColumnDef(nullableString) // PK_NAME
 				.addColumnDef(nullableShort) // DEFERRABILITY
 				.setSortKey(
-						new KeyBuilder()
+						new RdfKey.Builder()
 								.addSegment(
-										new KeySegmentBuilder()
+										new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(0)
 												.build(model))
 								.addSegment(
-										new KeySegmentBuilder()
+										new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(1)
 												.build(model))
 								.addSegment(
-										new KeySegmentBuilder()
+										new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(2)
 												.build(model))
 								.addSegment(
-										new KeySegmentBuilder()
+										new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(8)
 												.build(model)).setUnique(true)
 								.build(model)).build(model);
 
-		new TableBuilder().setType( TABLE_TYPE ).setName( EXPORTED_KEYS_TABLE )
+		new RdfTable.Builder().setType( TABLE_TYPE ).setName( EXPORTED_KEYS_TABLE )
 				.setSchema(schema).setTableDef(tableDef)
 				.setColumn( 0, "PKTABLE_CAT" )
 				.setColumn( 1, "PKTABLE_SCHEM" )
@@ -411,7 +415,7 @@ public class MetaCatalogBuilder
 
 	private void addFunctionColumnsTable()
 	{
-		final TableDef tableDef = new TableDefBuilder()
+		final RdfTableDef tableDef = new RdfTableDef.Builder()
 				.addColumnDef(nullableString) // FUNCTION_CAT
 				.addColumnDef(nullableString) // FUNCTION_SCHEM
 				.addColumnDef(nonNullString) // FUNCTION_NAME
@@ -430,26 +434,26 @@ public class MetaCatalogBuilder
 				.addColumnDef(nonNullString) // IS_NULLABLE
 				.addColumnDef(nonNullString) // SPECIFIC_NAME
 				.setSortKey(
-						new KeyBuilder()
+						new RdfKey.Builder()
 								.addSegment(
-										new KeySegmentBuilder()
+										new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(0)
 												.build(model))
 								.addSegment(
-										new KeySegmentBuilder()
+										new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(1)
 												.build(model))
 								.addSegment(
-										new KeySegmentBuilder()
+										new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(2)
 												.build(model))
 								.addSegment(
-										new KeySegmentBuilder()
+										new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(16)
 												.build(model)).setUnique(true)
 								.build(model)).build(model);
 
-		new TableBuilder().setType( TABLE_TYPE ).setName( FUNCTION_COLUMNS_TABLE )
+		new RdfTable.Builder().setType( TABLE_TYPE ).setName( FUNCTION_COLUMNS_TABLE )
 				.setSchema(schema).setTableDef(tableDef)
 				.setColumn( 0, "FUNCTION_CAT" )
 				.setColumn( 1, "FUNCTION_SCHEM" )
@@ -473,7 +477,7 @@ public class MetaCatalogBuilder
 
 	private void addFunctionsTable()
 	{
-		final TableDef tableDef = new TableDefBuilder()
+		final RdfTableDef tableDef = new RdfTableDef.Builder()
 				.addColumnDef(nullableString) // FUNCTION_CAT
 				.addColumnDef(nullableString) // FUNCTION_SCHEM
 				.addColumnDef(nonNullString) // FUNCTION_NAME
@@ -481,26 +485,26 @@ public class MetaCatalogBuilder
 				.addColumnDef(nonNullShort) // FUNCTION_TYPE
 				.addColumnDef(nonNullString) // SPECIFIC_NAME
 				.setSortKey(
-						new KeyBuilder()
+						new RdfKey.Builder()
 								.addSegment(
-										new KeySegmentBuilder()
+										new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(0)
 												.build(model))
 								.addSegment(
-										new KeySegmentBuilder()
+										new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(1)
 												.build(model))
 								.addSegment(
-										new KeySegmentBuilder()
+										new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(2)
 												.build(model))
 								.addSegment(
-										new KeySegmentBuilder()
+										new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(5)
 												.build(model)).setUnique(true)
 								.build(model)).build(model);
 
-		new TableBuilder().setType( TABLE_TYPE ).setName( FUNCTIONS_TABLE ).setSchema(schema)
+		new RdfTable.Builder().setType( TABLE_TYPE ).setName( FUNCTIONS_TABLE ).setSchema(schema)
 				.setTableDef(tableDef)
 				.setColumn( 0, "FUNCTION_CAT" )
 				.setColumn( 1, "FUNCTION_SCHEM" )
@@ -513,7 +517,7 @@ public class MetaCatalogBuilder
 
 	private void addImportedKeysTable()
 	{
-		final TableDef tableDef = new TableDefBuilder()
+		final RdfTableDef tableDef = new RdfTableDef.Builder()
 				.addColumnDef(nullableString) // PKTABLE_CAT
 				.addColumnDef(nullableString) // PKTABLE_SCHEM
 				.addColumnDef(nonNullString) // PKTABLE_NAME
@@ -529,26 +533,26 @@ public class MetaCatalogBuilder
 				.addColumnDef(nullableString) // PK_NAME
 				.addColumnDef(nullableShort) // DEFERRABILITY
 				.setSortKey(
-						new KeyBuilder()
+						new RdfKey.Builder()
 								.addSegment(
-										new KeySegmentBuilder()
+										new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(0)
 												.build(model))
 								.addSegment(
-										new KeySegmentBuilder()
+										new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(1)
 												.build(model))
 								.addSegment(
-										new KeySegmentBuilder()
+										new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(2)
 												.build(model))
 								.addSegment(
-										new KeySegmentBuilder()
+										new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(8)
 												.build(model)).setUnique(true)
 								.build(model)).build(model);
 
-		new TableBuilder().setType( TABLE_TYPE ).setName( IMPORTED_KEYS_TABLE )
+		new RdfTable.Builder().setType( TABLE_TYPE ).setName( IMPORTED_KEYS_TABLE )
 				.setSchema(schema).setTableDef(tableDef)
 				.setColumn( 0, "PKTABLE_CAT" )
 				.setColumn( 1, "PKTABLE_SCHEM" )
@@ -568,7 +572,7 @@ public class MetaCatalogBuilder
 
 	private void addIndexInfoTable()
 	{
-		final TableDef tableDef = new TableDefBuilder()
+		final RdfTableDef tableDef = new RdfTableDef.Builder()
 				.addColumnDef(nullableString) // TABLE_CAT
 				.addColumnDef(nullableString) // TABLE_SCHEM
 				.addColumnDef(nonNullString) // TABLE_NAME
@@ -583,22 +587,22 @@ public class MetaCatalogBuilder
 				.addColumnDef(nullableInt) // PAGES
 				.addColumnDef(nullableString) // FILTER_CONDITION
 				.setSortKey(
-						new KeyBuilder()
+						new RdfKey.Builder()
 								.addSegment(
-										new KeySegmentBuilder()
+										new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(3)
 												.build(model))
 								.addSegment(
-										new KeySegmentBuilder()
+										new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(6)
 												.build(model))
 								.addSegment(
-										new KeySegmentBuilder()
+										new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(5)
 												.build(model)).setUnique(false)
 								.build(model)).build(model);
 
-		new TableBuilder().setType( TABLE_TYPE ).setName( INDEXINFO_TABLE ).setSchema(schema)
+		new RdfTable.Builder().setType( TABLE_TYPE ).setName( INDEXINFO_TABLE ).setSchema(schema)
 				.setTableDef(tableDef)
 				.setColumn( 0, "TABLE_CAT" )
 				.setColumn( 1, "TABLE_SCHEM" )
@@ -619,7 +623,7 @@ public class MetaCatalogBuilder
 
 	private void addPrimaryKeyTable()
 	{
-		final TableDef tableDef = new TableDefBuilder()
+		final RdfTableDef tableDef = new RdfTableDef.Builder()
 				.addColumnDef(nullableString) // TABLE_CAT
 				.addColumnDef(nullableString) // TABLE_SCHEM
 				.addColumnDef(nonNullString) // TABLE_NAME
@@ -627,14 +631,14 @@ public class MetaCatalogBuilder
 				.addColumnDef(nullableShort) // KEY_SEQ
 				.addColumnDef(nullableString) // PK_NAME
 				.setSortKey(
-						new KeyBuilder()
+						new RdfKey.Builder()
 								.addSegment(
-										new KeySegmentBuilder()
+										new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(4)
 												.build(model)).setUnique(false)
 								.build(model)).build(model);
 
-		new TableBuilder().setType( TABLE_TYPE ).setName( PRIMARY_KEY_TABLE ).setSchema(schema)
+		new RdfTable.Builder().setType( TABLE_TYPE ).setName( PRIMARY_KEY_TABLE ).setSchema(schema)
 				.setTableDef(tableDef)
 				.setColumn( 0, "TABLE_CAT" )
 				.setColumn( 1, "TABLE_SCHEM" )
@@ -646,7 +650,7 @@ public class MetaCatalogBuilder
 
 	private void addProcedureColumnsTable()
 	{
-		final TableDef tableDef = new TableDefBuilder()
+		final RdfTableDef tableDef = new RdfTableDef.Builder()
 				.addColumnDef(nullableString) // PROCEDURE_CAT
 				.addColumnDef(nullableString) // PROCEDURE_SCHEM
 				.addColumnDef(nonNullString) // PROCEDURE_NAME
@@ -668,26 +672,26 @@ public class MetaCatalogBuilder
 				.addColumnDef(nonNullString) // IS_NULLABLE
 				.addColumnDef(nonNullString) // SPECIFIC_NAME
 				.setSortKey(
-						new KeyBuilder()
+						new RdfKey.Builder()
 								.addSegment(
-										new KeySegmentBuilder()
+										new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(0)
 												.build(model))
 								.addSegment(
-										new KeySegmentBuilder()
+										new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(1)
 												.build(model))
 								.addSegment(
-										new KeySegmentBuilder()
+										new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(2)
 												.build(model))
 								.addSegment(
-										new KeySegmentBuilder()
+										new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(19)
 												.build(model)).setUnique(false)
 								.build(model)).build(model);
 
-		new TableBuilder().setType( TABLE_TYPE ).setName( PROCEDURE_COLUMNS_TABLE )
+		new RdfTable.Builder().setType( TABLE_TYPE ).setName( PROCEDURE_COLUMNS_TABLE )
 				.setSchema(schema).setTableDef(tableDef)
 				.setColumn( 0, "PROCEDURE_CAT" )
 				.setColumn( 1, "PROCEDURE_SCHEM" )
@@ -714,7 +718,7 @@ public class MetaCatalogBuilder
 
 	private void addProceduresTable()
 	{
-		final TableDef tableDef = new TableDefBuilder()
+		final RdfTableDef tableDef = new RdfTableDef.Builder()
 				.addColumnDef(nullableString) // PROCEDURE_CAT
 				.addColumnDef(nullableString) // PROCEDURE_SCHEM
 				.addColumnDef(nonNullString) // PROCEDURE_NAME
@@ -725,26 +729,26 @@ public class MetaCatalogBuilder
 				.addColumnDef(nonNullShort) // PROCEDURE_TYPE
 				.addColumnDef(nonNullString) // SPECIFIC_NAME
 				.setSortKey(
-						new KeyBuilder()
+						new RdfKey.Builder()
 								.addSegment(
-										new KeySegmentBuilder()
+										new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(0)
 												.build(model))
 								.addSegment(
-										new KeySegmentBuilder()
+										new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(1)
 												.build(model))
 								.addSegment(
-										new KeySegmentBuilder()
+										new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(2)
 												.build(model))
 								.addSegment(
-										new KeySegmentBuilder()
+										new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(8)
 												.build(model)).setUnique(false)
 								.build(model)).build(model);
 
-		new TableBuilder().setType( TABLE_TYPE ).setName( PROCEDURES_TABLE ).setSchema(schema)
+		new RdfTable.Builder().setType( TABLE_TYPE ).setName( PROCEDURES_TABLE ).setSchema(schema)
 				.setTableDef(tableDef)
 				.setColumn( 0, "PROCEDURE_CAT" )
 				.setColumn( 1, "PROCEDURE_SCHEM" )
@@ -760,22 +764,22 @@ public class MetaCatalogBuilder
 
 	private void addSchemasTable()
 	{
-		final TableDef tableDef = new TableDefBuilder()
+		final RdfTableDef tableDef = new RdfTableDef.Builder()
 				.addColumnDef(nonNullString) // TABLE_SCHEM
 				.addColumnDef(nullableString) // TABLE_CATALOG
 				.setSortKey(
-						new KeyBuilder()
+						new RdfKey.Builder()
 								.addSegment(
-										new KeySegmentBuilder()
+										new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(1)
 												.build(model))
 								.addSegment(
-										new KeySegmentBuilder()
+										new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(0)
 												.build(model)).setUnique(false)
 								.build(model)).build(model);
 
-		new TableBuilder().setType( TABLE_TYPE ).setName( SCHEMAS_TABLE ).setSchema(schema)
+		new RdfTable.Builder().setType( TABLE_TYPE ).setName( SCHEMAS_TABLE ).setSchema(schema)
 				.setTableDef(tableDef)
 				.setColumn( 0, "TABLE_SCHEM" )
 				.setColumn( 1, "TABLE_CATALOG" ).build(model);
@@ -783,14 +787,14 @@ public class MetaCatalogBuilder
 
 	private void addSuperTablesTable()
 	{
-		final TableDef tableDef = new TableDefBuilder()
+		final RdfTableDef tableDef = new RdfTableDef.Builder()
 				.addColumnDef(nullableString) // TABLE_CAT
 				.addColumnDef(nullableString) // TABLE_SCHEM
 				.addColumnDef(nonNullString) // TABLE_NAME
 				.addColumnDef(nonNullString) // SUPERTABLE_NAME
 				.build(model);
 
-		new TableBuilder().setType( TABLE_TYPE ).setName( SUPER_TABLES_TABLE ).setSchema(schema)
+		new RdfTable.Builder().setType( TABLE_TYPE ).setName( SUPER_TABLES_TABLE ).setSchema(schema)
 				.setTableDef(tableDef)
 				.setColumn( 0, "TABLE_CAT" )
 				.setColumn( 1, "TABLE_SCHEM" )
@@ -800,7 +804,7 @@ public class MetaCatalogBuilder
 
 	private void addSuperTypesTable()
 	{
-		final TableDef tableDef = new TableDefBuilder()
+		final RdfTableDef tableDef = new RdfTableDef.Builder()
 				.addColumnDef(nullableString) // TYPE_CAT
 				.addColumnDef(nullableString) // TYPE_SCHEM
 				.addColumnDef(nonNullString) // TYPE_NAME
@@ -809,7 +813,7 @@ public class MetaCatalogBuilder
 				.addColumnDef(nonNullString) // SUPERTYPE_NAME
 				.build(model);
 
-		new TableBuilder().setType( TABLE_TYPE ).setName( SUPER_TYPES_TABLE ).setSchema(schema)
+		new RdfTable.Builder().setType( TABLE_TYPE ).setName( SUPER_TYPES_TABLE ).setSchema(schema)
 				.setTableDef(tableDef)
 				.setColumn( 0, "TYPE_CAT" )
 				.setColumn( 1, "TYPE_SCHEM" )
@@ -821,7 +825,7 @@ public class MetaCatalogBuilder
 
 	private void addTablePrivilegesTable()
 	{
-		final TableDef tableDef = new TableDefBuilder()
+		final RdfTableDef tableDef = new RdfTableDef.Builder()
 				.addColumnDef(nullableString) // TABLE_CAT
 				.addColumnDef(nullableString) // TABLE_SCHEM
 				.addColumnDef(nonNullString) // TABLE_NAME
@@ -830,26 +834,26 @@ public class MetaCatalogBuilder
 				.addColumnDef(nonNullString) // PRIVILEGE
 				.addColumnDef(nonNullString) // IS_GRANTABLE
 				.setSortKey(
-						new KeyBuilder()
+						new RdfKey.Builder()
 								.addSegment(
-										new KeySegmentBuilder()
+										new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(0)
 												.build(model))
 								.addSegment(
-										new KeySegmentBuilder()
+										new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(1)
 												.build(model))
 								.addSegment(
-										new KeySegmentBuilder()
+										new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(2)
 												.build(model))
 								.addSegment(
-										new KeySegmentBuilder()
+										new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(5)
 												.build(model)).setUnique(false)
 								.build(model)).build(model);
 
-		new TableBuilder().setType( TABLE_TYPE ).setName( TABLE_PRIVILEGES_TABLE )
+		new RdfTable.Builder().setType( TABLE_TYPE ).setName( TABLE_PRIVILEGES_TABLE )
 				.setSchema(schema).setTableDef(tableDef)
 				.setColumn( 0, "TABLE_CAT" )
 				.setColumn( 1, "TABLE_SCHEM" )
@@ -862,7 +866,7 @@ public class MetaCatalogBuilder
 
 	private void addTablesTable()
 	{
-		final TableDef tableDef = new TableDefBuilder()
+		final RdfTableDef tableDef = new RdfTableDef.Builder()
 				.addColumnDef(nullableString) // TABLE_CAT
 				.addColumnDef(nullableString) // TABLE_SCHEM
 				.addColumnDef(nonNullString) // TABLE_NAME
@@ -874,26 +878,26 @@ public class MetaCatalogBuilder
 				.addColumnDef(nullableString) // SELF_REFERENCING_COL_NAME
 				.addColumnDef(nullableString) // REF_GENERATION
 				.setSortKey(
-						new KeyBuilder()
+						new RdfKey.Builder()
 								.addSegment(
-										new KeySegmentBuilder()
+										new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(3)
 												.build(model))
 								.addSegment(
-										new KeySegmentBuilder()
+										new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(0)
 												.build(model))
 								.addSegment(
-										new KeySegmentBuilder()
+										new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(1)
 												.build(model))
 								.addSegment(
-										new KeySegmentBuilder()
+										new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(2)
 												.build(model)).setUnique(false)
 								.build(model)).build(model);
 
-		new TableBuilder().setType( TABLE_TYPE ).setName( TABLES_TABLE ).setSchema(schema)
+		new RdfTable.Builder().setType( TABLE_TYPE ).setName( TABLES_TABLE ).setSchema(schema)
 				.setTableDef(tableDef)
 				.setColumn( 0, "TABLE_CAT" )
 				.setColumn( 1, "TABLE_SCHEM" )
@@ -910,17 +914,17 @@ public class MetaCatalogBuilder
 
 	private void addTableTypesTable()
 	{
-		final TableDef tableDef = new TableDefBuilder()
+		final RdfTableDef tableDef = new RdfTableDef.Builder()
 				.addColumnDef(nonNullString) // TABLE_TYPE
 				.setSortKey(
-						new KeyBuilder()
+						new RdfKey.Builder()
 								.addSegment(
-										new KeySegmentBuilder()
+										new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(0)
 												.build(model)).setUnique(true)
 								.build(model)).build(model);
 
-		new TableBuilder().setType( TABLE_TYPE ).setName( TABLE_TYPES_TABLE ).setSchema(schema)
+		new RdfTable.Builder().setType( TABLE_TYPE ).setName( TABLE_TYPES_TABLE ).setSchema(schema)
 				.setTableDef(tableDef)
 				.setColumn( 0, "TABLE_TYPE" ).build(model);
 
@@ -928,7 +932,7 @@ public class MetaCatalogBuilder
 
 	private void addTypeInfoTableTable()
 	{
-		final TableDef tableDef = new TableDefBuilder()
+		final RdfTableDef tableDef = new RdfTableDef.Builder()
 				.addColumnDef(nonNullString) // TYPE_NAME
 				.addColumnDef(nullableInt) // DATA_TYPE
 				.addColumnDef(nullableInt) // PRECISION
@@ -949,7 +953,7 @@ public class MetaCatalogBuilder
 				.addColumnDef(nullableInt) // NUM_PREC_RADIX
 				.build(model);
 
-		new TableBuilder().setType( TABLE_TYPE ).setName( TYPEINFO_TABLE ).setSchema(schema)
+		new RdfTable.Builder().setType( TABLE_TYPE ).setName( TYPEINFO_TABLE ).setSchema(schema)
 				.setTableDef(tableDef)
 				.setColumn( 0, "TYPE_NAME" )
 				.setColumn( 1, "DATA_TYPE" )
@@ -973,7 +977,7 @@ public class MetaCatalogBuilder
 
 	private void addUDTTable()
 	{
-		final TableDef tableDef = new TableDefBuilder()
+		final RdfTableDef tableDef = new RdfTableDef.Builder()
 				.addColumnDef(nullableString) // TYPE_CAT
 				.addColumnDef(nullableString) // TYPE_SCHEM
 				.addColumnDef(nonNullString) // TYPE_NAME
@@ -982,26 +986,26 @@ public class MetaCatalogBuilder
 				.addColumnDef(nonNullString) // REMARKS
 				.addColumnDef(nullableShort) // BASE_TYPE
 				.setSortKey(
-						new KeyBuilder()
+						new RdfKey.Builder()
 								.addSegment(
-										new KeySegmentBuilder()
+										new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(4)
 												.build(model))
 								.addSegment(
-										new KeySegmentBuilder()
+										new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(0)
 												.build(model))
 								.addSegment(
-										new KeySegmentBuilder()
+										new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(1)
 												.build(model))
 								.addSegment(
-										new KeySegmentBuilder()
+										new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(2)
 												.build(model)).setUnique(false)
 								.build(model)).build(model);
 
-		new TableBuilder().setType( TABLE_TYPE ).setName( UDT_TABLES ).setSchema(schema)
+		new RdfTable.Builder().setType( TABLE_TYPE ).setName( UDT_TABLES ).setSchema(schema)
 				.setTableDef(tableDef)
 				.setColumn( 0, "TYPE_CAT" )
 				.setColumn( 1, "TYPE_SCHEM" )
@@ -1015,7 +1019,7 @@ public class MetaCatalogBuilder
 
 	private void addVersionColumnsTable()
 	{
-		final TableDef tableDef = new TableDefBuilder()
+		final RdfTableDef tableDef = new RdfTableDef.Builder()
 				.addColumnDef(nullableShort) // SCOPE
 				.addColumnDef(nonNullString) // COLUMN_NAME
 				.addColumnDef(nullableInt) // DATA_TYPE
@@ -1026,7 +1030,7 @@ public class MetaCatalogBuilder
 				.addColumnDef(nullableShort) // PSEUDO_COLUMN
 				.build(model);
 
-		new TableBuilder().setType( TABLE_TYPE ).setName( VERSION_COLUMNS_TABLE )
+		new RdfTable.Builder().setType( TABLE_TYPE ).setName( VERSION_COLUMNS_TABLE )
 				.setSchema(schema).setTableDef(tableDef)
 				.setColumn( 0, "SCOPE" )
 				.setColumn( 1, "COLUMN_NAME" )
@@ -1040,7 +1044,7 @@ public class MetaCatalogBuilder
 
 	private void addXrefTable()
 	{
-		final TableDef tableDef = new TableDefBuilder()
+		final RdfTableDef tableDef = new RdfTableDef.Builder()
 				.addColumnDef(nullableString) // PKTABLE_CAT
 				.addColumnDef(nullableString) // PKTABLE_SCHEM
 				.addColumnDef(nonNullString) // PKTABLE_NAME
@@ -1056,26 +1060,26 @@ public class MetaCatalogBuilder
 				.addColumnDef(nullableString) // PK_NAME
 				.addColumnDef(nullableShort) // DEFERRABILITY
 				.setSortKey(
-						new KeyBuilder()
+						new RdfKey.Builder()
 								.addSegment(
-										new KeySegmentBuilder()
+										new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(4)
 												.build(model))
 								.addSegment(
-										new KeySegmentBuilder()
+										new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(5)
 												.build(model))
 								.addSegment(
-										new KeySegmentBuilder()
+										new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(6)
 												.build(model))
 								.addSegment(
-										new KeySegmentBuilder()
+										new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(7)
 												.build(model)).setUnique(false)
 								.build(model)).build(model);
 
-		new TableBuilder().setType( TABLE_TYPE ).setName( XREF_TABLE ).setSchema(schema)
+		new RdfTable.Builder().setType( TABLE_TYPE ).setName( XREF_TABLE ).setSchema(schema)
 				.setTableDef(tableDef)
 				.setColumn( 0, "PKTABLE_CAT" )
 				.setColumn( 1, "PKTABLE_SCHEM" )

@@ -27,7 +27,7 @@ import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.util.deparser.StatementDeParser;
 
-import org.xenei.jdbc4sparql.sparql.SparqlCatalog;
+import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 
@@ -60,7 +60,7 @@ public class SparqlParserImpl implements SparqlParser
 	}
 
 	@Override
-	public SparqlQueryBuilder parse( final SparqlCatalog catalog,
+	public SparqlQueryBuilder parse( final RdfCatalog catalog,
 			final String sqlQuery ) throws SQLException
 	{
 		try

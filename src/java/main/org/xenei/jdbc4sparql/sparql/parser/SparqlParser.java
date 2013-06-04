@@ -29,7 +29,7 @@ import org.apache.commons.discovery.ResourceNameIterator;
 import org.apache.commons.discovery.resource.ClassLoaders;
 import org.apache.commons.discovery.resource.classes.DiscoverClasses;
 import org.apache.commons.discovery.resource.names.DiscoverServiceNames;
-import org.xenei.jdbc4sparql.sparql.SparqlCatalog;
+import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 
 /**
@@ -357,7 +357,7 @@ public interface SparqlParser
 	 * @return The SparqlQueryBuilder.
 	 * @throws SQLException
 	 */
-	SparqlQueryBuilder parse( SparqlCatalog catalog, String sqlQuery )
+	SparqlQueryBuilder parse( RdfCatalog catalog, String sqlQuery )
 			throws SQLException;
 
 }

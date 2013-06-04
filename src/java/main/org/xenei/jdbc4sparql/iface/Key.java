@@ -36,71 +36,19 @@ import org.xenei.jena.entities.annotations.Predicate;
 import org.xenei.jena.entities.annotations.Subject;
 
 @Subject( namespace = "http://org.xenei.jdbc4sparql/entity/Key#" )
-public abstract class Key implements Comparator<Object[]>, ResourceWrapper
+public interface Key extends Comparator<Object[]>, ResourceWrapper
 {
 
-	private List<KeySegment> segments;
-
-	@Override
-	public final int compare( final Object[] data1, final Object[] data2 )
-	{
-		for (final KeySegment segment : getSegments())
-		{
-			final int retval = segment.compare(data1, data2);
-			if (retval != 0)
-			{
-				return retval;
-			}
-		}
-		return 0;
-	}
-
-	public final String getId()
-	{
-		final StringBuilder sb = new StringBuilder().append(isUnique());
-		for (final KeySegment ks : getSegments())
-		{
-			sb.append(ks.getId());
-		}
-		return UUID.nameUUIDFromBytes(sb.toString().getBytes()).toString();
-	}
+	public String getId();
 
 	/**
 	 * Get the key name (may be null)
 	 * 
 	 * @return the key name.
 	 */
-	@Predicate
-	abstract public String getKeyName();
+	public String getKeyName();
 
-	public List<KeySegment> getSegments()
-	{
-		if (segments == null)
-		{
-			final EntityManager entityManager = EntityManagerFactory
-					.getEntityManager();
-			segments = new ArrayList<KeySegment>();
-			final Resource resource = getResource();
-			final Property p = resource.getModel().createProperty(
-					ResourceBuilder.getFQName(KeySegment.class));
-			final List<RDFNode> resLst = resource.getRequiredProperty(p)
-					.getResource().as(RDFList.class).asJavaList();
-			for (final RDFNode n : resLst)
-			{
-				try
-				{
-					segments.add(entityManager.read(n.asResource(),
-							KeySegment.class));
-				}
-				catch (MissingAnnotation e)
-				{
-					throw new RuntimeException( e );
-				}
-			}
-		}
-		return segments;
-	}
+	public List<? extends KeySegment> getSegments();
 
-	@Predicate
-	abstract public boolean isUnique();
+	public boolean isUnique();
 }

@@ -28,8 +28,9 @@ import org.apache.commons.discovery.ResourceNameIterator;
 import org.apache.commons.discovery.resource.ClassLoaders;
 import org.apache.commons.discovery.resource.classes.DiscoverClasses;
 import org.apache.commons.discovery.resource.names.DiscoverServiceNames;
+import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.TableDef;
-import org.xenei.jdbc4sparql.sparql.SparqlCatalog;
+import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 
 /**
  * An interface that defines classes that builds schemas.
@@ -208,5 +209,5 @@ public interface SchemaBuilder
 		}
 	}
 
-	Set<TableDef> getTableDefs( final SparqlCatalog catalog );
+	Set<Table> getTableDefs( final RdfCatalog catalog );
 }

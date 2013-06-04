@@ -43,7 +43,7 @@ public class CatalogBuilderTest
 	@Test
 	public void testDefault()
 	{
-		CatalogBuilder builder = new CatalogBuilder()
+		Builder builder = new Builder()
 		.setName( "catalog");
 		
 		Catalog catalog = builder.build( model );
@@ -56,7 +56,7 @@ public class CatalogBuilderTest
 	@Test
 	public void testAddSchema()
 	{
-		CatalogBuilder builder = new CatalogBuilder()
+		Builder builder = new Builder()
 		.setName( "catalog");
 		
 		Catalog catalog = builder.build( model );
@@ -74,7 +74,7 @@ public class CatalogBuilderTest
 	@Test
 	public void testAddTableTableRead()
 	{
-		CatalogBuilder builder = new CatalogBuilder()
+		Builder builder = new Builder()
 		.setName( "catalog");
 		
 		Catalog catalog = builder.build( model );
@@ -92,7 +92,7 @@ public class CatalogBuilderTest
 	@Test
 	public void testFindSchema()
 	{
-		CatalogBuilder builder = new CatalogBuilder()
+		Builder builder = new Builder()
 		.setName( "catalog");
 		
 		Catalog catalog = builder.build( model );
@@ -107,7 +107,7 @@ public class CatalogBuilderTest
 	@Test
 	public void testGetSchema() throws Exception
 	{
-		CatalogBuilder builder = new CatalogBuilder()
+		Builder builder = new Builder()
 		.setName( "catalog");
 		
 		Catalog catalog = builder.build( model );
@@ -124,7 +124,7 @@ public class CatalogBuilderTest
 	@Test
 	public void testGetSchemas()
 	{
-		CatalogBuilder builder = new CatalogBuilder()
+		Builder builder = new Builder()
 		.setName( "catalog");
 		
 		Catalog catalog = builder.build( model );

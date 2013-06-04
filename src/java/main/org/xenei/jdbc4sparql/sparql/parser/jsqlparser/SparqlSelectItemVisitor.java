@@ -30,9 +30,9 @@ import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.impl.NameUtils;
-import org.xenei.jdbc4sparql.sparql.SparqlColumn;
+import org.xenei.jdbc4sparql.impl.rdf.RdfColumn;
+import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
-import org.xenei.jdbc4sparql.sparql.SparqlTable;
 
 /**
  * A visitor that process the SQL select into the SparqlQueryBuilder.
@@ -69,7 +69,7 @@ class SparqlSelectItemVisitor implements SelectItemVisitor
 	@Override
 	public void visit( final AllTableColumns allTableColumns )
 	{
-		SparqlTable tbl = null;
+		RdfTable tbl = null;
 
 		for (final Schema s : queryBuilder.getCatalog().findSchemas(
 				allTableColumns.getTable().getSchemaName()))
@@ -77,11 +77,11 @@ class SparqlSelectItemVisitor implements SelectItemVisitor
 			for (final Table t : s.findTables(allTableColumns.getTable()
 					.getName()))
 			{
-				if (t instanceof SparqlTable)
+				if (t instanceof RdfTable)
 				{
 					if (tbl == null)
 					{
-						tbl = (SparqlTable) t;
+						tbl = (RdfTable) t;
 					}
 					else
 					{
@@ -99,11 +99,11 @@ class SparqlSelectItemVisitor implements SelectItemVisitor
 					+ allTableColumns.getTable().getWholeTableName()
 					+ " not found");
 		}
-		for (final Column c : tbl.findColumns(null))
+		for (final RdfColumn c : tbl.findColumns(null))
 		{
 			try
 			{
-				queryBuilder.addVar((SparqlColumn) c, null);
+				queryBuilder.addVar( c, null);
 			}
 			catch (final SQLException e)
 			{
