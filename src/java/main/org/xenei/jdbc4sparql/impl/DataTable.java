@@ -41,7 +41,6 @@ public class DataTable extends AbstractTable
 {
 	private Collection<Object[]> data;
 	private DataTable superDataTable;
-	private final Table table;
 
 	/**
 	 * Constructor.
@@ -54,7 +53,6 @@ public class DataTable extends AbstractTable
 	public DataTable( final Table table )
 	{
 		super(table.getSchema(), table);
-		this.table = table;
 		final Key key = table.getTableDef().getSortKey();
 		if (key == null)
 		{
@@ -93,37 +91,37 @@ public class DataTable extends AbstractTable
 	@Override
 	public void delete()
 	{
-		table.delete();
+		getTable().delete();
 	}
 
 	@Override
 	public Column getColumn( final int idx )
 	{
-		return table.getColumn(idx);
+		return getTable().getColumn(idx);
 	}
 
 	@Override
 	public Column getColumn( final String name )
 	{
-		return table.getColumn(name);
+		return getTable().getColumn(name);
 	}
 
 	@Override
 	public int getColumnIndex( final String name )
 	{
-		return table.getColumnIndex(name);
+		return getTable().getColumnIndex(name);
 	}
 
 	@Override
 	public String getName()
 	{
-		return table.getName();
+		return getTable().getName();
 	}
 
 	@Override
 	public Resource getResource()
 	{
-		return table.getResource();
+		return getTable().getResource();
 	}
 
 	/**
@@ -192,7 +190,7 @@ public class DataTable extends AbstractTable
 			{
 				return null;
 			}
-			superDataTable = new DataTable(table.getSuperTable());
+			superDataTable = new DataTable(getTable().getSuperTable());
 		}
 		return superDataTable;
 	}

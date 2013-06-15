@@ -107,7 +107,7 @@ public interface Table extends NamedObject, ResourceWrapper
 	 *            The pattern to match or null.
 	 * @return
 	 */
-	NameFilter<? extends Column> findColumns( String columnNamePattern );
+	NameFilter<Column> findColumns( String columnNamePattern );
 
 	/**
 	 * 

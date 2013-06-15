@@ -25,6 +25,9 @@ import org.xenei.jena.entities.annotations.Subject;
 @Subject( namespace = "http://org.xenei.jdbc4sparql/entity/ColumnDef#" )
 public class RdfColumnDef implements ColumnDef
 {
+	/**
+	 * Column builder, by default columns are not nullable.
+	 */
 	public static class Builder implements ColumnDef
 	{
 		public static String getFQName( final ColumnDef colDef )

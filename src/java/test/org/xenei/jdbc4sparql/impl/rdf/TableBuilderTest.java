@@ -2,6 +2,11 @@ package org.xenei.jdbc4sparql.impl.rdf;
 
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.rdf.model.Property;
+import com.hp.hpl.jena.rdf.model.Resource;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -13,21 +18,24 @@ import org.xenei.jdbc4sparql.iface.NameFilter;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.TableDef;
+import org.xenei.jena.entities.EntityManager;
+import org.xenei.jena.entities.EntityManagerFactory;
+import org.xenei.jena.entities.MissingAnnotation;
 
 public class TableBuilderTest
 {
 
 	private Model model;
-	private TableDef tableDef;
+	private RdfTableDef tableDef;
 	private Schema mockSchema;
 
 	@Before
 	public void setUp() throws Exception
 	{
 		model = ModelFactory.createDefaultModel();
-		final TableDefBuilder builder = new TableDefBuilder().addColumnDef(
-				Builder.getStringBuilder().build(model)).addColumnDef(
-				Builder.getIntegerBuilder().build(model));
+		final RdfTableDef.Builder builder = new RdfTableDef.Builder().addColumnDef(
+				RdfColumnDef.Builder.getStringBuilder().build(model)).addColumnDef(
+						RdfColumnDef.Builder.getIntegerBuilder().build(model));
 		tableDef = builder.build(model);
 		mockSchema = Mockito.mock(Schema.class);
 		Mockito.when(mockSchema.getResource()).thenReturn(
@@ -42,9 +50,9 @@ public class TableBuilderTest
 	}
 
 	@Test
-	public void testDefaultBuilder()
+	public void testDefaultBuilder() throws Exception
 	{
-		final TableBuilder builder = new TableBuilder().setTableDef(tableDef)
+		final RdfTable.Builder builder = new RdfTable.Builder().setTableDef(tableDef)
 				.setName("table").setColumn(0, "StringCol")
 				.setColumn(1, "IntCol").setSchema(mockSchema)
 				.setType("testing Table");
@@ -60,6 +68,23 @@ public class TableBuilderTest
 		Assert.assertEquals("StringCol", c.getName());
 		Assert.assertFalse(nf.hasNext());
 
+		// check the columns
+		EntityManager entityManager = EntityManagerFactory.getEntityManager();
+		final Property p = entityManager.getSubjectInfo(RdfColumn.class)
+				.getPredicateProperty("getTable");
+		List<RdfColumn> columns = new ArrayList<RdfColumn>();
+		final Model model = table.getResource().getModel();
+
+		List<Resource> lr = model.listSubjectsWithProperty(p,
+					table.getResource()).toList();
+		
+		Assert.assertEquals( 2, lr.size() );
+		for (final Resource r : lr )
+		{
+			columns.add(entityManager.read(r, RdfColumn.class));
+		}
+		Assert.assertEquals( 2, columns.size() );
+		
 	}
 
 }

@@ -3,8 +3,16 @@ package org.xenei.jdbc4sparql.impl.rdf;
 import com.hp.hpl.jena.graph.Node;
 import com.hp.hpl.jena.graph.Triple;
 import com.hp.hpl.jena.query.Query;
+import com.hp.hpl.jena.query.QueryExecution;
+import com.hp.hpl.jena.query.QueryExecutionFactory;
+import com.hp.hpl.jena.query.QueryFactory;
+import com.hp.hpl.jena.query.QuerySolution;
+import com.hp.hpl.jena.query.ResultSet;
+import com.hp.hpl.jena.rdf.model.Literal;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Property;
+import com.hp.hpl.jena.rdf.model.RDFList;
+import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.ResourceFactory;
 import com.hp.hpl.jena.shared.Lock;
@@ -22,7 +30,9 @@ import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.Column;
+import org.xenei.jdbc4sparql.iface.ColumnDef;
 import org.xenei.jdbc4sparql.iface.NameFilter;
+import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.impl.NameUtils;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
@@ -42,14 +52,10 @@ public class RdfTable extends RdfNamespacedObject implements Table
 	{
 		private RdfTableDef tableDef;
 		private String name;
-		private RdfSchema schema;
+		private Schema schema;
 		private RdfColumn.Builder[] columns;
 		private String type = "SPARQL TABLE";
 		private final Class<? extends RdfTable> typeClass = RdfTable.class;
-
-		public Builder()
-		{
-		}
 
 		public RdfTable build( final Model model )
 		{
@@ -80,21 +86,40 @@ public class RdfTable extends RdfNamespacedObject implements Table
 
 				table.addLiteral(builder.getProperty(typeClass, "type"), type);
 
-				for (final RdfColumn.Builder cBldr : columns)
-				{
-					cBldr.setTable(this);
-					final Column col = cBldr.build(model);
-					table.addProperty(builder.getProperty(typeClass, "column"),
-							col.getResource());
-				}
-
 				schema.getResource().addProperty(
 						builder.getProperty(RdfSchema.class, "tables"), table);
 			}
 
 			try
 			{
-				return entityManager.read(table, typeClass);
+				RdfTable retval = entityManager.read(table, typeClass);
+				// add the column names
+				RDFList lst = null;
+				for (final RdfColumn.Builder bldr : columns)
+				{
+					bldr.setTable(retval);
+					RdfColumn col =  bldr.build(model);
+					if (retval.columns == null)
+					{
+						retval.columns = new ArrayList<RdfColumn>();
+					}
+					retval.columns.add( col );
+
+					if (lst == null)
+					{
+						lst = model.createList().with( col.getResource() );
+					}
+					else
+					{
+						lst.add( col.getResource() );
+					}
+				}
+				
+				final Property p = builder.getProperty(typeClass, "column");
+				table.addProperty(p, lst);
+				
+				return retval;
+				
 			}
 			catch (final MissingAnnotation e)
 			{
@@ -231,7 +256,7 @@ public class RdfTable extends RdfNamespacedObject implements Table
 		}
 
 		@Override
-		public RdfSchema getSchema()
+		public Schema getSchema()
 		{
 			return schema;
 		}
@@ -309,7 +334,7 @@ public class RdfTable extends RdfNamespacedObject implements Table
 			return this;
 		}
 
-		public Builder setSchema( final RdfSchema schema )
+		public Builder setSchema( final Schema schema )
 		{
 			this.schema = schema;
 			return this;
@@ -333,38 +358,32 @@ public class RdfTable extends RdfNamespacedObject implements Table
 	private List<RdfColumn> columns;
 	private RdfTableDef tableDef;
 
-	private Class<RdfColumn> colType;
+	private Class<RdfColumn> colType = RdfColumn.class;
 
 	private SparqlQueryBuilder queryBuilder;
 
 	@Override
 	public void delete()
 	{
-		final Model model = getResource().getModel();
-		final ResourceBuilder builder = new ResourceBuilder(model);
+		Resource tbl = getResource();
+		final Model model = tbl.getModel();
+		//final ResourceBuilder builder = new ResourceBuilder(model);
 		model.enterCriticalSection(Lock.WRITE);
 		try
 		{
-
-			for (final Column col : readColumns())
+			// preserve the column objects
+			List<RdfColumn> cols = readColumns();
+			
+			final Property p = model.createProperty(ResourceBuilder.getNamespace(RdfTable.class), "column");
+			tbl.getRequiredProperty(p).getResource().as(RDFList.class).removeList();
+			
+			// delete the column objects
+			for (final RdfColumn col : cols)
 			{
-				final Resource colDef = col.getColumnDef().getResource();
-
-				if (model
-						.listSubjectsWithProperty(
-								builder.getProperty(RdfColumn.class,
-										"columnDef"), colDef).toList().size() == 1)
-				{
-					// ((ColumnDef)this).delete();
-				}
-
-				final Resource r = model.createResource(col.getResource()
-						.getURI());
-				model.remove(null, null, r);
-				model.remove(r, null, null);
+				col.delete();
 			}
-			model.remove(null, null, getResource());
-			model.remove(getResource(), null, null);
+			model.remove(null, null, tbl);
+			model.remove(tbl, null, null);
 		}
 		finally
 		{
@@ -373,9 +392,9 @@ public class RdfTable extends RdfNamespacedObject implements Table
 	}
 
 	@Override
-	public NameFilter<RdfColumn> findColumns( final String columnNamePattern )
+	public NameFilter<Column> findColumns( final String columnNamePattern )
 	{
-		return new NameFilter<RdfColumn>(columnNamePattern, readColumns());
+		return new NameFilter<Column>(columnNamePattern, readColumns());
 	}
 
 	@Override
@@ -385,7 +404,7 @@ public class RdfTable extends RdfNamespacedObject implements Table
 	}
 
 	@Override
-	public Column getColumn( final int idx )
+	public RdfColumn getColumn( final int idx )
 	{
 		return readColumns().get(idx);
 	}
@@ -393,11 +412,10 @@ public class RdfTable extends RdfNamespacedObject implements Table
 	@Override
 	public Column getColumn( final String name )
 	{
-		for (final Column c : readColumns())
-		{
-			if (c.getName().equals(name))
+		for (RdfColumn col :  readColumns()) {
+			if (col.getName().equals( name ))
 			{
-				return c;
+				return col;
 			}
 		}
 		return null;
@@ -425,10 +443,10 @@ public class RdfTable extends RdfNamespacedObject implements Table
 	@Override
 	public int getColumnIndex( final String columnName )
 	{
-		readColumns();
-		for (int i = 0; i < columns.size(); i++)
+		List<RdfColumn> cols = readColumns();
+		for (int i = 0;i<cols.size();i++)
 		{
-			if (columns.get(i).getName().equals(columnName))
+			if (cols.get(i).getName().equals(columnName))
 			{
 				return i;
 			}
@@ -562,37 +580,24 @@ public class RdfTable extends RdfNamespacedObject implements Table
 			readTableDef(); // force read of table def.
 			final EntityManager entityManager = EntityManagerFactory
 					.getEntityManager();
-			final Property p = entityManager.getSubjectInfo(RdfColumn.class)
-					.getPredicateProperty("getTable");
 			columns = new ArrayList<RdfColumn>();
-			final Model model = this.getResource().getModel();
-
-			// read the columns
-			for (final Resource r : model.listSubjectsWithProperty(p,
-					this.getResource()).toList())
+			Resource tbl = this.getResource();
+			final Model model = tbl.getModel();
+			
+			final Property p =model.createProperty(ResourceBuilder.getNamespace(RdfTable.class), "column");
+			
+			
+			final List<RDFNode> resLst = tbl.getRequiredProperty(p)
+					.getResource().as(RDFList.class).asJavaList();
+			for (final RDFNode n : resLst)
 			{
-				try
-				{
-					columns.add(entityManager.read(r, colType));
-				}
-				catch (final MissingAnnotation e)
+				try {
+				columns.add( entityManager.read(n, RdfColumn.class) );
+				} catch (final MissingAnnotation e)
 				{
 					throw new RuntimeException(e);
 				}
 			}
-			// sort the columns
-			final Comparator<Column> comp = new Comparator<Column>() {
-
-				@Override
-				public int compare( final Column col1, final Column col2 )
-				{
-					return Integer.compare(
-							tableDef.getColumnIndex(col1.getColumnDef()),
-							tableDef.getColumnIndex(col2.getColumnDef()));
-
-				}
-			};
-			Collections.sort(columns, comp);
 		}
 		return columns;
 	}

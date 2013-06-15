@@ -31,7 +31,7 @@ public class ColumnDefBuilderTests
 	@Test
 	public void testIntegerCreation()
 	{
-		final Builder builder = Builder.getIntegerBuilder();
+		final RdfColumnDef.Builder builder = RdfColumnDef.Builder.getIntegerBuilder();
 		final ColumnDef cd = builder.build(model);
 		model.write(System.out, "TURTLE");
 
@@ -54,7 +54,7 @@ public class ColumnDefBuilderTests
 	@Test
 	public void testSetValuesCreation()
 	{
-		final Builder builder = new Builder();
+		final RdfColumnDef.Builder builder = new RdfColumnDef.Builder();
 		builder.setType(Types.VARCHAR).setAutoIncrement(true)
 				.setCaseSensitive(true).setColumnClassName("foo")
 				.setCurrency(true).setDefinitelyWritable(true)
@@ -87,7 +87,7 @@ public class ColumnDefBuilderTests
 	@Test
 	public void testSmallIntCreation()
 	{
-		final Builder builder = Builder.getSmallIntBuilder();
+		final RdfColumnDef.Builder builder = RdfColumnDef.Builder.getSmallIntBuilder();
 		final ColumnDef cd = builder.build(model);
 		model.write(System.out, "TURTLE");
 
@@ -110,7 +110,7 @@ public class ColumnDefBuilderTests
 	@Test
 	public void testStandardCreation()
 	{
-		final Builder builder = new Builder();
+		final RdfColumnDef.Builder builder = new RdfColumnDef.Builder();
 		builder.setType(Types.VARCHAR);
 		final ColumnDef cd = builder.build(model);
 		model.write(System.out, "TURTLE");
@@ -134,7 +134,7 @@ public class ColumnDefBuilderTests
 	@Test
 	public void testStringCreation()
 	{
-		final Builder builder = Builder.getStringBuilder();
+		final RdfColumnDef.Builder builder = RdfColumnDef.Builder.getStringBuilder();
 		final ColumnDef cd = builder.build(model);
 		model.write(System.out, "TURTLE");
 

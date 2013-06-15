@@ -28,9 +28,9 @@ public class KeyBuilderTests
 	@Test
 	public void testDefault()
 	{
-		final KeySegmentBuilder segBuilder = new KeySegmentBuilder();
+		final RdfKeySegment.Builder segBuilder = new RdfKeySegment.Builder();
 
-		final KeyBuilder builder = new KeyBuilder().addSegment(segBuilder
+		final RdfKey.Builder builder = new RdfKey.Builder().addSegment(segBuilder
 				.build(model));
 
 		final Key key = builder.build(model);
@@ -44,9 +44,9 @@ public class KeyBuilderTests
 	@Test
 	public void testMultipleSegments()
 	{
-		final KeySegmentBuilder segBuilder = new KeySegmentBuilder();
+		final RdfKeySegment.Builder segBuilder = new RdfKeySegment.Builder();
 
-		final KeyBuilder builder = new KeyBuilder().addSegment(
+		final RdfKey.Builder builder = new RdfKey.Builder().addSegment(
 				segBuilder.build(model)).addSegment(
 				segBuilder.setAscending(false).setIdx(1).build(model));
 
@@ -60,9 +60,9 @@ public class KeyBuilderTests
 	@Test
 	public void testUnique()
 	{
-		final KeySegmentBuilder segBuilder = new KeySegmentBuilder();
+		final RdfKeySegment.Builder segBuilder = new RdfKeySegment.Builder();
 
-		final KeyBuilder builder = new KeyBuilder().addSegment(
+		final RdfKey.Builder builder = new RdfKey.Builder().addSegment(
 				segBuilder.build(model)).setUnique(true);
 
 		final Key key = builder.build(model);

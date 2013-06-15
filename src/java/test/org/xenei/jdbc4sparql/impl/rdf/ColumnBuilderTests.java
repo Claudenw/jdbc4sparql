@@ -22,7 +22,7 @@ public class ColumnBuilderTests
 	public void setUp() throws Exception
 	{
 		model = ModelFactory.createDefaultModel();
-		columnDef = Builder.getStringBuilder().build(model);
+		columnDef = RdfColumnDef.Builder.getStringBuilder().build(model);
 		mockTable = Mockito.mock(Table.class);
 		Mockito.when(mockTable.getResource()).thenReturn(
 				model.createResource("http://example.com/mockTable"));
@@ -37,7 +37,7 @@ public class ColumnBuilderTests
 	@Test
 	public void testStandardCreation()
 	{
-		final ColumnBuilder builder = new ColumnBuilder()
+		final RdfColumn.Builder builder = new RdfColumn.Builder()
 				.setColumnDef(columnDef).setName("test").setTable(mockTable);
 		final Column cd = builder.build(model);
 		model.write(System.out, "TURTLE");

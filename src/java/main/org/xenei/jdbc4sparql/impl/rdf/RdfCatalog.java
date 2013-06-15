@@ -95,8 +95,7 @@ public class RdfCatalog implements Catalog
 			}
 			if ((localModel == null) && (sparqlEndpoint == null))
 			{
-				throw new IllegalStateException(
-						"Either LocalModel or SPARQL endpoint must be set");
+				localModel = ModelFactory.createDefaultModel();
 			}
 
 		}

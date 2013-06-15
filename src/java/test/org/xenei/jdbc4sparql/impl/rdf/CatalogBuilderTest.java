@@ -19,14 +19,14 @@ public class CatalogBuilderTest
 {
 
 	private Model model;
-	private SchemaBuilder schemaBldr;
+	private RdfSchema.Builder schemaBldr;
 
 	@Before
 	public void setUp() throws Exception
 	{
 		model = ModelFactory.createDefaultModel();
 
-		schemaBldr = new SchemaBuilder().setName("testSchema");
+		schemaBldr = new RdfSchema.Builder().setName("testSchema");
 	}
 
 	@After
@@ -38,53 +38,37 @@ public class CatalogBuilderTest
 	@Test
 	public void testAddSchema()
 	{
-		final Builder builder = new Builder().setName("catalog");
+		final RdfCatalog.Builder builder = new RdfCatalog.Builder().setName("catalog");
 
 		final Catalog catalog = builder.build(model);
-
+		Assert.assertEquals("catalog", catalog.getName());
+		Assert.assertNotNull(catalog.getSchemas());
+		Assert.assertEquals(1, catalog.getSchemas().size());
 		schemaBldr.setCatalog(catalog);
 
 		final Schema schema = schemaBldr.build(model);
 
-		catalog.getSchemas();
-		Assert.assertEquals("catalog", catalog.getName());
 		Assert.assertNotNull(catalog.getSchemas());
-		Assert.assertEquals(1, catalog.getSchemas().size());
-	}
-
-	@Test
-	public void testAddTableTableRead()
-	{
-		final Builder builder = new Builder().setName("catalog");
-
-		final Catalog catalog = builder.build(model);
-		Assert.assertEquals(0, catalog.getSchemas().size());
-
-		schemaBldr.setCatalog(catalog);
-
-		final Schema schema = schemaBldr.build(model);
-
-		Assert.assertEquals("catalog", catalog.getName());
-		Assert.assertNotNull(catalog.getSchemas());
-		Assert.assertEquals(1, catalog.getSchemas().size());
+		Assert.assertEquals(2, catalog.getSchemas().size());
 	}
 
 	@Test
 	public void testDefault()
 	{
-		final Builder builder = new Builder().setName("catalog");
+		final RdfCatalog.Builder builder = new RdfCatalog.Builder().setName("catalog");
 
 		final Catalog catalog = builder.build(model);
-		catalog.getSchemas();
+
 		Assert.assertEquals("catalog", catalog.getName());
 		Assert.assertNotNull(catalog.getSchemas());
-		Assert.assertEquals(0, catalog.getSchemas().size());
+		Assert.assertEquals(1, catalog.getSchemas().size());
+		Assert.assertNotNull( catalog.getSchema( Catalog.DEFAULT_SCHEMA));
 	}
 
 	@Test
 	public void testFindSchema()
 	{
-		final Builder builder = new Builder().setName("catalog");
+		final RdfCatalog.Builder builder = new RdfCatalog.Builder().setName("catalog");
 
 		final Catalog catalog = builder.build(model);
 
@@ -98,7 +82,7 @@ public class CatalogBuilderTest
 	@Test
 	public void testGetSchema() throws Exception
 	{
-		final Builder builder = new Builder().setName("catalog");
+		final RdfCatalog.Builder builder = new RdfCatalog.Builder().setName("catalog");
 
 		final Catalog catalog = builder.build(model);
 
@@ -114,17 +98,23 @@ public class CatalogBuilderTest
 	@Test
 	public void testGetSchemas()
 	{
-		final Builder builder = new Builder().setName("catalog");
+		final RdfCatalog.Builder builder = new RdfCatalog.Builder().setName("catalog");
 
 		final Catalog catalog = builder.build(model);
 
-		schemaBldr.setCatalog(catalog);
-
-		final Schema schema = schemaBldr.build(model);
-
-		final Set<Schema> schemas = catalog.getSchemas();
+		// should contain default schema
+		Set<? extends Schema> schemas = catalog.getSchemas();
 		Assert.assertNotNull(schemas);
 		Assert.assertEquals(1, schemas.size());
+		Assert.assertNotNull(catalog.getSchema( Catalog.DEFAULT_SCHEMA ));
+		
+		schemaBldr.setCatalog(catalog);
+
+		final RdfSchema schema = schemaBldr.build(model);
+
+		schemas = catalog.getSchemas();
+		Assert.assertNotNull(schemas);
+		Assert.assertEquals(2, schemas.size());
 
 	}
 }

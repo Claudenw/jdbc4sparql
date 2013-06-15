@@ -137,6 +137,10 @@ public abstract class AbstractTable implements Table
 		return table.getTableDef().getSuperTableDef();
 	}
 
+	protected Table getTable()
+	{
+		return table;
+	}
 	/**
 	 * @return The table definition for this table.
 	 */

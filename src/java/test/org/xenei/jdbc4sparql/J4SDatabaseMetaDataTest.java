@@ -47,7 +47,7 @@ public class J4SDatabaseMetaDataTest
 				MetaCatalogBuilder.SCHEMA_LOCAL_NAME, tableName, null);
 		for (int i = 0; i < columnNames.length; i++)
 		{
-			Assert.assertTrue(rs.next());
+			Assert.assertTrue("column "+i+" of table "+tableName+" missing", rs.next());
 			Assert.assertEquals(MetaCatalogBuilder.LOCAL_NAME, rs.getString(1)); // TABLE_CAT
 			Assert.assertEquals(MetaCatalogBuilder.SCHEMA_LOCAL_NAME,
 					rs.getString(2)); // TABLE_SCHEM
@@ -57,7 +57,7 @@ public class J4SDatabaseMetaDataTest
 				Assert.assertEquals(columnNames[i], rs.getString(4)); // COLUMN_NAME
 			}
 		}
-		Assert.assertFalse(rs.next());
+		Assert.assertFalse("Extra column found in table "+tableName, rs.next());
 	}
 
 	@Before
@@ -73,7 +73,7 @@ public class J4SDatabaseMetaDataTest
 		catalogs.put(cat.getName(), cat);
 		Mockito.when(connection.getCatalogs()).thenReturn(catalogs);
 		metadata = new J4SDatabaseMetaData(connection, driver);
-
+		model.write( System.out, "TURTLE" );
 	}
 
 	@Test
@@ -85,8 +85,7 @@ public class J4SDatabaseMetaDataTest
 				"ATTR_DEF", "SQL_DATA_TYPE", "SQL_DATETIME_SUB",
 				"CHAR_OCTET_LENGTH", "ORDINAL_POSITION", "IS_NULLABLE",
 				"SCOPE_CATALOG", "SCOPE_SCHEMA", "SCOPE_TABLE",
-				"SOURCE_DATA_TYPE",
-
+				"SOURCE_DATA_TYPE"
 		};
 		columnChecking(MetaCatalogBuilder.ATTRIBUTES_TABLE, names);
 	}
@@ -196,15 +195,15 @@ public class J4SDatabaseMetaDataTest
 
 		for (final String name : names)
 		{
-			Assert.assertTrue(rs.next());
+			Assert.assertTrue("No next when looking for "+name, rs.next());
 			Assert.assertEquals(MetaCatalogBuilder.LOCAL_NAME, rs.getString(1)); // TABLE_CAT
 			Assert.assertEquals(MetaCatalogBuilder.SCHEMA_LOCAL_NAME,
 					rs.getString(2)); // TABLE_SCHEM
 			Assert.assertEquals(name, rs.getString(3)); // TABLE_NAME
-			Assert.assertEquals("TABLE", rs.getString(4)); // TABLE_TYPE
+			Assert.assertEquals("SYSTEM TABLE", rs.getString(4)); // TABLE_TYPE
 			Assert.assertEquals("", rs.getString(5)); // REMARKS
 		}
-		Assert.assertFalse(rs.next());
+		Assert.assertFalse("Extra column after all names were found", rs.next());
 
 	}
 
@@ -234,14 +233,14 @@ public class J4SDatabaseMetaDataTest
 	{
 		final ResultSet rs = metadata.getTables(null, null,
 				MetaCatalogBuilder.COLUMNS_TABLE, null);
-		Assert.assertTrue(rs.next());
+		Assert.assertTrue("Missing table "+MetaCatalogBuilder.COLUMNS_TABLE, rs.next());
 		Assert.assertEquals(MetaCatalogBuilder.LOCAL_NAME, rs.getString(1)); // TABLE_CAT
 		Assert.assertEquals(MetaCatalogBuilder.SCHEMA_LOCAL_NAME,
 				rs.getString(2)); // TABLE_SCHEM
 		Assert.assertEquals(MetaCatalogBuilder.COLUMNS_TABLE, rs.getString(3)); // TABLE_NAME
-		Assert.assertEquals("TABLE", rs.getString(4)); // TABLE_TYPE
+		Assert.assertEquals("SYSTEM TABLE", rs.getString(4)); // TABLE_TYPE
 		Assert.assertEquals("", rs.getString(5)); // REMARKS
-		Assert.assertFalse(rs.next());
+		Assert.assertFalse("Extra table in search", rs.next());
 	}
 
 	// @Test

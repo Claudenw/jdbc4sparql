@@ -96,15 +96,18 @@ public class MetaCatalogBuilder
 		this.model = model;
 		nonNullString = RdfColumnDef.Builder.getStringBuilder()
 				.setNullable(DatabaseMetaData.columnNoNulls).build(model);
-		nullableString = RdfColumnDef.Builder.getStringBuilder().build(model);
+		nullableString = RdfColumnDef.Builder.getStringBuilder()
+				.setNullable(DatabaseMetaData.columnNullable).build(model);
 		nonNullInt = RdfColumnDef.Builder.getIntegerBuilder()
 				.setNullable(DatabaseMetaData.columnNoNulls).build(model);
-		nullableInt = RdfColumnDef.Builder.getIntegerBuilder().build(model);
+		nullableInt = RdfColumnDef.Builder.getIntegerBuilder()
+				.setNullable(DatabaseMetaData.columnNullable).build(model);
 		nonNullShort = RdfColumnDef.Builder.getSmallIntBuilder()
 				.setNullable(DatabaseMetaData.columnNoNulls).build(model);
-		nullableShort = RdfColumnDef.Builder.getSmallIntBuilder().build(model);
+		nullableShort = RdfColumnDef.Builder.getSmallIntBuilder()
+				.setNullable(DatabaseMetaData.columnNullable).build(model);
 		nullableBoolean = new RdfColumnDef.Builder().setType(Types.BOOLEAN)
-				.build(model);
+				.setNullable(DatabaseMetaData.columnNullable).build(model);
 		nonNullBoolean = new RdfColumnDef.Builder().setType(Types.BOOLEAN)
 				.setNullable(DatabaseMetaData.columnNoNulls).build(model);
 	}
@@ -131,6 +134,7 @@ public class MetaCatalogBuilder
 				.addColumnDef(nullableString) // IS_NULLABLE
 				.addColumnDef(nullableString) // SCOPE_CATALOG
 				.addColumnDef(nullableString) // SCOPE_SCHEMA
+				.addColumnDef(nullableString) // SCOPE_TABLE
 				.addColumnDef(nullableShort) // SOURCE_DATA_TYPE
 				.build(model);
 
@@ -148,7 +152,7 @@ public class MetaCatalogBuilder
 				.setColumn(14, "CHAR_OCTET_LENGTH")
 				.setColumn(15, "ORDINAL_POSITION").setColumn(16, "IS_NULLABLE")
 				.setColumn(17, "SCOPE_CATALOG").setColumn(18, "SCOPE_SCHEMA")
-				.setColumn(19, "SOURCE_DATA_TYPE").build(model);
+				.setColumn(19, "SCOPE_TABLE").setColumn(20,"SOURCE_DATA_TYPE").build(model);
 	}
 
 	private void addBestRowTable()
@@ -287,7 +291,7 @@ public class MetaCatalogBuilder
 				.addColumnDef(nullableString) // SCOPE_SCHEMA
 				.addColumnDef(nullableString) // SCOPE_TABLE
 				.addColumnDef(nullableShort) // SOURCE_DATA_TYPE
-				.addColumnDef(nonNullInt) // IS_AUTOINCREMENT
+				.addColumnDef(nonNullString) // IS_AUTOINCREMENT
 
 				.setSortKey(
 						new RdfKey.Builder()

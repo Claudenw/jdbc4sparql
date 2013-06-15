@@ -5,6 +5,7 @@ import com.hp.hpl.jena.graph.Triple;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.ResourceFactory;
+import com.hp.hpl.jena.shared.Lock;
 import com.hp.hpl.jena.vocabulary.RDFS;
 
 import java.sql.DatabaseMetaData;
@@ -37,18 +38,8 @@ public class RdfColumn extends RdfNamespacedObject implements Column
 		private String name;
 		private Class<? extends RdfColumn> typeClass = RdfColumn.class;
 
-		public Builder()
-		{
 
-		}
-
-		protected Builder( final Class<? extends RdfColumn> typeClass,
-				final Class<? extends RdfTable> tableTypeClass )
-		{
-			this.typeClass = typeClass;
-		}
-
-		public Column build( final Model model )
+		public RdfColumn build( final Model model )
 		{
 			checkBuildState();
 
@@ -262,6 +253,22 @@ public class RdfColumn extends RdfNamespacedObject implements Column
 	public boolean isOptional()
 	{
 		return getColumnDef().getNullable() != DatabaseMetaData.columnNoNulls;
+	}
+	
+	public void delete()
+	{
+		final Model model = getResource().getModel();
+		final Resource r = getResource();
+		model.enterCriticalSection(Lock.WRITE);
+		try
+		{
+			model.remove(null, null, r);
+			model.remove(r, null, null);
+		}
+		finally
+		{
+			model.leaveCriticalSection();
+		}
 	}
 
 }

@@ -129,10 +129,7 @@ public class RdfTableDef extends RdfNamespacedObject implements TableDef
 			}
 			try
 			{
-				final RdfTableDef rdfTableDef = entityManager.read(tableDef,
-						typeClass);
-				rdfTableDef.setColDefClass(colDefClass);
-				return rdfTableDef;
+				return entityManager.read(tableDef, typeClass);
 			}
 			catch (final MissingAnnotation e)
 			{
@@ -256,7 +253,7 @@ public class RdfTableDef extends RdfNamespacedObject implements TableDef
 
 	private List<ColumnDef> columns;
 
-	private Class<? extends RdfColumnDef> colDefClass;
+	private Class<? extends RdfColumnDef> colDefClass = RdfColumnDef.class;
 
 	@Override
 	public int getColumnCount()
@@ -313,7 +310,7 @@ public class RdfTableDef extends RdfNamespacedObject implements TableDef
 	 */
 	@Override
 	@Predicate( impl = true )
-	public Key getPrimaryKey()
+	public RdfKey getPrimaryKey()
 	{
 		throw new EntityManagerRequiredException();
 	}
@@ -353,7 +350,7 @@ public class RdfTableDef extends RdfNamespacedObject implements TableDef
 	 */
 	@Override
 	@Predicate( impl = true )
-	public Key getSortKey()
+	public RdfKey getSortKey()
 	{
 		throw new EntityManagerRequiredException();
 	}
@@ -363,11 +360,6 @@ public class RdfTableDef extends RdfNamespacedObject implements TableDef
 	public RdfTableDef getSuperTableDef()
 	{
 		throw new EntityManagerRequiredException();
-	}
-
-	public void setColDefClass( final Class<? extends RdfColumnDef> colDefClass )
-	{
-		this.colDefClass = colDefClass;
 	}
 
 }

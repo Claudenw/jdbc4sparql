@@ -28,7 +28,7 @@ public class KeySegmentBuilderTests
 	@Test
 	public void testDefault()
 	{
-		final KeySegmentBuilder builder = new KeySegmentBuilder();
+		final RdfKeySegment.Builder builder = new RdfKeySegment.Builder();
 		final KeySegment seg = builder.build(model);
 
 		Assert.assertEquals(0, seg.getIdx());
@@ -39,7 +39,7 @@ public class KeySegmentBuilderTests
 	@Test
 	public void testInvalid()
 	{
-		final KeySegmentBuilder builder = new KeySegmentBuilder();
+		final RdfKeySegment.Builder builder = new RdfKeySegment.Builder();
 		try
 		{
 			builder.setIdx(-1);
@@ -65,7 +65,7 @@ public class KeySegmentBuilderTests
 	@Test
 	public void testSetValues()
 	{
-		final KeySegmentBuilder builder = new KeySegmentBuilder().setIdx(5)
+		final RdfKeySegment.Builder builder = new RdfKeySegment.Builder().setIdx(5)
 				.setAscending(false);
 		final KeySegment seg = builder.build(model);
 
