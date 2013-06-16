@@ -206,7 +206,7 @@ public class ConfigTest
 				"builderTest");
 		catalog.addSchema(schema);
 		builder = new SimpleNullableBuilder();
-		schema.addTableDefs(builder.getTableDefs(catalog));
+		schema.addTableDefs(builder.getTables(catalog));
 		final ConfigSerializer cs = new ConfigSerializer();
 		cs.add(catalog);
 		final File f = File.createTempFile("cfgTst", ".ttl");
@@ -257,7 +257,7 @@ public class ConfigTest
 				"builderTest");
 		catalog.addSchema(schema);
 		builder = new SimpleBuilder();
-		schema.addTableDefs(builder.getTableDefs(catalog));
+		schema.addTableDefs(builder.getTables(catalog));
 
 		ConfigSerializer cs = new ConfigSerializer();
 		cs.add(catalog);
@@ -280,7 +280,7 @@ public class ConfigTest
 				"builderTest");
 		catalog.addSchema(schema);
 		builder = new MultiQueryStatementBuilder();
-		schema.addTableDefs(builder.getTableDefs(catalog));
+		schema.addTableDefs(builder.getTables(catalog));
 
 		ConfigSerializer cs = new ConfigSerializer();
 		cs.add(catalog);

@@ -160,7 +160,7 @@ public class SparqlQueryBuilder
 	public class RdfTableInfo
 	{
 		private final RdfTable table;
-		private final ElementTriplesBlock etb;
+		//private final ElementTriplesBlock etb;
 		private final ElementGroup eg;
 		private final Node tableVar;
 		private final boolean optional;
@@ -172,18 +172,19 @@ public class SparqlQueryBuilder
 		{
 			this.table = table;
 			this.eg = new ElementGroup();
-			this.etb = new ElementTriplesBlock();
+			//this.etb = new ElementTriplesBlock();
 			this.optional = optional;
 			this.typeFilterList = new HashSet<CheckTypeF>();
-			eg.addElement(etb);
+			//eg.addElement(etb);
 
 			tablesInQuery.put(table.getSQLName(), this);
 			// add the table var to the nodes.
 			tableVar = Node.createVariable(table.getSPARQLName());
 			nodesInQuery.put(table.getSQLName(), tableVar);
-			for (final Triple t : table.getQuerySegments(tableVar))
+			Element el = table.getQuerySegments(tableVar) ;
+			if (el != null)
 			{
-				etb.addTriple(t);
+				eg.addElement(el);
 			}
 			// add all the required columns
 			for (final Iterator<RdfColumn> colIter = table.getColumns(); colIter
@@ -231,18 +232,16 @@ public class SparqlQueryBuilder
 				columnsInQuery.put(column.getSQLName(), column);
 				nodesInQuery.put(column.getSQLName(), columnVar);
 			}
-
-			ElementTriplesBlock workingEtb = etb;
+			Element e = column.getQuerySegments( tableVar, columnVar );
 			if (column.isOptional())
 			{
-				workingEtb = new ElementTriplesBlock();
-				eg.addElement(new ElementOptional(workingEtb));
+				eg.addElement(new ElementOptional(e));
+			}
+			else
+			{
+				eg.addElement(e);
 			}
 
-			for (final Triple t : column.getQuerySegments(tableVar, columnVar))
-			{
-				workingEtb.addTriple(t);
-			}
 			typeFilterList.add(new CheckTypeF(column, columnVar));
 
 			return columnVar;
@@ -258,10 +257,10 @@ public class SparqlQueryBuilder
 			eg.addElement(new ElementOptional(etb));
 		}
 
-		public void addTriple( final Triple t )
-		{
-			etb.addTriple(t);
-		}
+//		public void addTriple( final Triple t )
+//		{
+//			etb.addTriple(t);
+//		}
 
 		public Iterator<RdfColumn> getColumns()
 		{
@@ -349,9 +348,14 @@ public class SparqlQueryBuilder
 	 * 
 	 * @param catalog
 	 *            The catalog to build the query for.
+	 * @throws IllegalArgumentException if catalog is null.
 	 */
 	public SparqlQueryBuilder( final RdfCatalog catalog )
 	{
+		if (catalog == null)
+		{
+			throw new IllegalArgumentException( "Catalog may not be null" );
+		}
 		this.catalog = catalog;
 		this.query = new Query();
 		this.isBuilt = false;

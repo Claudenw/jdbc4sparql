@@ -33,17 +33,22 @@ import java.util.Set;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.xenei.jdbc4sparql.iface.TableDef;
+import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
+import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
+import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 
 public class SimpleBuilderTest
 {
-	private static final String CAT_NS = "http://example.com/jdbc4sparql/meta/catalog#";
 	private static final String NS = "http://example.com/jdbc4sparql#";
-	private SparqlCatalog catalog;
+	private RdfCatalog catalog;
+	private RdfSchema schema;
+	// data model
 	private Model model;
+	// schema model
+	private Model schemaModel;
 	private SchemaBuilder builder;
 
-	private void addModelData()
+	private void addModelData(Model model)
 	{
 		model.removeAll();
 		final Resource fooType = model.createResource(SimpleBuilderTest.NS
@@ -70,25 +75,21 @@ public class SimpleBuilderTest
 	}
 
 	@Test
-	public void buildSparqlTableTest() throws SQLException
+	public void buildRdfTableTest() throws SQLException
 	{
-		final SparqlSchema schema = new SparqlSchema(catalog,
-				SimpleBuilderTest.NS, "builderTest");
-		catalog.addSchema(schema);
-		final Set<TableDef> tableDefs = builder.getTableDefs(catalog);
+		final Set<RdfTable> tables = builder.getTables(catalog);
 		final Map<String, Integer> counter = new HashMap<String, Integer>();
 		final String[] columnNames = { "StringCol", "NullableStringCol",
 				"IntCol", "NullableIntCol" };
-		for (final TableDef td : tableDefs)
+		for (final RdfTable tbl : tables)
 		{
-			schema.addTableDef(td);
-			final SparqlTable t = (SparqlTable) schema.getTable(td.getName());
-			final ResultSet rs = t.getResultSet();
+			// schema.addTables(tbl);
+			final ResultSet rs = tbl.getResultSet();
 			int count = 0;
 			while (rs.next())
 			{
 				count++;
-				for (int i = 1; i <= td.getColumnCount(); i++)
+				for (int i = 1; i <= tbl.getColumnCount(); i++)
 				{
 					// just verify that no exception is thrown when reading
 					// numeric columns
@@ -119,15 +120,11 @@ public class SimpleBuilderTest
 	@Test
 	public void checkNullReturnValues() throws SQLException
 	{
-		final SparqlSchema schema = new SparqlSchema(catalog,
-				SimpleBuilderTest.NS, "builderTest");
-		catalog.addSchema(schema);
-		final Set<TableDef> tableDefs = builder.getTableDefs(catalog);
-		for (final TableDef td : tableDefs)
+
+		final Set<RdfTable> tables = builder.getTables(catalog);
+		for (final RdfTable tbl : tables)
 		{
-			schema.addTableDef(td);
-			final SparqlTable t = (SparqlTable) schema.getTable(td.getName());
-			final ResultSet rs = t.getResultSet();
+			final ResultSet rs = tbl.getResultSet();
 			boolean foundNull = false;
 			while (rs.next() && !foundNull)
 			{
@@ -170,10 +167,17 @@ public class SimpleBuilderTest
 	public void setup()
 	{
 		model = ModelFactory.createDefaultModel();
-		addModelData();
-		catalog = new SparqlCatalog(SimpleBuilderTest.CAT_NS, model,
-				"SimpleSparql");
+		schemaModel = ModelFactory.createDefaultModel();
+		addModelData( model );
+		catalog = new RdfCatalog.Builder().setLocalModel(model)
+				.setName("SimpleSparql").build(schemaModel);
+		
+		schema = new RdfSchema.Builder().setCatalog(catalog)
+				.setName("builderTest").build(schemaModel);
+
+		schemaModel.write( System.out, "TURTLE" );
 		builder = new SimpleBuilder();
+
 	}
 
 }

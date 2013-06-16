@@ -1,16 +1,15 @@
 package org.xenei.jdbc4sparql.impl.rdf;
 
 import com.hp.hpl.jena.graph.Node;
-import com.hp.hpl.jena.graph.Triple;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.ResourceFactory;
 import com.hp.hpl.jena.shared.Lock;
+import com.hp.hpl.jena.sparql.lang.sparql_11.ParseException;
+import com.hp.hpl.jena.sparql.syntax.Element;
 import com.hp.hpl.jena.vocabulary.RDFS;
 
 import java.sql.DatabaseMetaData;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
@@ -36,8 +35,7 @@ public class RdfColumn extends RdfNamespacedObject implements Column
 		private ColumnDef columnDef;
 		private Table table;
 		private String name;
-		private Class<? extends RdfColumn> typeClass = RdfColumn.class;
-
+		private final Class<? extends RdfColumn> typeClass = RdfColumn.class;
 
 		public RdfColumn build( final Model model )
 		{
@@ -170,6 +168,22 @@ public class RdfColumn extends RdfNamespacedObject implements Column
 		}
 	}
 
+	public void delete()
+	{
+		final Model model = getResource().getModel();
+		final Resource r = getResource();
+		model.enterCriticalSection(Lock.WRITE);
+		try
+		{
+			model.remove(null, null, r);
+			model.remove(r, null, null);
+		}
+		finally
+		{
+			model.leaveCriticalSection();
+		}
+	}
+
 	@Override
 	public RdfCatalog getCatalog()
 	{
@@ -190,31 +204,24 @@ public class RdfColumn extends RdfNamespacedObject implements Column
 		throw new EntityManagerRequiredException();
 	}
 
-	public List<Triple> getQuerySegments( final Node tableVar,
-			final Node columnVar )
+	public Element getQuerySegments( final Node tableVar, final Node columnVar )
 	{
-		final List<Triple> retval = new ArrayList<Triple>();
-		final String fqName = "<" + getFQName() + ">";
-		for (final String segment : getColumnDef().getQuerySegmentStrings())
+		String fmt = getColumnDef().getQuerySegments();
+		if (fmt != null)
 		{
-			if (!segment.trim().startsWith("#"))
-			{
-				final List<String> parts = SparqlParser.Util
-						.parseQuerySegment(String.format(segment, tableVar,
-								columnVar, fqName));
-				if (parts.size() != 3)
-				{
-					throw new IllegalStateException(getFQName()
-							+ " query segment " + segment
-							+ " does not parse into 3 components");
-				}
-				retval.add(new Triple(
-						SparqlParser.Util.parseNode(parts.get(0)),
-						SparqlParser.Util.parseNode(parts.get(1)),
-						SparqlParser.Util.parseNode(parts.get(2))));
-			}
+
+		try
+		{
+			return SparqlParser.Util.parse(String.format(fmt,
+					tableVar, columnVar));
 		}
-		return retval;
+		catch (final ParseException e)
+		{
+			throw new IllegalStateException(getFQName() + " query segment "
+					+ fmt, e);
+		}
+		}
+		return null;
 	}
 
 	@Override
@@ -253,22 +260,6 @@ public class RdfColumn extends RdfNamespacedObject implements Column
 	public boolean isOptional()
 	{
 		return getColumnDef().getNullable() != DatabaseMetaData.columnNoNulls;
-	}
-	
-	public void delete()
-	{
-		final Model model = getResource().getModel();
-		final Resource r = getResource();
-		model.enterCriticalSection(Lock.WRITE);
-		try
-		{
-			model.remove(null, null, r);
-			model.remove(r, null, null);
-		}
-		finally
-		{
-			model.leaveCriticalSection();
-		}
 	}
 
 }

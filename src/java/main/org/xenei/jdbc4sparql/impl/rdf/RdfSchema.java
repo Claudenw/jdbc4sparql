@@ -49,6 +49,9 @@ public class RdfSchema extends RdfNamespacedObject implements Schema
 			{
 				schema = builder.getResource(fqName, typeClass);
 				schema.addLiteral(RDFS.label, name);
+				
+				schema.addProperty(builder.getProperty(typeClass, "catalog"),
+						catalog.getResource());
 
 				for (final Table tbl : tables)
 				{

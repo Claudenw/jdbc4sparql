@@ -17,6 +17,7 @@
  */
 package org.xenei.jdbc4sparql;
 
+import org.apache.jena.riot.RDFLanguages;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openjena.riot.Lang;
@@ -101,12 +102,12 @@ public class J4SUrlTest
 				.toString());
 
 		url = new J4SUrl("jdbc:j4s?type=turtle:file:///test.file");
-		Assert.assertEquals(Lang.TURTLE.getName(), url.getType());
+		Assert.assertEquals(RDFLanguages.TURTLE.getName(), url.getType());
 		Assert.assertNull(url.getBuilder());
 		Assert.assertEquals("file:///test.file", url.getEndpoint().toString());
 
 		url = new J4SUrl("jdbc:j4s?type=rdf/xml:ftp://example.com/test.file");
-		Assert.assertEquals(Lang.RDFXML.getName(), url.getType());
+		Assert.assertEquals(RDFLanguages.RDFXML.getName(), url.getType());
 		Assert.assertNull(url.getBuilder());
 		Assert.assertEquals("ftp://example.com/test.file", url.getEndpoint()
 				.toString());
@@ -118,4 +119,5 @@ public class J4SUrlTest
 				.toString());
 
 	}
+
 }

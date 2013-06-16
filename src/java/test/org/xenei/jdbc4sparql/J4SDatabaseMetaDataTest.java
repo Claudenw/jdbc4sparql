@@ -73,7 +73,7 @@ public class J4SDatabaseMetaDataTest
 		catalogs.put(cat.getName(), cat);
 		Mockito.when(connection.getCatalogs()).thenReturn(catalogs);
 		metadata = new J4SDatabaseMetaData(connection, driver);
-		model.write( System.out, "TURTLE" );
+		model.write( System.out, "TURTLE" ); // FIXME remove this
 	}
 
 	@Test
@@ -419,4 +419,6 @@ public class J4SDatabaseMetaDataTest
 				"PSEUDO_COLUMN", };
 		columnChecking(MetaCatalogBuilder.VERSION_COLUMNS_TABLE, names);
 	}
+	
+	
 }

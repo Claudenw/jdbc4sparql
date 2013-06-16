@@ -62,7 +62,7 @@ public class RDFSBuilder implements SchemaBuilder
 	 * xenei.jdbc4sparql.sparql.SparqlCatalog)
 	 */
 	@Override
-	public Set<TableDef> getTableDefs( final RdfCatalog catalog )
+	public Set<TableDef> getTables( final RdfCatalog catalog )
 	{
 		final Map<String, RdfTableDef> tables = new HashMap<String, RdfTableDef>();
 		for (final Statement stmt : rdfsOntology.listStatements(null,

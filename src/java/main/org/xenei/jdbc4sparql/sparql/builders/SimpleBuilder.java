@@ -50,19 +50,17 @@ public class SimpleBuilder implements SchemaBuilder
 	protected static final String COLUMN_QUERY = "SELECT DISTINCT ?cName "
 			+ " WHERE { " + " ?instance a <%s> ; " + " ?cName [] ; }";
 
-	private static final String TABLE_SEGMENT = "%1$s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> %2$s";
-	protected static final String COLUMN_SEGMENT = "%1$s %3$s %2$s";
-
-	private final Model model;
+	private static final String TABLE_SEGMENT = "%1$s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <%2$s>";
+	protected static final String COLUMN_SEGMENT = "%1$s <%3$s> %2$s";
 
 	public SimpleBuilder()
 	{
-		model = ModelFactory.createDefaultModel();
 	}
 
 	protected List<String> addColumnDefs( final RdfCatalog catalog,
 			final RdfTableDef.Builder tableDefBuilder, final Resource tName )
 	{
+		final Model model = catalog.getResource().getModel();
 		final List<String> colNames = new ArrayList<String>();
 		final List<QuerySolution> solns = catalog.executeQuery(String.format(
 				SimpleBuilder.COLUMN_QUERY, tName));
@@ -72,7 +70,8 @@ public class SimpleBuilder implements SchemaBuilder
 			final RdfColumnDef.Builder builder = new RdfColumnDef.Builder();
 			final Resource cName = soln.getResource("cName");
 			colNames.add(cName.getLocalName());
-			builder.addQuerySegment(SimpleBuilder.COLUMN_SEGMENT)
+			String s = String.format( SimpleBuilder.COLUMN_SEGMENT, "%1$s", "%2$s", cName.getURI());
+			builder.addQuerySegment(s)
 					.setType(Types.VARCHAR)
 					.setNullable(DatabaseMetaData.columnNullable);
 			tableDefBuilder.addColumnDef(builder.build(model));
@@ -81,9 +80,10 @@ public class SimpleBuilder implements SchemaBuilder
 	}
 
 	@Override
-	public Set<Table> getTableDefs( final RdfCatalog catalog )
+	public Set<RdfTable> getTables( final RdfCatalog catalog )
 	{
-		final HashSet<Table> retval = new HashSet<Table>();
+		final Model model = catalog.getResource().getModel();
+		final HashSet<RdfTable> retval = new HashSet<RdfTable>();
 		final List<QuerySolution> solns = catalog
 				.executeQuery(SimpleBuilder.TABLE_QUERY);
 		final RdfSchema schema = catalog.getSchema(Catalog.DEFAULT_SCHEMA);
@@ -91,7 +91,8 @@ public class SimpleBuilder implements SchemaBuilder
 		{
 			final Resource tName = soln.getResource("tName");
 			final RdfTableDef.Builder builder = new RdfTableDef.Builder();
-			builder.addQuerySegment(SimpleBuilder.TABLE_SEGMENT);
+			String s = String.format( SimpleBuilder.TABLE_SEGMENT, "%1$s", tName.getURI());
+			builder.addQuerySegment(s);
 			final List<String> colNames = addColumnDefs(catalog, builder, tName);
 			final RdfTableDef tableDef = builder.build(model);
 			final RdfTable table = new RdfTable.Builder().setTableDef(tableDef)

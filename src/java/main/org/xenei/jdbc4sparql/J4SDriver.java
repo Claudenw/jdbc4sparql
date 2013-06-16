@@ -31,6 +31,7 @@ import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFLanguages;
 import org.xenei.jdbc4sparql.sparql.builders.SchemaBuilder;
 import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
+import org.xenei.jena.entities.MissingAnnotation;
 
 public class J4SDriver implements Driver
 {
@@ -140,6 +141,10 @@ public class J4SDriver implements Driver
 			throw new SQLException(e);
 		}
 		catch (final ClassNotFoundException e)
+		{
+			throw new SQLException(e);
+		}
+		catch (MissingAnnotation e)
 		{
 			throw new SQLException(e);
 		}

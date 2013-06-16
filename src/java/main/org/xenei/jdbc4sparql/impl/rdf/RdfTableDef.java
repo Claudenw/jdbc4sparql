@@ -68,7 +68,6 @@ public class RdfTableDef extends RdfNamespacedObject implements TableDef
 
 				if (primaryKey != null)
 				{
-
 					tableDef.addProperty(
 							builder.getProperty(typeClass, "primaryKey"),
 							primaryKey.getResource());
@@ -108,24 +107,22 @@ public class RdfTableDef extends RdfNamespacedObject implements TableDef
 						.getFQName(colDefClass));
 				tableDef.addProperty(p, lst);
 
-				lst = null;
-				for (final String seg : querySegments)
+				if (! querySegments.isEmpty())
 				{
-					final Literal l = model.createTypedLiteral(seg);
-					if (lst == null)
+					final String eol = System.getProperty("line.separator");
+					StringBuilder sb = new StringBuilder().append("{");
+					for (final String seg : querySegments)
 					{
-						lst = model.createList().with(l);
+						sb.append( seg ).append( eol );
 					}
-					else
-					{
-						lst.add(l);
-					}
-				}
+					sb.append( "}");
+						
 
-				final Property querySegmentLst = builder.getProperty(
+					final Property querySegmentProp = builder.getProperty(
 						RdfTableDef.class, "querySegments");
-				tableDef.addProperty(querySegmentLst, lst);
-				querySegments.clear();
+					tableDef.addLiteral( querySegmentProp,  sb.toString());
+					querySegments.clear();
+				}
 			}
 			try
 			{
@@ -316,25 +313,11 @@ public class RdfTableDef extends RdfNamespacedObject implements TableDef
 	}
 
 	@Predicate( impl = true )
-	public RDFNode getQuerySegments()
+	public String getQuerySegments()
 	{
 		throw new EntityManagerRequiredException();
 	}
-
-	public List<String> getQuerySegmentStrings()
-	{
-		if (querySegments == null)
-		{
-			querySegments = new ArrayList<String>();
-			final RDFList lst = getQuerySegments().as(RDFList.class);
-			for (final RDFNode node : lst.asJavaList())
-			{
-				querySegments.add(node.asLiteral().toString());
-			}
-		}
-		return querySegments;
-	}
-
+	
 	@Override
 	@Predicate( impl = true )
 	public Resource getResource()

@@ -140,26 +140,24 @@ public class RdfColumnDef implements ColumnDef
 				columnDef.addLiteral(
 						builder.getProperty(typeClass, "writable"), writable);
 
-				RDFList lst = null;
-
-				for (final String seg : querySegments)
+				
+				if (! querySegments.isEmpty())
 				{
-					final Literal l = model.createTypedLiteral(seg);
-					if (lst == null)
+					final String eol = System.getProperty("line.separator");
+					StringBuilder sb = new StringBuilder().append("{");
+					for (final String seg : querySegments)
 					{
-						lst = model.createList().with(l);
+						sb.append( seg ).append( eol );
 					}
-					else
-					{
-						lst.add(l);
-					}
+					sb.append( "}");
+						
+
+					final Property querySegmentProp = builder.getProperty(
+							typeClass, "querySegments");
+					columnDef.addLiteral( querySegmentProp,  sb.toString());
+					querySegments.clear();
 				}
-
-				final Property querySegmentLst = builder.getProperty(typeClass,
-						"querySegments");
-				columnDef.addProperty(querySegmentLst, lst);
-				querySegments.clear();
-
+	
 			}
 
 			final EntityManager entityManager = EntityManagerFactory
@@ -405,23 +403,9 @@ public class RdfColumnDef implements ColumnDef
 	}
 
 	@Predicate( impl = true )
-	public RDFNode getQuerySegments()
+	public String getQuerySegments()
 	{
 		throw new EntityManagerRequiredException();
-	}
-
-	public List<String> getQuerySegmentStrings()
-	{
-		if (querySegments == null)
-		{
-			querySegments = new ArrayList<String>();
-			final RDFList lst = getQuerySegments().as(RDFList.class);
-			for (final RDFNode node : lst.asJavaList())
-			{
-				querySegments.add(node.asLiteral().toString());
-			}
-		}
-		return querySegments;
 	}
 
 	@Override

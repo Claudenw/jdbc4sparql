@@ -17,9 +17,13 @@
  */
 package org.xenei.jdbc4sparql.sparql.parser;
 
-import com.hp.hpl.jena.graph.Node;
-import com.hp.hpl.jena.sparql.core.Var;
+import com.hp.hpl.jena.query.Query;
+import com.hp.hpl.jena.sparql.lang.sparql_11.ParseException;
+import com.hp.hpl.jena.sparql.lang.sparql_11.SPARQLParser11;
+import com.hp.hpl.jena.sparql.syntax.Element;
 
+import java.io.Reader;
+import java.io.StringReader;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -73,13 +77,6 @@ public interface SparqlParser
 	 */
 	static class Util
 	{
-		private static final int START = 0;
-		private static final int END = 1;
-		private static final String[] URI_MARKERS = { "<", ">" };
-		private static final String[] QUOT_MARKERS = { "\"'", "\"'" };
-		private static final String[] BLANK_MARKERS = { "[", "]" };
-		private static final String[] VAR_MARKERS = { "?$", " " };
-
 		/**
 		 * Get the defulat parser.
 		 * 
@@ -199,138 +196,25 @@ public interface SparqlParser
 		}
 
 		/**
-		 * Method to parse a single node from a string.
+		 * Parse a where clause into an element.
 		 * 
-		 * @param nodeStr
-		 *            The string.
-		 * @return Node.
+		 * @param qry
+		 *            The query.
+		 * @return The element
+		 * @throws ParseException
+		 *             on error.
 		 */
-		public static Node parseNode( final String nodeStr )
+		public static Element parse( final String qstr ) throws ParseException
 		{
-			final String s = nodeStr.trim();
-			if (Util.URI_MARKERS[Util.START].contains(s.substring(0, 1)))
-			{
-				return Node.createURI(s.substring(1, s.length() - 1));
-			}
-			else if (Util.BLANK_MARKERS[Util.START].contains(s.substring(0, 1)))
-			{
-				return Node.createAnon();
-			}
-			else if (Util.VAR_MARKERS[Util.START].contains(s.substring(0, 1)))
-			{
-				return Var.alloc(Node.createVariable(s.substring(1)));
-			}
-			else if (Util.QUOT_MARKERS[Util.START].contains(s.substring(0, 1)))
-			{
-				return Node.createLiteral(s.substring(1, s.length() - 1));
-			}
-			return Node.createLiteral(s);
-		}
+			final Query query = new Query();
 
-		/**
-		 * parse a query segment (textual triple) into three nodes strings.
-		 * 
-		 * @param segment
-		 * @return the list of node strings.
-		 */
-		public static List<String> parseQuerySegment( final String segment )
-		{
-			final String buffer = segment.trim() + " "; // space for var
-														// processing
-			final List<String> results = new ArrayList<String>();
-			int i = -1;
-			while (i < (buffer.length() - 1))
-			{
-				i++;
-				if (Util.BLANK_MARKERS[Util.START].indexOf(buffer.charAt(i)) > -1)
-				{
-					final int start = i;
-					while (Util.BLANK_MARKERS[Util.END].indexOf(buffer
-							.charAt(i)) == -1)
-					{
-						i++;
-						if (i == buffer.length())
-						{
-							throw new IllegalArgumentException(buffer
-									+ " is missig a closing blank marker");
-						}
-					}
-					results.add(buffer.substring(start, i + 1));
-				}
-				else if (Util.URI_MARKERS[Util.START].indexOf(buffer.charAt(i)) > -1)
-				{
-					final int start = i;
-					while (Util.URI_MARKERS[Util.END].indexOf(buffer.charAt(i)) == -1)
-					{
-						i++;
-						if (i == buffer.length())
-						{
-							throw new IllegalArgumentException(buffer
-									+ " is missig a closing uri marker");
-						}
-					}
-					results.add(buffer.substring(start, i + 1));
-				}
-				else if (Util.QUOT_MARKERS[Util.START]
-						.indexOf(buffer.charAt(i)) > -1)
-				{
-					final int start = i;
-					final StringBuffer stack = new StringBuffer();
-					stack.append(buffer.charAt(i));
-					while (stack.length() > 0)
-					{
-						i++;
-						if (i == buffer.length())
-						{
-							throw new IllegalArgumentException(buffer
-									+ " is missig a closing quote marker ["
-									+ stack.charAt(stack.length() - 1));
-						}
-						if (buffer.charAt(i) == stack
-								.charAt(stack.length() - 1))
-						{
-							stack.deleteCharAt(stack.length() - 1);
-						}
-						else
-						{
-							if (Util.QUOT_MARKERS[Util.START].indexOf(buffer
-									.charAt(i)) > -1)
-							{
-								stack.append(buffer.charAt(i));
-							}
-						}
+			final Reader in = new StringReader(qstr);
+			final SPARQLParser11 parser = new SPARQLParser11(in);
+			query.setStrict(true);
+			parser.setQuery(query);
+			parser.WhereClause();
 
-					}
-					results.add(buffer.substring(start, i + 1));
-				}
-				else
-				{
-					// must be a literal or a var
-					if (buffer.charAt(i) != ' ')
-					{
-						final int start = i;
-						i++;
-						if (i == buffer.length())
-						{
-							throw new IllegalArgumentException(buffer
-									+ " is missig a closing variable marker");
-						}
-						while (buffer.charAt(i) != ' ')
-						{
-							i++;
-							if (i == buffer.length())
-							{
-								throw new IllegalArgumentException(
-										buffer
-												+ " is missig a closing variable marker");
-							}
-						}
-						results.add(buffer.substring(start, i));
-					}
-				}
-
-			}
-			return results;
+			return query.getQueryPattern();
 		}
 	}
 

@@ -91,7 +91,7 @@ public class ConfigBuilder
 		final SparqlSchema schema = new SparqlSchema(catalog,
 				"http://example.com/", "schema");
 		catalog.addSchema(schema);
-		schema.addTableDefs(builder.getTableDefs(catalog));
+		schema.addTableDefs(builder.getTables(catalog));
 		final ConfigSerializer cs = new ConfigSerializer();
 		cs.add(catalog);
 		cs.save(new ModelWriter(new File(cfgUrl.getPath())));

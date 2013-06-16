@@ -30,6 +30,7 @@ import org.apache.commons.discovery.resource.classes.DiscoverClasses;
 import org.apache.commons.discovery.resource.names.DiscoverServiceNames;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
+import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 
 /**
  * An interface that defines classes that builds schemas.
@@ -208,5 +209,5 @@ public interface SchemaBuilder
 		}
 	}
 
-	Set<Table> getTableDefs( final RdfCatalog catalog );
+	Set<RdfTable> getTables( final RdfCatalog catalog );
 }

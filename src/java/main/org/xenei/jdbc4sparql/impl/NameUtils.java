@@ -46,6 +46,9 @@ public class NameUtils
 
 	public static String getDBName( final Column column )
 	{
+		String sName = column.getSchema().getName(); // FIXME remove this
+		String tName = column.getTable().getName();
+		String name = column.getName();
 		return NameUtils.getDBName(column.getSchema().getName(), column
 				.getTable().getName(), column.getName());
 	}
