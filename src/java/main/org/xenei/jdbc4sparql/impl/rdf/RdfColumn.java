@@ -2,6 +2,7 @@ package org.xenei.jdbc4sparql.impl.rdf;
 
 import com.hp.hpl.jena.graph.Node;
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.ResourceFactory;
 import com.hp.hpl.jena.shared.Lock;
@@ -10,6 +11,8 @@ import com.hp.hpl.jena.sparql.syntax.Element;
 import com.hp.hpl.jena.vocabulary.RDFS;
 
 import java.sql.DatabaseMetaData;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
@@ -19,6 +22,7 @@ import org.xenei.jdbc4sparql.iface.ColumnDef;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.impl.NameUtils;
+import org.xenei.jdbc4sparql.impl.rdf.RdfColumnDef.Builder;
 import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 import org.xenei.jena.entities.EntityManager;
 import org.xenei.jena.entities.EntityManagerFactory;
@@ -30,13 +34,42 @@ import org.xenei.jena.entities.annotations.Subject;
 @Subject( namespace = "http://org.xenei.jdbc4sparql/entity/Column#" )
 public class RdfColumn extends RdfNamespacedObject implements Column
 {
+	private RdfTable table;
+	
 	public static class Builder implements Column
 	{
 		private ColumnDef columnDef;
 		private Table table;
 		private String name;
 		private final Class<? extends RdfColumn> typeClass = RdfColumn.class;
+		private final List<String> querySegments = new ArrayList<String>();
 
+		public static RdfColumn fixupTable( RdfTable table, RdfColumn column )
+		{
+			column.table = table;
+			//Property p = ResourceFactory.createProperty( ResourceBuilder.getNamespace( RdfTable.class ), "tables" );
+			//schema.getResource().addProperty( p, table.getResource());
+			return column;
+		}
+		
+		private String getQueryStrFmt() {
+			final String eol = System.getProperty("line.separator");
+			StringBuilder sb = new StringBuilder().append("{").append( eol );
+			if (! querySegments.isEmpty())
+			{
+			
+				
+				for (final String seg : querySegments)
+				{
+					sb.append( seg ).append( eol );
+				}
+			} else {
+				sb.append( "# no segment provided" ).append( eol );
+			}
+			sb.append( "}");
+			return sb.toString();
+		}
+		
 		public RdfColumn build( final Model model )
 		{
 			checkBuildState();
@@ -60,12 +93,40 @@ public class RdfColumn extends RdfNamespacedObject implements Column
 						table.getResource());
 
 			}
+			
+			if (! querySegments.isEmpty())
+			{
+				final String eol = System.getProperty("line.separator");
+				StringBuilder sb = new StringBuilder().append("{");
+				for (final String seg : querySegments)
+				{
+					sb.append( seg ).append( eol );
+				}
+				sb.append( "}");
+					
+
+				final Property querySegmentProp = builder.getProperty(
+						typeClass, "querySegmentFmt");
+				column.addLiteral( querySegmentProp,  getQueryStrFmt());
+				querySegments.clear();
+			}
 
 			final EntityManager entityManager = EntityManagerFactory
 					.getEntityManager();
 			try
 			{
-				return entityManager.read(column, typeClass);
+				RdfColumn retval = entityManager.read(column, typeClass);
+				RdfTable tbl = null;
+				if (table instanceof RdfTable.Builder)
+				{
+					tbl = ((RdfTable.Builder)table).build( model );
+				}
+				else if (table instanceof RdfTable) {
+					tbl = (RdfTable) table;
+				} else {
+					throw new IllegalArgumentException( "table not an rdf table or builder");
+				}
+				return Builder.fixupTable(tbl, retval);
 			}
 			catch (final MissingAnnotation e)
 			{
@@ -89,8 +150,24 @@ public class RdfColumn extends RdfNamespacedObject implements Column
 			{
 				throw new IllegalStateException("Name must be set");
 			}
+			
+			if (querySegments.size() == 0)
+			{
+				querySegments.add("# no query segments provided");
+			}
 		}
 
+		/**
+		 * Add a query segment where  %1$s = tableVar, and %2$s=columnVar
+		 * @param querySegment
+		 * @return
+		 */
+		public Builder addQuerySegment( final String querySegment )
+		{
+			querySegments.add(querySegment);
+			return this;
+		}
+		
 		@Override
 		public Catalog getCatalog()
 		{
@@ -107,7 +184,7 @@ public class RdfColumn extends RdfNamespacedObject implements Column
 		{
 			final StringBuilder sb = new StringBuilder()
 					.append(getColumnDef().getResource().getURI()).append(" ")
-					.append(name);
+					.append(name).append( " " ).append( getQueryStrFmt() );
 			return String.format("%s/instance/UUID-%s",
 					ResourceBuilder.getFQName(RdfColumn.class),
 					UUID.nameUUIDFromBytes(sb.toString().getBytes()));
@@ -189,6 +266,12 @@ public class RdfColumn extends RdfNamespacedObject implements Column
 	{
 		return getSchema().getCatalog();
 	}
+	
+	@Predicate( impl = true )
+	public String getQuerySegmentFmt()
+	{
+		throw new EntityManagerRequiredException();
+	}
 
 	@Override
 	@Predicate( impl = true )
@@ -206,7 +289,7 @@ public class RdfColumn extends RdfNamespacedObject implements Column
 
 	public Element getQuerySegments( final Node tableVar, final Node columnVar )
 	{
-		String fmt = getColumnDef().getQuerySegments();
+		String fmt = getQuerySegmentFmt();
 		if (fmt != null)
 		{
 
@@ -232,10 +315,9 @@ public class RdfColumn extends RdfNamespacedObject implements Column
 	}
 
 	@Override
-	@Predicate( impl = true )
 	public RdfSchema getSchema()
 	{
-		throw new EntityManagerRequiredException();
+		return getTable().getSchema();
 	}
 
 	@Override
@@ -251,10 +333,9 @@ public class RdfColumn extends RdfNamespacedObject implements Column
 	}
 
 	@Override
-	@Predicate( impl = true )
 	public RdfTable getTable()
 	{
-		throw new EntityManagerRequiredException();
+		return table;
 	}
 
 	public boolean isOptional()

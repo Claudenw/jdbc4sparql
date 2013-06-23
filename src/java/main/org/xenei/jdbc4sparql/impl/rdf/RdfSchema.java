@@ -1,6 +1,7 @@
 package org.xenei.jdbc4sparql.impl.rdf;
 
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.ResourceFactory;
 import com.hp.hpl.jena.shared.Lock;
@@ -27,9 +28,17 @@ public class RdfSchema extends RdfNamespacedObject implements Schema
 	public static class Builder implements Schema
 	{
 		private String name;
-		private Catalog catalog;
+		private RdfCatalog catalog;
 		private final Set<Table> tables = new HashSet<Table>();
 
+		public static RdfSchema fixupCatalog( RdfCatalog catalog, RdfSchema schema )
+		{
+			schema.catalog = catalog;
+			Property p = ResourceFactory.createProperty( ResourceBuilder.getNamespace( RdfCatalog.class ), "schemas" );
+			catalog.getResource().addProperty( p, schema.getResource());
+			return schema;
+		}
+		
 		public RdfSchema build( final Model model )
 		{
 			checkBuildState();
@@ -49,9 +58,6 @@ public class RdfSchema extends RdfNamespacedObject implements Schema
 			{
 				schema = builder.getResource(fqName, typeClass);
 				schema.addLiteral(RDFS.label, name);
-				
-				schema.addProperty(builder.getProperty(typeClass, "catalog"),
-						catalog.getResource());
 
 				for (final Table tbl : tables)
 				{
@@ -62,11 +68,9 @@ public class RdfSchema extends RdfNamespacedObject implements Schema
 
 			try
 			{
-				final RdfSchema retval = entityManager.read(schema,
+				RdfSchema retval = entityManager.read(schema,
 						RdfSchema.class);
-				catalog.getResource().addProperty(
-						builder.getProperty(RdfCatalog.class, "schemas"),
-						schema);
+				retval = fixupCatalog( catalog, retval );
 				model.register(retval.new ChangeListener());
 				return retval;
 			}
@@ -141,7 +145,7 @@ public class RdfSchema extends RdfNamespacedObject implements Schema
 			return tables;
 		}
 
-		public Builder setCatalog( final Catalog catalog )
+		public Builder setCatalog( final RdfCatalog catalog )
 		{
 			this.catalog = catalog;
 			return this;
@@ -191,6 +195,8 @@ public class RdfSchema extends RdfNamespacedObject implements Schema
 
 	}
 
+	private RdfCatalog catalog;
+	
 	private Set<RdfTable> tableList;
 
 	@Predicate( impl = true )
@@ -226,10 +232,10 @@ public class RdfSchema extends RdfNamespacedObject implements Schema
 	}
 
 	@Override
-	@Predicate( impl = true )
+
 	public RdfCatalog getCatalog()
 	{
-		throw new EntityManagerRequiredException();
+		return catalog;
 	}
 
 	@Override
@@ -254,10 +260,21 @@ public class RdfSchema extends RdfNamespacedObject implements Schema
 	}
 
 	@Override
-	@Predicate( impl = true, type = RdfTable.class )
+	@Predicate( impl = true, type = RdfTable.class, postExec="fixupTables" )
 	public Set<RdfTable> getTables()
 	{
 		throw new EntityManagerRequiredException();
+	}
+	
+	public Set<RdfTable> fixupTables( Set<RdfTable> tables )
+	{
+		Set<RdfTable> tableList = new HashSet<RdfTable>();
+		for (RdfTable table : tables )
+		{
+			tableList.add( RdfTable.Builder.fixupSchema(this, table));
+		}
+		this.tableList = tableList;
+		return tableList;
 	}
 
 	private Set<RdfTable> readTables()

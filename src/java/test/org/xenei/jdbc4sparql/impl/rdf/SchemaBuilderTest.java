@@ -17,7 +17,7 @@ public class SchemaBuilderTest
 
 	private Model model;
 	private RdfTable.Builder tableBldr;
-	private Catalog mockCatalog;
+	private RdfCatalog mockCatalog;
 
 	@Before
 	public void setUp() throws Exception
@@ -29,7 +29,7 @@ public class SchemaBuilderTest
 		tableBldr = new RdfTable.Builder().setName("testTable")
 				.setTableDef(builder.build(model)).setColumn(0, "StringCol")
 				.setColumn(1, "IntCol");
-		mockCatalog = Mockito.mock(Catalog.class);
+		mockCatalog = Mockito.mock(RdfCatalog.class);
 		Mockito.when(mockCatalog.getResource()).thenReturn(
 				model.createResource("http://example.com/mockCatalog"));
 	}
@@ -46,7 +46,7 @@ public class SchemaBuilderTest
 		final RdfSchema.Builder builder = new RdfSchema.Builder().setName("schema")
 				.setCatalog(mockCatalog);
 
-		final Schema schema = builder.build(model);
+		final RdfSchema schema = builder.build(model);
 
 		tableBldr.setSchema(schema).setType("test table").build(model);
 
@@ -63,7 +63,7 @@ public class SchemaBuilderTest
 		final RdfSchema.Builder builder = new RdfSchema.Builder().setName("schema")
 				.setCatalog(mockCatalog);
 
-		final Schema schema = builder.build(model);
+		final RdfSchema schema = builder.build(model);
 		Assert.assertEquals(0, schema.getTables().size());
 
 		tableBldr.setSchema(schema).setType("Test table").build(model);

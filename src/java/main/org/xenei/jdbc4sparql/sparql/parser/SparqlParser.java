@@ -207,7 +207,7 @@ public interface SparqlParser
 		public static Element parse( final String qstr ) throws ParseException
 		{
 			final Query query = new Query();
-
+			
 			final Reader in = new StringReader(qstr);
 			final SPARQLParser11 parser = new SPARQLParser11(in);
 			query.setStrict(true);

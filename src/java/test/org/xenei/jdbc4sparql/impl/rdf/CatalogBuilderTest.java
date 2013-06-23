@@ -40,7 +40,7 @@ public class CatalogBuilderTest
 	{
 		final RdfCatalog.Builder builder = new RdfCatalog.Builder().setName("catalog");
 
-		final Catalog catalog = builder.build(model);
+		final RdfCatalog catalog = builder.build(model);
 		Assert.assertEquals("catalog", catalog.getName());
 		Assert.assertNotNull(catalog.getSchemas());
 		Assert.assertEquals(1, catalog.getSchemas().size());
@@ -70,7 +70,7 @@ public class CatalogBuilderTest
 	{
 		final RdfCatalog.Builder builder = new RdfCatalog.Builder().setName("catalog");
 
-		final Catalog catalog = builder.build(model);
+		final RdfCatalog catalog = builder.build(model);
 
 		schemaBldr.setCatalog(catalog).build(model);
 
@@ -84,7 +84,7 @@ public class CatalogBuilderTest
 	{
 		final RdfCatalog.Builder builder = new RdfCatalog.Builder().setName("catalog");
 
-		final Catalog catalog = builder.build(model);
+		final RdfCatalog catalog = builder.build(model);
 
 		schemaBldr.setCatalog(catalog).build(model);
 
@@ -100,7 +100,7 @@ public class CatalogBuilderTest
 	{
 		final RdfCatalog.Builder builder = new RdfCatalog.Builder().setName("catalog");
 
-		final Catalog catalog = builder.build(model);
+		final RdfCatalog catalog = builder.build(model);
 
 		// should contain default schema
 		Set<? extends Schema> schemas = catalog.getSchemas();

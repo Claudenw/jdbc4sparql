@@ -27,6 +27,7 @@ import org.xenei.jdbc4sparql.iface.NameFilter;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.impl.NameUtils;
+import org.xenei.jdbc4sparql.impl.rdf.RdfTableDef.Builder;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 import org.xenei.jdbc4sparql.sparql.SparqlResultSet;
 import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
@@ -42,12 +43,53 @@ public class RdfTable extends RdfNamespacedObject implements Table
 {
 	public static class Builder implements Table
 	{
+		private String remarks = "";
 		private RdfTableDef tableDef;
 		private String name;
-		private Schema schema;
+		private RdfSchema schema;
 		private RdfColumn.Builder[] columns;
 		private String type = "SPARQL TABLE";
 		private final Class<? extends RdfTable> typeClass = RdfTable.class;
+		private final List<String> querySegments = new ArrayList<String>();
+
+		/**
+		 * Add a string format where $1%s is the table name.
+		 * @param querySegment
+		 * @return
+		 */
+		public Builder addQuerySegment( final String querySegment )
+		{
+			querySegments.add(querySegment);
+			return this;
+		}
+		
+		public static RdfTable fixupSchema( RdfSchema schema, RdfTable table )
+		{
+			table.schema = schema;
+			Property p = ResourceFactory.createProperty( ResourceBuilder.getNamespace( RdfSchema.class ), "tables" );
+			schema.getResource().addProperty( p, table.getResource());
+			return table;
+		}
+		
+		private String getQueryStrFmt() {
+			final String eol = System.getProperty("line.separator");
+			StringBuilder sb = new StringBuilder().append("{").append(eol);
+			
+			if (! querySegments.isEmpty())
+			{
+				
+				for (final String seg : querySegments)
+				{
+					sb.append( seg ).append( eol );
+				}
+			}
+			else
+			{
+				sb.append( "# no query statements provided ").append( eol );
+			}
+			sb.append( "}");
+			return sb.toString();
+		}
 
 		public RdfTable build( final Model model )
 		{
@@ -73,18 +115,28 @@ public class RdfTable extends RdfNamespacedObject implements Table
 				table.addProperty(builder.getProperty(typeClass, "tableDef"),
 						tableDef.getResource());
 
-				table.addProperty(builder.getProperty(typeClass, "schema"),
-						schema.getResource());
-
 				table.addLiteral(builder.getProperty(typeClass, "type"), type);
 
+				table.addLiteral(builder.getProperty(typeClass, "remarks"), type);
+				
+				if (! querySegments.isEmpty())
+				{
+					final Property querySegmentProp = builder.getProperty(
+						RdfTable.class, "querySegmentFmt");
+					table.addLiteral( querySegmentProp,  getQueryStrFmt() );
+					querySegments.clear();
+				}
+				
 				schema.getResource().addProperty(
 						builder.getProperty(RdfSchema.class, "tables"), table);
+				
+				
 			}
 
 			try
 			{
 				final RdfTable retval = entityManager.read(table, typeClass);
+				retval.schema = schema;
 				// add the column names
 				RDFList lst = null;
 				for (final RdfColumn.Builder bldr : columns)
@@ -144,6 +196,10 @@ public class RdfTable extends RdfNamespacedObject implements Table
 							"column %s must be set", i));
 				}
 			}
+			if (querySegments.size() == 0)
+			{
+				querySegments.add("# no query segments provided");
+			}
 		}
 
 		@Override
@@ -165,7 +221,7 @@ public class RdfTable extends RdfNamespacedObject implements Table
 		}
 
 		@Override
-		public Column getColumn( final int idx )
+		public RdfColumn.Builder getColumn( final int idx )
 		{
 			return columns[idx];
 		}
@@ -225,7 +281,7 @@ public class RdfTable extends RdfNamespacedObject implements Table
 		{
 			final StringBuilder sb = new StringBuilder()
 					.append(schema.getResource().getURI()).append(" ")
-					.append(name);
+					.append(name).append( " " ).append( getQueryStrFmt() );
 
 			return String
 					.format("%s/instance/N%s", ResourceBuilder
@@ -326,10 +382,21 @@ public class RdfTable extends RdfNamespacedObject implements Table
 			return this;
 		}
 
-		public Builder setSchema( final Schema schema )
+		public Builder setSchema( final RdfSchema schema )
 		{
 			this.schema = schema;
 			return this;
+		}
+		
+		public Builder setRemarks( final String remarks )
+		{
+			this.remarks = remarks;
+			return this;
+		}
+		
+		public String getRemarks()
+		{
+			return remarks;
 		}
 
 		public Builder setTableDef( final RdfTableDef tableDef )
@@ -349,7 +416,7 @@ public class RdfTable extends RdfNamespacedObject implements Table
 
 	private List<RdfColumn> columns;
 	private RdfTableDef tableDef;
-
+    private RdfSchema schema;
 	private SparqlQueryBuilder queryBuilder;
 
 	@Override
@@ -383,6 +450,12 @@ public class RdfTable extends RdfNamespacedObject implements Table
 		}
 	}
 
+	@Predicate( impl = true )
+	public String getQuerySegmentFmt()
+	{
+		throw new EntityManagerRequiredException();
+	}
+	
 	@Override
 	public NameFilter<Column> findColumns( final String columnNamePattern )
 	{
@@ -460,6 +533,13 @@ public class RdfTable extends RdfNamespacedObject implements Table
 		throw new EntityManagerRequiredException();
 	}
 
+	@Override
+	@Predicate( impl = true )
+	public String getRemarks()
+	{
+		throw new EntityManagerRequiredException();
+	}
+	
 	public Query getQuery() throws SQLException
 	{
 		if (queryBuilder == null)
@@ -474,13 +554,21 @@ public class RdfTable extends RdfNamespacedObject implements Table
 				queryBuilder.addColumn(col);
 				queryBuilder.addVar(col, col.getName());
 			}
+			if (tableDef.getSortKey() != null)
+			{
+				queryBuilder.setOrderBy(tableDef.getSortKey());
+			}
+			else if (tableDef.getPrimaryKey() != null)
+			{
+				queryBuilder.setOrderBy( tableDef.getPrimaryKey());
+			}
 		}
 		return queryBuilder.build();
 	}
 
 	public Element getQuerySegments( final Node tableVar )
 	{
-		String fmt = getTableDef().getQuerySegments();
+		String fmt = getQuerySegmentFmt();
 		if (fmt != null)
 		{
 			try{
@@ -512,10 +600,9 @@ public class RdfTable extends RdfNamespacedObject implements Table
 	}
 
 	@Override
-	@Predicate( impl = true )
 	public RdfSchema getSchema()
 	{
-		throw new EntityManagerRequiredException();
+		return schema;
 	}
 
 	public String getSolutionName( final int idx )
@@ -582,7 +669,8 @@ public class RdfTable extends RdfNamespacedObject implements Table
 			{
 				try
 				{
-					columns.add(entityManager.read(n, RdfColumn.class));
+					RdfColumn col = entityManager.read(n, RdfColumn.class);
+					columns.add(RdfColumn.Builder.fixupTable(this, col)	);
 				}
 				catch (final MissingAnnotation e)
 				{

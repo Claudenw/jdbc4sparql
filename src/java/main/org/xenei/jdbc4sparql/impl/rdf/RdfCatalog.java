@@ -331,10 +331,21 @@ public class RdfCatalog implements Catalog
 	}
 
 	@Override
-	@Predicate( impl = true, type = RdfSchema.class )
+	@Predicate( impl = true, type = RdfSchema.class, postExec="fixupSchemas" )
 	public Set<RdfSchema> getSchemas()
 	{
 		throw new EntityManagerRequiredException();
+	}
+	
+	public Set<RdfSchema> fixupSchemas( Set<RdfSchema> schemas )
+	{
+		Set<RdfSchema> schemaList = new HashSet<RdfSchema>();
+		for (RdfSchema schema : schemas )
+		{
+			schemaList.add( RdfSchema.Builder.fixupCatalog(this, schema));
+		}
+		this.schemaList = schemaList;
+		return schemaList;
 	}
 
 	@Predicate( impl=true )

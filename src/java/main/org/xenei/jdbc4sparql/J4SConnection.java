@@ -147,7 +147,7 @@ public class J4SConnection implements Connection
 		close();
 	}
 
-	public Catalog addCatalog( final RdfCatalog.Builder catalogBuilder )
+	public RdfCatalog addCatalog( final RdfCatalog.Builder catalogBuilder )
 	{
 		Model model = getDataset().getNamedModel( catalogBuilder.getName() );
 		Model dataModel = catalogBuilder.getLocalModel();
@@ -163,7 +163,7 @@ public class J4SConnection implements Connection
 				catalogBuilder.setLocalModel(dataModel);
 			}
 		}
-		Catalog cat =  catalogBuilder.build(model);
+		RdfCatalog cat =  catalogBuilder.build(model);
 		catalogMap.put(cat.getName(), cat);
 		return cat;
 	}
@@ -434,7 +434,7 @@ public class J4SConnection implements Connection
 		return currentSchema;
 	}
 
-	SparqlParser getSparqlParser()
+	public SparqlParser getSparqlParser()
 	{
 		return sparqlParser;
 	}

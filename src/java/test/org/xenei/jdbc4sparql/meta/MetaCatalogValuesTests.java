@@ -10,6 +10,7 @@ import com.hp.hpl.jena.rdf.model.Literal;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -17,21 +18,28 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
+import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
+import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
+import org.xenei.jdbc4sparql.sparql.SparqlResultSet;
 
 public class MetaCatalogValuesTests
 {
 	private Model model;
-	private final String queryString = "SELECT ?tbl ?colName WHERE { ?tbl a <http://org.xenei.jdbc4sparql/entity/Table> ;"
+	private RdfCatalog catalog;
+	private final String queryString = "PREFIX  rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> "
+			+ "SELECT ?tbl ?colName WHERE { ?tbl a <http://org.xenei.jdbc4sparql/entity/Table> ;"
 			+ "<http://www.w3.org/2000/01/rdf-schema#label> '%s' ;"
-			+ "<http://org.xenei.jdbc4sparql/entity/Table#column> ?col ."
-			+ "?col <http://www.w3.org/2000/01/rdf-schema#label> ?colName ;"
+			+ "<http://org.xenei.jdbc4sparql/entity/Table#column> ?list ."
+			+ "?list rdf:rest*/rdf:first ?column ."
+			+ "?column <http://www.w3.org/2000/01/rdf-schema#label> ?colName ; "
 			+ " }";
-
+	
 	@Before
 	public void setup()
 	{
 		model = ModelFactory.createDefaultModel();
-		MetaCatalogBuilder.getInstance(model);
+		catalog = (RdfCatalog) MetaCatalogBuilder.getInstance(model);
 	}
 
 	@After
@@ -212,12 +220,24 @@ public class MetaCatalogValuesTests
 	}
 
 	@Test
-	public void testTablesTable()
+	public void testTablesTable() throws SQLException
 	{
 		final String[] names = { "TABLE_CAT", "TABLE_SCHEM", "TABLE_NAME",
 				"TABLE_TYPE", "REMARKS", "TYPE_CAT", "TYPE_SCHEM", "TYPE_NAME",
 				"SELF_REFERENCING_COL_NAME", "REF_GENERATION" };
 		verifyNames(MetaCatalogBuilder.TABLES_TABLE, names);
+		
+		RdfSchema schema = catalog.getSchema( MetaCatalogBuilder.SCHEMA_LOCAL_NAME );
+		RdfTable table = schema.getTable(MetaCatalogBuilder.TABLES_TABLE);
+		SparqlResultSet rs = table.getResultSet();
+		Assert.assertTrue( rs.first() );
+		while ( ! rs.isAfterLast() )
+		{
+			System.out.println( String.format( "%s : %s : %s", rs.getString( "TABLE_CAT"), rs.getString( "TABLE_SCHEM"), rs.getString("TABLE_NAME")));
+			rs.next();
+		}
+		
+		
 	}
 
 	@Test

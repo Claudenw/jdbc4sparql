@@ -9,7 +9,6 @@ import com.hp.hpl.jena.rdf.model.Resource;
 
 import java.sql.DatabaseMetaData;
 import java.sql.Types;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -74,17 +73,11 @@ public class RdfColumnDef implements ColumnDef
 
 		private final Class<? extends RdfColumnDef> typeClass = RdfColumnDef.class;
 
-		private final List<String> querySegments = new ArrayList<String>();
-
 		public Builder()
 		{
 		}
 
-		public Builder addQuerySegment( final String querySegment )
-		{
-			querySegments.add(querySegment);
-			return this;
-		}
+		
 
 		public ColumnDef build( final Model model )
 		{
@@ -139,24 +132,6 @@ public class RdfColumnDef implements ColumnDef
 						searchable);
 				columnDef.addLiteral(
 						builder.getProperty(typeClass, "writable"), writable);
-
-				
-				if (! querySegments.isEmpty())
-				{
-					final String eol = System.getProperty("line.separator");
-					StringBuilder sb = new StringBuilder().append("{");
-					for (final String seg : querySegments)
-					{
-						sb.append( seg ).append( eol );
-					}
-					sb.append( "}");
-						
-
-					final Property querySegmentProp = builder.getProperty(
-							typeClass, "querySegments");
-					columnDef.addLiteral( querySegmentProp,  sb.toString());
-					querySegments.clear();
-				}
 	
 			}
 
@@ -177,10 +152,6 @@ public class RdfColumnDef implements ColumnDef
 			if (type == null)
 			{
 				throw new IllegalStateException("type must be set");
-			}
-			if (querySegments.size() == 0)
-			{
-				querySegments.add("# no query segments provided");
 			}
 		}
 
@@ -398,12 +369,6 @@ public class RdfColumnDef implements ColumnDef
 	@Override
 	@Predicate( impl = true )
 	public int getPrecision()
-	{
-		throw new EntityManagerRequiredException();
-	}
-
-	@Predicate( impl = true )
-	public String getQuerySegments()
 	{
 		throw new EntityManagerRequiredException();
 	}

@@ -420,5 +420,4 @@ public class J4SDatabaseMetaDataTest
 		columnChecking(MetaCatalogBuilder.VERSION_COLUMNS_TABLE, names);
 	}
 	
-	
 }

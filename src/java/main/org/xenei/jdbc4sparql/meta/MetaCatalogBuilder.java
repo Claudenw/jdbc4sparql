@@ -26,12 +26,14 @@ import java.sql.Types;
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.ColumnDef;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
+import org.xenei.jdbc4sparql.impl.rdf.RdfColumn;
 import org.xenei.jdbc4sparql.impl.rdf.RdfColumnDef;
 import org.xenei.jdbc4sparql.impl.rdf.RdfKey;
 import org.xenei.jdbc4sparql.impl.rdf.RdfKeySegment;
 import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTableDef;
+import org.xenei.jdbc4sparql.impl.rdf.ResourceBuilder;
 
 public class MetaCatalogBuilder
 {
@@ -69,7 +71,7 @@ public class MetaCatalogBuilder
 	{
 		final RdfCatalog cat = new RdfCatalog.Builder()
 				.setName(MetaCatalogBuilder.LOCAL_NAME)
-				.setLocalModel(ModelFactory.createDefaultModel()).build(model);
+				.setLocalModel(model).build(model);
 
 		final RdfSchema schema = new RdfSchema.Builder().setCatalog(cat)
 				.setName(MetaCatalogBuilder.SCHEMA_LOCAL_NAME).build(model);
@@ -830,15 +832,43 @@ public class MetaCatalogBuilder
 												.build(model)).setUnique(false)
 								.build(model)).build(model);
 
-		new RdfTable.Builder().setType(MetaCatalogBuilder.TABLE_TYPE)
+		String tblFmt = "%1$s"+String.format(" a <%s> .", ResourceBuilder.getFQName(RdfTable.class));
+		RdfTable.Builder builder = new RdfTable.Builder().setType(MetaCatalogBuilder.TABLE_TYPE)
 				.setName(MetaCatalogBuilder.TABLES_TABLE).setSchema(schema)
-				.setTableDef(tableDef).setColumn(0, "TABLE_CAT")
+				.setTableDef(tableDef)
+				.addQuerySegment( tblFmt )
+				.setColumn(0, "TABLE_CAT")
 				.setColumn(1, "TABLE_SCHEM").setColumn(2, "TABLE_NAME")
 				.setColumn(3, "TABLE_TYPE").setColumn(4, "REMARKS")
 				.setColumn(5, "TYPE_CAT").setColumn(6, "TYPE_SCHEM")
 				.setColumn(7, "TYPE_NAME")
 				.setColumn(8, "SELF_REFERENCING_COL_NAME")
-				.setColumn(9, "REF_GENERATION").build(model);
+				.setColumn(9, "REF_GENERATION");
+		RdfColumn.Builder colBuilder = builder.getColumn(0);
+		colBuilder.addQuerySegment("_:schema a <http://org.xenei.jdbc4sparql/entity/Schema> ;")
+		 .addQuerySegment("  <http://org.xenei.jdbc4sparql/entity/Schema#tables> %1$s ." )
+		 .addQuerySegment( "_:catalog <http://org.xenei.jdbc4sparql/entity/Catalog#schemas> _:schema ;" ) 
+		 .addQuerySegment("  <http://www.w3.org/2000/01/rdf-schema#label>  %2$s ." );
+
+		colBuilder = builder.getColumn(1);
+		colBuilder.addQuerySegment("_:schema <http://org.xenei.jdbc4sparql/entity/Schema#tables> %1$s ;" )
+		 .addQuerySegment("  <http://www.w3.org/2000/01/rdf-schema#label> %2$s ." );
+		
+		colBuilder = builder.getColumn(2);
+		colBuilder.addQuerySegment("%1$s  <http://www.w3.org/2000/01/rdf-schema#label> %2$s ." );
+		
+		colBuilder = builder.getColumn(3);
+		colBuilder.addQuerySegment("%1$s  <http://org.xenei.jdbc4sparql/entity/Table#type> %2$s " );
+
+		colBuilder = builder.getColumn(4);
+		colBuilder.addQuerySegment("%1$s <http://org.xenei.jdbc4sparql/entity/Table#remarks> %2$s " );
+
+		for (int i=5;i<10;i++)
+		{
+			colBuilder = builder.getColumn(i);
+			colBuilder.addQuerySegment("%1$s <http://org.xenei.jdbc4sparql/entity/Table#null> %2$s " );
+		}
+		builder.build(model);
 
 	}
 

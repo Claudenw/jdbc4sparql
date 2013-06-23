@@ -27,7 +27,7 @@ public class TableBuilderTest
 
 	private Model model;
 	private RdfTableDef tableDef;
-	private Schema mockSchema;
+	private RdfSchema mockSchema;
 
 	@Before
 	public void setUp() throws Exception
@@ -37,7 +37,7 @@ public class TableBuilderTest
 				RdfColumnDef.Builder.getStringBuilder().build(model)).addColumnDef(
 						RdfColumnDef.Builder.getIntegerBuilder().build(model));
 		tableDef = builder.build(model);
-		mockSchema = Mockito.mock(Schema.class);
+		mockSchema = Mockito.mock(RdfSchema.class);
 		Mockito.when(mockSchema.getResource()).thenReturn(
 				model.createResource("http://example.com/mockSchema"));
 

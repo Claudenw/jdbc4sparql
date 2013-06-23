@@ -188,4 +188,6 @@ public interface Table extends NamedObject, ResourceWrapper
 	 */
 	String getType();
 
+	String getRemarks();
+
 }

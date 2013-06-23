@@ -32,17 +32,10 @@ public class RdfTableDef extends RdfNamespacedObject implements TableDef
 		private RdfTableDef superTable;
 		private final Class<? extends RdfTableDef> typeClass = RdfTableDef.class;
 		private final Class<? extends RdfColumnDef> colDefClass = RdfColumnDef.class;
-		private final List<String> querySegments = new ArrayList<String>();
-
+		
 		public Builder addColumnDef( final ColumnDef column )
 		{
 			columnDefs.add(column);
-			return this;
-		}
-
-		public Builder addQuerySegment( final String querySegment )
-		{
-			querySegments.add(querySegment);
 			return this;
 		}
 
@@ -107,22 +100,7 @@ public class RdfTableDef extends RdfNamespacedObject implements TableDef
 						.getFQName(colDefClass));
 				tableDef.addProperty(p, lst);
 
-				if (! querySegments.isEmpty())
-				{
-					final String eol = System.getProperty("line.separator");
-					StringBuilder sb = new StringBuilder().append("{");
-					for (final String seg : querySegments)
-					{
-						sb.append( seg ).append( eol );
-					}
-					sb.append( "}");
-						
-
-					final Property querySegmentProp = builder.getProperty(
-						RdfTableDef.class, "querySegments");
-					tableDef.addLiteral( querySegmentProp,  sb.toString());
-					querySegments.clear();
-				}
+				
 			}
 			try
 			{
@@ -141,10 +119,7 @@ public class RdfTableDef extends RdfNamespacedObject implements TableDef
 				throw new IllegalStateException(
 						"There must be at least one column defined");
 			}
-			if (querySegments.size() == 0)
-			{
-				querySegments.add("# no query segments provided");
-			}
+			
 		}
 
 		@Override
@@ -312,12 +287,6 @@ public class RdfTableDef extends RdfNamespacedObject implements TableDef
 		throw new EntityManagerRequiredException();
 	}
 
-	@Predicate( impl = true )
-	public String getQuerySegments()
-	{
-		throw new EntityManagerRequiredException();
-	}
-	
 	@Override
 	@Predicate( impl = true )
 	public Resource getResource()

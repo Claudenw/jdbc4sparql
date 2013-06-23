@@ -102,6 +102,7 @@
 			<artifactId>commons-codec</artifactId>
 			<version>1.7</version>
 		</dependency>
+		<!-- 
 		<dependency>
 			<groupId>org.apache.jena</groupId>
 			<artifactId>jena-arq</artifactId>
@@ -117,6 +118,14 @@
 			<artifactId>jena-tdb</artifactId>
 			<version>0.10.0</version>
 		</dependency>
+		-->
+		<dependency>
+  <groupId>org.apache.jena</groupId>
+  <artifactId>apache-jena</artifactId>
+  <type>pom</type>
+  
+  <version>2.10.1</version>
+		</dependency>
 		<dependency>
 			<groupId>org.xenei</groupId>
 			<artifactId>PA4RDF</artifactId>
@@ -128,6 +137,7 @@
 			<version>1.9.5</version>
 			<scope>test</scope>
 		</dependency>
+		
 	</dependencies>
 	<name>JDBC 4 SPARQL</name>
 	<description>A JDBC Driver that retrieves data from a SPARQL endpoint or an RDF file.</description>
