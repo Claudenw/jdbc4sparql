@@ -95,7 +95,7 @@ public class MetaCatalogValuesTests
 	}
 
 	@Test
-	public void testColumnsTable()
+	public void testColumnsTable() throws SQLException
 	{
 		final String[] names = { "TABLE_CAT", "TABLE_SCHEM", "TABLE_NAME",
 				"COLUMN_NAME", "DATA_TYPE", "TYPE_NAME", "COLUMN_SIZE",
@@ -105,6 +105,17 @@ public class MetaCatalogValuesTests
 				"IS_NULLABLE", "SCOPE_CATLOG", "SCOPE_SCHEMA", "SCOPE_TABLE",
 				"SOURCE_DATA_TYPE", "IS_AUTOINCREMENT" };
 		verifyNames(MetaCatalogBuilder.COLUMNS_TABLE, names);
+		
+		RdfSchema schema = catalog.getSchema( MetaCatalogBuilder.SCHEMA_LOCAL_NAME );
+		RdfTable table = schema.getTable(MetaCatalogBuilder.COLUMNS_TABLE);
+		SparqlResultSet rs = table.getResultSet();
+		Assert.assertTrue( rs.first() );
+		while ( ! rs.isAfterLast() )
+		{
+			System.out.println( String.format( "%s : %s : %s : %s : %d : %s", rs.getString( "TABLE_CAT"), 
+					rs.getString( "TABLE_SCHEM"), rs.getString("TABLE_NAME"), rs.getString("COLUMN_NAME"), rs.getInt("ORDINAL_POSITION"), rs.getString("IS_NULLABLE")));
+			rs.next();
+		}
 	}
 
 	@Test

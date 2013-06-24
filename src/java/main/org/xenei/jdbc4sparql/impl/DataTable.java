@@ -199,4 +199,10 @@ public class DataTable extends AbstractTable
 	{
 		return data.isEmpty();
 	}
+
+	@Override
+	public String getRemarks()
+	{
+		return null;
+	}
 }

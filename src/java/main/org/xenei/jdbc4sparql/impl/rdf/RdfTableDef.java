@@ -26,6 +26,7 @@ public class RdfTableDef extends RdfNamespacedObject implements TableDef
 {
 	public static class Builder implements TableDef
 	{
+		private boolean distinct = false;
 		private final List<ColumnDef> columnDefs = new ArrayList<ColumnDef>();
 		private RdfKey primaryKey;
 		private RdfKey sortKey;
@@ -81,6 +82,8 @@ public class RdfTableDef extends RdfNamespacedObject implements TableDef
 							superTable.getResource());
 
 				}
+				
+				tableDef.addLiteral( builder.getProperty(typeClass, "distinct"), distinct );
 
 				RDFList lst = null;
 
@@ -138,6 +141,11 @@ public class RdfTableDef extends RdfNamespacedObject implements TableDef
 		public List<ColumnDef> getColumnDefs()
 		{
 			return columnDefs;
+		}
+		
+		public void setDistinct( boolean distinct )
+		{
+			this.distinct = distinct;
 		}
 
 		@Override
@@ -275,6 +283,11 @@ public class RdfTableDef extends RdfNamespacedObject implements TableDef
 		return getColumnDefs().indexOf(column);
 	}
 
+	@Predicate( impl = true )
+	public boolean isDistinct()
+	{
+		throw new EntityManagerRequiredException();
+	}
 	/**
 	 * get the primary key for the table
 	 * 

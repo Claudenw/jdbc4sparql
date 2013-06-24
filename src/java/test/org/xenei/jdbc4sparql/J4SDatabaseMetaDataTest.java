@@ -32,7 +32,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.xenei.jdbc4sparql.iface.Catalog;
+import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
+import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 import org.xenei.jdbc4sparql.meta.MetaCatalogBuilder;
+import org.xenei.jdbc4sparql.sparql.SparqlResultSet;
 
 public class J4SDatabaseMetaDataTest
 {
@@ -420,4 +423,37 @@ public class J4SDatabaseMetaDataTest
 		columnChecking(MetaCatalogBuilder.VERSION_COLUMNS_TABLE, names);
 	}
 	
+	@Test
+	public void testColumnsTable() throws SQLException
+	{
+		ResultSet rs = metadata.getColumns(null, null, null, null);
+		Assert.assertTrue( rs.first() );
+		while ( ! rs.isAfterLast() )
+		{
+			System.out.println( String.format( "%s : %s : %s : %s : %d : %s", rs.getString( "TABLE_CAT"), 
+					rs.getString( "TABLE_SCHEM"), rs.getString("TABLE_NAME"), rs.getString("COLUMN_NAME"), rs.getInt("ORDINAL_POSITION"), rs.getString("IS_NULLABLE")));
+			rs.next();
+		}
+		
+		rs = metadata.getColumns(MetaCatalogBuilder.LOCAL_NAME, 
+				MetaCatalogBuilder.SCHEMA_LOCAL_NAME, "Columns", null);
+		Assert.assertTrue( rs.first() );
+		while ( ! rs.isAfterLast() )
+		{
+			System.out.println( String.format( "%s : %s : %s : %s : %d : %s", rs.getString( "TABLE_CAT"), 
+					rs.getString( "TABLE_SCHEM"), rs.getString("TABLE_NAME"), rs.getString("COLUMN_NAME"), rs.getInt("ORDINAL_POSITION"), rs.getString("IS_NULLABLE")));
+			rs.next();
+		}
+		
+		rs = metadata.getColumns(MetaCatalogBuilder.LOCAL_NAME, 
+				MetaCatalogBuilder.SCHEMA_LOCAL_NAME, null, "TABLE_CAT");
+		Assert.assertTrue( rs.first() );
+		while ( ! rs.isAfterLast() )
+		{
+			System.out.println( String.format( "%s : %s : %s : %s : %d : %s", rs.getString( "TABLE_CAT"), 
+					rs.getString( "TABLE_SCHEM"), rs.getString("TABLE_NAME"), rs.getString("COLUMN_NAME"), rs.getInt("ORDINAL_POSITION"), rs.getString("IS_NULLABLE")));
+			rs.next();
+		}
+		
+	}
 }

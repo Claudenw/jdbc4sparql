@@ -554,14 +554,10 @@ public class J4SConnectionTest
 	{
 		connection = new J4SConnection(driver, url, properties );
 		
-		File f = new File( "/tmp/config.zip");
-		FileOutputStream fos = new FileOutputStream( f );
-		connection.saveConfig( fos );
-		fos.close();
-//		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-//		connection.saveConfig( baos );
-//		baos.close();
-//		Assert.assertTrue( baos.size() > 0);
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		connection.saveConfig( baos );
+		baos.close();
+		Assert.assertTrue( baos.size() > 0);
 	}
 
 	@Test

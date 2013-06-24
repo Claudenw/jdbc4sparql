@@ -554,13 +554,23 @@ public class RdfTable extends RdfNamespacedObject implements Table
 				queryBuilder.addColumn(col);
 				queryBuilder.addVar(col, col.getName());
 			}
-			if (tableDef.getSortKey() != null)
+			RdfKey key = tableDef.getSortKey();
+			if (key == null)
 			{
-				queryBuilder.setOrderBy(tableDef.getSortKey());
+				key = tableDef.getPrimaryKey();
 			}
-			else if (tableDef.getPrimaryKey() != null)
+			if (key != null)
 			{
-				queryBuilder.setOrderBy( tableDef.getPrimaryKey());
+				queryBuilder.setOrderBy( key );
+				if (key.isUnique())
+				{
+					queryBuilder.setDistinct();
+				}
+			} else {
+				if (tableDef.isDistinct())
+				{
+					queryBuilder.setDistinct();
+				}
 			}
 		}
 		return queryBuilder.build();
