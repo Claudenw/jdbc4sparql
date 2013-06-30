@@ -21,7 +21,7 @@ import java.util.Set;
 
 import org.xenei.jena.entities.ResourceWrapper;
 
-public interface Schema extends NamedObject, ResourceWrapper
+public interface Schema extends NamedObject
 {
 
 	NameFilter<? extends Table> findTables( String tableNamePattern );

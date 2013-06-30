@@ -21,7 +21,7 @@ import java.util.List;
 
 import org.xenei.jena.entities.ResourceWrapper;
 
-public interface TableDef extends ResourceWrapper
+public interface TableDef
 {
 
 	public int getColumnCount();

@@ -24,11 +24,13 @@ import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.rdf.model.AnonId;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.sparql.core.PathBlock;
 import com.hp.hpl.jena.sparql.core.TriplePath;
 import com.hp.hpl.jena.sparql.core.Var;
 import com.hp.hpl.jena.sparql.core.VarExprList;
 import com.hp.hpl.jena.sparql.engine.binding.Binding;
+import com.hp.hpl.jena.sparql.expr.E_Equals;
 import com.hp.hpl.jena.sparql.expr.Expr;
 import com.hp.hpl.jena.sparql.expr.ExprFunction1;
 import com.hp.hpl.jena.sparql.expr.ExprVar;
@@ -55,8 +57,10 @@ import com.hp.hpl.jena.sparql.syntax.ElementVisitor;
 import com.hp.hpl.jena.util.iterator.Map1;
 import com.hp.hpl.jena.util.iterator.WrappedIterator;
 
+import java.sql.DatabaseMetaData;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -67,8 +71,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.xenei.jdbc4sparql.iface.Column;
+import org.xenei.jdbc4sparql.iface.ColumnDef;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.TypeConverter;
@@ -80,6 +86,7 @@ import org.xenei.jdbc4sparql.impl.rdf.RdfKey;
 import org.xenei.jdbc4sparql.impl.rdf.RdfKeySegment;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTableDef;
+import org.xenei.jena.entities.annotations.Predicate;
 
 /**
  * Creates a SparqlQuery while tracking naming changes between nomenclatures.
@@ -600,7 +607,7 @@ public class SparqlQueryBuilder
 			final Node columnVar = Node.createVariable(column.getSPARQLName());
 			// if the column does not allow null add triple
 
-			if (!columnsInQuery.containsKey(column))
+			if (!columnsInQuery.containsKey(column.getSQLName()))
 			{
 				columnsInQuery.put(column.getSQLName(), column);
 				nodesInQuery.put(column.getSQLName(), columnVar);
@@ -620,6 +627,13 @@ public class SparqlQueryBuilder
 			return columnVar;
 		}
 
+		public void addTypeFilters()
+		{
+			for (CheckTypeF f : typeFilterList)
+			{
+				addFilter( f );
+			}
+		}
 		public void addFilter( final Expr expr )
 		{
 			eg.addElementFilter(new ElementFilter(expr));
@@ -630,19 +644,19 @@ public class SparqlQueryBuilder
 			eg.addElement(new ElementOptional(etb));
 		}
 
-		// public void addTriple( final Triple t )
-		// {
-		// etb.addTriple(t);
-		// }
+		/**
+		 * Returns the column or null if not found
+		 * @param name The name of the column to look for.
+		 * @return
+		 */
+		public RdfColumn getColumn(String name)
+		{
+			return (RdfColumn) table.getColumn(name);
+		}
 
 		public Iterator<RdfColumn> getColumns()
 		{
 			return table.getColumns();
-		}
-
-		public ElementGroup getElementGroup()
-		{
-			return eg;
 		}
 
 		public String getSQLName()
@@ -718,6 +732,14 @@ public class SparqlQueryBuilder
 	// the list of columns in the query indexed by SQL name.
 	private final Map<String, RdfColumn> columnsInQuery;
 
+	// the list of columns not to be included in the "all columns" result.
+	// perhaps this should store column so that tables may be checked in case
+	// tables are added to the query later.  But I don't think so.
+	private final List<String> columnsInUsing;
+	
+	// columns indexed by var.
+	private final List<Column> columnsInResult;
+	
 	/**
 	 * Create a query builder for a catalog
 	 * 
@@ -738,6 +760,8 @@ public class SparqlQueryBuilder
 		this.tablesInQuery = new HashMap<String, RdfTableInfo>();
 		this.nodesInQuery = new HashMap<String, Node>();
 		this.columnsInQuery = new HashMap<String, RdfColumn>();
+		this.columnsInUsing = new ArrayList<String>();
+		this.columnsInResult = new ArrayList<Column>();
 		query.setQuerySelectType();
 	}
 
@@ -986,6 +1010,7 @@ public class SparqlQueryBuilder
 	 */
 	public void addVar( final Expr expr, final String name )
 	{
+		Column column;
 		checkBuilt();
 		final NodeValue nv = expr.getConstant();
 		if ((name != null) || (nv == null) || !nv.getNode().isVariable())
@@ -993,17 +1018,22 @@ public class SparqlQueryBuilder
 			final String s = StringUtils.defaultString(expr.getVarName());
 			if (s.equals(StringUtils.defaultIfBlank(name, s)))
 			{
+				column = new ExprColumn( s, expr );
 				query.addResultVar(s);
 			}
 			else
 			{
+				column = new ExprColumn( name, expr );
 				query.addResultVar(name, expr);
 			}
 		}
 		else
 		{
+			column = new ExprColumn( nv.getVarName(), expr );
 			query.addResultVar(nv.getNode());
 		}
+		List<String> lst = query.getResultVars();
+		columnsInResult.add( column);
 	}
 
 	/**
@@ -1020,6 +1050,7 @@ public class SparqlQueryBuilder
 			throws SQLException
 	{
 		checkBuilt();
+		
 		// figure out what name we are going to use.
 		final String sparqlName = StringUtils.defaultString(alias,
 				col.getSPARQLName());
@@ -1039,6 +1070,8 @@ public class SparqlQueryBuilder
 				columnsInQuery.put(v.getName(), col);
 			}
 			query.addResultVar(v);
+			List<String> lst = query.getResultVars();
+			columnsInResult.add( col );
 		}
 	}
 
@@ -1059,7 +1092,7 @@ public class SparqlQueryBuilder
 		while (cols.hasNext())
 		{
 			final RdfColumn col = cols.next();
-			addVar(col, getColCount(col) > 1 ? null : col.getLocalName());
+			addVar(col, getColCount(col) > 1 ? null : col.getName());
 		}
 	}
 
@@ -1070,15 +1103,30 @@ public class SparqlQueryBuilder
 	 */
 	public Query build()
 	{
-		final Element e = new BnodeRenumber().renumber(query.getQueryPattern());
-		query.setQueryPattern(e);
+		
 		if (!isBuilt)
 		{
+			if (! catalog.isService())
+			{
+				// apply the type filters to each subpart.
+				for (final RdfTableInfo sti : tablesInQuery.values())
+				{
+					sti.addTypeFilters();
+				}
+	
+			}
+			
+			// renumber the Bnodes.
+			final Element e = new BnodeRenumber().renumber(query.getQueryPattern());
+			query.setQueryPattern(e);
+			
+			
 			if (catalog.isService())
 			{
-				// create a copy of the query so that we can modify it for this
-				// request.
-				Query result = query.cloneQuery();
+				// create a copy of the query so that we can verify that it is
+				// good.
+				Query result = query.cloneQuery();	
+				
 				// create the service call
 				// make sure we project all vars for the filters.
 				final Set<Var> vars = new HashSet<Var>();
@@ -1100,21 +1148,7 @@ public class SparqlQueryBuilder
 					SparqlQueryBuilder.addFilter(result, f);
 				}
 				query = result;
-			}
-			else
-			{
-				// create a copy of the query so that we can verify that it is
-				// good.
-				query.cloneQuery();
-				// apply the type filters to each subpart.
-				for (final RdfTableInfo sti : tablesInQuery.values())
-				{
-					for (final CheckTypeF f : sti.getTypeFilterList())
-					{
-						sti.addFilter(f);
-					}
-				}
-			}
+			}	
 			isBuilt = true;
 		}
 		return query;
@@ -1270,6 +1304,11 @@ public class SparqlQueryBuilder
 		}
 		return null;
 	}
+	
+	public List<Column> getResultColumns()
+	{
+		return columnsInResult;
+	}
 
 	public RdfTableInfo getNodeTable( final Node n )
 	{
@@ -1292,17 +1331,6 @@ public class SparqlQueryBuilder
 			}
 		}
 		return null;
-	}
-
-	/**
-	 * For a given result column get the column name
-	 * 
-	 * @param idx
-	 * @return
-	 */
-	public String getSolutionName( final int idx )
-	{
-		return query.getProjectVars().get(idx).getName();
 	}
 
 	/**
@@ -1380,15 +1408,22 @@ public class SparqlQueryBuilder
 	public void setAllColumns() throws SQLException
 	{
 		checkBuilt();
-		// query.setQueryResultStar(true);
+		int i=0;
 		for (final RdfTableInfo t : tablesInQuery.values())
 		{
+			
 			final Iterator<RdfColumn> iter = t.getColumns();
 			while (iter.hasNext())
 			{
-				addColumn(iter.next());
+				RdfColumn col = iter.next();
+				String s = col.getName();
+				if (i==0 || ! columnsInUsing.contains( col.getName() ))
+				{
+					addColumn(col);
+					addVar(col, i==0?col.getName():getColCount(col) > 1 ? null : col.getName() );
+				}
 			}
-			addVars(t.getColumns());
+			i++;
 		}
 	}
 
@@ -1445,4 +1480,40 @@ public class SparqlQueryBuilder
 		return String.format("QueryBuilder%s[%s]", (isBuilt ? "(builtargs)"
 				: ""), query.toString());
 	}
+	
+	public void addUsing( String columnName) 
+	{
+		if (tablesInQuery.size() < 2)
+		{
+			throw new IllegalArgumentException( "There must be at least 2 tables in the query");
+		}
+		Iterator<String> iter = tablesInQuery.keySet().iterator();
+		RdfTableInfo rti = tablesInQuery.get( iter.next() );
+		RdfColumn baseColumn = rti.getColumn( columnName );
+		if (baseColumn == null)
+		{
+			throw new IllegalArgumentException( String.format( "column %s not found in %s", columnName, rti.getSQLName() ));
+		}
+		columnsInUsing.add( columnName );
+		try {
+		ExprVar left = new ExprVar( addColumn( baseColumn ) );
+		while (iter.hasNext())
+		{
+			RdfTableInfo rti2 = tablesInQuery.get( iter.next() );
+			RdfColumn col = rti2.getColumn( columnName );
+			if (col == null)
+			{
+				throw new IllegalArgumentException( String.format( "column %s not found in %s", col, rti2.getSQLName() ));
+			}
+			
+			addFilter( new E_Equals( left, new ExprVar( addColumn( col ))));
+		}
+		}
+		catch (SQLException e)
+		{
+			throw new IllegalArgumentException( e.getMessage(), e );
+		}
+	}
+	
+	
 }

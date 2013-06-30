@@ -28,6 +28,7 @@ import com.hp.hpl.jena.sparql.expr.ExprVar;
 import java.util.Iterator;
 import java.util.List;
 
+import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.Limit;
 import net.sf.jsqlparser.statement.select.OrderByElement;
@@ -109,7 +110,7 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 	}
 
 	// take apart the join and figure out how to merge it.
-	private void deparseJoin( final Join join )
+	private void deparseJoin( final Join join ) 
 	{
 		if (join.isSimple())
 		{
@@ -190,6 +191,13 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 							queryBuilder);
 					join.getOnExpression().accept(expressionVisitor);
 					queryBuilder.addFilter(expressionVisitor.getResult());
+				}
+				if (join.getUsingColumns() != null)
+				{
+					for (Object c : join.getUsingColumns())
+					{
+						queryBuilder.addUsing( ((Column)c).getColumnName() );
+					}
 				}
 			}
 		}

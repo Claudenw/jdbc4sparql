@@ -18,11 +18,12 @@ import org.xenei.jena.entities.EntityManager;
 import org.xenei.jena.entities.EntityManagerFactory;
 import org.xenei.jena.entities.EntityManagerRequiredException;
 import org.xenei.jena.entities.MissingAnnotation;
+import org.xenei.jena.entities.ResourceWrapper;
 import org.xenei.jena.entities.annotations.Predicate;
 import org.xenei.jena.entities.annotations.Subject;
 
 @Subject( namespace = "http://org.xenei.jdbc4sparql/entity/TableDef#" )
-public class RdfTableDef extends RdfNamespacedObject implements TableDef
+public class RdfTableDef extends RdfNamespacedObject implements TableDef, ResourceWrapper
 {
 	public static class Builder implements TableDef
 	{
@@ -36,8 +37,12 @@ public class RdfTableDef extends RdfNamespacedObject implements TableDef
 		
 		public Builder addColumnDef( final ColumnDef column )
 		{
-			columnDefs.add(column);
-			return this;
+			if (column instanceof ResourceWrapper)
+			{
+				columnDefs.add(column);
+				return this;
+			}
+			throw new IllegalArgumentException( "ColumnDef must implement ResourceWrapper");
 		}
 
 		public RdfTableDef build( final Model model )
@@ -89,7 +94,7 @@ public class RdfTableDef extends RdfNamespacedObject implements TableDef
 
 				for (final ColumnDef seg : columnDefs)
 				{
-					final Resource s = seg.getResource();
+					final Resource s = ((ResourceWrapper)seg).getResource();
 					if (lst == null)
 					{
 						lst = model.createList().with(s);
@@ -159,7 +164,7 @@ public class RdfTableDef extends RdfNamespacedObject implements TableDef
 			final StringBuilder sb = new StringBuilder();
 			for (final ColumnDef cd : columnDefs)
 			{
-				sb.append(cd.getResource().getURI()).append(" ");
+				sb.append(((ResourceWrapper)cd).getResource().getURI()).append(" ");
 			}
 			if (primaryKey != null)
 			{
@@ -184,12 +189,6 @@ public class RdfTableDef extends RdfNamespacedObject implements TableDef
 		public RdfKey getPrimaryKey()
 		{
 			return primaryKey;
-		}
-
-		@Override
-		public Resource getResource()
-		{
-			throw new UnsupportedOperationException();
 		}
 
 		@Override

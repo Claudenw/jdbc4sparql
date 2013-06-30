@@ -16,6 +16,7 @@ import com.hp.hpl.jena.vocabulary.RDFS;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
@@ -35,11 +36,12 @@ import org.xenei.jena.entities.EntityManager;
 import org.xenei.jena.entities.EntityManagerFactory;
 import org.xenei.jena.entities.EntityManagerRequiredException;
 import org.xenei.jena.entities.MissingAnnotation;
+import org.xenei.jena.entities.ResourceWrapper;
 import org.xenei.jena.entities.annotations.Predicate;
 import org.xenei.jena.entities.annotations.Subject;
 
 @Subject( namespace = "http://org.xenei.jdbc4sparql/entity/Table#" )
-public class RdfTable extends RdfNamespacedObject implements Table
+public class RdfTable extends RdfNamespacedObject implements Table, ResourceWrapper
 {
 	public static class Builder implements Table
 	{
@@ -248,9 +250,11 @@ public class RdfTable extends RdfNamespacedObject implements Table
 		@Override
 		public int getColumnIndex( final Column column )
 		{
+			String colName = NameUtils.getDBName( column );
 			for (int i = 0; i < columns.length; i++)
 			{
-				if (columns[i].getResource().equals(column.getResource()))
+				
+				if (colName.equals( NameUtils.getDBName(columns[i])))
 				{
 					return i;
 				}
@@ -296,12 +300,12 @@ public class RdfTable extends RdfNamespacedObject implements Table
 			return name;
 		}
 
-		@Override
-		@Predicate
-		public Resource getResource()
-		{
-			return ResourceFactory.createResource(getFQName());
-		}
+//		@Override
+//		@Predicate
+//		public Resource getResource()
+//		{
+//			return ResourceFactory.createResource(getFQName());
+//		}
 
 		@Override
 		public Schema getSchema()
@@ -361,7 +365,7 @@ public class RdfTable extends RdfNamespacedObject implements Table
 			return this;
 		}
 
-		public Builder setColumns( final List<String> colNames )
+		public Builder setColumns( final Collection<String> colNames )
 		{
 			if (colNames.size() != tableDef.getColumnCount())
 			{
@@ -369,9 +373,12 @@ public class RdfTable extends RdfNamespacedObject implements Table
 						"There must be %s column names, %s provided",
 						tableDef.getColumnCount(), colNames.size()));
 			}
-			for (int i = 0; i < colNames.size(); i++)
+			Iterator<String> iter = colNames.iterator();
+			int i=0;
+			while (iter.hasNext())
 			{
-				setColumn(i, colNames.get(i));
+				setColumn(i, iter.next());
+				i++;
 			}
 			return this;
 		}
@@ -540,7 +547,7 @@ public class RdfTable extends RdfNamespacedObject implements Table
 		throw new EntityManagerRequiredException();
 	}
 	
-	public Query getQuery() throws SQLException
+	private Query getQuery() throws SQLException
 	{
 		if (queryBuilder == null)
 		{
@@ -606,18 +613,13 @@ public class RdfTable extends RdfNamespacedObject implements Table
 
 	public SparqlResultSet getResultSet() throws SQLException
 	{
-		return new SparqlResultSet(this);
+		return new SparqlResultSet(this, getQuery() );
 	}
 
 	@Override
 	public RdfSchema getSchema()
 	{
 		return schema;
-	}
-
-	public String getSolutionName( final int idx )
-	{
-		return queryBuilder.getSolutionName(idx);
 	}
 
 	@Override

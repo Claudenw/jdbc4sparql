@@ -2,6 +2,8 @@ package org.xenei.jdbc4sparql.impl;
 
 import com.hp.hpl.jena.sparql.core.Var;
 
+import java.util.UUID;
+
 import org.apache.commons.lang3.StringUtils;
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.Table;
@@ -68,7 +70,6 @@ public class NameUtils
 	public static String getDBName( final Var var )
 	{
 		return var.getName().replace(NameUtils.SPARQL_DOT, NameUtils.DB_DOT);
-
 	}
 
 	public static String getSPARQLName( final Column column )
@@ -89,4 +90,18 @@ public class NameUtils
 				table.getName(), null);
 	}
 
+	public static String createUUIDName()
+	{
+		return ("v_"+UUID.randomUUID().toString()).replace("-", "_");
+	}
+	
+	public static String getCursorName(Table t)
+	{
+		return getCursorName( t.getSchema().getName(), t.getName() );
+	}
+	
+	public static String getCursorName( String schema, String table )
+	{
+		return "CURSOR_"+NameUtils.createName( schema, table, null, "_");
+	}
 }

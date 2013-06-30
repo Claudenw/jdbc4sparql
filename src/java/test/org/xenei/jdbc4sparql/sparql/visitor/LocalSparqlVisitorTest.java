@@ -20,6 +20,8 @@
 package org.xenei.jdbc4sparql.sparql.visitor;
 
 import com.hp.hpl.jena.query.Query;
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.sparql.core.Var;
 import com.hp.hpl.jena.sparql.syntax.Element;
 import com.hp.hpl.jena.sparql.syntax.ElementBind;
@@ -27,8 +29,6 @@ import com.hp.hpl.jena.sparql.syntax.ElementFilter;
 import com.hp.hpl.jena.sparql.syntax.ElementGroup;
 
 import java.io.StringReader;
-import java.sql.DatabaseMetaData;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,10 +40,11 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.xenei.jdbc4sparql.impl.NameUtils;
-import org.xenei.jdbc4sparql.mock.MockCatalog;
-import org.xenei.jdbc4sparql.mock.MockColumn;
-import org.xenei.jdbc4sparql.mock.MockSchema;
-import org.xenei.jdbc4sparql.mock.MockTableDef;
+import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
+import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
+import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
+import org.xenei.jdbc4sparql.impl.rdf.RdfTableDef;
+import org.xenei.jdbc4sparql.meta.MetaCatalogBuilder;
 import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlVisitor;
 
 public class LocalSparqlVisitorTest
@@ -55,31 +56,48 @@ public class LocalSparqlVisitorTest
 	@Before
 	public void setUp() throws Exception
 	{
-		final SparqlCatalog catalog = new SparqlCatalog(MockCatalog.NS, null,
-				MockCatalog.LOCAL_NAME);
-		final MockSchema schema = new MockSchema(catalog);
-		catalog.addSchema(schema);
-		// create the foo table
-		MockTableDef tableDef = new MockTableDef("foo");
-		tableDef.add(MockColumn.getBuilder("StringCol", Types.VARCHAR).build());
-		tableDef.add(MockColumn.getBuilder("NullableStringCol", Types.VARCHAR)
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.add(MockColumn.getBuilder("IntCol", Types.INTEGER).build());
-		tableDef.add(MockColumn.getBuilder("NullableIntCol", Types.INTEGER)
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		schema.addTableDef(tableDef);
+		final Model model = ModelFactory.createDefaultModel();
+		final Model localModel = ModelFactory.createDefaultModel();
+		final RdfCatalog catalog = new RdfCatalog.Builder()
+				.setLocalModel(localModel).setName("testCatalog").build(model);
 
-		// create the bar table
-		tableDef = new MockTableDef("bar");
-		tableDef.add(MockColumn.getBuilder("BarStringCol", Types.VARCHAR)
-				.build());
-		tableDef.add(MockColumn
-				.getBuilder("BarNullableStringCol", Types.VARCHAR)
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.add(MockColumn.getBuilder("IntCol", Types.INTEGER).build());
-		tableDef.add(MockColumn.getBuilder("BarNullableIntCol", Types.INTEGER)
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		schema.addTableDef(tableDef);
+		final RdfSchema schema = new RdfSchema.Builder().setCatalog(catalog)
+				.setName("testSchema").build(model);
+
+		// create the foo table
+		final RdfTableDef tableDef = new RdfTableDef.Builder()
+				.addColumnDef(
+						MetaCatalogBuilder.getNonNullStringBuilder().build(
+								model))
+				.addColumnDef(
+						MetaCatalogBuilder.getNullStringBuilder().build(model))
+				.addColumnDef(
+						MetaCatalogBuilder.getNonNullIntBuilder().build(model))
+				.addColumnDef(
+						MetaCatalogBuilder.getNullIntBuilder().build(model))
+				.build(model);
+
+		RdfTable.Builder bldr = new RdfTable.Builder().setTableDef(tableDef).setColumn(0, "StringCol")
+				.setColumn(1, "NullableStringCol").setColumn(2, "IntCol")
+				.setColumn(3, "NullableIntCol").setName("foo")
+				.setSchema(schema).addQuerySegment( "%1$s a <http://example.com/foo> ");
+		bldr.getColumn(0).addQuerySegment( "%1$s <http://example.com/zero> %2$s");
+		bldr.getColumn(1).addQuerySegment( "%1$s <http://example.com/one> %2$s");
+		bldr.getColumn(2).addQuerySegment( "%1$s <http://example.com/two> %2$s");
+		bldr.getColumn(3).addQuerySegment( "%1$s <http://example.com/three> %2$s");
+		bldr.build(model);
+
+		bldr = new RdfTable.Builder().setTableDef(tableDef)
+				.setColumn(0, "BarStringCol")
+				.setColumn(1, "BarNullableStringCol").setColumn(2, "BarIntCol")
+				// must be NullableIntCol for inner join test
+				.setColumn(3, "NullableIntCol").setName("bar")
+				.setSchema(schema).addQuerySegment( "%1$s a <http://example.com/bar> ");
+		bldr.getColumn(0).addQuerySegment( "%1$s <http://example.com/zero> %2$s");
+		bldr.getColumn(1).addQuerySegment( "%1$s <http://example.com/one> %2$s");
+		bldr.getColumn(2).addQuerySegment( "%1$s <http://example.com/two> %2$s");
+		bldr.getColumn(3).addQuerySegment( "%1$s <http://example.com/three> %2$s");
+		bldr.build(model);
 
 		sv = new SparqlVisitor(catalog);
 
@@ -98,9 +116,9 @@ public class LocalSparqlVisitorTest
 		Assert.assertTrue(e instanceof ElementGroup);
 		final ElementGroup eg = (ElementGroup) e;
 		final List<Element> eLst = eg.getElements();
-		Assert.assertEquals(8, eLst.size()); // 2 tables, 6 binds
+		Assert.assertEquals(10, eLst.size()); // 2 tables, 7 binds, 1 filter
 		final List<Var> vLst = q.getProjectVars();
-		Assert.assertEquals(8, vLst.size());
+		Assert.assertEquals(7, vLst.size());
 
 	}
 
@@ -128,16 +146,16 @@ public class LocalSparqlVisitorTest
 		}
 		Assert.assertEquals(4, bindElements.size());
 		Assert.assertTrue(bindElements.contains(String.format(
-				"BIND(?MockSchema%1$sfoo%1$s%2$s AS ?%2$s)",
+				"BIND(?testSchema%1$sfoo%1$s%2$s AS ?%2$s)",
 				NameUtils.SPARQL_DOT, "StringCol")));
 		Assert.assertTrue(bindElements.contains(String.format(
-				"BIND(?MockSchema%1$sfoo%1$s%2$s AS ?%2$s)",
+				"BIND(?testSchema%1$sfoo%1$s%2$s AS ?%2$s)",
 				NameUtils.SPARQL_DOT, "NullableStringCol")));
 		Assert.assertTrue(bindElements.contains(String.format(
-				"BIND(?MockSchema%1$sfoo%1$s%2$s AS ?%2$s)",
+				"BIND(?testSchema%1$sfoo%1$s%2$s AS ?%2$s)",
 				NameUtils.SPARQL_DOT, "IntCol")));
 		Assert.assertTrue(bindElements.contains(String.format(
-				"BIND(?MockSchema%1$sfoo%1$s%2$s AS ?%2$s)",
+				"BIND(?testSchema%1$sfoo%1$s%2$s AS ?%2$s)",
 				NameUtils.SPARQL_DOT, "NullableIntCol")));
 	}
 
@@ -177,7 +195,7 @@ public class LocalSparqlVisitorTest
 				strLst.add(e2.toString());
 			}
 		}
-		Assert.assertTrue(strLst.contains("FILTER ( ?MockSchema"
+		Assert.assertTrue(strLst.contains("FILTER ( ?testSchema"
 				+ NameUtils.SPARQL_DOT + "foo" + NameUtils.SPARQL_DOT
 				+ "StringCol != \"baz\" )"));
 

@@ -21,7 +21,7 @@ import java.util.Iterator;
 
 import org.xenei.jena.entities.ResourceWrapper;
 
-public interface Table extends NamedObject, ResourceWrapper
+public interface Table extends NamedObject
 {
 	// /**
 	// * An iterator of the columns in the table.

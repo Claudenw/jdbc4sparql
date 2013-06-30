@@ -19,6 +19,9 @@
  */
 package org.xenei.jdbc4sparql.sparql.parser.jsqlparser;
 
+import com.hp.hpl.jena.sparql.expr.Expr;
+import com.hp.hpl.jena.sparql.expr.ExprFunction;
+
 import java.sql.SQLException;
 
 
@@ -120,24 +123,26 @@ class SparqlSelectItemVisitor implements SelectItemVisitor
 
 		final SparqlExprVisitor v = new SparqlExprVisitor(queryBuilder);
 		selectExpressionItem.getExpression().accept(v);
+		Expr expr = v.getResult();
+		
 		// handle explicit name mapping
 		if (selectExpressionItem.getAlias() != null)
 		{
-			queryBuilder.addVar(v.getResult(), selectExpressionItem.getAlias());
+			queryBuilder.addVar(expr, selectExpressionItem.getAlias());
 		}
 		else
 		{
 			// handle implicit name mapping
 			if (selectExpressionItem.getExpression() instanceof net.sf.jsqlparser.schema.Column)
 			{
-				queryBuilder.addVar(v.getResult(), NameUtils
+				queryBuilder.addVar(expr, NameUtils
 						.convertDB2SPARQL(selectExpressionItem.getExpression()
 								.toString()));
 			}
 			else
 			{
 				// handle no name mapping
-				queryBuilder.addVar(v.getResult(), null);
+				queryBuilder.addVar(expr, null);
 			}
 		}
 

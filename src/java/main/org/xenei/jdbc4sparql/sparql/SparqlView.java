@@ -18,32 +18,165 @@
 package org.xenei.jdbc4sparql.sparql;
 
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.Resource;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.UUID;
+
+import org.xenei.jdbc4sparql.iface.Catalog;
+import org.xenei.jdbc4sparql.iface.Column;
+import org.xenei.jdbc4sparql.iface.NameFilter;
+import org.xenei.jdbc4sparql.iface.Schema;
+import org.xenei.jdbc4sparql.iface.Table;
+import org.xenei.jdbc4sparql.iface.TableDef;
+import org.xenei.jdbc4sparql.impl.NameUtils;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
+import org.xenei.jena.entities.annotations.Predicate;
 
-public class SparqlView extends RdfTable
+public class SparqlView implements Table
 {
-	public static class Builder extends RdfTable.Builder
-	{
-
-		@Override
-		public SparqlView build( final Model model )
-		{
-
-		}
-
-		public Builder setSparqlQueryBuilder(
-				final SparqlQueryBuilder queryBuilder )
-		{
-			return this;
-		}
-	}
-
+	private String name;
+	private SparqlQueryBuilder builder;
+	
 	public static final String NAME_SPACE = "http://org.xenei.jdbc4sparql/vocab#View";
 
 	public SparqlView( final SparqlQueryBuilder builder )
 	{
-		super(builder);
+		this.builder = builder;
+		this.name=NameUtils.createUUIDName();
+	}
+	
+	public SparqlResultSet getResultSet() throws SQLException
+	{
+		return new SparqlResultSet(this, builder.build());
+	}
+
+	@Override
+	public String getName()
+	{
+		return name;
+	}
+
+	@Override
+	public void delete()
+	{
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public NameFilter<Column> findColumns( String columnNamePattern )
+	{
+		return new NameFilter<Column>(columnNamePattern, builder.getResultColumns());
+	}
+
+	@Override
+	public Catalog getCatalog()
+	{
+		return builder.getCatalog();
+	}
+
+	@Override
+	public Column getColumn( int idx )
+	{
+		return builder.getResultColumns().get(idx);
+	}
+
+	@Override
+	public Column getColumn( String name )
+	{
+		for (Column c : builder.getResultColumns())
+		{
+			if (c.getName().equals( name ))
+			{
+				return c;
+			}
+		}
+		return null;
+	}
+
+	@Override
+	public int getColumnCount()
+	{
+		return builder.getResultColumns().size();
+	}
+
+	@Override
+	public int getColumnIndex( Column column )
+	{
+		for (int i=0;i<builder.getResultColumns().size();i++)
+		{
+			if (builder.getResultColumns().get(i).equals( column))
+			{
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	@Override
+	public int getColumnIndex( String columnName )
+	{
+		for (int i=0;i<builder.getResultColumns().size();i++)
+		{
+			if (builder.getResultColumns().get(i).getName().equals( columnName))
+			{
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	@Override
+	public Iterator<? extends Column> getColumns()
+	{
+		return builder.getResultColumns().iterator();
+	}
+
+	@Override
+	public Schema getSchema()
+	{
+		return builder.getCatalog().getViewSchema();
+	}
+
+	@Override
+	public String getSPARQLName()
+	{
+		return NameUtils.getSPARQLName(this);
+	}
+
+	@Override
+	public String getSQLName()
+	{
+		return NameUtils.getDBName(this);
+	}
+
+	@Override
+	public Table getSuperTable()
+	{
+		return null;
+	}
+
+	@Override
+	public TableDef getTableDef()
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getType()
+	{
+		return "VIEW";
+	}
+
+	@Override
+	public String getRemarks()
+	{
+		return "";
 	}
 
 }

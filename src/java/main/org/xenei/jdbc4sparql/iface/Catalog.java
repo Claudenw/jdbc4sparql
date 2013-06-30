@@ -17,11 +17,15 @@
  */
 package org.xenei.jdbc4sparql.iface;
 
+import com.hp.hpl.jena.query.Query;
+import com.hp.hpl.jena.query.QuerySolution;
+
+import java.util.List;
 import java.util.Set;
 
 import org.xenei.jena.entities.ResourceWrapper;
 
-public interface Catalog extends NamedObject, ResourceWrapper
+public interface Catalog extends NamedObject
 {
 	public static final String DEFAULT_SCHEMA = "";
 
@@ -59,5 +63,15 @@ public interface Catalog extends NamedObject, ResourceWrapper
 	 * @return
 	 */
 	Set<? extends Schema> getSchemas();
+	
+	/**
+	 * Execute the query against the local Model.
+	 * 
+	 * This is used to execute queries built by the query builder.
+	 * 
+	 * @param query
+	 * @return The list of QuerySolutions.
+	 */
+	public List<QuerySolution> executeLocalQuery( final Query query );
 
 }

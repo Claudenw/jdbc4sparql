@@ -25,8 +25,12 @@ import com.hp.hpl.jena.rdf.model.Resource;
 import java.sql.DatabaseMetaData;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.xenei.jdbc4sparql.iface.Catalog;
@@ -37,6 +41,10 @@ import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTableDef;
 
+/**
+ * A simple builder that builds tables for all subjects of [?x a rdfs:Class] triples.
+ * Columns for the tables are created from all predicates of all instances of the class.
+ */
 public class SimpleBuilder implements SchemaBuilder
 {
 	public static final String BUILDER_NAME = "Simple_Builder";
@@ -57,11 +65,11 @@ public class SimpleBuilder implements SchemaBuilder
 	{
 	}
 
-	protected List<String> addColumnDefs( final RdfCatalog catalog,
+	protected Map<String,String> addColumnDefs( final RdfCatalog catalog,
 			final RdfTableDef.Builder tableDefBuilder, final Resource tName )
 	{
 		final Model model = catalog.getResource().getModel();
-		final List<String> colNames = new ArrayList<String>();
+		final Map<String,String> colNames = new LinkedHashMap<String,String>();
 		final List<QuerySolution> solns = catalog.executeQuery(String.format(
 				SimpleBuilder.COLUMN_QUERY, tName));
 
@@ -69,10 +77,9 @@ public class SimpleBuilder implements SchemaBuilder
 		{
 			final RdfColumnDef.Builder builder = new RdfColumnDef.Builder();
 			final Resource cName = soln.getResource("cName");
-			colNames.add(cName.getLocalName());
 			String s = String.format( SimpleBuilder.COLUMN_SEGMENT, "%1$s", "%2$s", cName.getURI());
-			builder.addQuerySegment(s)
-					.setType(Types.VARCHAR)
+			colNames.put(cName.getLocalName(), s );
+			builder.setType(Types.VARCHAR)
 					.setNullable(DatabaseMetaData.columnNullable);
 			tableDefBuilder.addColumnDef(builder.build(model));
 		}
@@ -92,14 +99,28 @@ public class SimpleBuilder implements SchemaBuilder
 			final Resource tName = soln.getResource("tName");
 			final RdfTableDef.Builder builder = new RdfTableDef.Builder();
 			String s = String.format( SimpleBuilder.TABLE_SEGMENT, "%1$s", tName.getURI());
-			builder.addQuerySegment(s);
-			final List<String> colNames = addColumnDefs(catalog, builder, tName);
+			final Map<String,String> colNames = addColumnDefs(catalog, builder, tName);
 			final RdfTableDef tableDef = builder.build(model);
-			final RdfTable table = new RdfTable.Builder().setTableDef(tableDef)
-					.setName(tName.getLocalName()).setSchema(schema)
-					.setColumns(colNames).build(model);
-
-			retval.add(table);
+			final RdfTable.Builder tblBuilder = new RdfTable.Builder().setTableDef(tableDef)
+					.addQuerySegment(s)
+					.setName(tName.getLocalName()).setSchema(schema);
+			
+			if (colNames.keySet().size() != tableDef.getColumnCount())
+			{
+				throw new IllegalArgumentException(String.format(
+						"There must be %s column names, %s provided",
+						tableDef.getColumnCount(), colNames.keySet().size()));
+			}
+			Iterator<String> iter = colNames.keySet().iterator();
+			int i=0;
+			while (iter.hasNext())
+			{
+				
+				String cName = iter.next();
+				tblBuilder.setColumn(i, cName).getColumn(i).addQuerySegment(colNames.get(cName));
+				i++;
+			}		
+			retval.add(tblBuilder.build(model));
 		}
 		return retval;
 	}

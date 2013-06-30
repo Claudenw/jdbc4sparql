@@ -56,7 +56,7 @@ public class TableBuilderTest
 				.setName("table").setColumn(0, "StringCol")
 				.setColumn(1, "IntCol").setSchema(mockSchema)
 				.setType("testing Table");
-		final Table table = builder.build(model);
+		final RdfTable table = builder.build(model);
 
 		model.write(System.out, "TURTLE");
 

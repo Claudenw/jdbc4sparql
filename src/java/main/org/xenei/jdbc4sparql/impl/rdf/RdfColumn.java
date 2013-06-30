@@ -28,11 +28,12 @@ import org.xenei.jena.entities.EntityManager;
 import org.xenei.jena.entities.EntityManagerFactory;
 import org.xenei.jena.entities.EntityManagerRequiredException;
 import org.xenei.jena.entities.MissingAnnotation;
+import org.xenei.jena.entities.ResourceWrapper;
 import org.xenei.jena.entities.annotations.Predicate;
 import org.xenei.jena.entities.annotations.Subject;
 
 @Subject( namespace = "http://org.xenei.jdbc4sparql/entity/Column#" )
-public class RdfColumn extends RdfNamespacedObject implements Column
+public class RdfColumn extends RdfNamespacedObject implements Column, ResourceWrapper
 {
 	private RdfTable table;
 	
@@ -47,8 +48,6 @@ public class RdfColumn extends RdfNamespacedObject implements Column
 		public static RdfColumn fixupTable( RdfTable table, RdfColumn column )
 		{
 			column.table = table;
-			//Property p = ResourceFactory.createProperty( ResourceBuilder.getNamespace( RdfTable.class ), "tables" );
-			//schema.getResource().addProperty( p, table.getResource());
 			return column;
 		}
 		
@@ -87,10 +86,7 @@ public class RdfColumn extends RdfNamespacedObject implements Column
 
 				column.addLiteral(RDFS.label, name);
 				column.addProperty(builder.getProperty(typeClass, "columnDef"),
-						columnDef.getResource());
-
-				column.addProperty(builder.getProperty(typeClass, "table"),
-						table.getResource());
+						((ResourceWrapper)columnDef).getResource());
 
 			}
 			
@@ -126,6 +122,9 @@ public class RdfColumn extends RdfNamespacedObject implements Column
 				} else {
 					throw new IllegalArgumentException( "table not an rdf table or builder");
 				}
+				// table is now a real RdfTable so add it as a property
+				column.addProperty(builder.getProperty(typeClass, "table"),
+						tbl.getResource());
 				return Builder.fixupTable(tbl, retval);
 			}
 			catch (final MissingAnnotation e)
@@ -139,6 +138,11 @@ public class RdfColumn extends RdfNamespacedObject implements Column
 			if (columnDef == null)
 			{
 				throw new IllegalStateException("columnDef must be set");
+			}
+			
+			if (! (columnDef instanceof ResourceWrapper))
+			{
+				throw new IllegalStateException("columnDef must implement ResourceWrapper");
 			}
 
 			if (table == null)
@@ -182,8 +186,9 @@ public class RdfColumn extends RdfNamespacedObject implements Column
 
 		public String getFQName()
 		{
+			ResourceWrapper rw = (ResourceWrapper) getColumnDef();
 			final StringBuilder sb = new StringBuilder()
-					.append(getColumnDef().getResource().getURI()).append(" ")
+					.append(rw.getResource().getURI()).append(" ")
 					.append(name).append( " " ).append( getQueryStrFmt() );
 			return String.format("%s/instance/UUID-%s",
 					ResourceBuilder.getFQName(RdfColumn.class),
@@ -194,12 +199,6 @@ public class RdfColumn extends RdfNamespacedObject implements Column
 		public String getName()
 		{
 			return name;
-		}
-
-		@Override
-		public Resource getResource()
-		{
-			return ResourceFactory.createResource(getFQName());
 		}
 
 		@Override
@@ -228,7 +227,10 @@ public class RdfColumn extends RdfNamespacedObject implements Column
 
 		public Builder setColumnDef( final ColumnDef columnDef )
 		{
-			this.columnDef = columnDef;
+			if (columnDef instanceof ResourceWrapper)
+			{
+				this.columnDef = columnDef;
+			}
 			return this;
 		}
 

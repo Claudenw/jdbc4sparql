@@ -20,6 +20,8 @@
 package org.xenei.jdbc4sparql.sparql.visitor;
 
 import com.hp.hpl.jena.query.Query;
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.sparql.core.Var;
 import com.hp.hpl.jena.sparql.syntax.Element;
 import com.hp.hpl.jena.sparql.syntax.ElementFilter;
@@ -40,10 +42,11 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.xenei.jdbc4sparql.impl.NameUtils;
-import org.xenei.jdbc4sparql.mock.MockCatalog;
-import org.xenei.jdbc4sparql.mock.MockColumn;
-import org.xenei.jdbc4sparql.mock.MockSchema;
-import org.xenei.jdbc4sparql.mock.MockTableDef;
+import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
+import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
+import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
+import org.xenei.jdbc4sparql.impl.rdf.RdfTableDef;
+import org.xenei.jdbc4sparql.meta.MetaCatalogBuilder;
 import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlVisitor;
 
 public class RemoteSparqlVisitorTest
@@ -55,33 +58,53 @@ public class RemoteSparqlVisitorTest
 	@Before
 	public void setUp() throws Exception
 	{
-		final SparqlCatalog catalog = new SparqlCatalog(new URL(
-				"http://example.com/sparql"), MockCatalog.LOCAL_NAME);
-		final MockSchema schema = new MockSchema(catalog);
-		catalog.addSchema(schema);
-		// create the foo table
-		MockTableDef tableDef = new MockTableDef("foo");
-		tableDef.add(MockColumn.getBuilder("StringCol", Types.VARCHAR).build());
-		tableDef.add(MockColumn.getBuilder("NullableStringCol", Types.VARCHAR)
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.add(MockColumn.getBuilder("IntCol", Types.INTEGER).build());
-		tableDef.add(MockColumn.getBuilder("NullableIntCol", Types.INTEGER)
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		schema.addTableDef(tableDef);
+		final Model model = ModelFactory.createDefaultModel();
+		final Model localModel = ModelFactory.createDefaultModel();
+		final RdfCatalog catalog = new RdfCatalog.Builder()
+		.setSparqlEndpoint(new URL(
+				"http://example.com/sparql"))
+				.setLocalModel(localModel).setName("testCatalog").build(model);
 
-		// create the bar table
-		tableDef = new MockTableDef("bar");
-		tableDef.add(MockColumn.getBuilder("BarStringCol", Types.VARCHAR)
-				.build());
-		tableDef.add(MockColumn
-				.getBuilder("BarNullableStringCol", Types.VARCHAR)
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		tableDef.add(MockColumn.getBuilder("IntCol", Types.INTEGER).build());
-		tableDef.add(MockColumn.getBuilder("BarNullableIntCol", Types.INTEGER)
-				.setNullable(DatabaseMetaData.columnNullable).build());
-		schema.addTableDef(tableDef);
+		final RdfSchema schema = new RdfSchema.Builder().setCatalog(catalog)
+				.setName("testSchema").build(model);
+
+		// create the foo table
+		final RdfTableDef tableDef = new RdfTableDef.Builder()
+				.addColumnDef(
+						MetaCatalogBuilder.getNonNullStringBuilder().build(
+								model))
+				.addColumnDef(
+						MetaCatalogBuilder.getNullStringBuilder().build(model))
+				.addColumnDef(
+						MetaCatalogBuilder.getNonNullIntBuilder().build(model))
+				.addColumnDef(
+						MetaCatalogBuilder.getNullIntBuilder().build(model))
+				.build(model);
+
+		RdfTable.Builder bldr = new RdfTable.Builder().setTableDef(tableDef).setColumn(0, "StringCol")
+				.setColumn(1, "NullableStringCol").setColumn(2, "IntCol")
+				.setColumn(3, "NullableIntCol").setName("foo")
+				.setSchema(schema).addQuerySegment( "%1$s a <http://example.com/foo> ");
+		bldr.getColumn(0).addQuerySegment( "%1$s <http://example.com/zero> %2$s");
+		bldr.getColumn(1).addQuerySegment( "%1$s <http://example.com/one> %2$s");
+		bldr.getColumn(2).addQuerySegment( "%1$s <http://example.com/two> %2$s");
+		bldr.getColumn(3).addQuerySegment( "%1$s <http://example.com/three> %2$s");
+		bldr.build(model);
+
+		bldr = new RdfTable.Builder().setTableDef(tableDef)
+				.setColumn(0, "BarStringCol")
+				.setColumn(1, "BarNullableStringCol").setColumn(2, "BarIntCol")
+				// must be NullableIntCol for inner join test
+				.setColumn(3, "NullableIntCol").setName("bar")
+				.setSchema(schema).addQuerySegment( "%1$s a <http://example.com/bar> ");
+		bldr.getColumn(0).addQuerySegment( "%1$s <http://example.com/zero> %2$s");
+		bldr.getColumn(1).addQuerySegment( "%1$s <http://example.com/one> %2$s");
+		bldr.getColumn(2).addQuerySegment( "%1$s <http://example.com/two> %2$s");
+		bldr.getColumn(3).addQuerySegment( "%1$s <http://example.com/three> %2$s");
+		bldr.build(model);
 
 		sv = new SparqlVisitor(catalog);
+
 
 	}
 
@@ -98,9 +121,9 @@ public class RemoteSparqlVisitorTest
 		Assert.assertTrue(e instanceof ElementGroup);
 		final ElementGroup eg = (ElementGroup) e;
 		final List<Element> eLst = eg.getElements();
-		Assert.assertEquals(9, eLst.size());
+		Assert.assertEquals(9, eLst.size()); // 1 service, 8 columns
 		final List<Var> vLst = q.getProjectVars();
-		Assert.assertEquals(8, vLst.size());
+		Assert.assertEquals(7, vLst.size()); // seven vars
 
 	}
 
@@ -153,7 +176,7 @@ public class RemoteSparqlVisitorTest
 				strLst.add(e2.toString());
 			}
 		}
-		Assert.assertTrue(strLst.contains("FILTER checkTypeF(?MockSchema"
+		Assert.assertTrue(strLst.contains("FILTER checkTypeF(?testSchema"
 				+ NameUtils.SPARQL_DOT + "foo" + NameUtils.SPARQL_DOT
 				+ "StringCol)"));
 
@@ -186,7 +209,7 @@ public class RemoteSparqlVisitorTest
 				strLst.add(e2.toString());
 			}
 		}
-		Assert.assertTrue(strLst.contains("FILTER checkTypeF(?MockSchema"
+		Assert.assertTrue(strLst.contains("FILTER checkTypeF(?testSchema"
 				+ NameUtils.SPARQL_DOT + "foo" + NameUtils.SPARQL_DOT
 				+ "StringCol)"));
 		final List<Var> vLst = q.getProjectVars();

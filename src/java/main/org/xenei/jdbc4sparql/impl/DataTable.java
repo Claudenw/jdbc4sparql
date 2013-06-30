@@ -118,12 +118,6 @@ public class DataTable extends AbstractTable
 		return getTable().getName();
 	}
 
-	@Override
-	public Resource getResource()
-	{
-		return getTable().getResource();
-	}
-
 	/**
 	 * Get a result set that iterates over this table.
 	 * 

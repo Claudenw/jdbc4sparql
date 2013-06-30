@@ -22,7 +22,7 @@ import java.util.UUID;
 
 import org.xenei.jena.entities.ResourceWrapper;
 
-public interface ColumnDef extends ResourceWrapper
+public interface ColumnDef 
 {
 	static class Util
 	{

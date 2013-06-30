@@ -27,11 +27,12 @@ import org.xenei.jena.entities.EntityManager;
 import org.xenei.jena.entities.EntityManagerFactory;
 import org.xenei.jena.entities.EntityManagerRequiredException;
 import org.xenei.jena.entities.MissingAnnotation;
+import org.xenei.jena.entities.ResourceWrapper;
 import org.xenei.jena.entities.annotations.Predicate;
 import org.xenei.jena.entities.annotations.Subject;
 
 @Subject( namespace = "http://org.xenei.jdbc4sparql/entity/Catalog#" )
-public class RdfCatalog implements Catalog
+public class RdfCatalog implements Catalog, ResourceWrapper
 {
 	public static class Builder implements Catalog
 	{
@@ -86,9 +87,10 @@ public class RdfCatalog implements Catalog
 
 				for (final Schema scm : schemas)
 				{
+					if (scm instanceof ResourceWrapper)
 					catalog.addProperty(
 							builder.getProperty(typeClass, "schema"),
-							scm.getResource());
+							((ResourceWrapper)scm).getResource());
 				}
 			}
 			try
@@ -153,13 +155,6 @@ public class RdfCatalog implements Catalog
 		}
 
 		@Override
-		@Predicate
-		public Resource getResource()
-		{
-			return ResourceFactory.createResource(getFQName());
-		}
-
-		@Override
 		public RdfSchema getSchema( final String schemaName )
 		{
 			final NameFilter<RdfSchema> nf = findSchemas(schemaName);
@@ -188,6 +183,12 @@ public class RdfCatalog implements Catalog
 		{
 			this.sparqlEndpoint = sparqlEndpoint;
 			return this;
+		}
+
+		@Override
+		public List<QuerySolution> executeLocalQuery( Query query )
+		{
+			throw new UnsupportedOperationException();
 		}
 
 	}

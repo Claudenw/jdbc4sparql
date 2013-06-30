@@ -19,7 +19,7 @@ package org.xenei.jdbc4sparql.iface;
 
 import org.xenei.jena.entities.ResourceWrapper;
 
-public interface Column extends NamedObject, ResourceWrapper
+public interface Column extends NamedObject
 {
 	/**
 	 * @return the Catalog this table is in.

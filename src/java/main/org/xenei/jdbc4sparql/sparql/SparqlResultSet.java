@@ -17,28 +17,35 @@
  */
 package org.xenei.jdbc4sparql.sparql;
 
+import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.rdf.model.RDFNode;
 
 import java.sql.SQLException;
+import java.util.Iterator;
 
+import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.TypeConverter;
 import org.xenei.jdbc4sparql.impl.ListResultSet;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
+import org.xenei.jdbc4sparql.impl.rdf.RdfColumn;
+import org.xenei.jdbc4sparql.impl.rdf.RdfKey;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 
 public class SparqlResultSet extends ListResultSet
 {
-
-	public SparqlResultSet( final RdfTable table ) throws SQLException
+	Query query;
+	
+	public SparqlResultSet( final Table table, Query query) throws SQLException
 	{
-		super(table.getCatalog().executeLocalQuery(table.getQuery()), table);
+		super(table.getCatalog().executeLocalQuery(query), table);
+		this.query = query;
 	}
-
+	
 	@Override
-	protected RdfTable getTable()
+	protected Table getTable()
 	{
-		return (RdfTable) super.getTable();
+		return super.getTable();
 	}
 
 	@Override
@@ -47,7 +54,7 @@ public class SparqlResultSet extends ListResultSet
 		checkPosition();
 		checkColumn(columnOrdinal);
 		final QuerySolution soln = (QuerySolution) getRowObject();
-		final String colName = getTable().getSolutionName(columnOrdinal - 1);
+		final String colName = query.getProjectVars().get(columnOrdinal - 1).getName();
 		final RDFNode node = soln.get(colName);
 
 		if (node == null)

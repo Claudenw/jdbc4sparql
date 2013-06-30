@@ -27,6 +27,7 @@ import java.util.UUID;
 
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.ColumnDef;
+import org.xenei.jdbc4sparql.impl.NameUtils;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfColumn;
 import org.xenei.jdbc4sparql.impl.rdf.RdfColumnDef;
@@ -91,29 +92,68 @@ public class MetaCatalogBuilder
 	private final ColumnDef nullableBoolean;
 	private final ColumnDef nonNullBoolean;
 	private final Model model;
-
 	private final RdfSchema schema;
+	
+	public static RdfColumnDef.Builder getNonNullStringBuilder()
+	{
+		return RdfColumnDef.Builder.getStringBuilder()
+				.setNullable(DatabaseMetaData.columnNoNulls);
+	}
+	
+	public static RdfColumnDef.Builder getNullStringBuilder()
+	{
+		return RdfColumnDef.Builder.getStringBuilder()
+				.setNullable(DatabaseMetaData.columnNullable);
+	}
+	
+	public static RdfColumnDef.Builder getNonNullIntBuilder()
+	{
+		return RdfColumnDef.Builder.getIntegerBuilder()
+				.setNullable(DatabaseMetaData.columnNoNulls);
+	}
 
+	public static RdfColumnDef.Builder getNullIntBuilder()
+	{
+		return RdfColumnDef.Builder.getIntegerBuilder()
+				.setNullable(DatabaseMetaData.columnNullable);
+	}
+	
+	public static RdfColumnDef.Builder getNonNullShortBuilder()
+	{
+		return RdfColumnDef.Builder.getSmallIntBuilder()
+				.setNullable(DatabaseMetaData.columnNoNulls);
+	}
+	
+	public static RdfColumnDef.Builder getNullShortBuilder()
+	{
+		return RdfColumnDef.Builder.getSmallIntBuilder()
+				.setNullable(DatabaseMetaData.columnNullable);
+	}
+	
+	public static RdfColumnDef.Builder getNonNullBooleanBuilder()
+	{
+		return new RdfColumnDef.Builder().setType(Types.BOOLEAN)
+				.setNullable(DatabaseMetaData.columnNoNulls);
+	}
+	
+	public static RdfColumnDef.Builder getNullBooleanBuilder()
+	{
+		return new RdfColumnDef.Builder().setType(Types.BOOLEAN)
+				.setNullable(DatabaseMetaData.columnNullable);
+	}
+	
 	private MetaCatalogBuilder( final RdfSchema schema, final Model model )
 	{
 		this.schema = schema;
 		this.model = model;
-		nonNullString = RdfColumnDef.Builder.getStringBuilder()
-				.setNullable(DatabaseMetaData.columnNoNulls).build(model);
-		nullableString = RdfColumnDef.Builder.getStringBuilder()
-				.setNullable(DatabaseMetaData.columnNullable).build(model);
-		nonNullInt = RdfColumnDef.Builder.getIntegerBuilder()
-				.setNullable(DatabaseMetaData.columnNoNulls).build(model);
-		nullableInt = RdfColumnDef.Builder.getIntegerBuilder()
-				.setNullable(DatabaseMetaData.columnNullable).build(model);
-		nonNullShort = RdfColumnDef.Builder.getSmallIntBuilder()
-				.setNullable(DatabaseMetaData.columnNoNulls).build(model);
-		nullableShort = RdfColumnDef.Builder.getSmallIntBuilder()
-				.setNullable(DatabaseMetaData.columnNullable).build(model);
-		nullableBoolean = new RdfColumnDef.Builder().setType(Types.BOOLEAN)
-				.setNullable(DatabaseMetaData.columnNullable).build(model);
-		nonNullBoolean = new RdfColumnDef.Builder().setType(Types.BOOLEAN)
-				.setNullable(DatabaseMetaData.columnNoNulls).build(model);
+		nonNullString = getNonNullStringBuilder().build(model);
+		nullableString = getNullStringBuilder().build(model);
+		nonNullInt = getNonNullIntBuilder().build(model);
+		nullableInt = getNullIntBuilder().build(model);
+		nonNullShort = getNonNullShortBuilder().build(model);
+		nullableShort = getNullShortBuilder().build(model);
+		nullableBoolean = getNullBooleanBuilder().build(model);
+		nonNullBoolean = getNonNullBooleanBuilder().build(model);
 	}
 
 	private void addAttributesTable()
@@ -390,7 +430,7 @@ public class MetaCatalogBuilder
 		setNull( builder.getColumn(14) );
 		
 		setNull( builder.getColumn(15) );
-		String uVar = getUUIDVar();
+		String uVar = NameUtils.createUUIDName();
 		builder.getColumn(16) // list list:index (index member)
 		.addQuerySegment( "%1$s <http://org.xenei.jdbc4sparql/entity/Column#columnDef> _:colDef ; ")
 		.addQuerySegment( " <http://org.xenei.jdbc4sparql/entity/Column#table> _:table . ")
@@ -398,7 +438,7 @@ public class MetaCatalogBuilder
 		.addQuerySegment( "_:columns <http://jena.hpl.hp.com/ARQ/list#index> ( "+uVar+" %1$s ) .")
 		.addQuerySegment("BIND( "+uVar+"+1 as %2$s )." );
 		
-		uVar = getUUIDVar();
+		uVar = NameUtils.createUUIDName();
 		builder.getColumn(17) // YES NO or ""
 		.addQuerySegment( "%1$s <http://org.xenei.jdbc4sparql/entity/Column#columnDef> _:colDef .")
 		.addQuerySegment( "_:colDef <http://org.xenei.jdbc4sparql/entity/ColumnDef#nullable> "+uVar+" .")
@@ -415,7 +455,7 @@ public class MetaCatalogBuilder
 		.addQuerySegment( "%1$s <http://org.xenei.jdbc4sparql/entity/Column#columnDef> _:colDef .")
 		.addQuerySegment( "_:colDef <http://org.xenei.jdbc4sparql/entity/ColumnDef#type> %2$s .");
 		
-		uVar = getUUIDVar();
+		uVar = NameUtils.createUUIDName();
 		builder.getColumn(22) 
 		.addQuerySegment( "%1$s <http://org.xenei.jdbc4sparql/entity/Column#columnDef> _:colDef .")
 		.addQuerySegment( "_:colDef <http://org.xenei.jdbc4sparql/entity/ColumnDef#autoIncrement> "+uVar+" .")
@@ -1184,11 +1224,6 @@ public class MetaCatalogBuilder
 			setNull( tblBuilder.getColumn(i));
 		}
 		return tblBuilder;
-	}
-	
-	private String getUUIDVar()
-	{
-		return ("?v_"+UUID.randomUUID().toString()).replace("-", "_");
 	}
 	
 	public void build()

@@ -19,11 +19,12 @@ import org.xenei.jena.entities.EntityManager;
 import org.xenei.jena.entities.EntityManagerFactory;
 import org.xenei.jena.entities.EntityManagerRequiredException;
 import org.xenei.jena.entities.MissingAnnotation;
+import org.xenei.jena.entities.ResourceWrapper;
 import org.xenei.jena.entities.annotations.Predicate;
 import org.xenei.jena.entities.annotations.Subject;
 
 @Subject( namespace = "http://org.xenei.jdbc4sparql/entity/Schema#" )
-public class RdfSchema extends RdfNamespacedObject implements Schema
+public class RdfSchema extends RdfNamespacedObject implements Schema, ResourceWrapper
 {
 	public static class Builder implements Schema
 	{
@@ -61,8 +62,9 @@ public class RdfSchema extends RdfNamespacedObject implements Schema
 
 				for (final Table tbl : tables)
 				{
+					if (tbl instanceof ResourceWrapper)
 					schema.addProperty(builder.getProperty(typeClass, "table"),
-							tbl.getResource());
+							((ResourceWrapper)tbl).getResource());
 				}
 			}
 
@@ -123,13 +125,6 @@ public class RdfSchema extends RdfNamespacedObject implements Schema
 		public String getName()
 		{
 			return name;
-		}
-
-		@Override
-		@Predicate
-		public Resource getResource()
-		{
-			return ResourceFactory.createResource(getFQName());
 		}
 
 		@Override

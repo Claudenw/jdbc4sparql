@@ -618,7 +618,7 @@ public abstract class AbstractResultSet implements ResultSet
 	@Override
 	public String getCursorName() throws SQLException
 	{
-		return table.getResource().getLocalName();
+		return NameUtils.getCursorName(table);
 	}
 
 	@Override

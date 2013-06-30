@@ -1,4 +1,4 @@
-package org.xenei.jdbc4sparql.config;
+package org.xenei.jdbc4sparql.iface;
 
 import com.hp.hpl.jena.rdf.model.Model;
 

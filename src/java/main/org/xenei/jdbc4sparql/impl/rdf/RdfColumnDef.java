@@ -18,11 +18,12 @@ import org.xenei.jena.entities.EntityManager;
 import org.xenei.jena.entities.EntityManagerFactory;
 import org.xenei.jena.entities.EntityManagerRequiredException;
 import org.xenei.jena.entities.MissingAnnotation;
+import org.xenei.jena.entities.ResourceWrapper;
 import org.xenei.jena.entities.annotations.Predicate;
 import org.xenei.jena.entities.annotations.Subject;
 
 @Subject( namespace = "http://org.xenei.jdbc4sparql/entity/ColumnDef#" )
-public class RdfColumnDef implements ColumnDef
+public class RdfColumnDef implements ColumnDef, ResourceWrapper
 {
 	/**
 	 * Column builder, by default columns are not nullable.
@@ -73,13 +74,7 @@ public class RdfColumnDef implements ColumnDef
 
 		private final Class<? extends RdfColumnDef> typeClass = RdfColumnDef.class;
 
-		public Builder()
-		{
-		}
-
-		
-
-		public ColumnDef build( final Model model )
+		public RdfColumnDef build( final Model model )
 		{
 			checkBuildState();
 
@@ -177,12 +172,6 @@ public class RdfColumnDef implements ColumnDef
 		public int getPrecision()
 		{
 			return precision;
-		}
-
-		@Override
-		public Resource getResource()
-		{
-			throw new UnsupportedOperationException();
 		}
 
 		@Override
