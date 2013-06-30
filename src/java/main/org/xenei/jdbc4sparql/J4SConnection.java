@@ -27,12 +27,9 @@ import com.hp.hpl.jena.util.iterator.WrappedIterator;
 import com.hp.hpl.jena.vocabulary.RDF;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.Reader;
 import java.sql.Array;
 import java.sql.Blob;
 import java.sql.CallableStatement;
@@ -62,7 +59,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.ModelFactory;
@@ -78,8 +74,91 @@ import org.xenei.jena.entities.MissingAnnotation;
 
 public class J4SConnection implements Connection
 {
-	public static final String META_MODEL_FACTORY = "MetaModelFactory";
+	private class NoCloseZipInputStream extends InputStream
+	{
+		ZipInputStream wrapped;
 
+		public NoCloseZipInputStream( final ZipInputStream is )
+		{
+			wrapped = is;
+		}
+
+		@Override
+		public int available() throws IOException
+		{
+			return wrapped.available();
+		}
+
+		@Override
+		public void close() throws IOException
+		{
+			wrapped.closeEntry();
+		}
+
+		@Override
+		public boolean equals( final Object obj )
+		{
+			return wrapped.equals(obj);
+		}
+
+		@Override
+		public int hashCode()
+		{
+			return wrapped.hashCode();
+		}
+
+		@Override
+		public void mark( final int readlimit )
+		{
+			wrapped.mark(readlimit);
+		}
+
+		@Override
+		public boolean markSupported()
+		{
+			return wrapped.markSupported();
+		}
+
+		@Override
+		public int read() throws IOException
+		{
+			return wrapped.read();
+		}
+
+		@Override
+		public int read( final byte[] b ) throws IOException
+		{
+			return wrapped.read(b);
+		}
+
+		@Override
+		public int read( final byte[] b, final int off, final int len )
+				throws IOException
+		{
+			return wrapped.read(b, off, len);
+		}
+
+		@Override
+		public void reset() throws IOException
+		{
+			wrapped.reset();
+		}
+
+		@Override
+		public long skip( final long n ) throws IOException
+		{
+			return wrapped.skip(n);
+		}
+
+		@Override
+		public String toString()
+		{
+			return wrapped.toString();
+		}
+
+	}
+
+	public static final String META_MODEL_FACTORY = "MetaModelFactory";
 	private Properties clientInfo;
 	private final J4SUrl url;
 	private final Map<String, Catalog> catalogMap;
@@ -93,13 +172,14 @@ public class J4SConnection implements Connection
 	private SQLWarning sqlWarnings;
 	private int holdability;
 	private File tmpDir;
-	private Properties properties;
+
+	private final Properties properties;
 
 	/**
 	 * The dataset of catalogs
 	 */
 	private Dataset dataset;
-	
+
 	/**
 	 * The dataset of local data
 	 */
@@ -112,7 +192,7 @@ public class J4SConnection implements Connection
 	{
 		if (properties == null)
 		{
-			throw new IllegalArgumentException( "Properties may not be null");
+			throw new IllegalArgumentException("Properties may not be null");
 		}
 		this.properties = properties;
 		this.catalogMap = new HashMap<String, Catalog>();
@@ -122,13 +202,14 @@ public class J4SConnection implements Connection
 		this.currentCatalog = url.getCatalog();
 		this.currentSchema = null;
 		this.tmpDir = null;
-		this.clientInfo = null;
+		this.clientInfo = new Properties();
 
 		this.holdability = ResultSet.HOLD_CURSORS_OVER_COMMIT;
 
 		configureCatalogMap();
-		Model metadataModel = getDataset().getNamedModel( MetaCatalogBuilder.LOCAL_NAME );
-		final Catalog c = MetaCatalogBuilder.getInstance( metadataModel );
+		final Model metadataModel = getDataset().getNamedModel(
+				MetaCatalogBuilder.LOCAL_NAME);
+		final Catalog c = MetaCatalogBuilder.getInstance(metadataModel);
 		catalogMap.put(c.getName(), c);
 		if (StringUtils.isNotEmpty(currentCatalog)
 				&& (catalogMap.get(currentCatalog) == null))
@@ -149,11 +230,12 @@ public class J4SConnection implements Connection
 
 	public RdfCatalog addCatalog( final RdfCatalog.Builder catalogBuilder )
 	{
-		Model model = getDataset().getNamedModel( catalogBuilder.getName() );
+		final Model model = getDataset()
+				.getNamedModel(catalogBuilder.getName());
 		Model dataModel = catalogBuilder.getLocalModel();
 		if (dataModel != null)
 		{
-			getLocalData().addNamedModel(catalogBuilder.getName(),  dataModel );
+			getLocalData().addNamedModel(catalogBuilder.getName(), dataModel);
 		}
 		else
 		{
@@ -163,7 +245,7 @@ public class J4SConnection implements Connection
 				catalogBuilder.setLocalModel(dataModel);
 			}
 		}
-		RdfCatalog cat =  catalogBuilder.build(model);
+		final RdfCatalog cat = catalogBuilder.build(model);
 		catalogMap.put(cat.getName(), cat);
 		return cat;
 	}
@@ -210,13 +292,14 @@ public class J4SConnection implements Connection
 		}
 	}
 
-	private void configureCatalogMap()
-			throws IOException, InstantiationException, IllegalAccessException, ClassNotFoundException, MissingAnnotation
+	private void configureCatalogMap() throws IOException,
+			InstantiationException, IllegalAccessException,
+			ClassNotFoundException, MissingAnnotation
 	{
 
 		if (url.getType().equals(J4SUrl.TYPE_CONFIG))
 		{
-			loadConfig( url.getEndpoint().toURL().openStream());
+			loadConfig(url.getEndpoint().toURL().openStream());
 		}
 		else
 		{
@@ -230,7 +313,7 @@ public class J4SConnection implements Connection
 			{
 				model = getDataset().getNamedModel(currentCatalog);
 			}
-			
+
 			if (url.getType().equals(J4SUrl.TYPE_SPARQL))
 			{
 				catalog = new RdfCatalog.Builder()
@@ -239,11 +322,10 @@ public class J4SConnection implements Connection
 			}
 			else
 			{
-				Model dataModel = createModel();
+				final Model dataModel = createModel();
 				dataModel.read(url.getEndpoint().toString(), url.getType());
-				catalog = new RdfCatalog.Builder()
-					.setLocalModel( dataModel )
-					.setName(currentCatalog).build(model);
+				catalog = new RdfCatalog.Builder().setLocalModel(dataModel)
+						.setName(currentCatalog).build(model);
 			}
 
 			final RdfSchema schema = new RdfSchema.Builder()
@@ -253,37 +335,13 @@ public class J4SConnection implements Connection
 			catalogMap.put(catalog.getName(), catalog);
 			if (url.getBuilder() != null)
 			{
-			for (RdfTable table : url.getBuilder().getTables(catalog))
+				for (final RdfTable table : url.getBuilder().getTables(catalog))
 				{
 					schema.addTables(table);
 				}
 			}
 		}
 
-	}
-
-	/**
-	 * Create a model using the configured model builder.
-	 * @return a fresh model
-	 * @throws InstantiationException
-	 * @throws IllegalAccessException
-	 * @throws ClassNotFoundException
-	 */
-	private Model createModel()
-			throws InstantiationException, IllegalAccessException,
-			ClassNotFoundException
-	{
-		if (properties.containsKey(J4SConnection.META_MODEL_FACTORY))
-		{
-			final Class<? extends ModelFactory> clazz = (Class<? extends ModelFactory>) J4SConnection.class
-					.getClassLoader()
-					.loadClass(
-							properties
-									.getProperty(J4SConnection.META_MODEL_FACTORY));
-			return clazz.newInstance().createModel(properties);
-		}
-		return com.hp.hpl.jena.rdf.model.ModelFactory.createDefaultModel();
-		
 	}
 
 	@Override
@@ -303,6 +361,30 @@ public class J4SConnection implements Connection
 	public Clob createClob() throws SQLException
 	{
 		throw new SQLFeatureNotSupportedException();
+	}
+
+	/**
+	 * Create a model using the configured model builder.
+	 * 
+	 * @return a fresh model
+	 * @throws InstantiationException
+	 * @throws IllegalAccessException
+	 * @throws ClassNotFoundException
+	 */
+	private Model createModel() throws InstantiationException,
+			IllegalAccessException, ClassNotFoundException
+	{
+		if (properties.containsKey(J4SConnection.META_MODEL_FACTORY))
+		{
+			final Class<? extends ModelFactory> clazz = (Class<? extends ModelFactory>) J4SConnection.class
+					.getClassLoader()
+					.loadClass(
+							properties
+									.getProperty(J4SConnection.META_MODEL_FACTORY));
+			return clazz.newInstance().createModel(properties);
+		}
+		return com.hp.hpl.jena.rdf.model.ModelFactory.createDefaultModel();
+
 	}
 
 	@Override
@@ -397,7 +479,13 @@ public class J4SConnection implements Connection
 		}
 		return dataset;
 	}
-	
+
+	@Override
+	public int getHoldability() throws SQLException
+	{
+		return holdability;
+	}
+
 	private Dataset getLocalData()
 	{
 		if (localData == null)
@@ -408,12 +496,6 @@ public class J4SConnection implements Connection
 			localData = TDBFactory.createDataset(tmpDir.getAbsolutePath());
 		}
 		return localData;
-	}
-
-	@Override
-	public int getHoldability() throws SQLException
-	{
-		return holdability;
 	}
 
 	@Override
@@ -484,6 +566,93 @@ public class J4SConnection implements Connection
 	public boolean isWrapperFor( final Class<?> arg0 ) throws SQLException
 	{
 		return false;
+	}
+
+	private void loadConfig( final InputStream in ) throws IOException,
+			MissingAnnotation
+	{
+		Dataset ds;
+		final ZipInputStream zis = new ZipInputStream(in);
+		for (ZipEntry e = zis.getNextEntry(); e != null; e = zis.getNextEntry())
+		{
+			Model m = null;
+			final String name = e.getName();
+			String graphName = name;
+			if (name.startsWith("/default/"))
+			{
+				graphName = name.substring("/default/".length());
+				if (graphName.startsWith("local"))
+				{
+					ds = getLocalData();
+				}
+				else if (graphName.startsWith("meta"))
+				{
+					ds = getDataset();
+				}
+				else
+				{
+					throw new IllegalArgumentException("Unknown type " + name);
+
+				}
+				m = ds.getDefaultModel();
+			}
+			else
+			{
+				if (name.startsWith("/local/"))
+				{
+					ds = getLocalData();
+					graphName = name.substring("/local/".length());
+				}
+				else if (name.startsWith("/meta/"))
+				{
+					ds = getDataset();
+					graphName = name.substring("/meta/".length());
+				}
+				else
+				{
+					throw new IllegalArgumentException("Unknown type " + name);
+				}
+				graphName = graphName.substring(0,
+						graphName.length() - ".ttl".length());
+				m = ds.getNamedModel(graphName);
+			}
+
+			final NoCloseZipInputStream ncis = new NoCloseZipInputStream(zis);
+			m.read(ncis, graphName, "TURTLE");
+		}
+		zis.close();
+		// create the catalogs
+		ds = getDataset();
+		final Resource catType = ResourceFactory.createResource(ResourceBuilder
+				.getFQName(RdfCatalog.class));
+		final EntityManager entityManager = EntityManagerFactory
+				.getEntityManager();
+		final List<String> names = WrappedIterator.create(ds.listNames())
+				.toList();
+		names.add("");
+		for (final String name : names)
+		{
+			final Model m = name.equals("") ? ds.getDefaultModel() : ds
+					.getNamedModel(name);
+			final List<RdfCatalog> cats = new ArrayList<RdfCatalog>();
+			final ResIterator ri = m
+					.listSubjectsWithProperty(RDF.type, catType);
+			while (ri.hasNext())
+			{
+				cats.add(entityManager.read(ri.next(), RdfCatalog.class));
+			}
+			// add local data if necessary
+			for (RdfCatalog cat : cats)
+			{
+				if (getLocalData().containsNamedModel(name))
+				{
+					cat = new RdfCatalog.Builder(cat).setLocalModel(
+							getLocalData().getNamedModel(name)).build(m);
+				}
+				catalogMap.put(cat.getName(), cat);
+			}
+
+		}
 	}
 
 	@Override
@@ -583,120 +752,43 @@ public class J4SConnection implements Connection
 	 *            modelWriter to write the config to.
 	 * @throws IOException
 	 */
-	public void saveConfig( OutputStream os ) throws IOException
+	public void saveConfig( final OutputStream os ) throws IOException
 	{
-		ZipOutputStream out = new ZipOutputStream( os );
+		final ZipOutputStream out = new ZipOutputStream(os);
 		Dataset ds = getDataset();
 		String entryName;
 		ZipEntry e;
-		for (Iterator<String> nIter=ds.listNames();nIter.hasNext();)
+		for (final Iterator<String> nIter = ds.listNames(); nIter.hasNext();)
 		{
-			String name = nIter.next();
-			entryName = String.format( "/meta/%s.ttl", name );
-			e = new ZipEntry( entryName );
-			out.putNextEntry( e );
-			ds.getNamedModel( name ).write( out, "TURTLE");
+			final String name = nIter.next();
+			entryName = String.format("/meta/%s.ttl", name);
+			e = new ZipEntry(entryName);
+			out.putNextEntry(e);
+			ds.getNamedModel(name).write(out, "TURTLE");
 			out.closeEntry();
 		}
 		entryName = "/default/meta.ttl";
-		e = new ZipEntry( entryName );
-		out.putNextEntry( e );
-		ds.getDefaultModel().write( out, "TURTLE");
+		e = new ZipEntry(entryName);
+		out.putNextEntry(e);
+		ds.getDefaultModel().write(out, "TURTLE");
 		out.closeEntry();
-		
+
 		ds = getLocalData();
-		for (Iterator<String> nIter=ds.listNames();nIter.hasNext();)
+		for (final Iterator<String> nIter = ds.listNames(); nIter.hasNext();)
 		{
-			String name = nIter.next();
-			entryName = String.format( "/local/%s.ttl", name );
-			e = new ZipEntry( entryName );
-			out.putNextEntry( e );
-			ds.getNamedModel( name ).write( out, "TURTLE");
+			final String name = nIter.next();
+			entryName = String.format("/local/%s.ttl", name);
+			e = new ZipEntry(entryName);
+			out.putNextEntry(e);
+			ds.getNamedModel(name).write(out, "TURTLE");
 			out.closeEntry();
 		}
 		entryName = "/default/local.ttl";
-		e = new ZipEntry( entryName );
-		out.putNextEntry( e );
-		ds.getDefaultModel().write( out, "TURTLE");
+		e = new ZipEntry(entryName);
+		out.putNextEntry(e);
+		ds.getDefaultModel().write(out, "TURTLE");
 		out.closeEntry();
 		out.close();
-	}
-	
-	private void loadConfig( InputStream in ) throws IOException, MissingAnnotation
-	{
-		Dataset ds;
-		ZipInputStream zis = new ZipInputStream(in);
-		for (ZipEntry e = zis.getNextEntry(); e!=null;e=zis.getNextEntry())
-		{
-			Model m = null;
-			String name = e.getName();
-			String graphName = name;
-			if (name.startsWith( "/default/"))
-			{
-				graphName = name.substring( "/default/".length());
-				if (graphName.startsWith( "local"))
-				{
-					ds = getLocalData();
-				}
-				else if (graphName.startsWith( "meta"))
-				{
-					ds = getDataset();
-				}
-				else
-				{
-					throw new IllegalArgumentException( "Unknown type "+ name );
-	
-				}
-				m = ds.getDefaultModel();
-			}
-			else {
-				if (name.startsWith( "/local/"))
-				{
-					ds = getLocalData();
-					graphName = name.substring( "/local/".length() );
-				}
-				else if (name.startsWith( "/meta/"))
-				{
-					ds = getDataset();
-					graphName = name.substring( "/meta/".length() );
-				}
-				else {
-					throw new IllegalArgumentException( "Unknown type "+ name );
-				}
-				graphName=graphName.substring( 0, graphName.length()-".ttl".length());
-				m = ds.getNamedModel( graphName );
-			}
-			
-			NoCloseZipInputStream ncis = new NoCloseZipInputStream( zis );
-			m.read( ncis, graphName ,"TURTLE");
-		}
-		zis.close();
-		// create the catalogs
-		ds = getDataset();
-		Resource catType = ResourceFactory.createResource( ResourceBuilder.getFQName( RdfCatalog.class ) );
-		EntityManager entityManager = EntityManagerFactory.getEntityManager();
-		List<String> names = WrappedIterator.create(ds.listNames()).toList();
-		names.add("");
-		for (String name : names)
-		{
-			Model m = name.equals("")?ds.getDefaultModel():ds.getNamedModel(name);
-			List<RdfCatalog> cats = new ArrayList<RdfCatalog>();
-			ResIterator ri = m.listSubjectsWithProperty( RDF.type, catType);
-			while (ri.hasNext())
-			{
-				cats.add( entityManager.read( ri.next(), RdfCatalog.class) );	
-			}
-			// add local data if necessary
-			for (RdfCatalog cat : cats)
-			{
-				if (getLocalData().containsNamedModel( name ))
-				{
-					cat = new RdfCatalog.Builder( cat ).setLocalModel( getLocalData().getNamedModel(name)).build( m );
-				}
-				catalogMap.put( cat.getName(), cat );
-			}
-			
-		}
 	}
 
 	@Override
@@ -717,25 +809,28 @@ public class J4SConnection implements Connection
 
 	@Override
 	public void setClientInfo( final Properties clientInfo )
-			throws SQLClientInfoException
 	{
 		this.clientInfo = clientInfo;
 	}
 
 	@Override
 	public void setClientInfo( final String param, final String value )
-			throws SQLClientInfoException
 	{
-		this.clientInfo.setProperty(param, value);
+		if( value != null)
+		{
+			this.clientInfo.setProperty(param, value);
+		} else {
+			this.clientInfo.remove(param);
+		}
 	}
 
 	@Override
 	public void setHoldability( final int holdability ) throws SQLException
 	{
-		if ((holdability != ResultSet.HOLD_CURSORS_OVER_COMMIT)
-				&& (holdability != ResultSet.CLOSE_CURSORS_AT_COMMIT))
+		// don't support ResultSet.CLOSE_CURSORS_AT_COMMIT
+		if (holdability != ResultSet.HOLD_CURSORS_OVER_COMMIT)
 		{
-			throw new SQLException("Invalid holdability value");
+			throw new SQLFeatureNotSupportedException("Invalid holdability value");
 		}
 		this.holdability = holdability;
 	}
@@ -750,7 +845,10 @@ public class J4SConnection implements Connection
 	@Override
 	public void setReadOnly( final boolean state ) throws SQLException
 	{
-		// do nothing as it is all read only.
+		if (!state)
+		{
+			throw new SQLFeatureNotSupportedException( "Can not set ReadOnly=false");
+		}
 	}
 
 	@Override
@@ -774,7 +872,7 @@ public class J4SConnection implements Connection
 	@Override
 	public void setTransactionIsolation( final int arg0 ) throws SQLException
 	{
-		// do nothing as we don't do transactions
+		throw new SQLFeatureNotSupportedException();
 	}
 
 	@Override
@@ -788,78 +886,5 @@ public class J4SConnection implements Connection
 	public <T> T unwrap( final Class<T> arg0 ) throws SQLException
 	{
 		throw new SQLFeatureNotSupportedException();
-	}
-	
-	private class NoCloseZipInputStream extends InputStream
-	{
-		ZipInputStream wrapped;
-		
-		public NoCloseZipInputStream( ZipInputStream is )
-		{
-			wrapped = is;
-		}
-
-		public void close() throws IOException
-		{
-			wrapped.closeEntry();
-		}
-		
-		public int available() throws IOException
-		{
-			return wrapped.available();
-		}
-
-		public boolean equals( Object obj )
-		{
-			return wrapped.equals(obj);
-		}
-
-		public int hashCode()
-		{
-			return wrapped.hashCode();
-		}
-
-		public void mark( int readlimit )
-		{
-			wrapped.mark(readlimit);
-		}
-
-		public boolean markSupported()
-		{
-			return wrapped.markSupported();
-		}
-
-		public int read() throws IOException
-		{
-			return wrapped.read();
-		}
-
-		public int read( byte[] b, int off, int len ) throws IOException
-		{
-			return wrapped.read(b, off, len);
-		}
-
-		public int read( byte[] b ) throws IOException
-		{
-			return wrapped.read(b);
-		}
-
-		public void reset() throws IOException
-		{
-			wrapped.reset();
-		}
-
-		public long skip( long n ) throws IOException
-		{
-			return wrapped.skip(n);
-		}
-
-		public String toString()
-		{
-			return wrapped.toString();
-		}
-
-		
-		
 	}
 }

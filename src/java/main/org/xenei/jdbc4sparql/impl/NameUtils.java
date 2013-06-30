@@ -46,11 +46,26 @@ public class NameUtils
 		return sb.toString();
 	}
 
+	public static String createUUIDName()
+	{
+		return ("v_" + UUID.randomUUID().toString()).replace("-", "_");
+	}
+
+	public static String getCursorName( final String schema, final String table )
+	{
+		return "CURSOR_" + NameUtils.createName(schema, table, null, "_");
+	}
+
+	public static String getCursorName( final Table t )
+	{
+		return NameUtils.getCursorName(t.getSchema().getName(), t.getName());
+	}
+
 	public static String getDBName( final Column column )
 	{
-		String sName = column.getSchema().getName(); // FIXME remove this
-		String tName = column.getTable().getName();
-		String name = column.getName();
+		column.getSchema().getName();
+		column.getTable().getName();
+		column.getName();
 		return NameUtils.getDBName(column.getSchema().getName(), column
 				.getTable().getName(), column.getName());
 	}
@@ -88,20 +103,5 @@ public class NameUtils
 	{
 		return NameUtils.getSPARQLName(table.getSchema().getName(),
 				table.getName(), null);
-	}
-
-	public static String createUUIDName()
-	{
-		return ("v_"+UUID.randomUUID().toString()).replace("-", "_");
-	}
-	
-	public static String getCursorName(Table t)
-	{
-		return getCursorName( t.getSchema().getName(), t.getName() );
-	}
-	
-	public static String getCursorName( String schema, String table )
-	{
-		return "CURSOR_"+NameUtils.createName( schema, table, null, "_");
 	}
 }

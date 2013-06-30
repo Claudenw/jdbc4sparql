@@ -32,7 +32,8 @@ import org.xenei.jdbc4sparql.impl.rdf.RdfColumnDef;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTableDef;
 
 /**
- * A simple example builder that looks for the phrase "nullable" in column name to
+ * A simple example builder that looks for the phrase "nullable" in column name
+ * to
  * determine
  * if they are nullable or not. if Nullable is not found columnNoNulls is set.
  * if the name contains int the colum type will be set to "integer"
@@ -47,12 +48,13 @@ public class SimpleNullableBuilder extends SimpleBuilder
 	public SimpleNullableBuilder()
 	{
 	}
-	
-	protected Map<String,String> addColumnDefs( final RdfCatalog catalog,
+
+	@Override
+	protected Map<String, String> addColumnDefs( final RdfCatalog catalog,
 			final RdfTableDef.Builder tableDefBuilder, final Resource tName )
 	{
 		final Model model = catalog.getResource().getModel();
-		final Map<String,String> colNames = new LinkedHashMap<String,String>();
+		final Map<String, String> colNames = new LinkedHashMap<String, String>();
 		final List<QuerySolution> solns = catalog.executeQuery(String.format(
 				SimpleBuilder.COLUMN_QUERY, tName));
 
@@ -73,10 +75,10 @@ public class SimpleNullableBuilder extends SimpleBuilder
 			{
 				builder.setNullable(DatabaseMetaData.columnNoNulls);
 			}
-			String s = String.format( SimpleBuilder.COLUMN_SEGMENT, "%1$s", "%2$s", cName.getURI());
-			colNames.put(cName.getLocalName(), s );
-			builder.setType(type)
-					.setNullable(DatabaseMetaData.columnNullable);
+			final String s = String.format(SimpleBuilder.COLUMN_SEGMENT,
+					"%1$s", "%2$s", cName.getURI());
+			colNames.put(cName.getLocalName(), s);
+			builder.setType(type).setNullable(DatabaseMetaData.columnNullable);
 			tableDefBuilder.addColumnDef(builder.build(model));
 		}
 		return colNames;

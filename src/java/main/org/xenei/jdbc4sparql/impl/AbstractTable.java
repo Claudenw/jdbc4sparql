@@ -141,6 +141,7 @@ public abstract class AbstractTable implements Table
 	{
 		return table;
 	}
+
 	/**
 	 * @return The table definition for this table.
 	 */

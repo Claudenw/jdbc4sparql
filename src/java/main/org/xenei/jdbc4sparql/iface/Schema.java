@@ -19,8 +19,6 @@ package org.xenei.jdbc4sparql.iface;
 
 import java.util.Set;
 
-import org.xenei.jena.entities.ResourceWrapper;
-
 public interface Schema extends NamedObject
 {
 

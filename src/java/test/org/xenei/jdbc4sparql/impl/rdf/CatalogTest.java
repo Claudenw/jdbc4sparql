@@ -50,26 +50,25 @@ public class CatalogTest
 	@Test
 	public void testClose()
 	{
-		Assert.assertFalse( model.isClosed() );
-		Assert.assertFalse( dataModel.isClosed() );
+		Assert.assertFalse(model.isClosed());
+		Assert.assertFalse(dataModel.isClosed());
 		catalog.close();
-		Assert.assertFalse( model.isClosed() );
-		Assert.assertFalse( dataModel.isClosed() );		
+		Assert.assertFalse(model.isClosed());
+		Assert.assertFalse(dataModel.isClosed());
 	}
 
 	@Test
 	public void testCloseMultiple()
 	{
-		// create a second catalog on the same data model.
-		RdfCatalog cat2  = new RdfCatalog.Builder().setName("testCatalog2")
+		new RdfCatalog.Builder().setName("testCatalog2")
 				.setLocalModel(dataModel).build(model);
-		Assert.assertFalse( model.isClosed() );
-		Assert.assertFalse( dataModel.isClosed() );
+		Assert.assertFalse(model.isClosed());
+		Assert.assertFalse(dataModel.isClosed());
 		catalog.close();
-		Assert.assertFalse( model.isClosed() );
-		Assert.assertFalse( dataModel.isClosed() );	
+		Assert.assertFalse(model.isClosed());
+		Assert.assertFalse(dataModel.isClosed());
 	}
-	
+
 	@Test
 	public void testExecuteLocalQuery() throws Exception
 	{
@@ -84,14 +83,16 @@ public class CatalogTest
 		List<QuerySolution> lqs = catalog.executeLocalQuery(query);
 		Assert.assertEquals(2, lqs.size());
 
-/*		// test reading from model
-		final RdfCatalog cat2 = entityManager.read(catalog.getResource(),
-				RdfCatalog.class);
-		lqs = cat2.executeLocalQuery(query);
-		Assert.assertEquals(2, lqs.size());
-*/
+		/*
+		 * // test reading from model
+		 * final RdfCatalog cat2 = entityManager.read(catalog.getResource(),
+		 * RdfCatalog.class);
+		 * lqs = cat2.executeLocalQuery(query);
+		 * Assert.assertEquals(2, lqs.size());
+		 */
 		// build a catalog with service node
-		final RdfCatalog cat3 = new RdfCatalog.Builder().setName("testCatalog2")
+		final RdfCatalog cat3 = new RdfCatalog.Builder()
+				.setName("testCatalog2")
 				.setSparqlEndpoint(new URL("http://example.com"))
 				.setLocalModel(dataModel).build(model);
 
@@ -99,14 +100,14 @@ public class CatalogTest
 		Assert.assertEquals(2, lqs.size());
 
 		/*
-		// check reading from model
-		final RdfCatalog cat4 = entityManager.read(cat3.getResource(),
-				RdfCatalog.class);
-		Assert.assertEquals("http://example.com", cat3.getServiceNode()
-				.getURI());
-		lqs = cat4.executeLocalQuery(query);
-		Assert.assertEquals(2, lqs.size());
-		*/
+		 * // check reading from model
+		 * final RdfCatalog cat4 = entityManager.read(cat3.getResource(),
+		 * RdfCatalog.class);
+		 * Assert.assertEquals("http://example.com", cat3.getServiceNode()
+		 * .getURI());
+		 * lqs = cat4.executeLocalQuery(query);
+		 * Assert.assertEquals(2, lqs.size());
+		 */
 	}
 
 	@Test
@@ -120,31 +121,11 @@ public class CatalogTest
 		final String qry = "Select * WHERE { ?s ?p ?o }";
 		final Query query = QueryFactory.create(qry);
 
-		List<QuerySolution> lqs = catalog.executeQuery(query);
+		final List<QuerySolution> lqs = catalog.executeQuery(query);
 		Assert.assertEquals(2, lqs.size());
 
-		/*
-		// test reading from model
-		final RdfCatalog cat2 = entityManager.read(catalog.getResource(),
-				RdfCatalog.class);
-		lqs = cat2.executeQuery(query);
-		Assert.assertEquals(2, lqs.size());
-*/
-		// build a catalog with service node
-		final RdfCatalog cat3 = new RdfCatalog.Builder().setName("testCatalog2")
+		new RdfCatalog.Builder().setName("testCatalog2")
 				.setSparqlEndpoint(new URL("http://example.com")).build(model);
-/*
-		lqs = cat3.executeQuery(query);
-		Assert.assertEquals(2, lqs.size());
-
-		// check reading from model
-		final RdfCatalog cat4 = entityManager.read(cat3.getResource(),
-				RdfCatalog.class);
-		Assert.assertEquals("http://example.com", cat3.getServiceNode()
-				.getURI());
-		lqs = cat4.executeQuery(query);
-		Assert.assertEquals(2, lqs.size());
-		*/
 	}
 
 	@Test
@@ -158,31 +139,11 @@ public class CatalogTest
 
 		final String query = "Select * WHERE { ?s ?p ?o }";
 
-		List<QuerySolution> lqs = catalog.executeQuery(query);
+		final List<QuerySolution> lqs = catalog.executeQuery(query);
 		Assert.assertEquals(2, lqs.size());
 
-		/*
-		// test reading from model
-		final RdfCatalog cat2 = entityManager.read(catalog.getResource(),
-				RdfCatalog.class);
-		lqs = cat2.executeQuery(query);
-		Assert.assertEquals(2, lqs.size());
-*/
-		// build a catalog with service node
-		final RdfCatalog cat3 = new RdfCatalog.Builder().setName("testCatalog2")
+		new RdfCatalog.Builder().setName("testCatalog2")
 				.setSparqlEndpoint(new URL("http://example.com")).build(model);
-/*
-		lqs = cat3.executeQuery(query);
-		Assert.assertEquals(2, lqs.size());
-
-		// check reading from model
-		final RdfCatalog cat4 = entityManager.read(cat3.getResource(),
-				RdfCatalog.class);
-		Assert.assertEquals("http://example.com", cat3.getServiceNode()
-				.getURI());
-		lqs = cat4.executeQuery(query);
-		Assert.assertEquals(2, lqs.size());
-		*/
 	}
 
 	@Test
@@ -365,7 +326,7 @@ public class CatalogTest
 		for (final RdfSchema schema : schemas)
 		{
 			Assert.assertTrue(names.contains(schema.getName()));
-			Assert.assertEquals( catalog, schema.getCatalog() );
+			Assert.assertEquals(catalog, schema.getCatalog());
 		}
 
 		new RdfSchema.Builder().setName("testSchema2").setCatalog(catalog)
@@ -400,7 +361,8 @@ public class CatalogTest
 		Assert.assertNull(cat2.getServiceNode());
 
 		// build a catalog with service node
-		final RdfCatalog cat3 = new RdfCatalog.Builder().setName("testCatalog2")
+		final RdfCatalog cat3 = new RdfCatalog.Builder()
+				.setName("testCatalog2")
 				.setSparqlEndpoint(new URL("http://example.com")).build(model);
 
 		Assert.assertEquals("http://example.com", cat3.getServiceNode()
@@ -436,7 +398,8 @@ public class CatalogTest
 		Assert.assertFalse(cat2.isService());
 
 		// build a catalog with service node
-		final RdfCatalog cat3 = new RdfCatalog.Builder().setName("testCatalog2")
+		final RdfCatalog cat3 = new RdfCatalog.Builder()
+				.setName("testCatalog2")
 				.setSparqlEndpoint(new URL("http://example.com")).build(model);
 
 		Assert.assertTrue(cat3.isService());

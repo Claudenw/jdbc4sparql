@@ -20,7 +20,6 @@ package org.xenei.jdbc4sparql;
 import org.apache.jena.riot.RDFLanguages;
 import org.junit.Assert;
 import org.junit.Test;
-import org.openjena.riot.Lang;
 
 public class J4SUrlTest
 {
@@ -39,9 +38,9 @@ public class J4SUrlTest
 				.toString());
 
 		url = new J4SUrl(
-				"jdbc:j4s?builder=org.xenei.jdbc4sparql.mock.MockSchemaBuilder:http://example.com/test.file");
+				"jdbc:j4s?builder=org.xenei.jdbc4sparql.sparql.builders.SimpleBuilder:http://example.com/test.file");
 		Assert.assertEquals("", url.getCatalog());
-		Assert.assertEquals("org.xenei.jdbc4sparql.mock.MockSchemaBuilder", url
+		Assert.assertEquals("org.xenei.jdbc4sparql.sparql.builders.SimpleBuilder", url
 				.getBuilder().getClass().getName());
 		Assert.assertEquals("http://example.com/test.file", url.getEndpoint()
 				.toString());

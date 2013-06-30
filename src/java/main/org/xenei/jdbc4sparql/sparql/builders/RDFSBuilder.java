@@ -32,12 +32,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.xenei.jdbc4sparql.iface.Key;
-import org.xenei.jdbc4sparql.impl.rdf.RdfKeySegment;
-import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfColumnDef;
 import org.xenei.jdbc4sparql.impl.rdf.RdfKey;
+import org.xenei.jdbc4sparql.impl.rdf.RdfKeySegment;
+import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTableDef;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTableDef.Builder;
 
@@ -68,9 +67,9 @@ public class RDFSBuilder implements SchemaBuilder
 	public Set<RdfTable> getTables( final RdfCatalog catalog )
 	{
 		// we have to build the table defs piece by piece
-		Model model = catalog.getResource().getModel();
+		final Model model = catalog.getResource().getModel();
 		final Map<String, RdfTableDef.Builder> tables = new HashMap<String, Builder>();
-		Map<String,List<String>> columnName = new HashMap<String,List<String>>();
+		final Map<String, List<String>> columnName = new HashMap<String, List<String>>();
 		for (final Statement stmt : rdfsOntology.listStatements(null,
 				RDFS.domain, (RDFNode) null).toList())
 		{
@@ -85,27 +84,29 @@ public class RDFSBuilder implements SchemaBuilder
 				RdfTableDef.Builder idDef = tables.get(idTable);
 				if (idDef == null)
 				{
-					final RdfTableDef.Builder builder = new RdfTableDef.Builder();
+					new RdfTableDef.Builder();
 					idDef = new RdfTableDef.Builder();
-							/*
-							r.asNode().getNameSpace(),
-							idTable,
-							"%1$s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> %2$s",
-							null);
-							*/
+					/*
+					 * r.asNode().getNameSpace(),
+					 * idTable,
+					 * "%1$s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> %2$s"
+					 * ,
+					 * null);
+					 */
 					tables.put(idTable, idDef);
 					final RdfColumnDef.Builder bldr = new RdfColumnDef.Builder();
-					bldr //.addQuerySegment("BIND( %2$s, %1$s )")
+					bldr // .addQuerySegment("BIND( %2$s, %1$s )")
 							// .setNamespace(r.asNode().getNameSpace())
 							// .setLocalName(idTable)
-							.setType(Types.VARCHAR).setSigned(false)
+					.setType(Types.VARCHAR).setSigned(false)
 							.setNullable(DatabaseMetaData.columnNoNulls);
 					idDef.addColumnDef(bldr.build(model));
 					pk = new RdfKey.Builder()
 							.setUnique(true)
 							.addSegment(
-									new RdfKeySegment.Builder().setIdx(0).setAscending(true).build(model)
-									).build(model);
+									new RdfKeySegment.Builder().setIdx(0)
+											.setAscending(true).build(model))
+							.build(model);
 					idDef.setPrimaryKey(pk);
 				}
 				else
@@ -118,10 +119,10 @@ public class RDFSBuilder implements SchemaBuilder
 				if (idData == null)
 				{
 					idData = new RdfTableDef.Builder();
-							//r.asNode().getNameSpace(),
-							//dataTbl,
-							//"%1$s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> %2$s",
-							//null);
+					// r.asNode().getNameSpace(),
+					// dataTbl,
+					// "%1$s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> %2$s",
+					// null);
 					tables.put(dataTbl, idData);
 					idData.addColumnDef(idDef.getColumnDef(0));
 				}
@@ -130,9 +131,9 @@ public class RDFSBuilder implements SchemaBuilder
 				if (colNames == null)
 				{
 					colNames = new ArrayList<String>();
-					columnName.put(dataTbl , colNames);				
+					columnName.put(dataTbl, colNames);
 				}
-				colNames.add( stmt.getSubject().getURI());
+				colNames.add(stmt.getSubject().getURI());
 				bldr.setType(Types.VARCHAR).setSigned(false)
 						.setNullable(DatabaseMetaData.columnNullable);
 				idData.addColumnDef(bldr.build(model));
@@ -140,39 +141,40 @@ public class RDFSBuilder implements SchemaBuilder
 		}
 		// all the definitions are built so build the tables.
 		final HashSet<RdfTable> retval = new HashSet<RdfTable>();
-		for (String fqName : tables.keySet())
+		for (final String fqName : tables.keySet())
 		{
-			Resource r = model.createResource( fqName );
-			RdfTable.Builder builder = new RdfTable.Builder()
-				.setTableDef( tables.get(fqName).build(model))
-				.setName( r.getLocalName() )
-				.addQuerySegment("%1$s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> %2$s");
+			final Resource r = model.createResource(fqName);
+			final RdfTable.Builder builder = new RdfTable.Builder()
+					.setTableDef(tables.get(fqName).build(model))
+					.setName(r.getLocalName())
+					.addQuerySegment(
+							"%1$s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> %2$s");
 			if (fqName.endsWith("_ID"))
 			{
 				builder.setColumn(0, "id");
 				builder.getColumn(0).addQuerySegment("BIND( %2$s, %1$s )");
-				retval.add( builder.build(model) );
+				retval.add(builder.build(model));
 			}
 			else
 			{
 				/*
-				r.asNode().getNameSpace(),
-				idTable,
-				"%1$s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> %2$s",
-				null);
-				*/
+				 * r.asNode().getNameSpace(),
+				 * idTable,
+				 * "%1$s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> %2$s",
+				 * null);
+				 */
 				// column
-				//.addQuerySegment("%1$s %3$s %2$s")
-						//.setNamespace(stmt.getSubject().getNameSpace())
-						//.setLocalName(stmt.getSubject().getLocalName())
-				List<String> colNames = columnName.get(fqName);
-				for (int i=0;i<builder.getColumnCount();i++)
+				// .addQuerySegment("%1$s %3$s %2$s")
+				// .setNamespace(stmt.getSubject().getNameSpace())
+				// .setLocalName(stmt.getSubject().getLocalName())
+				final List<String> colNames = columnName.get(fqName);
+				for (int i = 0; i < builder.getColumnCount(); i++)
 				{
 					builder.getColumn(i).addQuerySegment("%1$s %3$s %2$s")
-					.setName( colNames.get(i));
+							.setName(colNames.get(i));
 				}
 			}
-			retval.add( builder.build(model));
+			retval.add(builder.build(model));
 		}
 		return retval;
 	}

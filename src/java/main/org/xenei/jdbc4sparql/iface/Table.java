@@ -19,8 +19,6 @@ package org.xenei.jdbc4sparql.iface;
 
 import java.util.Iterator;
 
-import org.xenei.jena.entities.ResourceWrapper;
-
 public interface Table extends NamedObject
 {
 	// /**
@@ -154,6 +152,8 @@ public interface Table extends NamedObject
 	 */
 	Iterator<? extends Column> getColumns();
 
+	String getRemarks();
+
 	/**
 	 * @return The schema the table belongs in.
 	 */
@@ -187,7 +187,5 @@ public interface Table extends NamedObject
 	 * @return The table type
 	 */
 	String getType();
-
-	String getRemarks();
 
 }

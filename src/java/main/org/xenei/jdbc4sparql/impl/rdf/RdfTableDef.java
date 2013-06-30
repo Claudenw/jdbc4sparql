@@ -1,6 +1,5 @@
 package org.xenei.jdbc4sparql.impl.rdf;
 
-import com.hp.hpl.jena.rdf.model.Literal;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.RDFList;
@@ -23,7 +22,8 @@ import org.xenei.jena.entities.annotations.Predicate;
 import org.xenei.jena.entities.annotations.Subject;
 
 @Subject( namespace = "http://org.xenei.jdbc4sparql/entity/TableDef#" )
-public class RdfTableDef extends RdfNamespacedObject implements TableDef, ResourceWrapper
+public class RdfTableDef extends RdfNamespacedObject implements TableDef,
+		ResourceWrapper
 {
 	public static class Builder implements TableDef
 	{
@@ -34,7 +34,7 @@ public class RdfTableDef extends RdfNamespacedObject implements TableDef, Resour
 		private RdfTableDef superTable;
 		private final Class<? extends RdfTableDef> typeClass = RdfTableDef.class;
 		private final Class<? extends RdfColumnDef> colDefClass = RdfColumnDef.class;
-		
+
 		public Builder addColumnDef( final ColumnDef column )
 		{
 			if (column instanceof ResourceWrapper)
@@ -42,7 +42,8 @@ public class RdfTableDef extends RdfNamespacedObject implements TableDef, Resour
 				columnDefs.add(column);
 				return this;
 			}
-			throw new IllegalArgumentException( "ColumnDef must implement ResourceWrapper");
+			throw new IllegalArgumentException(
+					"ColumnDef must implement ResourceWrapper");
 		}
 
 		public RdfTableDef build( final Model model )
@@ -87,14 +88,15 @@ public class RdfTableDef extends RdfNamespacedObject implements TableDef, Resour
 							superTable.getResource());
 
 				}
-				
-				tableDef.addLiteral( builder.getProperty(typeClass, "distinct"), distinct );
+
+				tableDef.addLiteral(builder.getProperty(typeClass, "distinct"),
+						distinct);
 
 				RDFList lst = null;
 
 				for (final ColumnDef seg : columnDefs)
 				{
-					final Resource s = ((ResourceWrapper)seg).getResource();
+					final Resource s = ((ResourceWrapper) seg).getResource();
 					if (lst == null)
 					{
 						lst = model.createList().with(s);
@@ -108,7 +110,6 @@ public class RdfTableDef extends RdfNamespacedObject implements TableDef, Resour
 						.getFQName(colDefClass));
 				tableDef.addProperty(p, lst);
 
-				
 			}
 			try
 			{
@@ -127,7 +128,7 @@ public class RdfTableDef extends RdfNamespacedObject implements TableDef, Resour
 				throw new IllegalStateException(
 						"There must be at least one column defined");
 			}
-			
+
 		}
 
 		@Override
@@ -147,11 +148,6 @@ public class RdfTableDef extends RdfNamespacedObject implements TableDef, Resour
 		{
 			return columnDefs;
 		}
-		
-		public void setDistinct( boolean distinct )
-		{
-			this.distinct = distinct;
-		}
 
 		@Override
 		public int getColumnIndex( final ColumnDef column )
@@ -164,7 +160,8 @@ public class RdfTableDef extends RdfNamespacedObject implements TableDef, Resour
 			final StringBuilder sb = new StringBuilder();
 			for (final ColumnDef cd : columnDefs)
 			{
-				sb.append(((ResourceWrapper)cd).getResource().getURI()).append(" ");
+				sb.append(((ResourceWrapper) cd).getResource().getURI())
+						.append(" ");
 			}
 			if (primaryKey != null)
 			{
@@ -203,6 +200,11 @@ public class RdfTableDef extends RdfNamespacedObject implements TableDef, Resour
 			return superTable;
 		}
 
+		public void setDistinct( final boolean distinct )
+		{
+			this.distinct = distinct;
+		}
+
 		public Builder setPrimaryKey( final RdfKey key )
 		{
 			if (!key.isUnique())
@@ -228,11 +230,9 @@ public class RdfTableDef extends RdfNamespacedObject implements TableDef, Resour
 
 	}
 
-	private List<String> querySegments;
-
 	private List<ColumnDef> columns;
 
-	private Class<? extends RdfColumnDef> colDefClass = RdfColumnDef.class;
+	private final Class<? extends RdfColumnDef> colDefClass = RdfColumnDef.class;
 
 	@Override
 	public int getColumnCount()
@@ -282,11 +282,6 @@ public class RdfTableDef extends RdfNamespacedObject implements TableDef, Resour
 		return getColumnDefs().indexOf(column);
 	}
 
-	@Predicate( impl = true )
-	public boolean isDistinct()
-	{
-		throw new EntityManagerRequiredException();
-	}
 	/**
 	 * get the primary key for the table
 	 * 
@@ -322,6 +317,12 @@ public class RdfTableDef extends RdfNamespacedObject implements TableDef, Resour
 	@Override
 	@Predicate( impl = true )
 	public RdfTableDef getSuperTableDef()
+	{
+		throw new EntityManagerRequiredException();
+	}
+
+	@Predicate( impl = true )
+	public boolean isDistinct()
 	{
 		throw new EntityManagerRequiredException();
 	}

@@ -110,7 +110,7 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 	}
 
 	// take apart the join and figure out how to merge it.
-	private void deparseJoin( final Join join ) 
+	private void deparseJoin( final Join join )
 	{
 		if (join.isSimple())
 		{
@@ -194,9 +194,9 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 				}
 				if (join.getUsingColumns() != null)
 				{
-					for (Object c : join.getUsingColumns())
+					for (final Object c : join.getUsingColumns())
 					{
-						queryBuilder.addUsing( ((Column)c).getColumnName() );
+						queryBuilder.addUsing(((Column) c).getColumnName());
 					}
 				}
 			}

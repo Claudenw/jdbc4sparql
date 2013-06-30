@@ -9,7 +9,6 @@ import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.ResourceFactory;
 import com.hp.hpl.jena.util.iterator.WrappedIterator;
 import com.hp.hpl.jena.vocabulary.RDFS;
 
@@ -44,11 +43,11 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 		public Builder()
 		{
 		}
-		
-		public Builder( RdfCatalog catalog ) throws MalformedURLException
+
+		public Builder( final RdfCatalog catalog ) throws MalformedURLException
 		{
 			this();
-			setName( catalog.getName() );
+			setName(catalog.getName());
 			if (catalog.getSparqlEndpoint() != null)
 			{
 				setSparqlEndpoint(new URL(catalog.getSparqlEndpoint()));
@@ -58,7 +57,7 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 				setLocalModel(catalog.localModel);
 			}
 		}
-		
+
 		public RdfCatalog build( final Model model )
 		{
 			checkBuildState();
@@ -88,9 +87,11 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 				for (final Schema scm : schemas)
 				{
 					if (scm instanceof ResourceWrapper)
-					catalog.addProperty(
-							builder.getProperty(typeClass, "schema"),
-							((ResourceWrapper)scm).getResource());
+					{
+						catalog.addProperty(
+								builder.getProperty(typeClass, "schema"),
+								((ResourceWrapper) scm).getResource());
+					}
 				}
 			}
 			try
@@ -100,7 +101,7 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 				model.register(retval.new ChangeListener());
 				retval.localModel = localModel != null ? localModel
 						: ModelFactory.createMemModelMaker().createFreshModel();
-				
+
 				new RdfSchema.Builder().setName(Catalog.DEFAULT_SCHEMA)
 						.setCatalog(retval).build(model);
 				return retval;
@@ -110,11 +111,6 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 				throw new RuntimeException(e);
 			}
 
-		}
-		
-		public Model getLocalModel()
-		{
-			return localModel;
 		}
 
 		protected void checkBuildState()
@@ -137,6 +133,12 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 		}
 
 		@Override
+		public List<QuerySolution> executeLocalQuery( final Query query )
+		{
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
 		public NameFilter<RdfSchema> findSchemas( final String schemaNamePattern )
 		{
 			return new NameFilter<RdfSchema>(schemaNamePattern, schemas);
@@ -146,6 +148,11 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 		{
 			return String.format("%s/instance/N%s",
 					ResourceBuilder.getFQName(RdfCatalog.class), name);
+		}
+
+		public Model getLocalModel()
+		{
+			return localModel;
 		}
 
 		@Override
@@ -183,12 +190,6 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 		{
 			this.sparqlEndpoint = sparqlEndpoint;
 			return this;
-		}
-
-		@Override
-		public List<QuerySolution> executeLocalQuery( Query query )
-		{
-			throw new UnsupportedOperationException();
 		}
 
 	}
@@ -249,6 +250,7 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 	 * @param query
 	 * @return The list of QuerySolutions.
 	 */
+	@Override
 	public List<QuerySolution> executeLocalQuery( final Query query )
 	{
 		final QueryExecution qexec = QueryExecutionFactory.create(query,
@@ -275,8 +277,8 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 		QueryExecution qexec = null;
 		if (isService())
 		{
-			qexec = QueryExecutionFactory.sparqlService(
-					getSparqlEndpoint(), query);
+			qexec = QueryExecutionFactory.sparqlService(getSparqlEndpoint(),
+					query);
 		}
 		else
 		{
@@ -310,6 +312,17 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 		return new NameFilter<RdfSchema>(schemaNamePattern, readSchemas());
 	}
 
+	public Set<RdfSchema> fixupSchemas( final Set<RdfSchema> schemas )
+	{
+		final Set<RdfSchema> schemaList = new HashSet<RdfSchema>();
+		for (final RdfSchema schema : schemas)
+		{
+			schemaList.add(RdfSchema.Builder.fixupCatalog(this, schema));
+		}
+		this.schemaList = schemaList;
+		return schemaList;
+	}
+
 	@Override
 	@Predicate( impl = true, namespace = "http://www.w3.org/2000/01/rdf-schema#", name = "label" )
 	public String getName()
@@ -327,38 +340,27 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 	@Override
 	public RdfSchema getSchema( final String schemaName )
 	{
-		final NameFilter<RdfSchema> nf = findSchemas(StringUtils.defaultString(schemaName));
+		final NameFilter<RdfSchema> nf = findSchemas(StringUtils
+				.defaultString(schemaName));
 		return nf.hasNext() ? nf.next() : null;
 	}
 
 	@Override
-	@Predicate( impl = true, type = RdfSchema.class, postExec="fixupSchemas" )
+	@Predicate( impl = true, type = RdfSchema.class, postExec = "fixupSchemas" )
 	public Set<RdfSchema> getSchemas()
 	{
 		throw new EntityManagerRequiredException();
 	}
-	
-	public Set<RdfSchema> fixupSchemas( Set<RdfSchema> schemas )
+
+	public Node getServiceNode()
 	{
-		Set<RdfSchema> schemaList = new HashSet<RdfSchema>();
-		for (RdfSchema schema : schemas )
-		{
-			schemaList.add( RdfSchema.Builder.fixupCatalog(this, schema));
-		}
-		this.schemaList = schemaList;
-		return schemaList;
+		return isService() ? Node.createURI(getSparqlEndpoint()) : null;
 	}
 
-	@Predicate( impl=true )
+	@Predicate( impl = true )
 	public String getSparqlEndpoint()
 	{
 		throw new EntityManagerRequiredException();
-	}
-	
-	public Node getServiceNode()
-	{
-		return isService() ? Node.createURI(getSparqlEndpoint())
-				: null;
 	}
 
 	/**
@@ -368,7 +370,7 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 	 */
 	public RdfSchema getViewSchema()
 	{
-		return getSchema( null );
+		return getSchema(null);
 	}
 
 	public boolean isService()

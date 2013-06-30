@@ -30,8 +30,8 @@ public class KeyBuilderTests
 	{
 		final RdfKeySegment.Builder segBuilder = new RdfKeySegment.Builder();
 
-		final RdfKey.Builder builder = new RdfKey.Builder().addSegment(segBuilder
-				.build(model));
+		final RdfKey.Builder builder = new RdfKey.Builder()
+				.addSegment(segBuilder.build(model));
 
 		final Key key = builder.build(model);
 

@@ -32,10 +32,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.xenei.jdbc4sparql.iface.Catalog;
-import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
-import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 import org.xenei.jdbc4sparql.meta.MetaCatalogBuilder;
-import org.xenei.jdbc4sparql.sparql.SparqlResultSet;
 
 public class J4SDatabaseMetaDataTest
 {
@@ -50,7 +47,8 @@ public class J4SDatabaseMetaDataTest
 				MetaCatalogBuilder.SCHEMA_LOCAL_NAME, tableName, null);
 		for (int i = 0; i < columnNames.length; i++)
 		{
-			Assert.assertTrue("column "+i+" of table "+tableName+" missing", rs.next());
+			Assert.assertTrue("column " + i + " of table " + tableName
+					+ " missing", rs.next());
 			Assert.assertEquals(MetaCatalogBuilder.LOCAL_NAME, rs.getString(1)); // TABLE_CAT
 			Assert.assertEquals(MetaCatalogBuilder.SCHEMA_LOCAL_NAME,
 					rs.getString(2)); // TABLE_SCHEM
@@ -60,7 +58,8 @@ public class J4SDatabaseMetaDataTest
 				Assert.assertEquals(columnNames[i], rs.getString(4)); // COLUMN_NAME
 			}
 		}
-		Assert.assertFalse("Extra column found in table "+tableName, rs.next());
+		Assert.assertFalse("Extra column found in table " + tableName,
+				rs.next());
 	}
 
 	@Before
@@ -76,7 +75,7 @@ public class J4SDatabaseMetaDataTest
 		catalogs.put(cat.getName(), cat);
 		Mockito.when(connection.getCatalogs()).thenReturn(catalogs);
 		metadata = new J4SDatabaseMetaData(connection, driver);
-		model.write( System.out, "TURTLE" ); // FIXME remove this
+		model.write(System.out, "TURTLE"); // FIXME remove this
 	}
 
 	@Test
@@ -88,8 +87,7 @@ public class J4SDatabaseMetaDataTest
 				"ATTR_DEF", "SQL_DATA_TYPE", "SQL_DATETIME_SUB",
 				"CHAR_OCTET_LENGTH", "ORDINAL_POSITION", "IS_NULLABLE",
 				"SCOPE_CATALOG", "SCOPE_SCHEMA", "SCOPE_TABLE",
-				"SOURCE_DATA_TYPE"
-		};
+				"SOURCE_DATA_TYPE" };
 		columnChecking(MetaCatalogBuilder.ATTRIBUTES_TABLE, names);
 	}
 
@@ -139,6 +137,58 @@ public class J4SDatabaseMetaDataTest
 				"IS_NULLABLE", "SCOPE_CATLOG", "SCOPE_SCHEMA", "SCOPE_TABLE",
 				"SOURCE_DATA_TYPE", "IS_AUTOINCREMENT", };
 		columnChecking(MetaCatalogBuilder.COLUMNS_TABLE, names);
+	}
+
+	@Test
+	public void testColumnsTable() throws SQLException
+	{
+		ResultSet rs = metadata.getColumns(null, null, null, null);
+		Assert.assertTrue(rs.first());
+		while (!rs.isAfterLast())
+		{
+			System.out
+					.println(String.format("%s : %s : %s : %s : %d : %s",
+							rs.getString("TABLE_CAT"),
+							rs.getString("TABLE_SCHEM"),
+							rs.getString("TABLE_NAME"),
+							rs.getString("COLUMN_NAME"),
+							rs.getInt("ORDINAL_POSITION"),
+							rs.getString("IS_NULLABLE")));
+			rs.next();
+		}
+
+		rs = metadata.getColumns(MetaCatalogBuilder.LOCAL_NAME,
+				MetaCatalogBuilder.SCHEMA_LOCAL_NAME, "Columns", null);
+		Assert.assertTrue(rs.first());
+		while (!rs.isAfterLast())
+		{
+			System.out
+					.println(String.format("%s : %s : %s : %s : %d : %s",
+							rs.getString("TABLE_CAT"),
+							rs.getString("TABLE_SCHEM"),
+							rs.getString("TABLE_NAME"),
+							rs.getString("COLUMN_NAME"),
+							rs.getInt("ORDINAL_POSITION"),
+							rs.getString("IS_NULLABLE")));
+			rs.next();
+		}
+
+		rs = metadata.getColumns(MetaCatalogBuilder.LOCAL_NAME,
+				MetaCatalogBuilder.SCHEMA_LOCAL_NAME, null, "TABLE_CAT");
+		Assert.assertTrue(rs.first());
+		while (!rs.isAfterLast())
+		{
+			System.out
+					.println(String.format("%s : %s : %s : %s : %d : %s",
+							rs.getString("TABLE_CAT"),
+							rs.getString("TABLE_SCHEM"),
+							rs.getString("TABLE_NAME"),
+							rs.getString("COLUMN_NAME"),
+							rs.getInt("ORDINAL_POSITION"),
+							rs.getString("IS_NULLABLE")));
+			rs.next();
+		}
+
 	}
 
 	@Test
@@ -198,7 +248,7 @@ public class J4SDatabaseMetaDataTest
 
 		for (final String name : names)
 		{
-			Assert.assertTrue("No next when looking for "+name, rs.next());
+			Assert.assertTrue("No next when looking for " + name, rs.next());
 			Assert.assertEquals(MetaCatalogBuilder.LOCAL_NAME, rs.getString(1)); // TABLE_CAT
 			Assert.assertEquals(MetaCatalogBuilder.SCHEMA_LOCAL_NAME,
 					rs.getString(2)); // TABLE_SCHEM
@@ -229,21 +279,6 @@ public class J4SDatabaseMetaDataTest
 				"ORDINAL_POSITION", "COLUMN_NAME", "ASC_OR_DESC",
 				"CARDINALITY", "PAGES", "FILTER_CONDITION", };
 		columnChecking(MetaCatalogBuilder.INDEXINFO_TABLE, names);
-	}
-
-	@Test
-	public void testOneTable() throws SQLException
-	{
-		final ResultSet rs = metadata.getTables(null, null,
-				MetaCatalogBuilder.COLUMNS_TABLE, null);
-		Assert.assertTrue("Missing table "+MetaCatalogBuilder.COLUMNS_TABLE, rs.next());
-		Assert.assertEquals(MetaCatalogBuilder.LOCAL_NAME, rs.getString(1)); // TABLE_CAT
-		Assert.assertEquals(MetaCatalogBuilder.SCHEMA_LOCAL_NAME,
-				rs.getString(2)); // TABLE_SCHEM
-		Assert.assertEquals(MetaCatalogBuilder.COLUMNS_TABLE, rs.getString(3)); // TABLE_NAME
-		Assert.assertEquals("SYSTEM TABLE", rs.getString(4)); // TABLE_TYPE
-		Assert.assertEquals("", rs.getString(5)); // REMARKS
-		Assert.assertFalse("Extra table in search", rs.next());
 	}
 
 	// @Test
@@ -284,6 +319,22 @@ public class J4SDatabaseMetaDataTest
 	// }
 
 	@Test
+	public void testOneTable() throws SQLException
+	{
+		final ResultSet rs = metadata.getTables(null, null,
+				MetaCatalogBuilder.COLUMNS_TABLE, null);
+		Assert.assertTrue("Missing table " + MetaCatalogBuilder.COLUMNS_TABLE,
+				rs.next());
+		Assert.assertEquals(MetaCatalogBuilder.LOCAL_NAME, rs.getString(1)); // TABLE_CAT
+		Assert.assertEquals(MetaCatalogBuilder.SCHEMA_LOCAL_NAME,
+				rs.getString(2)); // TABLE_SCHEM
+		Assert.assertEquals(MetaCatalogBuilder.COLUMNS_TABLE, rs.getString(3)); // TABLE_NAME
+		Assert.assertEquals("SYSTEM TABLE", rs.getString(4)); // TABLE_TYPE
+		Assert.assertEquals("", rs.getString(5)); // REMARKS
+		Assert.assertFalse("Extra table in search", rs.next());
+	}
+
+	@Test
 	public void testProcedureColumnsDef() throws SQLException
 	{
 		final String[] names = { "PROCEDURE_CAT", "PROCEDURE_SCHEM",
@@ -302,13 +353,6 @@ public class J4SDatabaseMetaDataTest
 				"PROCEDURE_NAME", "reserved", "reserved", "reserved",
 				"REMARKS", "PROCEDURE_TYPE", "SPECIFIC_NAME", };
 		columnChecking(MetaCatalogBuilder.PROCEDURES_TABLE, names);
-	}
-
-	@Test
-	public void testSchemasDef() throws SQLException
-	{
-		final String[] names = { "TABLE_SCHEM", "TABLE_CATALOG", };
-		columnChecking(MetaCatalogBuilder.SCHEMAS_TABLE, names);
 	}
 
 	// @Test
@@ -356,6 +400,13 @@ public class J4SDatabaseMetaDataTest
 	//
 	// Assert.assertFalse(rs.next());
 	// }
+
+	@Test
+	public void testSchemasDef() throws SQLException
+	{
+		final String[] names = { "TABLE_SCHEM", "TABLE_CATALOG", };
+		columnChecking(MetaCatalogBuilder.SCHEMAS_TABLE, names);
+	}
 
 	@Test
 	public void testSuperTypesDef() throws Exception
@@ -421,39 +472,5 @@ public class J4SDatabaseMetaDataTest
 				"TYPE_NAME", "COLUMN_SIZE", "BUFFER_LENGTH", "DECIMAL_DIGITS",
 				"PSEUDO_COLUMN", };
 		columnChecking(MetaCatalogBuilder.VERSION_COLUMNS_TABLE, names);
-	}
-	
-	@Test
-	public void testColumnsTable() throws SQLException
-	{
-		ResultSet rs = metadata.getColumns(null, null, null, null);
-		Assert.assertTrue( rs.first() );
-		while ( ! rs.isAfterLast() )
-		{
-			System.out.println( String.format( "%s : %s : %s : %s : %d : %s", rs.getString( "TABLE_CAT"), 
-					rs.getString( "TABLE_SCHEM"), rs.getString("TABLE_NAME"), rs.getString("COLUMN_NAME"), rs.getInt("ORDINAL_POSITION"), rs.getString("IS_NULLABLE")));
-			rs.next();
-		}
-		
-		rs = metadata.getColumns(MetaCatalogBuilder.LOCAL_NAME, 
-				MetaCatalogBuilder.SCHEMA_LOCAL_NAME, "Columns", null);
-		Assert.assertTrue( rs.first() );
-		while ( ! rs.isAfterLast() )
-		{
-			System.out.println( String.format( "%s : %s : %s : %s : %d : %s", rs.getString( "TABLE_CAT"), 
-					rs.getString( "TABLE_SCHEM"), rs.getString("TABLE_NAME"), rs.getString("COLUMN_NAME"), rs.getInt("ORDINAL_POSITION"), rs.getString("IS_NULLABLE")));
-			rs.next();
-		}
-		
-		rs = metadata.getColumns(MetaCatalogBuilder.LOCAL_NAME, 
-				MetaCatalogBuilder.SCHEMA_LOCAL_NAME, null, "TABLE_CAT");
-		Assert.assertTrue( rs.first() );
-		while ( ! rs.isAfterLast() )
-		{
-			System.out.println( String.format( "%s : %s : %s : %s : %d : %s", rs.getString( "TABLE_CAT"), 
-					rs.getString( "TABLE_SCHEM"), rs.getString("TABLE_NAME"), rs.getString("COLUMN_NAME"), rs.getInt("ORDINAL_POSITION"), rs.getString("IS_NULLABLE")));
-			rs.next();
-		}
-		
 	}
 }

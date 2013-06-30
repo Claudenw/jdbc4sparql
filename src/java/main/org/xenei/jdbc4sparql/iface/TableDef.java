@@ -19,8 +19,6 @@ package org.xenei.jdbc4sparql.iface;
 
 import java.util.List;
 
-import org.xenei.jena.entities.ResourceWrapper;
-
 public interface TableDef
 {
 

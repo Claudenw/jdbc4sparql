@@ -77,26 +77,33 @@ public class LocalSparqlVisitorTest
 						MetaCatalogBuilder.getNullIntBuilder().build(model))
 				.build(model);
 
-		RdfTable.Builder bldr = new RdfTable.Builder().setTableDef(tableDef).setColumn(0, "StringCol")
-				.setColumn(1, "NullableStringCol").setColumn(2, "IntCol")
-				.setColumn(3, "NullableIntCol").setName("foo")
-				.setSchema(schema).addQuerySegment( "%1$s a <http://example.com/foo> ");
-		bldr.getColumn(0).addQuerySegment( "%1$s <http://example.com/zero> %2$s");
-		bldr.getColumn(1).addQuerySegment( "%1$s <http://example.com/one> %2$s");
-		bldr.getColumn(2).addQuerySegment( "%1$s <http://example.com/two> %2$s");
-		bldr.getColumn(3).addQuerySegment( "%1$s <http://example.com/three> %2$s");
+		RdfTable.Builder bldr = new RdfTable.Builder().setTableDef(tableDef)
+				.setColumn(0, "StringCol").setColumn(1, "NullableStringCol")
+				.setColumn(2, "IntCol").setColumn(3, "NullableIntCol")
+				.setName("foo").setSchema(schema)
+				.addQuerySegment("%1$s a <http://example.com/foo> ");
+		bldr.getColumn(0)
+				.addQuerySegment("%1$s <http://example.com/zero> %2$s");
+		bldr.getColumn(1).addQuerySegment("%1$s <http://example.com/one> %2$s");
+		bldr.getColumn(2).addQuerySegment("%1$s <http://example.com/two> %2$s");
+		bldr.getColumn(3).addQuerySegment(
+				"%1$s <http://example.com/three> %2$s");
 		bldr.build(model);
 
 		bldr = new RdfTable.Builder().setTableDef(tableDef)
 				.setColumn(0, "BarStringCol")
-				.setColumn(1, "BarNullableStringCol").setColumn(2, "BarIntCol")
+				.setColumn(1, "BarNullableStringCol")
+				.setColumn(2, "BarIntCol")
 				// must be NullableIntCol for inner join test
 				.setColumn(3, "NullableIntCol").setName("bar")
-				.setSchema(schema).addQuerySegment( "%1$s a <http://example.com/bar> ");
-		bldr.getColumn(0).addQuerySegment( "%1$s <http://example.com/zero> %2$s");
-		bldr.getColumn(1).addQuerySegment( "%1$s <http://example.com/one> %2$s");
-		bldr.getColumn(2).addQuerySegment( "%1$s <http://example.com/two> %2$s");
-		bldr.getColumn(3).addQuerySegment( "%1$s <http://example.com/three> %2$s");
+				.setSchema(schema)
+				.addQuerySegment("%1$s a <http://example.com/bar> ");
+		bldr.getColumn(0)
+				.addQuerySegment("%1$s <http://example.com/zero> %2$s");
+		bldr.getColumn(1).addQuerySegment("%1$s <http://example.com/one> %2$s");
+		bldr.getColumn(2).addQuerySegment("%1$s <http://example.com/two> %2$s");
+		bldr.getColumn(3).addQuerySegment(
+				"%1$s <http://example.com/three> %2$s");
 		bldr.build(model);
 
 		sv = new SparqlVisitor(catalog);

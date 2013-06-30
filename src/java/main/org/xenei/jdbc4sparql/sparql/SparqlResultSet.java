@@ -22,26 +22,22 @@ import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.rdf.model.RDFNode;
 
 import java.sql.SQLException;
-import java.util.Iterator;
 
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.TypeConverter;
 import org.xenei.jdbc4sparql.impl.ListResultSet;
-import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
-import org.xenei.jdbc4sparql.impl.rdf.RdfColumn;
-import org.xenei.jdbc4sparql.impl.rdf.RdfKey;
-import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 
 public class SparqlResultSet extends ListResultSet
 {
 	Query query;
-	
-	public SparqlResultSet( final Table table, Query query) throws SQLException
+
+	public SparqlResultSet( final Table table, final Query query )
+			throws SQLException
 	{
 		super(table.getCatalog().executeLocalQuery(query), table);
 		this.query = query;
 	}
-	
+
 	@Override
 	protected Table getTable()
 	{
@@ -54,7 +50,8 @@ public class SparqlResultSet extends ListResultSet
 		checkPosition();
 		checkColumn(columnOrdinal);
 		final QuerySolution soln = (QuerySolution) getRowObject();
-		final String colName = query.getProjectVars().get(columnOrdinal - 1).getName();
+		final String colName = query.getProjectVars().get(columnOrdinal - 1)
+				.getName();
 		final RDFNode node = soln.get(colName);
 
 		if (node == null)

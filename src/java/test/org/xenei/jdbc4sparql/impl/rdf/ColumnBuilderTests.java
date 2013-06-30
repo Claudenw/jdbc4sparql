@@ -10,21 +10,19 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.ColumnDef;
-import org.xenei.jdbc4sparql.iface.Table;
-import org.xenei.jdbc4sparql.mock.MockTable;
 
 public class ColumnBuilderTests
 {
 	private Model model;
 	private ColumnDef columnDef;
-	private MockTable mockTable;
+	private RdfTable mockTable;
 
 	@Before
 	public void setUp() throws Exception
 	{
 		model = ModelFactory.createDefaultModel();
 		columnDef = RdfColumnDef.Builder.getStringBuilder().build(model);
-		mockTable = Mockito.mock(MockTable.class);
+		mockTable = Mockito.mock(RdfTable.class);
 		Mockito.when(mockTable.getResource()).thenReturn(
 				model.createResource("http://example.com/mockTable"));
 	}

@@ -3,6 +3,8 @@ package org.xenei.jdbc4sparql.impl.rdf;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Property;
+import com.hp.hpl.jena.rdf.model.RDFList;
+import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 import java.util.ArrayList;
@@ -15,9 +17,6 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.NameFilter;
-import org.xenei.jdbc4sparql.iface.Schema;
-import org.xenei.jdbc4sparql.iface.Table;
-import org.xenei.jdbc4sparql.iface.TableDef;
 import org.xenei.jena.entities.EntityManager;
 import org.xenei.jena.entities.EntityManagerFactory;
 import org.xenei.jena.entities.MissingAnnotation;
@@ -33,8 +32,10 @@ public class TableBuilderTest
 	public void setUp() throws Exception
 	{
 		model = ModelFactory.createDefaultModel();
-		final RdfTableDef.Builder builder = new RdfTableDef.Builder().addColumnDef(
-				RdfColumnDef.Builder.getStringBuilder().build(model)).addColumnDef(
+		final RdfTableDef.Builder builder = new RdfTableDef.Builder()
+				.addColumnDef(
+						RdfColumnDef.Builder.getStringBuilder().build(model))
+				.addColumnDef(
 						RdfColumnDef.Builder.getIntegerBuilder().build(model));
 		tableDef = builder.build(model);
 		mockSchema = Mockito.mock(RdfSchema.class);
@@ -52,10 +53,10 @@ public class TableBuilderTest
 	@Test
 	public void testDefaultBuilder() throws Exception
 	{
-		final RdfTable.Builder builder = new RdfTable.Builder().setTableDef(tableDef)
-				.setName("table").setColumn(0, "StringCol")
-				.setColumn(1, "IntCol").setSchema(mockSchema)
-				.setType("testing Table");
+		final RdfTable.Builder builder = new RdfTable.Builder()
+				.setTableDef(tableDef).setName("table")
+				.setColumn(0, "StringCol").setColumn(1, "IntCol")
+				.setSchema(mockSchema).setType("testing Table");
 		final RdfTable table = builder.build(model);
 
 		model.write(System.out, "TURTLE");
@@ -68,23 +69,18 @@ public class TableBuilderTest
 		Assert.assertEquals("StringCol", c.getName());
 		Assert.assertFalse(nf.hasNext());
 
-		// check the columns
-		EntityManager entityManager = EntityManagerFactory.getEntityManager();
-		final Property p = entityManager.getSubjectInfo(RdfColumn.class)
-				.getPredicateProperty("getTable");
-		List<RdfColumn> columns = new ArrayList<RdfColumn>();
-		final Model model = table.getResource().getModel();
+		// check the columns are in the model
+		final EntityManager entityManager = EntityManagerFactory
+				.getEntityManager();
+		
+		final Property p = model.createProperty(
+				ResourceBuilder.getNamespace(RdfTable.class), "column");
 
-		List<Resource> lr = model.listSubjectsWithProperty(p,
-					table.getResource()).toList();
+		final List<RDFNode> columns = table.getResource().getRequiredProperty(p)
+				.getResource().as(RDFList.class).asJavaList();
 		
-		Assert.assertEquals( 2, lr.size() );
-		for (final Resource r : lr )
-		{
-			columns.add(entityManager.read(r, RdfColumn.class));
-		}
-		Assert.assertEquals( 2, columns.size() );
-		
+		Assert.assertEquals(2, columns.size());
+
 	}
 
 }

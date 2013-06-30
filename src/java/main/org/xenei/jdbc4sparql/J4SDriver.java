@@ -144,7 +144,7 @@ public class J4SDriver implements Driver
 		{
 			throw new SQLException(e);
 		}
-		catch (MissingAnnotation e)
+		catch (final MissingAnnotation e)
 		{
 			throw new SQLException(e);
 		}

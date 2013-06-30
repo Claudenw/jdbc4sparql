@@ -20,9 +20,7 @@ package org.xenei.jdbc4sparql.iface;
 import java.security.NoSuchAlgorithmException;
 import java.util.UUID;
 
-import org.xenei.jena.entities.ResourceWrapper;
-
-public interface ColumnDef 
+public interface ColumnDef
 {
 	static class Util
 	{

@@ -28,7 +28,6 @@ import org.apache.commons.discovery.ResourceNameIterator;
 import org.apache.commons.discovery.resource.ClassLoaders;
 import org.apache.commons.discovery.resource.classes.DiscoverClasses;
 import org.apache.commons.discovery.resource.names.DiscoverServiceNames;
-import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 

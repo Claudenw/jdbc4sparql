@@ -8,9 +8,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.Schema;
-import org.xenei.jdbc4sparql.sparql.builders.SchemaBuilder;
 
 public class SchemaBuilderTest
 {
@@ -23,8 +21,10 @@ public class SchemaBuilderTest
 	public void setUp() throws Exception
 	{
 		model = ModelFactory.createDefaultModel();
-		final RdfTableDef.Builder builder = new RdfTableDef.Builder().addColumnDef(
-				RdfColumnDef.Builder.getStringBuilder().build(model)).addColumnDef(
+		final RdfTableDef.Builder builder = new RdfTableDef.Builder()
+				.addColumnDef(
+						RdfColumnDef.Builder.getStringBuilder().build(model))
+				.addColumnDef(
 						RdfColumnDef.Builder.getIntegerBuilder().build(model));
 		tableBldr = new RdfTable.Builder().setName("testTable")
 				.setTableDef(builder.build(model)).setColumn(0, "StringCol")
@@ -43,8 +43,8 @@ public class SchemaBuilderTest
 	@Test
 	public void testAddTable() throws Exception
 	{
-		final RdfSchema.Builder builder = new RdfSchema.Builder().setName("schema")
-				.setCatalog(mockCatalog);
+		final RdfSchema.Builder builder = new RdfSchema.Builder().setName(
+				"schema").setCatalog(mockCatalog);
 
 		final RdfSchema schema = builder.build(model);
 
@@ -60,8 +60,8 @@ public class SchemaBuilderTest
 	@Test
 	public void testAddTableTableRead()
 	{
-		final RdfSchema.Builder builder = new RdfSchema.Builder().setName("schema")
-				.setCatalog(mockCatalog);
+		final RdfSchema.Builder builder = new RdfSchema.Builder().setName(
+				"schema").setCatalog(mockCatalog);
 
 		final RdfSchema schema = builder.build(model);
 		Assert.assertEquals(0, schema.getTables().size());
@@ -76,8 +76,8 @@ public class SchemaBuilderTest
 	@Test
 	public void testDefault()
 	{
-		final RdfSchema.Builder builder = new RdfSchema.Builder().setName("schema")
-				.setCatalog(mockCatalog);
+		final RdfSchema.Builder builder = new RdfSchema.Builder().setName(
+				"schema").setCatalog(mockCatalog);
 
 		final Schema schema = builder.build(model);
 		schema.getTables();

@@ -20,12 +20,12 @@ import org.junit.Test;
 
 public class MetaCatalogTests
 {
-// Get me all of the members of an RDF list.
-//
-//SELECT ?member
-//{
-//  ?list rdf:rest*/rdf:first ?member
-//}
+	// Get me all of the members of an RDF list.
+	//
+	// SELECT ?member
+	// {
+	// ?list rdf:rest*/rdf:first ?member
+	// }
 
 	private Model model;
 	private final String queryString = "PREFIX  rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> "
@@ -57,7 +57,8 @@ public class MetaCatalogTests
 				"DECIMAL_DIGITS", "NUM_PREC_RADIX", "NULLABLE", "REMARKS",
 				"ATTR_DEF", "SQL_DATA_TYPE", "SQL_DATETIME_SUB",
 				"CHAR_OCTET_LENGTH", "ORDINAL_POSITION", "IS_NULLABLE",
-				"SCOPE_CATALOG", "SCOPE_SCHEMA", "SCOPE_TABLE","SOURCE_DATA_TYPE" };
+				"SCOPE_CATALOG", "SCOPE_SCHEMA", "SCOPE_TABLE",
+				"SOURCE_DATA_TYPE" };
 		verifyNames(MetaCatalogBuilder.ATTRIBUTES_TABLE, names);
 	}
 
@@ -225,7 +226,7 @@ public class MetaCatalogTests
 		final String[] names = { "TABLE_CAT", "TABLE_SCHEM", "TABLE_NAME",
 				"TABLE_TYPE", "REMARKS", "TYPE_CAT", "TYPE_SCHEM", "TYPE_NAME",
 				"SELF_REFERENCING_COL_NAME", "REF_GENERATION" };
-		model.write( System.out, "TURTLE" );
+		model.write(System.out, "TURTLE");
 		verifyNames(MetaCatalogBuilder.TABLES_TABLE, names);
 	}
 

@@ -34,7 +34,7 @@ public class MetaCatalogValuesTests
 			+ "?list rdf:rest*/rdf:first ?column ."
 			+ "?column <http://www.w3.org/2000/01/rdf-schema#label> ?colName ; "
 			+ " }";
-	
+
 	@Before
 	public void setup()
 	{
@@ -56,9 +56,9 @@ public class MetaCatalogValuesTests
 				"DECIMAL_DIGITS", "NUM_PREC_RADIX", "NULLABLE", "REMARKS",
 				"ATTR_DEF", "SQL_DATA_TYPE", "SQL_DATETIME_SUB",
 				"CHAR_OCTET_LENGTH", "ORDINAL_POSITION", "IS_NULLABLE",
-				"SCOPE_CATALOG", "SCOPE_SCHEMA", "SOURCE_DATA_TYPE" };
+				"SCOPE_CATALOG", "SCOPE_SCHEMA", "SCOPE_TABLE", "SOURCE_DATA_TYPE" };
 		verifyNames(MetaCatalogBuilder.ATTRIBUTES_TABLE, names);
-		
+
 	}
 
 	@Test
@@ -105,15 +105,23 @@ public class MetaCatalogValuesTests
 				"IS_NULLABLE", "SCOPE_CATLOG", "SCOPE_SCHEMA", "SCOPE_TABLE",
 				"SOURCE_DATA_TYPE", "IS_AUTOINCREMENT" };
 		verifyNames(MetaCatalogBuilder.COLUMNS_TABLE, names);
-		
-		RdfSchema schema = catalog.getSchema( MetaCatalogBuilder.SCHEMA_LOCAL_NAME );
-		RdfTable table = schema.getTable(MetaCatalogBuilder.COLUMNS_TABLE);
-		SparqlResultSet rs = table.getResultSet();
-		Assert.assertTrue( rs.first() );
-		while ( ! rs.isAfterLast() )
+
+		final RdfSchema schema = catalog
+				.getSchema(MetaCatalogBuilder.SCHEMA_LOCAL_NAME);
+		final RdfTable table = schema
+				.getTable(MetaCatalogBuilder.COLUMNS_TABLE);
+		final SparqlResultSet rs = table.getResultSet();
+		Assert.assertTrue(rs.first());
+		while (!rs.isAfterLast())
 		{
-			System.out.println( String.format( "%s : %s : %s : %s : %d : %s", rs.getString( "TABLE_CAT"), 
-					rs.getString( "TABLE_SCHEM"), rs.getString("TABLE_NAME"), rs.getString("COLUMN_NAME"), rs.getInt("ORDINAL_POSITION"), rs.getString("IS_NULLABLE")));
+			System.out
+					.println(String.format("%s : %s : %s : %s : %d : %s",
+							rs.getString("TABLE_CAT"),
+							rs.getString("TABLE_SCHEM"),
+							rs.getString("TABLE_NAME"),
+							rs.getString("COLUMN_NAME"),
+							rs.getInt("ORDINAL_POSITION"),
+							rs.getString("IS_NULLABLE")));
 			rs.next();
 		}
 	}
@@ -237,18 +245,20 @@ public class MetaCatalogValuesTests
 				"TABLE_TYPE", "REMARKS", "TYPE_CAT", "TYPE_SCHEM", "TYPE_NAME",
 				"SELF_REFERENCING_COL_NAME", "REF_GENERATION" };
 		verifyNames(MetaCatalogBuilder.TABLES_TABLE, names);
-		
-		RdfSchema schema = catalog.getSchema( MetaCatalogBuilder.SCHEMA_LOCAL_NAME );
-		RdfTable table = schema.getTable(MetaCatalogBuilder.TABLES_TABLE);
-		SparqlResultSet rs = table.getResultSet();
-		Assert.assertTrue( rs.first() );
-		while ( ! rs.isAfterLast() )
+
+		final RdfSchema schema = catalog
+				.getSchema(MetaCatalogBuilder.SCHEMA_LOCAL_NAME);
+		final RdfTable table = schema.getTable(MetaCatalogBuilder.TABLES_TABLE);
+		final SparqlResultSet rs = table.getResultSet();
+		Assert.assertTrue(rs.first());
+		while (!rs.isAfterLast())
 		{
-			System.out.println( String.format( "%s : %s : %s", rs.getString( "TABLE_CAT"), rs.getString( "TABLE_SCHEM"), rs.getString("TABLE_NAME")));
+			System.out.println(String.format("%s : %s : %s",
+					rs.getString("TABLE_CAT"), rs.getString("TABLE_SCHEM"),
+					rs.getString("TABLE_NAME")));
 			rs.next();
 		}
-		
-		
+
 	}
 
 	@Test

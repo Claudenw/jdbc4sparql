@@ -31,7 +31,8 @@ public class ColumnDefBuilderTests
 	@Test
 	public void testIntegerCreation()
 	{
-		final RdfColumnDef.Builder builder = RdfColumnDef.Builder.getIntegerBuilder();
+		final RdfColumnDef.Builder builder = RdfColumnDef.Builder
+				.getIntegerBuilder();
 		final ColumnDef cd = builder.build(model);
 		model.write(System.out, "TURTLE");
 
@@ -87,7 +88,8 @@ public class ColumnDefBuilderTests
 	@Test
 	public void testSmallIntCreation()
 	{
-		final RdfColumnDef.Builder builder = RdfColumnDef.Builder.getSmallIntBuilder();
+		final RdfColumnDef.Builder builder = RdfColumnDef.Builder
+				.getSmallIntBuilder();
 		final ColumnDef cd = builder.build(model);
 		model.write(System.out, "TURTLE");
 
@@ -134,7 +136,8 @@ public class ColumnDefBuilderTests
 	@Test
 	public void testStringCreation()
 	{
-		final RdfColumnDef.Builder builder = RdfColumnDef.Builder.getStringBuilder();
+		final RdfColumnDef.Builder builder = RdfColumnDef.Builder
+				.getStringBuilder();
 		final ColumnDef cd = builder.build(model);
 		model.write(System.out, "TURTLE");
 

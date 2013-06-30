@@ -48,7 +48,7 @@ public class SimpleBuilderTest
 	private Model schemaModel;
 	private SchemaBuilder builder;
 
-	private void addModelData(Model model)
+	private void addModelData( final Model model )
 	{
 		model.removeAll();
 		final Resource fooType = model.createResource(SimpleBuilderTest.NS
@@ -168,14 +168,14 @@ public class SimpleBuilderTest
 	{
 		model = ModelFactory.createDefaultModel();
 		schemaModel = ModelFactory.createDefaultModel();
-		addModelData( model );
+		addModelData(model);
 		catalog = new RdfCatalog.Builder().setLocalModel(model)
 				.setName("SimpleSparql").build(schemaModel);
-		
+
 		schema = new RdfSchema.Builder().setCatalog(catalog)
 				.setName("builderTest").build(schemaModel);
 
-		schemaModel.write( System.out, "TURTLE" );
+		schemaModel.write(System.out, "TURTLE");
 		builder = new SimpleBuilder();
 
 	}

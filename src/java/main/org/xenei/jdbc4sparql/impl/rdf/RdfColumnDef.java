@@ -1,15 +1,10 @@
 package org.xenei.jdbc4sparql.impl.rdf;
 
-import com.hp.hpl.jena.rdf.model.Literal;
 import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.Property;
-import com.hp.hpl.jena.rdf.model.RDFList;
-import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 import java.sql.DatabaseMetaData;
 import java.sql.Types;
-import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.xenei.jdbc4sparql.iface.ColumnDef;
@@ -127,7 +122,7 @@ public class RdfColumnDef implements ColumnDef, ResourceWrapper
 						searchable);
 				columnDef.addLiteral(
 						builder.getProperty(typeClass, "writable"), writable);
-	
+
 			}
 
 			final EntityManager entityManager = EntityManagerFactory
@@ -331,8 +326,6 @@ public class RdfColumnDef implements ColumnDef, ResourceWrapper
 		}
 
 	}
-
-	private List<String> querySegments;
 
 	@Override
 	@Predicate( impl = true )

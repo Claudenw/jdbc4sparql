@@ -24,22 +24,26 @@ import org.xenei.jena.entities.annotations.Predicate;
 import org.xenei.jena.entities.annotations.Subject;
 
 @Subject( namespace = "http://org.xenei.jdbc4sparql/entity/Schema#" )
-public class RdfSchema extends RdfNamespacedObject implements Schema, ResourceWrapper
+public class RdfSchema extends RdfNamespacedObject implements Schema,
+		ResourceWrapper
 {
 	public static class Builder implements Schema
 	{
-		private String name;
-		private RdfCatalog catalog;
-		private final Set<Table> tables = new HashSet<Table>();
-
-		public static RdfSchema fixupCatalog( RdfCatalog catalog, RdfSchema schema )
+		public static RdfSchema fixupCatalog( final RdfCatalog catalog,
+				final RdfSchema schema )
 		{
 			schema.catalog = catalog;
-			Property p = ResourceFactory.createProperty( ResourceBuilder.getNamespace( RdfCatalog.class ), "schemas" );
-			catalog.getResource().addProperty( p, schema.getResource());
+			final Property p = ResourceFactory.createProperty(
+					ResourceBuilder.getNamespace(RdfCatalog.class), "schemas");
+			catalog.getResource().addProperty(p, schema.getResource());
 			return schema;
 		}
-		
+
+		private String name;
+		private RdfCatalog catalog;
+
+		private final Set<Table> tables = new HashSet<Table>();
+
 		public RdfSchema build( final Model model )
 		{
 			checkBuildState();
@@ -63,16 +67,18 @@ public class RdfSchema extends RdfNamespacedObject implements Schema, ResourceWr
 				for (final Table tbl : tables)
 				{
 					if (tbl instanceof ResourceWrapper)
-					schema.addProperty(builder.getProperty(typeClass, "table"),
-							((ResourceWrapper)tbl).getResource());
+					{
+						schema.addProperty(
+								builder.getProperty(typeClass, "table"),
+								((ResourceWrapper) tbl).getResource());
+					}
 				}
 			}
 
 			try
 			{
-				RdfSchema retval = entityManager.read(schema,
-						RdfSchema.class);
-				retval = fixupCatalog( catalog, retval );
+				RdfSchema retval = entityManager.read(schema, RdfSchema.class);
+				retval = Builder.fixupCatalog(catalog, retval);
 				model.register(retval.new ChangeListener());
 				return retval;
 			}
@@ -191,7 +197,7 @@ public class RdfSchema extends RdfNamespacedObject implements Schema, ResourceWr
 	}
 
 	private RdfCatalog catalog;
-	
+
 	private Set<RdfTable> tableList;
 
 	@Predicate( impl = true )
@@ -226,8 +232,18 @@ public class RdfSchema extends RdfNamespacedObject implements Schema, ResourceWr
 		return new NameFilter<RdfTable>(tableNamePattern, readTables());
 	}
 
-	@Override
+	public Set<RdfTable> fixupTables( final Set<RdfTable> tables )
+	{
+		final Set<RdfTable> tableList = new HashSet<RdfTable>();
+		for (final RdfTable table : tables)
+		{
+			tableList.add(RdfTable.Builder.fixupSchema(this, table));
+		}
+		this.tableList = tableList;
+		return tableList;
+	}
 
+	@Override
 	public RdfCatalog getCatalog()
 	{
 		return catalog;
@@ -255,21 +271,10 @@ public class RdfSchema extends RdfNamespacedObject implements Schema, ResourceWr
 	}
 
 	@Override
-	@Predicate( impl = true, type = RdfTable.class, postExec="fixupTables" )
+	@Predicate( impl = true, type = RdfTable.class, postExec = "fixupTables" )
 	public Set<RdfTable> getTables()
 	{
 		throw new EntityManagerRequiredException();
-	}
-	
-	public Set<RdfTable> fixupTables( Set<RdfTable> tables )
-	{
-		Set<RdfTable> tableList = new HashSet<RdfTable>();
-		for (RdfTable table : tables )
-		{
-			tableList.add( RdfTable.Builder.fixupSchema(this, table));
-		}
-		this.tableList = tableList;
-		return tableList;
 	}
 
 	private Set<RdfTable> readTables()

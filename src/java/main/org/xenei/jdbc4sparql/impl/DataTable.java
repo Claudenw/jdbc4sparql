@@ -17,8 +17,6 @@
  */
 package org.xenei.jdbc4sparql.impl;
 
-import com.hp.hpl.jena.rdf.model.Resource;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -118,6 +116,12 @@ public class DataTable extends AbstractTable
 		return getTable().getName();
 	}
 
+	@Override
+	public String getRemarks()
+	{
+		return null;
+	}
+
 	/**
 	 * Get a result set that iterates over this table.
 	 * 
@@ -192,11 +196,5 @@ public class DataTable extends AbstractTable
 	public boolean isEmpty()
 	{
 		return data.isEmpty();
-	}
-
-	@Override
-	public String getRemarks()
-	{
-		return null;
 	}
 }

@@ -3,7 +3,6 @@ package org.xenei.jdbc4sparql.example;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -15,10 +14,6 @@ import org.apache.jena.riot.RDFLanguages;
 import org.xenei.jdbc4sparql.J4SConnection;
 import org.xenei.jdbc4sparql.J4SDriver;
 import org.xenei.jdbc4sparql.J4SUrl;
-import org.xenei.jdbc4sparql.iface.Catalog;
-import org.xenei.jdbc4sparql.iface.Schema;
-import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
-import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
 import org.xenei.jdbc4sparql.sparql.builders.RDFSBuilder;
 import org.xenei.jena.entities.MissingAnnotation;
 
@@ -59,12 +54,13 @@ public class ConfigBuilder
 	 * @throws IOException
 	 * @throws SQLException
 	 * @throws ClassNotFoundException
-	 * @throws MissingAnnotation 
-	 * @throws IllegalAccessException 
-	 * @throws InstantiationException 
+	 * @throws MissingAnnotation
+	 * @throws IllegalAccessException
+	 * @throws InstantiationException
 	 */
 	public static void main( final String[] args ) throws URISyntaxException,
-			IOException, SQLException, ClassNotFoundException, InstantiationException, IllegalAccessException, MissingAnnotation
+			IOException, SQLException, ClassNotFoundException,
+			InstantiationException, IllegalAccessException, MissingAnnotation
 	{
 		// String [] schemaFiles = {
 		// "rdf_ElementsGr2.rdf",
@@ -73,9 +69,9 @@ public class ConfigBuilder
 		// "rdf_am-schema.ttl",
 		// "rdf_am-thesaurus-schema.ttl"
 		// };
-		J4SDriver driver = new J4SDriver();
+		final J4SDriver driver = new J4SDriver();
 		J4SUrl url = new J4SUrl(
-					"jdbc:j4s?builder=org.xenei.jdbc4sparql.sparql.builders.SimpleBuilder:http://example.com/test.file");
+				"jdbc:j4s?builder=org.xenei.jdbc4sparql.sparql.builders.SimpleBuilder:http://example.com/test.file");
 
 		J4SConnection connection = new J4SConnection(driver, null, null);
 		final String[] schemaFiles = { "foaf.rdf" };
@@ -88,24 +84,25 @@ public class ConfigBuilder
 			ontologyModel.read(fUrl.toURI().toASCIIString(), RDFLanguages
 					.filenameToLang(fUrl.getPath()).getName());
 		}
-		final RDFSBuilder builder = new RDFSBuilder(ontologyModel);
+		new RDFSBuilder(ontologyModel);
 
-		final Model dataModel = ModelFactory.createDefaultModel();
+		ModelFactory.createDefaultModel();
 
 		final URL cfgUrl = new URL(fUrl.toExternalForm().replace("foaf.rdf",
 				"example.ttl"));
 
 		// SimpleBuilder builder = new SimpleBuilder();
-		//final Catalog catalog = new RdfCatalog.Builder()
-		//	.setLocalModel(dataModel).setName( "catalog" ).build(model);
-		
-		//final Schema schema = new RdfSchema.Builder().setCatalog((RdfCatalog)catalog).setName("schema").build(model);
-		
-//		schema.addTables(builder.getTables((RdfCatalog)catalog));
-//		
-//		final ConfigSerializer cs = new ConfigSerializer();
-//		cs.add(catalog);
-//		cs.save(new ModelWriter(new File(cfgUrl.getPath())));
+		// final Catalog catalog = new RdfCatalog.Builder()
+		// .setLocalModel(dataModel).setName( "catalog" ).build(model);
+
+		// final Schema schema = new
+		// RdfSchema.Builder().setCatalog((RdfCatalog)catalog).setName("schema").build(model);
+
+		// schema.addTables(builder.getTables((RdfCatalog)catalog));
+		//
+		// final ConfigSerializer cs = new ConfigSerializer();
+		// cs.add(catalog);
+		// cs.save(new ModelWriter(new File(cfgUrl.getPath())));
 		// cs.save( new ModelWriter( System.out));
 
 		Class.forName("org.xenei.jdbc4sparql.J4SDriver");
