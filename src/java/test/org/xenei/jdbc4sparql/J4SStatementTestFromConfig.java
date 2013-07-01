@@ -26,6 +26,7 @@ public class J4SStatementTestFromConfig extends AbstractJ4SStatementTest
 		final J4SDriver driver = new J4SDriver();
 		final J4SUrl url = new J4SUrl("jdbc:J4S:" + fUrl.toExternalForm());
 		conn = new J4SConnection(driver, url, new Properties());
+		conn.setCatalog("test");
 		stmt = conn.createStatement();
 		//conn.setCatalog("catalog");
 		//conn.setSchema("schema");

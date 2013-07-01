@@ -427,8 +427,8 @@ public class J4SConnection implements Connection
 		}
 		else
 		{
-			throw new SQLException("Catalog " + currentCatalog
-					+ " does not support statements");
+			throw new SQLException("Catalog '" + currentCatalog
+					+ "' does not support statements");
 		}
 	}
 
