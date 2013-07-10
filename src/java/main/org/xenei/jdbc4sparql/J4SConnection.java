@@ -39,7 +39,6 @@ import java.sql.DatabaseMetaData;
 import java.sql.NClob;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLClientInfoException;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.sql.SQLWarning;
@@ -47,7 +46,6 @@ import java.sql.SQLXML;
 import java.sql.Savepoint;
 import java.sql.Statement;
 import java.sql.Struct;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -59,9 +57,12 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xenei.jdbc4sparql.iface.Catalog;
-import org.xenei.jdbc4sparql.iface.ModelFactory;
+import org.xenei.jdbc4sparql.iface.DatasetProducer;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
@@ -74,6 +75,67 @@ import org.xenei.jena.entities.MissingAnnotation;
 
 public class J4SConnection implements Connection
 {
+	private static class DatasetProducerImpl implements DatasetProducer
+	{
+		private File metaDir;
+		/**
+		 * The dataset of catalogs
+		 */
+		private Dataset metaData;
+
+		private File localDir;
+		/**
+		 * The dataset of local data
+		 */
+		private Dataset localData;
+
+		@Override
+		public void close()
+		{
+			if (metaData != null)
+			{
+				metaData.close();
+			}
+			if (localData != null)
+			{
+				localData.close();
+			}
+			FileUtils.deleteQuietly(metaDir);
+			FileUtils.deleteQuietly( localDir );
+			
+		}
+
+		@Override
+		public Dataset getLocalDataset()
+		{
+			if (localData == null)
+			{
+				// must be a local file
+				localDir = new File(System.getProperty("java.io.tmpdir"), UUID.randomUUID().toString());
+				localData = TDBFactory.createDataset(localDir.getAbsolutePath());
+			}
+			return localData;
+		}
+
+		@Override
+		public Dataset getMetaDataset()
+		{
+			if (metaData == null)
+			{
+				// must be a local file
+				metaDir = new File(System.getProperty("java.io.tmpdir"), UUID.randomUUID().toString());
+				metaData = TDBFactory.createDataset(metaDir.getAbsolutePath());
+			}
+			return metaData;
+		}
+		
+		@Override
+		public Model getMetaDatasetUnionModel()
+		{
+			return getMetaDataset().getNamedModel("urn:x-arq:UnionGraph");
+		}
+	}
+
 	private class NoCloseZipInputStream extends InputStream
 	{
 		ZipInputStream wrapped;
@@ -158,7 +220,7 @@ public class J4SConnection implements Connection
 
 	}
 
-	public static final String META_MODEL_FACTORY = "MetaModelFactory";
+	public static final String DATASET_PRODUCER = "DatasetProducer";
 	private Properties clientInfo;
 	private final J4SUrl url;
 	private final Map<String, Catalog> catalogMap;
@@ -171,19 +233,8 @@ public class J4SConnection implements Connection
 	private final SparqlParser sparqlParser;
 	private SQLWarning sqlWarnings;
 	private int holdability;
-	private File tmpDir;
-
-	private final Properties properties;
-
-	/**
-	 * The dataset of catalogs
-	 */
-	private Dataset dataset;
-
-	/**
-	 * The dataset of local data
-	 */
-	private Dataset localData;
+	private Logger log = LoggerFactory.getLogger(J4SConnection.class);
+	private DatasetProducer dsProducer = null;
 
 	public J4SConnection( final J4SDriver driver, final J4SUrl url,
 			final Properties properties ) throws IOException,
@@ -194,23 +245,42 @@ public class J4SConnection implements Connection
 		{
 			throw new IllegalArgumentException("Properties may not be null");
 		}
-		this.properties = properties;
 		this.catalogMap = new HashMap<String, Catalog>();
 		this.sqlWarnings = null;
 		this.driver = driver;
 		this.url = url;
 		this.currentCatalog = url.getCatalog();
 		this.currentSchema = null;
-		this.tmpDir = null;
 		this.clientInfo = new Properties();
 
 		this.holdability = ResultSet.HOLD_CURSORS_OVER_COMMIT;
+		
+		this.sparqlParser = url.getParser() != null ? url.getParser()
+				: SparqlParser.Util.getDefaultParser();
+
+		if (properties.containsKey(J4SConnection.DATASET_PRODUCER))
+		{
+			final Class<? extends DatasetProducer> clazz = (Class<? extends DatasetProducer>) J4SConnection.class
+					.getClassLoader()
+					.loadClass(
+							properties
+									.getProperty(J4SConnection.DATASET_PRODUCER));
+			dsProducer = clazz.newInstance();
+		}
+		else
+		{
+			dsProducer = new DatasetProducerImpl();
+		}
 
 		configureCatalogMap();
-		final Model metadataModel = getDataset().getNamedModel(
-				MetaCatalogBuilder.LOCAL_NAME);
-		final Catalog c = MetaCatalogBuilder.getInstance(metadataModel);
-		catalogMap.put(c.getName(), c);
+		
+		if (catalogMap.get(MetaCatalogBuilder.LOCAL_NAME) == null)
+		{
+			final Model metadataModel = dsProducer.getMetaDataset()
+					.getNamedModel(MetaCatalogBuilder.LOCAL_NAME);
+			final Catalog c = MetaCatalogBuilder.getInstance(metadataModel);
+			catalogMap.put(c.getName(), c);
+		}
 		if (StringUtils.isNotEmpty(currentCatalog)
 				&& (catalogMap.get(currentCatalog) == null))
 		{
@@ -218,8 +288,7 @@ public class J4SConnection implements Connection
 					+ "' not found in catalog map");
 		}
 
-		this.sparqlParser = url.getParser() != null ? url.getParser()
-				: SparqlParser.Util.getDefaultParser();
+		
 	}
 
 	@Override
@@ -230,16 +299,18 @@ public class J4SConnection implements Connection
 
 	public RdfCatalog addCatalog( final RdfCatalog.Builder catalogBuilder )
 	{
-		final Model model = getDataset()
-				.getNamedModel(catalogBuilder.getName());
+		final Model model = dsProducer.getMetaDataset().getNamedModel(
+				catalogBuilder.getName());
 		Model dataModel = catalogBuilder.getLocalModel();
 		if (dataModel != null)
 		{
-			getLocalData().addNamedModel(catalogBuilder.getName(), dataModel);
+			dsProducer.getLocalDataset().addNamedModel(
+					catalogBuilder.getName(), dataModel);
 		}
 		else
 		{
-			dataModel = getLocalData().getNamedModel(catalogBuilder.getName());
+			dataModel = dsProducer.getLocalDataset().getNamedModel(
+					catalogBuilder.getName());
 			if (dataModel != null)
 			{
 				catalogBuilder.setLocalModel(dataModel);
@@ -271,14 +342,7 @@ public class J4SConnection implements Connection
 		{
 			cat.close();
 		}
-		if (dataset != null)
-		{
-			dataset.close();
-		}
-		if (localData != null)
-		{
-			localData.close();
-		}
+		dsProducer.close();
 		closed = true;
 	}
 
@@ -304,15 +368,8 @@ public class J4SConnection implements Connection
 		else
 		{
 			RdfCatalog catalog = null;
-			Model model = null;
-			if (StringUtils.isEmpty(currentCatalog))
-			{
-				model = getDataset().getDefaultModel();
-			}
-			else
-			{
-				model = getDataset().getNamedModel(currentCatalog);
-			}
+			final Model model = getModel(dsProducer.getMetaDataset(),
+					currentCatalog);
 
 			if (url.getType().equals(J4SUrl.TYPE_SPARQL))
 			{
@@ -322,7 +379,8 @@ public class J4SConnection implements Connection
 			}
 			else
 			{
-				final Model dataModel = createModel();
+				final Model dataModel = getModel(dsProducer.getLocalDataset(),
+						currentCatalog);
 				dataModel.read(url.getEndpoint().toString(), url.getType());
 				catalog = new RdfCatalog.Builder().setLocalModel(dataModel)
 						.setName(currentCatalog).build(model);
@@ -361,30 +419,6 @@ public class J4SConnection implements Connection
 	public Clob createClob() throws SQLException
 	{
 		throw new SQLFeatureNotSupportedException();
-	}
-
-	/**
-	 * Create a model using the configured model builder.
-	 * 
-	 * @return a fresh model
-	 * @throws InstantiationException
-	 * @throws IllegalAccessException
-	 * @throws ClassNotFoundException
-	 */
-	private Model createModel() throws InstantiationException,
-			IllegalAccessException, ClassNotFoundException
-	{
-		if (properties.containsKey(J4SConnection.META_MODEL_FACTORY))
-		{
-			final Class<? extends ModelFactory> clazz = (Class<? extends ModelFactory>) J4SConnection.class
-					.getClassLoader()
-					.loadClass(
-							properties
-									.getProperty(J4SConnection.META_MODEL_FACTORY));
-			return clazz.newInstance().createModel(properties);
-		}
-		return com.hp.hpl.jena.rdf.model.ModelFactory.createDefaultModel();
-
 	}
 
 	@Override
@@ -468,40 +502,34 @@ public class J4SConnection implements Connection
 		return clientInfo.getProperty(key);
 	}
 
-	private Dataset getDataset()
-	{
-		if (dataset == null)
-		{
-			// must be a local file
-			tmpDir = new File(System.getProperty("java.io.tmpdir"));
-			tmpDir = new File(tmpDir, UUID.randomUUID().toString());
-			dataset = TDBFactory.createDataset(tmpDir.getAbsolutePath());
-		}
-		return dataset;
-	}
-
 	@Override
 	public int getHoldability() throws SQLException
 	{
 		return holdability;
 	}
 
-	private Dataset getLocalData()
-	{
-		if (localData == null)
-		{
-			// must be a local file
-			tmpDir = new File(System.getProperty("java.io.tmpdir"));
-			tmpDir = new File(tmpDir, UUID.randomUUID().toString());
-			localData = TDBFactory.createDataset(tmpDir.getAbsolutePath());
-		}
-		return localData;
-	}
-
 	@Override
 	public DatabaseMetaData getMetaData() throws SQLException
 	{
 		return new J4SDatabaseMetaData(this, driver);
+	}
+
+	private Model getModel( final Dataset dataset, final String modelName )
+	{
+		Model model = null;
+		if (StringUtils.isEmpty(modelName))
+		{
+			model = dataset.getDefaultModel();
+		}
+		else
+		{
+			model = dataset.getNamedModel(modelName);
+			if (dataset.containsNamedModel(modelName))
+			{
+				dataset.addNamedModel(modelName, model);
+			}
+		}
+		return model;
 	}
 
 	@Override
@@ -577,17 +605,18 @@ public class J4SConnection implements Connection
 		{
 			Model m = null;
 			final String name = e.getName();
+			log.debug("zipFile: {}", name);
 			String graphName = name;
 			if (name.startsWith("/default/"))
 			{
 				graphName = name.substring("/default/".length());
 				if (graphName.startsWith("local"))
 				{
-					ds = getLocalData();
+					ds = dsProducer.getLocalDataset();
 				}
 				else if (graphName.startsWith("meta"))
 				{
-					ds = getDataset();
+					ds = dsProducer.getMetaDataset();
 				}
 				else
 				{
@@ -600,12 +629,12 @@ public class J4SConnection implements Connection
 			{
 				if (name.startsWith("/local/"))
 				{
-					ds = getLocalData();
+					ds = dsProducer.getLocalDataset();
 					graphName = name.substring("/local/".length());
 				}
 				else if (name.startsWith("/meta/"))
 				{
-					ds = getDataset();
+					ds = dsProducer.getMetaDataset();
 					graphName = name.substring("/meta/".length());
 				}
 				else
@@ -615,6 +644,10 @@ public class J4SConnection implements Connection
 				graphName = graphName.substring(0,
 						graphName.length() - ".ttl".length());
 				m = ds.getNamedModel(graphName);
+				if (!ds.containsNamedModel(graphName))
+				{
+					ds.addNamedModel(graphName, m);
+				}
 			}
 
 			final NoCloseZipInputStream ncis = new NoCloseZipInputStream(zis);
@@ -622,36 +655,37 @@ public class J4SConnection implements Connection
 		}
 		zis.close();
 		// create the catalogs
-		ds = getDataset();
 		final Resource catType = ResourceFactory.createResource(ResourceBuilder
 				.getFQName(RdfCatalog.class));
 		final EntityManager entityManager = EntityManagerFactory
 				.getEntityManager();
-		final List<String> names = WrappedIterator.create(ds.listNames())
+		final List<String> names = WrappedIterator.create(dsProducer.getMetaDataset().listNames())
 				.toList();
 		names.add("");
 		for (final String name : names)
 		{
-			final Model m = name.equals("") ? ds.getDefaultModel() : ds
-					.getNamedModel(name);
-			final List<RdfCatalog> cats = new ArrayList<RdfCatalog>();
+			final Model m = getModel(dsProducer.getMetaDataset(), name);
 			final ResIterator ri = m
 					.listSubjectsWithProperty(RDF.type, catType);
 			while (ri.hasNext())
 			{
-				cats.add(entityManager.read(ri.next(), RdfCatalog.class));
-			}
-			// add local data if necessary
-			for (RdfCatalog cat : cats)
-			{
-				if (getLocalData().containsNamedModel(name))
+				RdfCatalog cat = entityManager
+						.read(ri.next(), RdfCatalog.class);
+				Model localModel = null; 
+				
+				if (MetaCatalogBuilder.LOCAL_NAME.equals(name))
 				{
-					cat = new RdfCatalog.Builder(cat).setLocalModel(
-							getLocalData().getNamedModel(name)).build(m);
+					localModel =dsProducer.getMetaDatasetUnionModel();
 				}
+				else
+				{
+					localModel =getModel(dsProducer.getLocalDataset(), name);
+				}
+				cat = new RdfCatalog.Builder(cat).setLocalModel(localModel)
+						.build(m);
+				
 				catalogMap.put(cat.getName(), cat);
 			}
-
 		}
 	}
 
@@ -755,7 +789,7 @@ public class J4SConnection implements Connection
 	public void saveConfig( final OutputStream os ) throws IOException
 	{
 		final ZipOutputStream out = new ZipOutputStream(os);
-		Dataset ds = getDataset();
+		Dataset ds = dsProducer.getMetaDataset();
 		String entryName;
 		ZipEntry e;
 		for (final Iterator<String> nIter = ds.listNames(); nIter.hasNext();)
@@ -773,7 +807,7 @@ public class J4SConnection implements Connection
 		ds.getDefaultModel().write(out, "TURTLE");
 		out.closeEntry();
 
-		ds = getLocalData();
+		ds = dsProducer.getLocalDataset();
 		for (final Iterator<String> nIter = ds.listNames(); nIter.hasNext();)
 		{
 			final String name = nIter.next();
@@ -816,10 +850,12 @@ public class J4SConnection implements Connection
 	@Override
 	public void setClientInfo( final String param, final String value )
 	{
-		if( value != null)
+		if (value != null)
 		{
 			this.clientInfo.setProperty(param, value);
-		} else {
+		}
+		else
+		{
 			this.clientInfo.remove(param);
 		}
 	}
@@ -830,7 +866,8 @@ public class J4SConnection implements Connection
 		// don't support ResultSet.CLOSE_CURSORS_AT_COMMIT
 		if (holdability != ResultSet.HOLD_CURSORS_OVER_COMMIT)
 		{
-			throw new SQLFeatureNotSupportedException("Invalid holdability value");
+			throw new SQLFeatureNotSupportedException(
+					"Invalid holdability value");
 		}
 		this.holdability = holdability;
 	}
@@ -847,7 +884,8 @@ public class J4SConnection implements Connection
 	{
 		if (!state)
 		{
-			throw new SQLFeatureNotSupportedException( "Can not set ReadOnly=false");
+			throw new SQLFeatureNotSupportedException(
+					"Can not set ReadOnly=false");
 		}
 	}
 

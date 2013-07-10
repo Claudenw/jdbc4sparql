@@ -23,6 +23,7 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFLanguages;
 import org.xenei.jdbc4sparql.sparql.builders.SchemaBuilder;
@@ -180,7 +181,7 @@ public class J4SUrl
 		int pos = startPos;
 		// (arg)=(val)(:|&)
 		final Pattern pattern = Pattern
-				.compile("(([a-zA-Z]+)\\=([^:\\&]+)([:|\\&])).+");
+				.compile("(([a-zA-Z]+)(\\=([^:\\&]+))?([:|\\&])).+");
 		Matcher matcher = pattern.matcher(urlStr.substring(startPos));
 
 		while (matcher.matches())
@@ -197,9 +198,16 @@ public class J4SUrl
 						"Not a valid J4S JDBC URL -- '" + arg
 								+ "' is not a recognized argument");
 			}
-			properties.put(arg, matcher.group(3));
+			properties.put(arg, StringUtils.defaultIfBlank(matcher.group(4),""));
 			pos += matcher.group(1).length();
-			matcher = pattern.matcher(urlStr.substring(pos));
+			if (":".equals( matcher.group(5)))
+			{
+				matcher = pattern.matcher("");
+			}
+			else
+			{
+				matcher = pattern.matcher(urlStr.substring(pos));
+			}
 		}
 
 		// check for valid type value and make sure it is upper case.

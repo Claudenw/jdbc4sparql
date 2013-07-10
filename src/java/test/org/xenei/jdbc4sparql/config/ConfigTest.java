@@ -7,11 +7,16 @@ import com.hp.hpl.jena.rdf.model.ModelFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.net.URL;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import org.junit.After;
@@ -22,7 +27,9 @@ import org.xenei.jdbc4sparql.J4SConnection;
 import org.xenei.jdbc4sparql.J4SDriver;
 import org.xenei.jdbc4sparql.J4SDriverTest;
 import org.xenei.jdbc4sparql.J4SUrl;
+import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.ColumnDef;
+import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfColumn;
@@ -37,8 +44,9 @@ public class ConfigTest
 {
 	private RdfCatalog catalog;
 	private Model model;
-	private SchemaBuilder builder;
-	private Dataset dataset;
+	private J4SConnection connection;
+	private J4SConnection connection2;
+	private File tmpFile;
 
 	private URL fUrl;
 
@@ -123,6 +131,24 @@ public class ConfigTest
 			deepCompare((RdfColumnDef) cd1.next(), (RdfColumnDef) cd2.next());
 		}
 	}
+	
+	private void deepCompare( final Catalog c1, final Catalog c2 )
+	{
+		Assert.assertEquals( c1.getName(), c2.getName() );
+		Set<Schema> s1 = (Set<Schema>) c1.getSchemas();
+		Set<Schema> s2 = (Set<Schema>) c2.getSchemas();
+		Assert.assertEquals( s1.size(), s2.size() );
+		Iterator<Schema> iterS1 = s1.iterator();
+		Iterator<Schema> iterS2 = s2.iterator();
+		while (iterS1.hasNext())
+		{
+			Schema i1 = iterS1.next();
+			Schema i2 = iterS2.next();
+			Assert.assertTrue( i1 instanceof RdfSchema);
+			Assert.assertTrue( i2 instanceof RdfSchema);
+			deepCompare( (RdfSchema)i1, (RdfSchema)i2 );
+		}
+	}
 
 	@Before
 	public void setup()
@@ -135,13 +161,25 @@ public class ConfigTest
 		catalog = new RdfCatalog.Builder().setName("SimpleSparql")
 				.setLocalModel(model).build(model);
 
-		dataset = DatasetFactory.createMem();
 	}
 
 	@After
-	public void teardown()
+	public void teardown() throws SQLException
 	{
-		dataset.close();
+		if (connection != null)
+		{
+			connection.close();
+		}
+		if (connection2 != null)
+		{
+			connection2.close();
+		}
+		if (tmpFile != null)
+		{
+			tmpFile.delete();
+		}
+		catalog.close();
+		model.close();
 	}
 
 	@Test
@@ -150,35 +188,31 @@ public class ConfigTest
 		new RdfSchema.Builder().setCatalog(catalog).setName("builderTest")
 				.build(model);
 
-		// builder = new SimpleNullableBuilder();
-		builder = new SimpleBuilder();
-
-		// schema.addTables(builder.getTables(catalog));
-
-		final J4SUrl url = new J4SUrl("jdbc:J4S:"
-				+ fUrl.toURI().normalize().toASCIIString());
+		final J4SUrl url = new J4SUrl("jdbc:j4s?catalog=test&type=turtle&builder=org.xenei.jdbc4sparql.sparql.builders.SimpleNullableBuilder:"
+		+ fUrl.toString());
 		final J4SDriver driver = new J4SDriver();
-		final J4SConnection connection = new J4SConnection(driver, url, null);
-		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		connection.saveConfig(baos);
-		final DatabaseMetaData dmd = connection.getMetaData();
-		final ResultSet rs = dmd.getColumns(null, null, null, null);
-		rs.beforeFirst();
-		final ResultSetMetaData rsmd = rs.getMetaData();
+		connection = new J4SConnection(driver, url, new Properties());
+		tmpFile = File.createTempFile("CfgTst", ".zip");
+				
+		FileOutputStream fos = new FileOutputStream( tmpFile );
+		connection.saveConfig(fos);
+		fos.close();
 
-		new ByteArrayInputStream(baos.toByteArray());
-		final J4SConnection connection2 = new J4SConnection(driver, url, null);
-		final DatabaseMetaData dmd2 = connection2.getMetaData();
-		final ResultSet rs2 = dmd2.getColumns(null, null, null, null);
-		rs2.beforeFirst();
-
-		while (rs.next())
+		final J4SUrl url2 = new J4SUrl("jdbc:J4S:file:"+tmpFile.getCanonicalPath());
+		
+		
+		connection2 = new J4SConnection(driver, url2, new Properties());
+		
+		Map<String,Catalog> cats = connection.getCatalogs();
+		Map<String,Catalog> cats2 = connection2.getCatalogs();
+		
+		Assert.assertEquals( cats.size(), cats2.size() );
+		Iterator<Catalog> iterCat = cats.values().iterator();
+		Iterator<Catalog> iterCat2 = cats2.values().iterator();
+		
+		while (iterCat.hasNext())
 		{
-			Assert.assertTrue(rs2.next());
-			for (int i = 1; i <= rsmd.getColumnCount(); i++)
-			{
-				Assert.assertEquals(rs.getString(i), rs2.getString(i));
-			}
+			deepCompare( iterCat.next(), iterCat2.next() );
 		}
 
 	}

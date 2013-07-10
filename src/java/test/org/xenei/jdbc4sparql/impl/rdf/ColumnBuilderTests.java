@@ -39,7 +39,6 @@ public class ColumnBuilderTests
 		final RdfColumn.Builder builder = new RdfColumn.Builder()
 				.setColumnDef(columnDef).setName("test").setTable(mockTable);
 		final Column cd = builder.build(model);
-		model.write(System.out, "TURTLE");
 		Assert.assertEquals("test", cd.getName());
 		Assert.assertEquals(false, cd.getColumnDef().isAutoIncrement());
 		Assert.assertEquals(false, cd.getColumnDef().isCaseSensitive());

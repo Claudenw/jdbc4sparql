@@ -91,9 +91,6 @@ public class CatalogBuilderTest
 
 		schemaBldr.setCatalog(catalog).build(model);
 
-		model.write(System.out, "TURTLE");
-		model.write(new FileOutputStream(new File("dump.ttl")), "TURTLE");
-
 		Assert.assertNotNull(catalog.getSchema("testSchema"));
 
 	}

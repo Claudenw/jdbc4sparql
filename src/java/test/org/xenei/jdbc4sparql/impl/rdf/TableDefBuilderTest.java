@@ -85,8 +85,6 @@ public class TableDefBuilderTest
 		Assert.assertNull(tableDef.getPrimaryKey());
 		Assert.assertNull(tableDef.getSortKey());
 		Assert.assertNull(tableDef.getSuperTableDef());
-
-		model.write(System.out, "TURTLE");
 	}
 
 	@Test

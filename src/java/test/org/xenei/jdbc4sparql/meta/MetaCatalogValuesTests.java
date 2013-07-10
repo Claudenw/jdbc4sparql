@@ -326,7 +326,6 @@ public class MetaCatalogValuesTests
 				final Literal l = soln.getLiteral("colName");
 				Assert.assertTrue(l.getString() + " is missing",
 						names.contains(l.getString()));
-				System.out.println(l.getString());
 			}
 			Assert.assertEquals(names.size(), count);
 

@@ -1,6 +1,7 @@
 package org.xenei.jdbc4sparql.impl.rdf;
 
 import com.hp.hpl.jena.graph.Node;
+import com.hp.hpl.jena.graph.NodeFactory;
 import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.query.QueryExecution;
 import com.hp.hpl.jena.query.QueryExecutionFactory;
@@ -354,10 +355,10 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 
 	public Node getServiceNode()
 	{
-		return isService() ? Node.createURI(getSparqlEndpoint()) : null;
+		return isService() ? NodeFactory.createURI(getSparqlEndpoint()) : null;
 	}
 
-	@Predicate( impl = true )
+	@Predicate( impl = true, emptyIsNull=true )
 	public String getSparqlEndpoint()
 	{
 		throw new EntityManagerRequiredException();

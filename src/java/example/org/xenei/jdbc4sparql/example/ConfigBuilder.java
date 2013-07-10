@@ -9,6 +9,7 @@ import java.net.URL;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Properties;
 
 import org.apache.jena.riot.RDFLanguages;
 import org.xenei.jdbc4sparql.J4SConnection;
@@ -44,7 +45,6 @@ public class ConfigBuilder
 					"Cat %s Schema %s tbl %s col %s Nullable: '%s'", catalog,
 					schema, table, rs.getString("COLUMN_NAME"),
 					rs.getString("IS_NULLABLE"));
-			System.out.println(s);
 		}
 	}
 
@@ -62,13 +62,7 @@ public class ConfigBuilder
 			IOException, SQLException, ClassNotFoundException,
 			InstantiationException, IllegalAccessException, MissingAnnotation
 	{
-		// String [] schemaFiles = {
-		// "rdf_ElementsGr2.rdf",
-		// "rdf_am-people-rdagr2-schema.ttl",
-		// "rdf_am-people-skos-schema.ttl",
-		// "rdf_am-schema.ttl",
-		// "rdf_am-thesaurus-schema.ttl"
-		// };
+		
 		final J4SDriver driver = new J4SDriver();
 		J4SUrl url = new J4SUrl(
 				"jdbc:j4s?builder=org.xenei.jdbc4sparql.sparql.builders.SimpleBuilder:http://example.com/test.file");
@@ -108,10 +102,11 @@ public class ConfigBuilder
 		Class.forName("org.xenei.jdbc4sparql.J4SDriver");
 
 		url = new J4SUrl("jdbc:J4S:" + cfgUrl.toExternalForm());
-		connection = new J4SConnection(driver, url, null);
+		connection = new J4SConnection(driver, url, new Properties());
 		connection.setCatalog("catalog");
 		connection.setSchema("schema");
 		ConfigBuilder.getMetaData(connection);
+		connection.close();
 
 		/*
 		 * fUrl = ConfigBuilder.class.getResource("./rdf_am-data.ttl");

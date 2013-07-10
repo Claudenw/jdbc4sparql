@@ -34,7 +34,6 @@ public class ColumnDefBuilderTests
 		final RdfColumnDef.Builder builder = RdfColumnDef.Builder
 				.getIntegerBuilder();
 		final ColumnDef cd = builder.build(model);
-		model.write(System.out, "TURTLE");
 
 		Assert.assertEquals(false, cd.isAutoIncrement());
 		Assert.assertEquals(false, cd.isCaseSensitive());
@@ -66,7 +65,6 @@ public class ColumnDefBuilderTests
 				.setWritable(true);
 
 		final ColumnDef cd = builder.build(model);
-		model.write(System.out, "TURTLE");
 
 		Assert.assertEquals(true, cd.isAutoIncrement());
 		Assert.assertEquals(true, cd.isCaseSensitive());
@@ -91,7 +89,6 @@ public class ColumnDefBuilderTests
 		final RdfColumnDef.Builder builder = RdfColumnDef.Builder
 				.getSmallIntBuilder();
 		final ColumnDef cd = builder.build(model);
-		model.write(System.out, "TURTLE");
 
 		Assert.assertEquals(false, cd.isAutoIncrement());
 		Assert.assertEquals(false, cd.isCaseSensitive());
@@ -115,7 +112,6 @@ public class ColumnDefBuilderTests
 		final RdfColumnDef.Builder builder = new RdfColumnDef.Builder();
 		builder.setType(Types.VARCHAR);
 		final ColumnDef cd = builder.build(model);
-		model.write(System.out, "TURTLE");
 
 		Assert.assertEquals(false, cd.isAutoIncrement());
 		Assert.assertEquals(false, cd.isCaseSensitive());
@@ -139,7 +135,6 @@ public class ColumnDefBuilderTests
 		final RdfColumnDef.Builder builder = RdfColumnDef.Builder
 				.getStringBuilder();
 		final ColumnDef cd = builder.build(model);
-		model.write(System.out, "TURTLE");
 
 		Assert.assertEquals(false, cd.isAutoIncrement());
 		Assert.assertEquals(false, cd.isCaseSensitive());

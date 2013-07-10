@@ -75,7 +75,6 @@ public class J4SDatabaseMetaDataTest
 		catalogs.put(cat.getName(), cat);
 		Mockito.when(connection.getCatalogs()).thenReturn(catalogs);
 		metadata = new J4SDatabaseMetaData(connection, driver);
-		model.write(System.out, "TURTLE"); // FIXME remove this
 	}
 
 	@Test
@@ -411,7 +410,6 @@ public class J4SDatabaseMetaDataTest
 	@Test
 	public void testSuperTypesDef() throws Exception
 	{
-		model.write(System.out, "TURTLE");
 		model.write(new FileOutputStream(new File("dump.ttl")), "TURTLE");
 
 		final String[] names = { "TYPE_CAT", "TYPE_SCHEM", "TYPE_NAME",

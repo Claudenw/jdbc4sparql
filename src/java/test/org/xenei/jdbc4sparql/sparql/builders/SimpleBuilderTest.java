@@ -71,7 +71,6 @@ public class SimpleBuilderTest
 
 		model.add(foo2, stringCol, "Foo2String");
 		model.add(foo2, intCol, "5");
-		model.write(System.out, "TURTLE");
 	}
 
 	@Test
@@ -175,7 +174,6 @@ public class SimpleBuilderTest
 		schema = new RdfSchema.Builder().setCatalog(catalog)
 				.setName("builderTest").build(schemaModel);
 
-		schemaModel.write(System.out, "TURTLE");
 		builder = new SimpleBuilder();
 
 	}

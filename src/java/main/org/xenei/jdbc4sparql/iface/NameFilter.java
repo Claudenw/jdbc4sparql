@@ -98,7 +98,6 @@ public class NameFilter<T extends NamedObject> implements Iterator<T>,
 	@Override
 	public T next()
 	{
-
 		if (namePattern == null)
 		{
 			return iter.next();

@@ -382,7 +382,7 @@ public class J4SConnectionTest
 	@Test
 	public void testLoadConfig() throws Exception
 	{
-		final URL fUrl = J4SConnectionTest.class.getResource("./config.zip");
+		final URL fUrl = J4SConnectionTest.class.getResource("./J4SStatementTest.zip");
 		url = new J4SUrl("jdbc:j4s:" + fUrl.toExternalForm());
 		connection = new J4SConnection(driver, url, properties);
 		final Map<String, Catalog> map = connection.getCatalogs();

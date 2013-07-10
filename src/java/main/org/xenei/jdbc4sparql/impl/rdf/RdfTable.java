@@ -592,9 +592,6 @@ public class RdfTable extends RdfNamespacedObject implements Table,
 		{
 			try
 			{
-				System.out.println(String.format(fmt.toString(), tableVar)); // FIXME
-																				// remove
-																				// this
 				return SparqlParser.Util.parse(String.format(fmt, tableVar));
 			}
 			catch (final ParseException e)

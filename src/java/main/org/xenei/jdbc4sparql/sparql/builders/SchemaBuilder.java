@@ -28,6 +28,7 @@ import org.apache.commons.discovery.ResourceNameIterator;
 import org.apache.commons.discovery.resource.ClassLoaders;
 import org.apache.commons.discovery.resource.classes.DiscoverClasses;
 import org.apache.commons.discovery.resource.names.DiscoverServiceNames;
+import org.apache.commons.lang.StringUtils;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 
@@ -67,7 +68,7 @@ public interface SchemaBuilder
 		public static SchemaBuilder getBuilder( final String name )
 		{
 			final List<Class<? extends SchemaBuilder>> lst = Util.getBuilders();
-			if (name == null)
+			if (StringUtils.isEmpty(name))
 			{
 				try
 				{

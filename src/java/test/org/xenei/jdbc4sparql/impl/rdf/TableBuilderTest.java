@@ -59,8 +59,6 @@ public class TableBuilderTest
 				.setSchema(mockSchema).setType("testing Table");
 		final RdfTable table = builder.build(model);
 
-		model.write(System.out, "TURTLE");
-
 		Assert.assertEquals(2, table.getColumnCount());
 		Assert.assertEquals("table", table.getName());
 		final NameFilter<Column> nf = table.findColumns("StringCol");

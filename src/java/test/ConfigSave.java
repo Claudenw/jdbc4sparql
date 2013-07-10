@@ -21,8 +21,8 @@ public class ConfigSave
 	{
 		final J4SDriver driver = new J4SDriver();
 		final URL fUrl = J4SConnectionTest.class
-				.getResource("./J4SDriverTest.ttl");
-		final J4SUrl url = new J4SUrl("jdbc:j4s?type=turtle:"
+				.getResource("./J4SStatementTest.ttl");
+		final J4SUrl url = new J4SUrl("jdbc:j4s?builder=org.xenei.jdbc4sparql.sparql.builders.SimpleNullableBuilder&type=turtle:"
 				+ fUrl.toExternalForm());
 		final Properties properties = new Properties();
 		final J4SConnection connection = new J4SConnection(driver, url,
@@ -32,6 +32,7 @@ public class ConfigSave
 		final FileOutputStream fos = new FileOutputStream(f);
 		connection.saveConfig(fos);
 		fos.close();
+		connection.close();
 	}
 
 }

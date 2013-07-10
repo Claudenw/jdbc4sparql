@@ -27,6 +27,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -62,9 +63,14 @@ public class J4SDriverTest
 
 		fUrl = J4SDriverTest.class.getResource("./J4SDriverTest.ttl"); // /org/xenei/jdbc4sparql/J4SDriverTest.ttl");
 
-		url = "jdbc:j4s?catalog=test&type=turtle:" + fUrl.toString();
+		url = "jdbc:j4s?catalog=test&type=turtle&builder:" + fUrl.toString();
 
 		conn = DriverManager.getConnection(url, "myschema", "mypassw");
+	}
+	
+	@After
+	public void tearDown() throws SQLException {
+		conn.close();
 	}
 
 	@Test

@@ -226,7 +226,6 @@ public class MetaCatalogTests
 		final String[] names = { "TABLE_CAT", "TABLE_SCHEM", "TABLE_NAME",
 				"TABLE_TYPE", "REMARKS", "TYPE_CAT", "TYPE_SCHEM", "TYPE_NAME",
 				"SELF_REFERENCING_COL_NAME", "REF_GENERATION" };
-		model.write(System.out, "TURTLE");
 		verifyNames(MetaCatalogBuilder.TABLES_TABLE, names);
 	}
 
@@ -295,7 +294,6 @@ public class MetaCatalogTests
 				final Literal l = soln.getLiteral("colName");
 				Assert.assertTrue(l.getString() + " is missing",
 						names.contains(l.getString()));
-				System.out.println(l.getString());
 			}
 			Assert.assertEquals(names.size(), count);
 
