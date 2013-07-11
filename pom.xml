@@ -129,7 +129,7 @@
 		<dependency>
 			<groupId>org.xenei</groupId>
 			<artifactId>PA4RDF</artifactId>
-			<version>1.1-SNAPSHOT</version>
+			<version>1.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
