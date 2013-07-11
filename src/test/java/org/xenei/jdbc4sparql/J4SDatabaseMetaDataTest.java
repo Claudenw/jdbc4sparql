@@ -410,11 +410,8 @@ public class J4SDatabaseMetaDataTest
 	@Test
 	public void testSuperTypesDef() throws Exception
 	{
-		model.write(new FileOutputStream(new File("dump.ttl")), "TURTLE");
-
 		final String[] names = { "TYPE_CAT", "TYPE_SCHEM", "TYPE_NAME",
 				"SUPERTYPE_CAT", "SUPERTYPE_SCHEM", "SUPERTYPE_NAME",
-
 		};
 		columnChecking(MetaCatalogBuilder.SUPER_TYPES_TABLE, names);
 	}
