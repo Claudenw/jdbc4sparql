@@ -1,6 +1,7 @@
 package org.xenei.jdbc4sparql.impl.rdf;
 
 import com.hp.hpl.jena.graph.Node;
+import com.hp.hpl.jena.query.QueryException;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
@@ -47,6 +48,7 @@ public class RdfColumn extends RdfNamespacedObject implements Column,
 		private Table table;
 		private String name;
 		private final Class<? extends RdfColumn> typeClass = RdfColumn.class;
+		private String remarks = null;
 
 		private final List<String> querySegments = new ArrayList<String>();
 
@@ -78,6 +80,8 @@ public class RdfColumn extends RdfNamespacedObject implements Column,
 				column = builder.getResource(getFQName(), typeClass);
 
 				column.addLiteral(RDFS.label, name);
+				column.addLiteral(builder.getProperty(typeClass, "remarks"),
+						StringUtils.defaultString(remarks));
 				column.addProperty(builder.getProperty(typeClass, "columnDef"),
 						((ResourceWrapper) columnDef).getResource());
 
@@ -86,12 +90,11 @@ public class RdfColumn extends RdfNamespacedObject implements Column,
 			if (!querySegments.isEmpty())
 			{
 				final String eol = System.getProperty("line.separator");
-				final StringBuilder sb = new StringBuilder().append("{");
+				final StringBuilder sb = new StringBuilder();
 				for (final String seg : querySegments)
 				{
 					sb.append(seg).append(eol);
 				}
-				sb.append("}");
 
 				final Property querySegmentProp = builder.getProperty(
 						typeClass, "querySegmentFmt");
@@ -156,6 +159,7 @@ public class RdfColumn extends RdfNamespacedObject implements Column,
 			{
 				querySegments.add("# no query segments provided");
 			}
+
 		}
 
 		@Override
@@ -190,8 +194,7 @@ public class RdfColumn extends RdfNamespacedObject implements Column,
 		private String getQueryStrFmt()
 		{
 			final String eol = System.getProperty("line.separator");
-			final StringBuilder sb = new StringBuilder().append("{")
-					.append(eol);
+			final StringBuilder sb = new StringBuilder();
 			if (!querySegments.isEmpty())
 			{
 
@@ -204,8 +207,13 @@ public class RdfColumn extends RdfNamespacedObject implements Column,
 			{
 				sb.append("# no segment provided").append(eol);
 			}
-			sb.append("}");
 			return sb.toString();
+		}
+
+		@Override
+		public String getRemarks()
+		{
+			return remarks;
 		}
 
 		@Override
@@ -244,6 +252,12 @@ public class RdfColumn extends RdfNamespacedObject implements Column,
 		public Builder setName( final String name )
 		{
 			this.name = name;
+			return this;
+		}
+
+		public Builder setRemarks( final String remarks )
+		{
+			this.remarks = remarks;
 			return this;
 		}
 
@@ -300,22 +314,30 @@ public class RdfColumn extends RdfNamespacedObject implements Column,
 
 	public Element getQuerySegments( final Node tableVar, final Node columnVar )
 	{
-		final String fmt = getQuerySegmentFmt();
-		if (fmt != null)
-		{
+		final String fmt = "{" + getQuerySegmentFmt() + "}";
 
-			try
-			{
-				return SparqlParser.Util.parse(String.format(fmt, tableVar,
-						columnVar));
-			}
-			catch (final ParseException e)
-			{
-				throw new IllegalStateException(getFQName() + " query segment "
-						+ fmt, e);
-			}
+		try
+		{
+			return SparqlParser.Util.parse(String.format(fmt, tableVar,
+					columnVar));
 		}
-		return null;
+		catch (final ParseException e)
+		{
+			throw new IllegalStateException(getFQName() + " query segment "
+					+ fmt, e);
+		}
+		catch (final QueryException e)
+		{
+			throw new IllegalStateException(getFQName() + " query segment "
+					+ fmt, e);
+		}
+	}
+
+	@Override
+	@Predicate( impl = true )
+	public String getRemarks()
+	{
+		throw new EntityManagerRequiredException();
 	}
 
 	@Override

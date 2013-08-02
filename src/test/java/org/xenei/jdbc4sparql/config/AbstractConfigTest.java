@@ -1,18 +1,11 @@
 package org.xenei.jdbc4sparql.config;
 
-import com.hp.hpl.jena.query.Dataset;
-import com.hp.hpl.jena.query.DatasetFactory;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.net.URL;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.Map;
@@ -26,9 +19,11 @@ import org.junit.Test;
 import org.xenei.jdbc4sparql.J4SConnection;
 import org.xenei.jdbc4sparql.J4SDriver;
 import org.xenei.jdbc4sparql.J4SDriverTest;
+import org.xenei.jdbc4sparql.J4SPropertyNames;
 import org.xenei.jdbc4sparql.J4SUrl;
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.ColumnDef;
+import org.xenei.jdbc4sparql.iface.DatasetProducer;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
@@ -37,18 +32,39 @@ import org.xenei.jdbc4sparql.impl.rdf.RdfColumnDef;
 import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTableDef;
-import org.xenei.jdbc4sparql.sparql.builders.SchemaBuilder;
-import org.xenei.jdbc4sparql.sparql.builders.SimpleBuilder;
 
-public class ConfigTest
+abstract public class AbstractConfigTest
 {
 	private RdfCatalog catalog;
 	private Model model;
 	private J4SConnection connection;
 	private J4SConnection connection2;
 	private File tmpFile;
-
+	private final String dpClassName;
 	private URL fUrl;
+
+	protected AbstractConfigTest( final Class<? extends DatasetProducer> dpClass )
+	{
+		dpClassName = dpClass.getCanonicalName();
+	}
+
+	private void deepCompare( final Catalog c1, final Catalog c2 )
+	{
+		Assert.assertEquals(c1.getName(), c2.getName());
+		final Set<Schema> s1 = (Set<Schema>) c1.getSchemas();
+		final Set<Schema> s2 = (Set<Schema>) c2.getSchemas();
+		Assert.assertEquals(s1.size(), s2.size());
+		final Iterator<Schema> iterS1 = s1.iterator();
+		final Iterator<Schema> iterS2 = s2.iterator();
+		while (iterS1.hasNext())
+		{
+			final Schema i1 = iterS1.next();
+			final Schema i2 = iterS2.next();
+			Assert.assertTrue(i1 instanceof RdfSchema);
+			Assert.assertTrue(i2 instanceof RdfSchema);
+			deepCompare((RdfSchema) i1, (RdfSchema) i2);
+		}
+	}
 
 	private void deepCompare( final RdfColumn c1, final RdfColumn c2 )
 	{
@@ -73,16 +89,6 @@ public class ConfigTest
 		Assert.assertEquals(c1.getType(), c2.getType());
 	}
 
-	/*
-	 * 
-	 * final List<String> qs1 = c1.getQuerySegments();
-	 * final List<String> qs2 = c2.getQuerySegments();
-	 * Assert.assertEquals(qs1.size(), qs2.size());
-	 * for (int i = 0; i < qs1.size(); i++)
-	 * {
-	 * Assert.assertEquals(qs1.get(i), qs2.get(i));
-	 * }
-	 */
 	private void deepCompare( final RdfSchema s1, final RdfSchema s2 )
 	{
 		Assert.assertEquals(s1.getFQName(), s2.getFQName());
@@ -131,24 +137,6 @@ public class ConfigTest
 			deepCompare((RdfColumnDef) cd1.next(), (RdfColumnDef) cd2.next());
 		}
 	}
-	
-	private void deepCompare( final Catalog c1, final Catalog c2 )
-	{
-		Assert.assertEquals( c1.getName(), c2.getName() );
-		Set<Schema> s1 = (Set<Schema>) c1.getSchemas();
-		Set<Schema> s2 = (Set<Schema>) c2.getSchemas();
-		Assert.assertEquals( s1.size(), s2.size() );
-		Iterator<Schema> iterS1 = s1.iterator();
-		Iterator<Schema> iterS2 = s2.iterator();
-		while (iterS1.hasNext())
-		{
-			Schema i1 = iterS1.next();
-			Schema i2 = iterS2.next();
-			Assert.assertTrue( i1 instanceof RdfSchema);
-			Assert.assertTrue( i2 instanceof RdfSchema);
-			deepCompare( (RdfSchema)i1, (RdfSchema)i2 );
-		}
-	}
 
 	@Before
 	public void setup()
@@ -188,31 +176,34 @@ public class ConfigTest
 		new RdfSchema.Builder().setCatalog(catalog).setName("builderTest")
 				.build(model);
 
-		final J4SUrl url = new J4SUrl("jdbc:j4s?catalog=test&type=turtle&builder=org.xenei.jdbc4sparql.sparql.builders.SimpleNullableBuilder:"
-		+ fUrl.toString());
+		final J4SUrl url = new J4SUrl(
+				"jdbc:j4s?catalog=test&type=turtle&builder=org.xenei.jdbc4sparql.sparql.builders.SimpleNullableBuilder:"
+						+ fUrl.toString());
 		final J4SDriver driver = new J4SDriver();
-		connection = new J4SConnection(driver, url, new Properties());
+		final Properties prop = new Properties();
+		prop.setProperty(J4SPropertyNames.DATASET_PRODUCER, dpClassName);
+		connection = new J4SConnection(driver, url, prop);
 		tmpFile = File.createTempFile("CfgTst", ".zip");
-				
-		FileOutputStream fos = new FileOutputStream( tmpFile );
+
+		final FileOutputStream fos = new FileOutputStream(tmpFile);
 		connection.saveConfig(fos);
 		fos.close();
 
-		final J4SUrl url2 = new J4SUrl("jdbc:J4S:file:"+tmpFile.getCanonicalPath());
-		
-		
+		final J4SUrl url2 = new J4SUrl("jdbc:J4S:file:"
+				+ tmpFile.getCanonicalPath());
+
 		connection2 = new J4SConnection(driver, url2, new Properties());
-		
-		Map<String,Catalog> cats = connection.getCatalogs();
-		Map<String,Catalog> cats2 = connection2.getCatalogs();
-		
-		Assert.assertEquals( cats.size(), cats2.size() );
-		Iterator<Catalog> iterCat = cats.values().iterator();
-		Iterator<Catalog> iterCat2 = cats2.values().iterator();
-		
+
+		final Map<String, Catalog> cats = connection.getCatalogs();
+		final Map<String, Catalog> cats2 = connection2.getCatalogs();
+
+		Assert.assertEquals(cats.size(), cats2.size());
+		final Iterator<Catalog> iterCat = cats.values().iterator();
+		final Iterator<Catalog> iterCat2 = cats2.values().iterator();
+
 		while (iterCat.hasNext())
 		{
-			deepCompare( iterCat.next(), iterCat2.next() );
+			deepCompare(iterCat.next(), iterCat2.next());
 		}
 
 	}

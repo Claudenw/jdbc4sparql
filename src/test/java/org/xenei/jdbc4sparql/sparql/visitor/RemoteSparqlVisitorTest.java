@@ -82,13 +82,15 @@ public class RemoteSparqlVisitorTest
 				.setColumn(0, "StringCol").setColumn(1, "NullableStringCol")
 				.setColumn(2, "IntCol").setColumn(3, "NullableIntCol")
 				.setName("foo").setSchema(schema)
-				.addQuerySegment("%1$s a <http://example.com/foo> ");
-		bldr.getColumn(0)
-				.addQuerySegment("%1$s <http://example.com/zero> %2$s");
-		bldr.getColumn(1).addQuerySegment("%1$s <http://example.com/one> %2$s");
-		bldr.getColumn(2).addQuerySegment("%1$s <http://example.com/two> %2$s");
+				.addQuerySegment("%1$s a <http://example.com/foo> .");
+		bldr.getColumn(0).addQuerySegment(
+				"%1$s <http://example.com/zero> %2$s .");
+		bldr.getColumn(1).addQuerySegment(
+				"%1$s <http://example.com/one> %2$s .");
+		bldr.getColumn(2).addQuerySegment(
+				"%1$s <http://example.com/two> %2$s .");
 		bldr.getColumn(3).addQuerySegment(
-				"%1$s <http://example.com/three> %2$s");
+				"%1$s <http://example.com/three> %2$s .");
 		bldr.build(model);
 
 		bldr = new RdfTable.Builder().setTableDef(tableDef)
@@ -98,13 +100,15 @@ public class RemoteSparqlVisitorTest
 				// must be NullableIntCol for inner join test
 				.setColumn(3, "NullableIntCol").setName("bar")
 				.setSchema(schema)
-				.addQuerySegment("%1$s a <http://example.com/bar> ");
-		bldr.getColumn(0)
-				.addQuerySegment("%1$s <http://example.com/zero> %2$s");
-		bldr.getColumn(1).addQuerySegment("%1$s <http://example.com/one> %2$s");
-		bldr.getColumn(2).addQuerySegment("%1$s <http://example.com/two> %2$s");
+				.addQuerySegment("%1$s a <http://example.com/bar> . ");
+		bldr.getColumn(0).addQuerySegment(
+				"%1$s <http://example.com/zero> %2$s .");
+		bldr.getColumn(1).addQuerySegment(
+				"%1$s <http://example.com/one> %2$s .");
+		bldr.getColumn(2).addQuerySegment(
+				"%1$s <http://example.com/two> %2$s .");
 		bldr.getColumn(3).addQuerySegment(
-				"%1$s <http://example.com/three> %2$s");
+				"%1$s <http://example.com/three> %2$s .");
 		bldr.build(model);
 
 		sv = new SparqlVisitor(catalog);

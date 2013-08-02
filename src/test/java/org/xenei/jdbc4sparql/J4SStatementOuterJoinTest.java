@@ -62,11 +62,11 @@ public class J4SStatementOuterJoinTest
 	}
 
 	@Test
-	@Ignore
+	@Ignore( "Full Outer Join not suported.")
 	public void testFullOuterJoin() throws ClassNotFoundException, SQLException
 	{
 		final ResultSet rset = stmt
-				.executeQuery("select fooTable.IntCol, barTable.IntCol from fooTable right outer join barTable on fooTable.IntCol=barTable.IntCol");
+				.executeQuery("select fooTable.IntCol, barTable.IntCol from fooTable full outer join barTable on fooTable.IntCol=barTable.IntCol");
 		try
 		{
 			boolean foundNull = false;
@@ -126,7 +126,7 @@ public class J4SStatementOuterJoinTest
 	}
 
 	@Test
-	@Ignore
+	@Ignore( "Right Outer Join not suported.")
 	public void testRightOuterJoin() throws ClassNotFoundException,
 			SQLException
 	{

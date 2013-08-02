@@ -21,6 +21,7 @@ import com.hp.hpl.jena.graph.Node;
 import com.hp.hpl.jena.graph.NodeFactory;
 import com.hp.hpl.jena.graph.Triple;
 import com.hp.hpl.jena.query.Query;
+import com.hp.hpl.jena.query.QueryException;
 import com.hp.hpl.jena.rdf.model.AnonId;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
@@ -35,6 +36,7 @@ import com.hp.hpl.jena.sparql.expr.ExprFunction1;
 import com.hp.hpl.jena.sparql.expr.ExprVar;
 import com.hp.hpl.jena.sparql.expr.NodeValue;
 import com.hp.hpl.jena.sparql.function.FunctionEnv;
+import com.hp.hpl.jena.sparql.lang.sparql_11.ParseException;
 import com.hp.hpl.jena.sparql.syntax.Element;
 import com.hp.hpl.jena.sparql.syntax.ElementAssign;
 import com.hp.hpl.jena.sparql.syntax.ElementBind;
@@ -81,6 +83,7 @@ import org.xenei.jdbc4sparql.impl.rdf.RdfKey;
 import org.xenei.jdbc4sparql.impl.rdf.RdfKeySegment;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTableDef;
+import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 
 /**
  * Creates a SparqlQuery while tracking naming changes between nomenclatures.
@@ -534,7 +537,6 @@ public class SparqlQueryBuilder
 	public class RdfTableInfo
 	{
 		private final RdfTable table;
-		// private final ElementTriplesBlock etb;
 		private final ElementGroup eg;
 		private final Node tableVar;
 		private final boolean optional;
@@ -546,29 +548,50 @@ public class SparqlQueryBuilder
 		{
 			this.table = table;
 			this.eg = new ElementGroup();
-			// this.etb = new ElementTriplesBlock();
 			this.optional = optional;
 			this.typeFilterList = new HashSet<CheckTypeF>();
-			// eg.addElement(etb);
 
 			tablesInQuery.put(table.getSQLName(), this);
 			// add the table var to the nodes.
 			tableVar = NodeFactory.createVariable(table.getSPARQLName());
 			nodesInQuery.put(table.getSQLName(), tableVar);
-			final Element el = table.getQuerySegments(tableVar);
-			if (el != null)
-			{
-				eg.addElement(el);
-			}
-			// add all the required columns
+			final String eol = System.getProperty("line.separator");
+			final StringBuilder queryFmt = new StringBuilder("{ ")
+					.append(StringUtils.defaultString(
+							table.getQuerySegmentFmt(), ""));
+
 			for (final Iterator<RdfColumn> colIter = table.getColumns(); colIter
 					.hasNext();)
 			{
 				final RdfColumn column = colIter.next();
 				if (!column.isOptional())
 				{
-					addColumn(column);
+					final Node colVar = addColumn(column);
+
+					final String fmt = column.getQuerySegmentFmt();
+					if (StringUtils.isNotBlank(fmt))
+					{
+						queryFmt.append(String.format(fmt, tableVar, colVar))
+								.append(eol);
+					}
 				}
+			}
+			queryFmt.append("}");
+			final String queryStr = String
+					.format(queryFmt.toString(), tableVar);
+			try
+			{
+				eg.addElement(SparqlParser.Util.parse(queryStr));
+			}
+			catch (final ParseException e)
+			{
+				throw new IllegalStateException(table.getFQName()
+						+ " query segment " + queryStr, e);
+			}
+			catch (final QueryException e)
+			{
+				throw new IllegalStateException(table.getFQName()
+						+ " query segment " + queryStr, e);
 			}
 
 			if (optional)
@@ -598,7 +621,8 @@ public class SparqlQueryBuilder
 						column.getSQLName(), table.getSQLName()));
 			}
 			// add the column to the query.
-			final Node columnVar = NodeFactory.createVariable(column.getSPARQLName());
+			final Node columnVar = NodeFactory.createVariable(column
+					.getSPARQLName());
 			// if the column does not allow null add triple
 
 			if (!columnsInQuery.containsKey(column.getSQLName()))
@@ -606,14 +630,10 @@ public class SparqlQueryBuilder
 				columnsInQuery.put(column.getSQLName(), column);
 				nodesInQuery.put(column.getSQLName(), columnVar);
 			}
-			final Element e = column.getQuerySegments(tableVar, columnVar);
 			if (column.isOptional())
 			{
-				eg.addElement(new ElementOptional(e));
-			}
-			else
-			{
-				eg.addElement(e);
+				eg.addElement(new ElementOptional(column.getQuerySegments(
+						tableVar, columnVar)));
 			}
 
 			typeFilterList.add(new CheckTypeF(column, columnVar));
@@ -762,6 +782,12 @@ public class SparqlQueryBuilder
 		query.setQuerySelectType();
 	}
 
+	public SparqlQueryBuilder( final RdfTable table )
+	{
+		this(table.getCatalog());
+		addTable(table);
+	}
+
 	/**
 	 * Add the triple to the BGP for the query.
 	 * This method handles adding the triple to the proper section of the
@@ -774,7 +800,6 @@ public class SparqlQueryBuilder
 	{
 		checkBuilt();
 		final ElementGroup eg = getElementGroup();
-		// final Triple t = new Triple(s, p, o);
 		for (final Element el : eg.getElements())
 		{
 			if (el instanceof ElementTriplesBlock)
@@ -831,7 +856,7 @@ public class SparqlQueryBuilder
 	}
 
 	/**
-	 * Add teh column to the query.
+	 * Add the column to the query.
 	 * 
 	 * @param schemaName
 	 *            The schema name.
@@ -951,6 +976,22 @@ public class SparqlQueryBuilder
 				: Query.ORDER_DESCENDING);
 	}
 
+	public Node addTable( final RdfTable table )
+	{
+		return addTable(table, false);
+	}
+
+	public Node addTable( final RdfTable table, final boolean optional )
+	{
+		// make sure the table is in the query.
+		RdfTableInfo sti = tablesInQuery.get(table.getSQLName());
+		if (sti == null)
+		{
+			sti = new RdfTableInfo(getElementGroup(), table, optional);
+		}
+		return sti.getTableVar();
+	}
+
 	/**
 	 * Add a table to the query.
 	 * 
@@ -986,14 +1027,7 @@ public class SparqlQueryBuilder
 			throw new SQLException(String.format(
 					SparqlQueryBuilder.NOT_FOUND_IN_ANY_, tableName, "schema"));
 		}
-		final RdfTable table = tables.iterator().next();
-		// make sure the table is in the query.
-		RdfTableInfo sti = tablesInQuery.get(table.getSQLName());
-		if (sti == null)
-		{
-			sti = new RdfTableInfo(getElementGroup(), table, optional);
-		}
-		return sti.getTableVar();
+		return addTable(tables.iterator().next(), optional);
 	}
 
 	public void addUsing( final String columnName )
@@ -1308,14 +1342,6 @@ public class SparqlQueryBuilder
 		return SparqlQueryBuilder.getElementGroup(query);
 	}
 
-	/*
-	 * private String getTableVar( Table table )
-	 * {
-	 * return String.format( "TABLE_%s_%s_%s",
-	 * table.getCatalog().getLocalName(),
-	 * table.getSchema().getLocalName(), table.getLocalName() );
-	 * }
-	 */
 	private Node getNodeBySQLName( final String dbName )
 	{
 		final Node n = nodesInQuery.get(dbName);
@@ -1385,8 +1411,6 @@ public class SparqlQueryBuilder
 		final RdfTableDef.Builder builder = new RdfTableDef.Builder();
 		final Model model = ModelFactory.createDefaultModel();
 
-		// final RdfTableDef tableDef = new RdfTableDef(namespace,
-		// localName, "", null);
 		final VarExprList expLst = query.getProject();
 		new ArrayList<Column>();
 		for (final Var var : expLst.getVars())
@@ -1471,6 +1495,19 @@ public class SparqlQueryBuilder
 	{
 		checkBuilt();
 		query.setDistinct(true);
+	}
+
+	public SparqlQueryBuilder setKey( final RdfKey key )
+	{
+		if (key != null)
+		{
+			setOrderBy(key);
+			if (key.isUnique())
+			{
+				setDistinct();
+			}
+		}
+		return this;
 	}
 
 	/**

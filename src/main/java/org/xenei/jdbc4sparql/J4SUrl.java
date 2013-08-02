@@ -38,14 +38,11 @@ public class J4SUrl
 	 * jdbc:J4S?catalog=cat&builder=builderclass:<sparqlendpint>
 	 */
 	public static final String SUB_PROTOCOL = "J4S";
-	public static final String CATALOG = "catalog";
-	public static final String BUILDER = "builder";
-	public static final String PARSER = "parser";
-	public static final String TYPE = "type";
 	public static final String TYPE_SPARQL = "sparql";
 	public static final String TYPE_CONFIG = "config";
-	public static final String[] ARGS = { J4SUrl.CATALOG, J4SUrl.TYPE,
-			J4SUrl.BUILDER, J4SUrl.PARSER };
+	public static final String[] ARGS = { J4SPropertyNames.CATALOG_PROPERTY,
+			J4SPropertyNames.TYPE_PROPERTY, J4SPropertyNames.BUILDER_PROPERTY,
+			J4SPropertyNames.PARSER_PROPERTY };
 
 	private URI endpoint;
 	private SparqlParser parser;
@@ -115,7 +112,7 @@ public class J4SUrl
 	 */
 	public String getCatalog()
 	{
-		return properties.getProperty(J4SUrl.CATALOG, "");
+		return properties.getProperty(J4SPropertyNames.CATALOG_PROPERTY, "");
 	}
 
 	/**
@@ -128,6 +125,17 @@ public class J4SUrl
 	public URI getEndpoint()
 	{
 		return endpoint;
+	}
+
+	/**
+	 * Get the language for the specified type.
+	 * Will return null for SPARQL and CONFIG
+	 * 
+	 * @return
+	 */
+	public Lang getLang()
+	{
+		return RDFLanguages.nameToLang(getType());
 	}
 
 	/**
@@ -149,7 +157,7 @@ public class J4SUrl
 	 */
 	public Properties getProperties()
 	{
-		return properties;
+		return new Properties(properties);
 	}
 
 	/**
@@ -163,7 +171,8 @@ public class J4SUrl
 	 */
 	public String getType()
 	{
-		return properties.getProperty(J4SUrl.TYPE, J4SUrl.TYPE_CONFIG);
+		return properties.getProperty(J4SPropertyNames.TYPE_PROPERTY,
+				J4SUrl.TYPE_CONFIG);
 	}
 
 	// parse the ?catalog=<x>&schema=<y>: as well as the ?catalog=<x>: versions
@@ -198,9 +207,10 @@ public class J4SUrl
 						"Not a valid J4S JDBC URL -- '" + arg
 								+ "' is not a recognized argument");
 			}
-			properties.put(arg, StringUtils.defaultIfBlank(matcher.group(4),""));
+			properties.put(arg,
+					StringUtils.defaultIfBlank(matcher.group(4), ""));
 			pos += matcher.group(1).length();
-			if (":".equals( matcher.group(5)))
+			if (":".equals(matcher.group(5)))
 			{
 				matcher = pattern.matcher("");
 			}
@@ -212,19 +222,22 @@ public class J4SUrl
 
 		// check for valid type value and make sure it is upper case.
 		// valid type is a Jena Lang.
-		if (properties.containsKey(J4SUrl.TYPE))
+		if (properties.containsKey(J4SPropertyNames.TYPE_PROPERTY))
 		{
-			final String type = properties.getProperty(J4SUrl.TYPE);
+			final String type = properties
+					.getProperty(J4SPropertyNames.TYPE_PROPERTY);
 			if (type.equalsIgnoreCase(J4SUrl.TYPE_SPARQL))
 			{
-				properties.setProperty(J4SUrl.TYPE, J4SUrl.TYPE_SPARQL);
+				properties.setProperty(J4SPropertyNames.TYPE_PROPERTY,
+						J4SUrl.TYPE_SPARQL);
 			}
 			else
 			{
 				final Lang l = RDFLanguages.nameToLang(type);
 				if (l != null)
 				{
-					properties.setProperty(J4SUrl.TYPE, l.getName());
+					properties.setProperty(J4SPropertyNames.TYPE_PROPERTY,
+							l.getName());
 				}
 				else
 				{
@@ -234,17 +247,17 @@ public class J4SUrl
 				}
 			}
 		}
-		if (properties.containsKey(J4SUrl.PARSER))
+		if (properties.containsKey(J4SPropertyNames.PARSER_PROPERTY))
 		{
 			// verify we can load the parser
 			parser = SparqlParser.Util.getParser(properties
-					.getProperty(J4SUrl.PARSER));
+					.getProperty(J4SPropertyNames.PARSER_PROPERTY));
 		}
-		if (properties.containsKey(J4SUrl.BUILDER))
+		if (properties.containsKey(J4SPropertyNames.BUILDER_PROPERTY))
 		{
 			// verify we can load the builder
 			builder = SchemaBuilder.Util.getBuilder(properties
-					.getProperty(J4SUrl.BUILDER));
+					.getProperty(J4SPropertyNames.BUILDER_PROPERTY));
 		}
 		parseJ4SEndpoint(urlStr, pos);
 	}

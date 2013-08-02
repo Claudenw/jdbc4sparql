@@ -35,8 +35,11 @@ public class ResourceBuilder
 
 	public ResourceBuilder( final Model model )
 	{
+		if (model == null)
+		{
+			throw new IllegalArgumentException("Model may not be null");
+		}
 		this.model = model;
-
 	}
 
 	public Property getProperty( final Class<?> typeClass,

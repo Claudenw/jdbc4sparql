@@ -50,14 +50,14 @@ public class SimpleBuilder implements SchemaBuilder
 
 	// Params: namespace.
 	protected static final String TABLE_QUERY = " prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>"
-			+ " SELECT ?tName WHERE { ?tName a rdfs:Class ; " + " }";
+			+ " SELECT ?tName WHERE { ?tName a rdfs:Class . }";
 
 	// Params: class resource, namespace
 	protected static final String COLUMN_QUERY = "SELECT DISTINCT ?cName "
-			+ " WHERE { " + " ?instance a <%s> ; " + " ?cName [] ; }";
+			+ " WHERE { ?instance a <%s> ; ?cName [] ; }";
 
-	private static final String TABLE_SEGMENT = "%1$s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <%2$s>";
-	protected static final String COLUMN_SEGMENT = "%1$s <%3$s> %2$s";
+	private static final String TABLE_SEGMENT = "%1$s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <%2$s> .";
+	protected static final String COLUMN_SEGMENT = "%1$s <%3$s> %2$s .";
 
 	public SimpleBuilder()
 	{
@@ -104,7 +104,8 @@ public class SimpleBuilder implements SchemaBuilder
 			final RdfTableDef tableDef = builder.build(model);
 			final RdfTable.Builder tblBuilder = new RdfTable.Builder()
 					.setTableDef(tableDef).addQuerySegment(s)
-					.setName(tName.getLocalName()).setSchema(schema);
+					.setName(tName.getLocalName()).setSchema(schema)
+					.setRemarks("created by " + SimpleBuilder.BUILDER_NAME);
 
 			if (colNames.keySet().size() != tableDef.getColumnCount())
 			{
@@ -119,7 +120,8 @@ public class SimpleBuilder implements SchemaBuilder
 
 				final String cName = iter.next();
 				tblBuilder.setColumn(i, cName).getColumn(i)
-						.addQuerySegment(colNames.get(cName));
+						.addQuerySegment(colNames.get(cName))
+						.setRemarks("created by " + SimpleBuilder.BUILDER_NAME);
 				i++;
 			}
 			retval.add(tblBuilder.build(model));

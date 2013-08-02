@@ -18,6 +18,7 @@
 package org.xenei.jdbc4sparql.sparql.parser;
 
 import com.hp.hpl.jena.query.Query;
+import com.hp.hpl.jena.query.QueryException;
 import com.hp.hpl.jena.sparql.lang.sparql_11.ParseException;
 import com.hp.hpl.jena.sparql.lang.sparql_11.SPARQLParser11;
 import com.hp.hpl.jena.sparql.syntax.Element;
@@ -204,8 +205,10 @@ public interface SparqlParser
 		 * @throws ParseException
 		 *             on error.
 		 */
-		public static Element parse( final String qstr ) throws ParseException
+		public static Element parse( final String qstr ) throws ParseException,
+				QueryException
 		{
+
 			final Query query = new Query();
 
 			final Reader in = new StringReader(qstr);

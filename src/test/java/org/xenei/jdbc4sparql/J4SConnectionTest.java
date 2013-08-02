@@ -1,8 +1,6 @@
 package org.xenei.jdbc4sparql;
 
-import static org.mockito.Mockito.*;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -12,18 +10,17 @@ import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.AbstractExecutorService;
 import java.util.concurrent.Executor;
 
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.meta.MetaCatalogBuilder;
-import org.xenei.jena.entities.MissingAnnotation;
 
 public class J4SConnectionTest
 {
@@ -40,6 +37,8 @@ public class J4SConnectionTest
 				.getResource("./J4SDriverTest.ttl");
 		url = new J4SUrl("jdbc:j4s?type=turtle:" + fUrl.toExternalForm());
 		properties = new Properties();
+		properties.setProperty("DatasetProducer",
+				"org.xenei.jdbc4sparql.config.MemDatasetProducer");
 	}
 
 	@After
@@ -298,8 +297,7 @@ public class J4SConnectionTest
 	public void testGetSchema() throws Exception
 	{
 		connection = new J4SConnection(driver, url, properties);
-		Assert.assertNotNull(connection.getSchema());
-		Assert.assertEquals("",connection.getSchema());
+		Assert.assertNull(connection.getSchema());
 	}
 
 	@Test
@@ -382,12 +380,13 @@ public class J4SConnectionTest
 	@Test
 	public void testLoadConfig() throws Exception
 	{
-		final URL fUrl = J4SConnectionTest.class.getResource("./J4SStatementTest.zip");
+		final URL fUrl = J4SConnectionTest.class
+				.getResource("./J4SStatementTest.zip");
 		url = new J4SUrl("jdbc:j4s:" + fUrl.toExternalForm());
 		connection = new J4SConnection(driver, url, properties);
 		final Map<String, Catalog> map = connection.getCatalogs();
 		Assert.assertEquals(2, map.keySet().size());
-		Assert.assertTrue(map.containsKey(""));
+		Assert.assertTrue(map.containsKey("test"));
 		Assert.assertTrue(map.containsKey(MetaCatalogBuilder.LOCAL_NAME));
 	}
 
@@ -612,29 +611,29 @@ public class J4SConnectionTest
 	public void testSetClientInfoProperties() throws Exception
 	{
 		connection = new J4SConnection(driver, url, properties);
-		Properties p = new Properties();
-		p.setProperty( "foo",  "bar" );
-		connection.setClientInfo( p );
-		Assert.assertEquals( "bar", connection.getClientInfo( "foo"));
-		Assert.assertNull( connection.getClientInfo("baz"));
+		final Properties p = new Properties();
+		p.setProperty("foo", "bar");
+		connection.setClientInfo(p);
+		Assert.assertEquals("bar", connection.getClientInfo("foo"));
+		Assert.assertNull(connection.getClientInfo("baz"));
 	}
 
 	@Test
 	public void testSetClientInfoStringString() throws Exception
-	{	
+	{
 		connection = new J4SConnection(driver, url, properties);
-		Assert.assertNull( connection.getClientInfo("foo"));
-		connection.setClientInfo( "foo", "bar" );
-		String s = connection.getClientInfo( "foo" );
-		Assert.assertEquals( "bar", s );
-		
-		connection.setClientInfo( "foo", "" );
-		s = connection.getClientInfo( "foo" );
-		Assert.assertEquals( "", s );
-		
-		connection.setClientInfo( "foo", null );
-		s = connection.getClientInfo( "foo" );
-		Assert.assertNull( s );
+		Assert.assertNull(connection.getClientInfo("foo"));
+		connection.setClientInfo("foo", "bar");
+		String s = connection.getClientInfo("foo");
+		Assert.assertEquals("bar", s);
+
+		connection.setClientInfo("foo", "");
+		s = connection.getClientInfo("foo");
+		Assert.assertEquals("", s);
+
+		connection.setClientInfo("foo", null);
+		s = connection.getClientInfo("foo");
+		Assert.assertNull(s);
 	}
 
 	@Test
@@ -642,50 +641,52 @@ public class J4SConnectionTest
 	{
 		connection = new J4SConnection(driver, url, properties);
 		connection.setHoldability(ResultSet.HOLD_CURSORS_OVER_COMMIT);
-		 
-		try {
-		connection.setHoldability(ResultSet.CLOSE_CURSORS_AT_COMMIT);
-		Assert.fail( "Should have thrown SQLFeatureNotSupportedException");
+
+		try
+		{
+			connection.setHoldability(ResultSet.CLOSE_CURSORS_AT_COMMIT);
+			Assert.fail("Should have thrown SQLFeatureNotSupportedException");
 		}
-		catch (SQLFeatureNotSupportedException expected)
+		catch (final SQLFeatureNotSupportedException expected)
 		{
 			// exected
 		}
 	}
 
 	@Test
-	public void testSetNetworkTimeout() throws Exception 
+	public void testSetNetworkTimeout() throws Exception
 	{
-		Executor executor = mock( Executor.class);
+		final Executor executor = Mockito.mock(Executor.class);
 		connection = new J4SConnection(driver, url, properties);
-		connection.setNetworkTimeout( executor, 5 );
-		Assert.assertEquals( 5, connection.getNetworkTimeout());
+		connection.setNetworkTimeout(executor, 5);
+		Assert.assertEquals(5, connection.getNetworkTimeout());
 	}
 
 	@Test
 	public void testSetReadOnly() throws Exception
 	{
 		connection = new J4SConnection(driver, url, properties);
-		try {
-			connection.setReadOnly( false );
-			Assert.fail( "Should have thrown SQLFeatureNotSupportedException");
+		try
+		{
+			connection.setReadOnly(false);
+			Assert.fail("Should have thrown SQLFeatureNotSupportedException");
 		}
-		catch (SQLFeatureNotSupportedException e)
+		catch (final SQLFeatureNotSupportedException e)
 		{
 			// expected
 		}
 	}
 
-
 	@Test
 	public void testSetSavepoint() throws Exception
 	{
 		connection = new J4SConnection(driver, url, properties);
-		try {
+		try
+		{
 			connection.setSavepoint();
-			Assert.fail( "Should have thrown SQLFeatureNotSupportedException");
+			Assert.fail("Should have thrown SQLFeatureNotSupportedException");
 		}
-		catch (SQLFeatureNotSupportedException e)
+		catch (final SQLFeatureNotSupportedException e)
 		{
 			// expected
 		}
@@ -695,11 +696,12 @@ public class J4SConnectionTest
 	public void testSetSavepointString() throws Exception
 	{
 		connection = new J4SConnection(driver, url, properties);
-		try {
+		try
+		{
 			connection.setSavepoint("foo");
-			Assert.fail( "Should have thrown SQLFeatureNotSupportedException");
+			Assert.fail("Should have thrown SQLFeatureNotSupportedException");
 		}
-		catch (SQLFeatureNotSupportedException e)
+		catch (final SQLFeatureNotSupportedException e)
 		{
 			// expected
 		}
@@ -709,11 +711,18 @@ public class J4SConnectionTest
 	public void testSetSchema() throws Exception
 	{
 		connection = new J4SConnection(driver, url, properties);
-		connection.setSchema("foo");
-		Assert.assertEquals("foo", connection.getSchema());
+		try
+		{
+			connection.setSchema("foo");
+			Assert.fail("Should have thrown an excetion");
+		}
+		catch (final SQLException e)
+		{
+			Assert.assertEquals("Schema 'foo' was not found", e.getMessage());
+		}
 		connection.setSchema("");
 		Assert.assertEquals("", connection.getSchema());
-		connection.setSchema( null );
+		connection.setSchema(null);
 		Assert.assertNull(connection.getSchema());
 	}
 
@@ -721,11 +730,12 @@ public class J4SConnectionTest
 	public void testSetTransactionIsolation() throws Exception
 	{
 		connection = new J4SConnection(driver, url, properties);
-		try {
-			connection.setTransactionIsolation( 0 );
-			Assert.fail( "Should have thrown SQLFeatureNotSupportedException");
+		try
+		{
+			connection.setTransactionIsolation(0);
+			Assert.fail("Should have thrown SQLFeatureNotSupportedException");
 		}
-		catch (SQLFeatureNotSupportedException e)
+		catch (final SQLFeatureNotSupportedException e)
 		{
 			// expected
 		}
@@ -735,11 +745,12 @@ public class J4SConnectionTest
 	public void testSetTypeMap() throws Exception
 	{
 		connection = new J4SConnection(driver, url, properties);
-		try {
-			connection.setTypeMap( new HashMap<String,Class<?>>() );
-			Assert.fail( "Should have thrown SQLFeatureNotSupportedException");
+		try
+		{
+			connection.setTypeMap(new HashMap<String, Class<?>>());
+			Assert.fail("Should have thrown SQLFeatureNotSupportedException");
 		}
-		catch (SQLFeatureNotSupportedException e)
+		catch (final SQLFeatureNotSupportedException e)
 		{
 			// expected
 		}
@@ -749,11 +760,12 @@ public class J4SConnectionTest
 	public void testUnwrap() throws Exception
 	{
 		connection = new J4SConnection(driver, url, properties);
-		try {
-			connection.unwrap( this.getClass() );
-			Assert.fail( "Should have thrown SQLFeatureNotSupportedException");
+		try
+		{
+			connection.unwrap(this.getClass());
+			Assert.fail("Should have thrown SQLFeatureNotSupportedException");
 		}
-		catch (SQLFeatureNotSupportedException e)
+		catch (final SQLFeatureNotSupportedException e)
 		{
 			// expected
 		}

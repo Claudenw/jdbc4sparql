@@ -7,8 +7,6 @@ import com.hp.hpl.jena.query.QueryFactory;
 import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.rdf.model.Literal;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
 
 import java.util.Arrays;
 import java.util.List;
@@ -17,19 +15,14 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.xenei.jdbc4sparql.config.MemDatasetProducer;
+import org.xenei.jdbc4sparql.iface.DatasetProducer;
 
 public class MetaCatalogTests
 {
-	// Get me all of the members of an RDF list.
-	//
-	// SELECT ?member
-	// {
-	// ?list rdf:rest*/rdf:first ?member
-	// }
-
-	private Model model;
+	private DatasetProducer dpProducer;
 	private final String queryString = "PREFIX  rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> "
-			+ "SELECT ?tbl ?colName WHERE { ?tbl a <http://org.xenei.jdbc4sparql/entity/Table> ;"
+			+ "SELECT ?tbl ?colName  WHERE { ?tbl a <http://org.xenei.jdbc4sparql/entity/Table> ;"
 			+ "<http://www.w3.org/2000/01/rdf-schema#label> '%s' ;"
 			+ "<http://org.xenei.jdbc4sparql/entity/Table#column> ?list ."
 			+ "?list rdf:rest*/rdf:first ?column ."
@@ -39,14 +32,14 @@ public class MetaCatalogTests
 	@Before
 	public void setup()
 	{
-		model = ModelFactory.createDefaultModel();
-		MetaCatalogBuilder.getInstance(model);
+		dpProducer = new MemDatasetProducer();
+		MetaCatalogBuilder.getInstance(dpProducer);
 	}
 
 	@After
 	public void tearDown() throws Exception
 	{
-		model.close();
+		dpProducer.close();
 	}
 
 	@Test
@@ -282,7 +275,9 @@ public class MetaCatalogTests
 		int count = 0;
 		final Query query = QueryFactory.create(String.format(queryString,
 				tblName));
-		final QueryExecution qexec = QueryExecutionFactory.create(query, model);
+
+		final QueryExecution qexec = QueryExecutionFactory.create(query,
+				dpProducer.getMetaDatasetUnionModel());
 		try
 		{
 			final ResultSet results = qexec.execSelect();

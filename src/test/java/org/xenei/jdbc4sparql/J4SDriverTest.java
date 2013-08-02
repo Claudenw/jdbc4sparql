@@ -26,6 +26,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -60,24 +61,56 @@ public class J4SDriverTest
 	public void setup() throws Exception
 	{
 		Class.forName("org.xenei.jdbc4sparql.J4SDriver");
-
-		fUrl = J4SDriverTest.class.getResource("./J4SDriverTest.ttl"); // /org/xenei/jdbc4sparql/J4SDriverTest.ttl");
-
+		fUrl = J4SDriverTest.class.getResource("./J4SDriverTest.ttl");
 		url = "jdbc:j4s?catalog=test&type=turtle&builder:" + fUrl.toString();
-
-		conn = DriverManager.getConnection(url, "myschema", "mypassw");
 	}
-	
+
 	@After
-	public void tearDown() throws SQLException {
+	public void tearDown() throws SQLException
+	{
 		conn.close();
 	}
 
 	@Test
-	public void testTestDriverLoading() throws ClassNotFoundException,
+	public void testTestDriverLoadingIdPwd() throws ClassNotFoundException,
 			SQLException
 	{
+		conn = DriverManager.getConnection(url, "myschema", "mypassw");
+		verifyCorrect();
+	}
 
+	@Test
+	public void testTestDriverLoadingMemDatasetProducer()
+			throws ClassNotFoundException, SQLException
+	{
+		final Properties properties = new Properties();
+		properties.setProperty("DatasetProducer",
+				"org.xenei.jdbc4sparql.config.MemDatasetProducer");
+		conn = DriverManager.getConnection(url, properties);
+		verifyCorrect();
+	}
+
+	@Test
+	public void testTestDriverLoadingNoProps() throws ClassNotFoundException,
+			SQLException
+	{
+		conn = DriverManager.getConnection(url);
+		verifyCorrect();
+	}
+
+	@Test
+	public void testTestDriverLoadingTDBDatasetProducer()
+			throws ClassNotFoundException, SQLException
+	{
+		final Properties properties = new Properties();
+		properties.setProperty("DatasetProducer",
+				"org.xenei.jdbc4sparql.config.TDBDatasetProducer");
+		conn = DriverManager.getConnection(url, properties);
+		verifyCorrect();
+	}
+
+	private void verifyCorrect() throws SQLException
+	{
 		// verify table exists
 		final DatabaseMetaData metaData = conn.getMetaData();
 		final ResultSet rs = metaData.getTables("test", "", "fooTable", null);

@@ -10,6 +10,7 @@ import java.util.List;
 
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public abstract class AbstractJ4SStatementTest
@@ -19,7 +20,7 @@ public abstract class AbstractJ4SStatementTest
 	protected Connection conn;
 
 	protected Statement stmt;
-	
+
 	private List<String> getColumnNames( final String table )
 			throws SQLException
 	{
@@ -28,6 +29,9 @@ public abstract class AbstractJ4SStatementTest
 		final List<String> colNames = new ArrayList<String>();
 		while (rs.next())
 		{
+			// TODO remove this
+			System.out.println(String.format("%s %s %s %s", rs.getString(1),
+					rs.getString(2), rs.getString(3), rs.getString(4)));
 			colNames.add(rs.getString(4));
 		}
 		return colNames;
@@ -51,7 +55,7 @@ public abstract class AbstractJ4SStatementTest
 		{
 		}
 	}
-	
+
 	@Test
 	public void testBadValueInEqualsConst() throws ClassNotFoundException,
 			SQLException

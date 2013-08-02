@@ -36,6 +36,12 @@ public class RenamedColumn implements Column
 	}
 
 	@Override
+	public String getRemarks()
+	{
+		return baseColumn.getRemarks();
+	}
+
+	@Override
 	public Schema getSchema()
 	{
 		return baseColumn.getSchema();

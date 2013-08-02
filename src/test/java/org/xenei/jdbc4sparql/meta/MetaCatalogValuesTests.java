@@ -7,9 +7,9 @@ import com.hp.hpl.jena.query.QueryFactory;
 import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.rdf.model.Literal;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
@@ -18,6 +18,8 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.xenei.jdbc4sparql.config.MemDatasetProducer;
+import org.xenei.jdbc4sparql.iface.DatasetProducer;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
@@ -25,7 +27,7 @@ import org.xenei.jdbc4sparql.sparql.SparqlResultSet;
 
 public class MetaCatalogValuesTests
 {
-	private Model model;
+	private DatasetProducer dpProducer;
 	private RdfCatalog catalog;
 	private final String queryString = "PREFIX  rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> "
 			+ "SELECT ?tbl ?colName WHERE { ?tbl a <http://org.xenei.jdbc4sparql/entity/Table> ;"
@@ -36,16 +38,16 @@ public class MetaCatalogValuesTests
 			+ " }";
 
 	@Before
-	public void setup()
+	public void setup() throws FileNotFoundException, IOException
 	{
-		model = ModelFactory.createDefaultModel();
-		catalog = (RdfCatalog) MetaCatalogBuilder.getInstance(model);
+		dpProducer = new MemDatasetProducer();
+		catalog = (RdfCatalog) MetaCatalogBuilder.getInstance(dpProducer);
 	}
 
 	@After
 	public void tearDown() throws Exception
 	{
-		model.close();
+		dpProducer.close();
 	}
 
 	@Test
@@ -56,7 +58,8 @@ public class MetaCatalogValuesTests
 				"DECIMAL_DIGITS", "NUM_PREC_RADIX", "NULLABLE", "REMARKS",
 				"ATTR_DEF", "SQL_DATA_TYPE", "SQL_DATETIME_SUB",
 				"CHAR_OCTET_LENGTH", "ORDINAL_POSITION", "IS_NULLABLE",
-				"SCOPE_CATALOG", "SCOPE_SCHEMA", "SCOPE_TABLE", "SOURCE_DATA_TYPE" };
+				"SCOPE_CATALOG", "SCOPE_SCHEMA", "SCOPE_TABLE",
+				"SOURCE_DATA_TYPE" };
 		verifyNames(MetaCatalogBuilder.ATTRIBUTES_TABLE, names);
 
 	}
@@ -314,7 +317,8 @@ public class MetaCatalogValuesTests
 		int count = 0;
 		final Query query = QueryFactory.create(String.format(queryString,
 				tblName));
-		final QueryExecution qexec = QueryExecutionFactory.create(query, model);
+		final QueryExecution qexec = QueryExecutionFactory.create(query,
+				dpProducer.getMetaDatasetUnionModel());
 		try
 		{
 			final ResultSet results = qexec.execSelect();
@@ -335,5 +339,4 @@ public class MetaCatalogValuesTests
 			qexec.close();
 		}
 	}
-
 }

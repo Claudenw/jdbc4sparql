@@ -18,6 +18,9 @@
 package org.xenei.jdbc4sparql.meta;
 
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.Property;
+import com.hp.hpl.jena.vocabulary.RDF;
+import com.hp.hpl.jena.vocabulary.RDFS;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSetMetaData;
@@ -25,6 +28,7 @@ import java.sql.Types;
 
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.ColumnDef;
+import org.xenei.jdbc4sparql.iface.DatasetProducer;
 import org.xenei.jdbc4sparql.impl.NameUtils;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfColumn;
@@ -68,10 +72,15 @@ public class MetaCatalogBuilder
 	public static final String TABLES_TABLE = "Tables";
 	public static final String BEST_ROW_TABLE = "BestRow";
 
-	public static Catalog getInstance( final Model model )
+	public static final String REMARK = "Created by MetaCatalogBuilder";
+
+	public static Catalog getInstance( final DatasetProducer dsProducer )
 	{
+		final Model model = dsProducer
+				.getMetaDataModel(MetaCatalogBuilder.LOCAL_NAME);
 		final RdfCatalog cat = new RdfCatalog.Builder()
-				.setName(MetaCatalogBuilder.LOCAL_NAME).setLocalModel(model)
+				.setName(MetaCatalogBuilder.LOCAL_NAME)
+				.setLocalModel(dsProducer.getMetaDatasetUnionModel())
 				.build(model);
 
 		final RdfSchema schema = new RdfSchema.Builder().setCatalog(cat)
@@ -148,10 +157,13 @@ public class MetaCatalogBuilder
 
 	private final RdfSchema schema;
 
+	private final ResourceBuilder resourceBuilder;
+
 	private MetaCatalogBuilder( final RdfSchema schema, final Model model )
 	{
 		this.schema = schema;
 		this.model = model;
+		resourceBuilder = new ResourceBuilder(model);
 		nonNullString = MetaCatalogBuilder.getNonNullStringBuilder().build(
 				model);
 		nullableString = MetaCatalogBuilder.getNullStringBuilder().build(model);
@@ -195,13 +207,13 @@ public class MetaCatalogBuilder
 				.setSchema(schema).setTableDef(tableDef)
 				.setType(MetaCatalogBuilder.TABLE_TYPE)
 				.setName(MetaCatalogBuilder.ATTRIBUTES_TABLE)
-				.setColumn(0, "TYPE_CAT").setColumn(1, "TYPE_SCHEM")
-				.setColumn(2, "TYPE_NAME").setColumn(3, "ATTR_NAME")
-				.setColumn(4, "DATA_TYPE").setColumn(5, "ATTR_TYPE_NAME")
-				.setColumn(6, "ATTR_SIZE").setColumn(7, "DECIMAL_DIGITS")
-				.setColumn(8, "NUM_PREC_RADIX").setColumn(9, "NULLABLE")
-				.setColumn(10, "REMARKS").setColumn(11, "ATTR_DEF")
-				.setColumn(12, "SQL_DATA_TYPE")
+				.setRemarks(MetaCatalogBuilder.REMARK).setColumn(0, "TYPE_CAT")
+				.setColumn(1, "TYPE_SCHEM").setColumn(2, "TYPE_NAME")
+				.setColumn(3, "ATTR_NAME").setColumn(4, "DATA_TYPE")
+				.setColumn(5, "ATTR_TYPE_NAME").setColumn(6, "ATTR_SIZE")
+				.setColumn(7, "DECIMAL_DIGITS").setColumn(8, "NUM_PREC_RADIX")
+				.setColumn(9, "NULLABLE").setColumn(10, "REMARKS")
+				.setColumn(11, "ATTR_DEF").setColumn(12, "SQL_DATA_TYPE")
 				.setColumn(13, "SQL_DATETIME_SUB")
 				.setColumn(14, "CHAR_OCTET_LENGTH")
 				.setColumn(15, "ORDINAL_POSITION").setColumn(16, "IS_NULLABLE")
@@ -238,6 +250,7 @@ public class MetaCatalogBuilder
 
 		final RdfTable.Builder builder = new RdfTable.Builder()
 				.setSchema(schema).setTableDef(tableDef)
+				.setRemarks(MetaCatalogBuilder.REMARK)
 				.setType(MetaCatalogBuilder.TABLE_TYPE)
 				.setName(MetaCatalogBuilder.BEST_ROW_TABLE)
 				.setColumn(0, "SCOPE").setColumn(1, "COLUMN_NAME")
@@ -259,16 +272,19 @@ public class MetaCatalogBuilder
 												.build(model)).setUnique(true)
 								.build(model)).build(model);
 
-		final String tblFmt = "%1$s"
-				+ String.format(" a <%s> .",
-						ResourceBuilder.getFQName(RdfCatalog.class));
 		final RdfTable.Builder builder = new RdfTable.Builder()
-				.setSchema(schema).setTableDef(tableDef)
+				.setSchema(schema)
+				.setTableDef(tableDef)
 				.setType(MetaCatalogBuilder.TABLE_TYPE)
 				.setName(MetaCatalogBuilder.CATALOGS_TABLE)
-				.addQuerySegment(tblFmt).setColumn(0, "TABLE_CAT");
-		builder.getColumn(0).addQuerySegment(
-				"%1$s  <http://www.w3.org/2000/01/rdf-schema#label>  %2$s .");
+				.setRemarks(MetaCatalogBuilder.REMARK)
+				.addQuerySegment(
+						makeQS("%1$s", RDF.type, makeNode(ResourceBuilder
+								.getFQName(RdfCatalog.class))))
+				.setColumn(0, "TABLE_CAT");
+		builder.getColumn(0)
+				.addQuerySegment(makeQS("%1$s", RDFS.label, "%2$s"))
+				.setRemarks(MetaCatalogBuilder.REMARK);
 		builder.build(model);
 	}
 
@@ -291,8 +307,9 @@ public class MetaCatalogBuilder
 				.setSchema(schema).setTableDef(tableDef)
 				.setType(MetaCatalogBuilder.TABLE_TYPE)
 				.setName(MetaCatalogBuilder.CLIENT_INFO_TABLE)
-				.setColumn(0, "NAME").setColumn(1, "MAX_LEN")
-				.setColumn(2, "DEFAULT_VALUE").setColumn(3, "DESCRIPTION");
+				.setRemarks(MetaCatalogBuilder.REMARK).setColumn(0, "NAME")
+				.setColumn(1, "MAX_LEN").setColumn(2, "DEFAULT_VALUE")
+				.setColumn(3, "DESCRIPTION");
 
 		setNull(builder).build(model);
 	}
@@ -324,6 +341,7 @@ public class MetaCatalogBuilder
 				.setType(MetaCatalogBuilder.TABLE_TYPE)
 				.setName(MetaCatalogBuilder.COLUMN_PRIVILIGES_TABLE)
 				.setSchema(schema).setTableDef(tableDef)
+				.setRemarks(MetaCatalogBuilder.REMARK)
 				.setColumn(0, "TABLE_CAT").setColumn(1, "TABLE_SCHEM")
 				.setColumn(2, "TABLE_NAME").setColumn(3, "COLUMN_NAME")
 				.setColumn(4, "GRANTOR").setColumn(5, "GRANTEE")
@@ -347,7 +365,7 @@ public class MetaCatalogBuilder
 				.addColumnDef(nullableInt) // DECIMAL_DIGITS
 				.addColumnDef(nullableInt) // NUM_PREC_RADIX
 				.addColumnDef(nonNullInt) // NULLABLE
-				.addColumnDef(nullableString) // REMARKS
+				.addColumnDef(nonNullString) // REMARKS
 				.addColumnDef(nullableString) // COLUMN_DEF
 				.addColumnDef(nullableInt) // SQL_DATA_TYPE
 				.addColumnDef(nullableInt) // SQL_DATETIME_SUB
@@ -380,144 +398,160 @@ public class MetaCatalogBuilder
 												.build(model)).setUnique(true)
 								.build(model)).build(model);
 
-		final String tblFmt = "%1$s"
-				+ String.format(" a <%s> .",
-						ResourceBuilder.getFQName(RdfColumn.class));
 		final RdfTable.Builder builder = new RdfTable.Builder()
 				.setSchema(schema).setTableDef(tableDef)
 				.setType(MetaCatalogBuilder.TABLE_TYPE)
 				.setName(MetaCatalogBuilder.COLUMNS_TABLE)
-				.addQuerySegment(tblFmt).setColumn(0, "TABLE_CAT")
-				.setColumn(1, "TABLE_SCHEM").setColumn(2, "TABLE_NAME")
-				.setColumn(3, "COLUMN_NAME").setColumn(4, "DATA_TYPE")
-				.setColumn(5, "TYPE_NAME").setColumn(6, "COLUMN_SIZE")
-				.setColumn(7, "BUFFER_LENGTH").setColumn(8, "DECIMAL_DIGITS")
-				.setColumn(9, "NUM_PREC_RADIX").setColumn(10, "NULLABLE")
-				.setColumn(11, "REMARKS").setColumn(12, "COLUMN_DEF")
-				.setColumn(13, "SQL_DATA_TYPE")
+				.setRemarks(MetaCatalogBuilder.REMARK)
+				.setColumn(0, "TABLE_CAT").setColumn(1, "TABLE_SCHEM")
+				.setColumn(2, "TABLE_NAME").setColumn(3, "COLUMN_NAME")
+				.setColumn(4, "DATA_TYPE").setColumn(5, "TYPE_NAME")
+				.setColumn(6, "COLUMN_SIZE").setColumn(7, "BUFFER_LENGTH")
+				.setColumn(8, "DECIMAL_DIGITS").setColumn(9, "NUM_PREC_RADIX")
+				.setColumn(10, "NULLABLE").setColumn(11, "REMARKS")
+				.setColumn(12, "COLUMN_DEF").setColumn(13, "SQL_DATA_TYPE")
 				.setColumn(14, "SQL_DATETIME_SUB")
 				.setColumn(15, "CHAR_OCTET_LENGTH")
 				.setColumn(16, "ORDINAL_POSITION").setColumn(17, "IS_NULLABLE")
 				.setColumn(18, "SCOPE_CATLOG").setColumn(19, "SCOPE_SCHEMA")
 				.setColumn(20, "SCOPE_TABLE").setColumn(21, "SOURCE_DATA_TYPE")
 				.setColumn(22, "IS_AUTOINCREMENT");
+		final String vTable = "?" + NameUtils.createUUIDName();
+		final String vSchema = "?" + NameUtils.createUUIDName();
+		final String vCat = "?" + NameUtils.createUUIDName();
+		final String vColDef = "?" + NameUtils.createUUIDName();
+		final String vInc = "?" + NameUtils.createUUIDName();
+		final String vCol = "?" + NameUtils.createUUIDName();
+		final String vOrd = "?" + NameUtils.createUUIDName();
+		final String vNullable = "?" + NameUtils.createUUIDName();
 
-		builder.getColumn(0)
+		builder.addQuerySegment(
+				makeQS("%1$s", RDF.type,
+						makeNode(ResourceBuilder.getFQName(RdfColumn.class))))
 				.addQuerySegment(
-						"%1$s <http://org.xenei.jdbc4sparql/entity/Column#table> _:table .")
+						makeQS("%1$s", resourceBuilder.getProperty(
+								RdfColumn.class, "table"), vTable))
 				.addQuerySegment(
-						"_:schema  <http://org.xenei.jdbc4sparql/entity/Schema#tables> _:table .")
+						makeQS(vSchema, resourceBuilder.getProperty(
+								RdfSchema.class, "tables"), vTable))
 				.addQuerySegment(
-						"_:catalog <http://org.xenei.jdbc4sparql/entity/Catalog#schemas> _:schema ;")
+						makeQS(vCat, resourceBuilder.getProperty(
+								RdfCatalog.class, "schemas"), vSchema))
 				.addQuerySegment(
-						"  <http://www.w3.org/2000/01/rdf-schema#label>  %2$s .");
+						makeQS("%1$s", resourceBuilder.getProperty(
+								RdfColumn.class, "columnDef"), vColDef))
+				.addQuerySegment(
+						makeQS(vColDef, resourceBuilder.getProperty(
+								RdfColumnDef.class, "autoIncrement"), vInc))
+				.addQuerySegment(
+						makeQS(vTable, resourceBuilder.getProperty(
+								RdfTable.class, "column"), vCol));
 
+		// TABLE_CAT
+		builder.getColumn(0).addQuerySegment(makeQS(vCat, RDFS.label, "%2$s"))
+				.setRemarks(MetaCatalogBuilder.REMARK);
+		// TABLE_SCHEM
 		builder.getColumn(1)
-				.addQuerySegment(
-						"%1$s <http://org.xenei.jdbc4sparql/entity/Column#table> _:table .")
-				.addQuerySegment(
-						"_:schema  <http://org.xenei.jdbc4sparql/entity/Schema#tables> _:table ;")
-				.addQuerySegment(
-						"  <http://www.w3.org/2000/01/rdf-schema#label>  %2$s .");
-
+				.addQuerySegment(makeQS(vSchema, RDFS.label, "%2$s"))
+				.setRemarks(MetaCatalogBuilder.REMARK);
+		// TABLE_NAME
 		builder.getColumn(2)
-				.addQuerySegment(
-						"%1$s <http://org.xenei.jdbc4sparql/entity/Column#table> _:table . ")
-				.addQuerySegment(
-						"_:table <http://www.w3.org/2000/01/rdf-schema#label>  %2$s .");
-
-		builder.getColumn(3).addQuerySegment(
-				"%1$s <http://www.w3.org/2000/01/rdf-schema#label> %2$s .");
-
+				.addQuerySegment(makeQS(vTable, RDFS.label, "%2$s"))
+				.setRemarks(MetaCatalogBuilder.REMARK);
+		// COLUMN_NAME
+		builder.getColumn(3)
+				.addQuerySegment(makeQS("%1$s", RDFS.label, "%2$s"))
+				.setRemarks(MetaCatalogBuilder.REMARK);
+		// DATA_TYPE
 		builder.getColumn(4)
 				.addQuerySegment(
-						"%1$s <http://org.xenei.jdbc4sparql/entity/Column#columnDef> _:colDef .")
-				.addQuerySegment(
-						"_:colDef <http://org.xenei.jdbc4sparql/entity/ColumnDef#type> %2$s .");
-
+						makeQS(vColDef, resourceBuilder.getProperty(
+								RdfColumnDef.class, "type"), "%2$s"))
+				.setRemarks(MetaCatalogBuilder.REMARK);
+		// TYPE_NAME
 		builder.getColumn(5)
 				.addQuerySegment(
-						"%1$s <http://org.xenei.jdbc4sparql/entity/Column#columnDef> _:colDef .")
-				.addQuerySegment(
-						"_:colDef <http://org.xenei.jdbc4sparql/entity/ColumnDef#typeName> %2$s .");
-
+						makeQS(vColDef, resourceBuilder.getProperty(
+								RdfColumnDef.class, "typeName"), "%2$s"))
+				.setRemarks(MetaCatalogBuilder.REMARK);
+		// COLUMN_SIZE
 		builder.getColumn(6)
 				.addQuerySegment(
-						"%1$s <http://org.xenei.jdbc4sparql/entity/Column#columnDef> _:colDef .")
-				.addQuerySegment(
-						"_:colDef <http://org.xenei.jdbc4sparql/entity/ColumnDef#scale> %2$s .");
-
+						makeQS(vColDef, resourceBuilder.getProperty(
+								RdfColumnDef.class, "scale"), "%2$s"))
+				.setRemarks(MetaCatalogBuilder.REMARK);
+		// BUFFER_LENGTH (not used)
 		setNull(builder.getColumn(7));
-
+		// DECIMAL_DIGITS
 		setNull(builder.getColumn(8));
-
+		// NUM_PREC_RADIX
 		setNull(builder.getColumn(9));
-
+		// NULLABLE
 		builder.getColumn(10)
 				.addQuerySegment(
-						"%1$s <http://org.xenei.jdbc4sparql/entity/Column#columnDef> _:colDef .")
+						makeQS(vColDef, resourceBuilder.getProperty(
+								RdfColumnDef.class, "nullable"), "%2$s"))
+				.setRemarks(MetaCatalogBuilder.REMARK);
+		// REMARKS
+		builder.getColumn(11)
 				.addQuerySegment(
-						"_:colDef <http://org.xenei.jdbc4sparql/entity/ColumnDef#nullable> %2$s .");
-
-		setNull(builder.getColumn(11));
-
+						makeQS("%1$s", resourceBuilder.getProperty(
+								RdfColumn.class, "remarks"), "%2$s"))
+				.setRemarks(MetaCatalogBuilder.REMARK);
+		// COLUMN_DEF
 		setNull(builder.getColumn(12));
-
+		// SQL_DATA_TYPE
 		setNull(builder.getColumn(13));
-
+		// SQL_DATETIME_SUB
 		setNull(builder.getColumn(14));
-
+		// CHAR_OCTET_LENGTH
 		setNull(builder.getColumn(15));
-		String uVar = "?"+NameUtils.createUUIDName();
+		// ORDINAL_POSITION
 		builder.getColumn(16)
 				// list list:index (index member)
 				.addQuerySegment(
-						"%1$s <http://org.xenei.jdbc4sparql/entity/Column#columnDef> _:colDef ; ")
+						makeQS(vTable, resourceBuilder.getProperty(
+								RdfTable.class, "column"), "_:columns"))
 				.addQuerySegment(
-						" <http://org.xenei.jdbc4sparql/entity/Column#table> _:table . ")
-				.addQuerySegment(
-						"_:table <http://org.xenei.jdbc4sparql/entity/Table#column> _:columns . ")
-				.addQuerySegment(
-						"_:columns <http://jena.hpl.hp.com/ARQ/list#index> ( "
-								+ uVar + " %1$s ) .")
-				.addQuerySegment("BIND( ( " + uVar + " + 1 ) as %2$s ).");
-
-		uVar = "?"+NameUtils.createUUIDName();
+						makeQS("_:columns",
+								"http://jena.hpl.hp.com/ARQ/list#index", "( "
+										+ vOrd + " %1$s )"))
+				.addQuerySegment("BIND( ( " + vOrd + " + 1 ) as %2$s ).")
+				.setRemarks(MetaCatalogBuilder.REMARK);
+		// IS_NULLABLE
 		builder.getColumn(17)
 				// YES NO or ""
 				.addQuerySegment(
-						"%1$s <http://org.xenei.jdbc4sparql/entity/Column#columnDef> _:colDef .")
+						makeQS(vColDef, resourceBuilder.getProperty(
+								RdfColumnDef.class, "nullable"), vNullable))
 				.addQuerySegment(
-						"_:colDef <http://org.xenei.jdbc4sparql/entity/ColumnDef#nullable> "
-								+ uVar + " .")
-				.addQuerySegment(
-						"BIND( if( " + uVar + " = "
+						"BIND( if( " + vNullable + " = "
 								+ ResultSetMetaData.columnNullable
-								+ ", 'YES', if( " + uVar + " = "
+								+ ", 'YES', if( " + vNullable + " = "
 								+ ResultSetMetaData.columnNoNulls
-								+ ", 'NO', '')) as %2$s)");
-
+								+ ", 'NO', '')) as %2$s)")
+				.setRemarks(MetaCatalogBuilder.REMARK);
+		// SCOPE_CATALOG
 		setNull(builder.getColumn(18));
-
+		// SCOPE_SCHEMA
 		setNull(builder.getColumn(19));
-
+		// SCOPE_TABLE
 		setNull(builder.getColumn(20));
-
+		// SOURCE_DATA_TYPE
 		builder.getColumn(21)
 				.addQuerySegment(
-						"%1$s <http://org.xenei.jdbc4sparql/entity/Column#columnDef> _:colDef .")
-				.addQuerySegment(
-						"_:colDef <http://org.xenei.jdbc4sparql/entity/ColumnDef#type> %2$s .");
+						makeQS(vColDef, resourceBuilder.getProperty(
+								RdfColumnDef.class, "type"), "%2$s"))
+				.setRemarks(MetaCatalogBuilder.REMARK);
 
-		uVar = "?"+NameUtils.createUUIDName();
+		// IS_AUTOINCREMENT
 		builder.getColumn(22)
 				.addQuerySegment(
-						"%1$s <http://org.xenei.jdbc4sparql/entity/Column#columnDef> _:colDef .")
+						makeQS(vColDef, resourceBuilder.getProperty(
+								RdfColumnDef.class, "autoIncrement"), vInc))
 				.addQuerySegment(
-						"_:colDef <http://org.xenei.jdbc4sparql/entity/ColumnDef#autoIncrement> "
-								+ uVar + " .")
-				.addQuerySegment(
-						"BIND( if( " + uVar + ", 'YES', 'NO') as %2$s)");
+						"BIND( if( " + vInc + ", 'YES', 'NO') as %2$s)")
+				.setRemarks(MetaCatalogBuilder.REMARK);
 
 		builder.build(model);
 	}
@@ -563,6 +597,7 @@ public class MetaCatalogBuilder
 				.setType(MetaCatalogBuilder.TABLE_TYPE)
 				.setName(MetaCatalogBuilder.EXPORTED_KEYS_TABLE)
 				.setSchema(schema).setTableDef(tableDef)
+				.setRemarks(MetaCatalogBuilder.REMARK)
 				.setColumn(0, "PKTABLE_CAT").setColumn(1, "PKTABLE_SCHEM")
 				.setColumn(2, "PKTABLE_NAME").setColumn(3, "PKCOLUMN_NAME")
 				.setColumn(4, "FKTABLE_CAT").setColumn(5, "FKTABLE_SCHEM")
@@ -618,6 +653,7 @@ public class MetaCatalogBuilder
 				.setType(MetaCatalogBuilder.TABLE_TYPE)
 				.setName(MetaCatalogBuilder.FUNCTION_COLUMNS_TABLE)
 				.setSchema(schema).setTableDef(tableDef)
+				.setRemarks(MetaCatalogBuilder.REMARK)
 				.setColumn(0, "FUNCTION_CAT").setColumn(1, "FUNCTION_SCHEM")
 				.setColumn(2, "FUNCTION_NAME").setColumn(3, "COLUMN_NAME")
 				.setColumn(4, "COLUMN_TYPE").setColumn(5, "DATA_TYPE")
@@ -664,10 +700,10 @@ public class MetaCatalogBuilder
 		final RdfTable.Builder builder = new RdfTable.Builder()
 				.setType(MetaCatalogBuilder.TABLE_TYPE)
 				.setName(MetaCatalogBuilder.FUNCTIONS_TABLE).setSchema(schema)
-				.setTableDef(tableDef).setColumn(0, "FUNCTION_CAT")
-				.setColumn(1, "FUNCTION_SCHEM").setColumn(2, "FUNCTION_NAME")
-				.setColumn(3, "REMARKS").setColumn(4, "FUNCTION_TYPE")
-				.setColumn(5, "SPECIFIC_NAME");
+				.setTableDef(tableDef).setRemarks(MetaCatalogBuilder.REMARK)
+				.setColumn(0, "FUNCTION_CAT").setColumn(1, "FUNCTION_SCHEM")
+				.setColumn(2, "FUNCTION_NAME").setColumn(3, "REMARKS")
+				.setColumn(4, "FUNCTION_TYPE").setColumn(5, "SPECIFIC_NAME");
 
 		setNull(builder).build(model);
 
@@ -714,6 +750,7 @@ public class MetaCatalogBuilder
 				.setType(MetaCatalogBuilder.TABLE_TYPE)
 				.setName(MetaCatalogBuilder.IMPORTED_KEYS_TABLE)
 				.setSchema(schema).setTableDef(tableDef)
+				.setRemarks(MetaCatalogBuilder.REMARK)
 				.setColumn(0, "PKTABLE_CAT").setColumn(1, "PKTABLE_SCHEM")
 				.setColumn(2, "PKTABLE_NAME").setColumn(3, "PKCOLUMN_NAME")
 				.setColumn(4, "FKTABLE_CAT").setColumn(5, "FKTABLE_SCHEM")
@@ -760,13 +797,14 @@ public class MetaCatalogBuilder
 		final RdfTable.Builder builder = new RdfTable.Builder()
 				.setType(MetaCatalogBuilder.TABLE_TYPE)
 				.setName(MetaCatalogBuilder.INDEXINFO_TABLE).setSchema(schema)
-				.setTableDef(tableDef).setColumn(0, "TABLE_CAT")
-				.setColumn(1, "TABLE_SCHEM").setColumn(2, "TABLE_NAME")
-				.setColumn(3, "NON_UNIQUE").setColumn(4, "INDEX_QUALIFIER")
-				.setColumn(5, "INDEX_NAME").setColumn(6, "TYPE")
-				.setColumn(7, "ORDINAL_POSITION").setColumn(8, "COLUMN_NAME")
-				.setColumn(9, "ASC_OR_DESC").setColumn(10, "CARDINALITY")
-				.setColumn(11, "PAGES").setColumn(12, "FILTER_CONDITION");
+				.setTableDef(tableDef).setRemarks(MetaCatalogBuilder.REMARK)
+				.setColumn(0, "TABLE_CAT").setColumn(1, "TABLE_SCHEM")
+				.setColumn(2, "TABLE_NAME").setColumn(3, "NON_UNIQUE")
+				.setColumn(4, "INDEX_QUALIFIER").setColumn(5, "INDEX_NAME")
+				.setColumn(6, "TYPE").setColumn(7, "ORDINAL_POSITION")
+				.setColumn(8, "COLUMN_NAME").setColumn(9, "ASC_OR_DESC")
+				.setColumn(10, "CARDINALITY").setColumn(11, "PAGES")
+				.setColumn(12, "FILTER_CONDITION");
 
 		setNull(builder).build(model);
 
@@ -793,6 +831,7 @@ public class MetaCatalogBuilder
 				.setType(MetaCatalogBuilder.TABLE_TYPE)
 				.setName(MetaCatalogBuilder.PRIMARY_KEY_TABLE)
 				.setSchema(schema).setTableDef(tableDef)
+				.setRemarks(MetaCatalogBuilder.REMARK)
 				.setColumn(0, "TABLE_CAT").setColumn(1, "TABLE_SCHEM")
 				.setColumn(2, "TABLE_NAME").setColumn(3, "COLUMN_NAME")
 				.setColumn(4, "KEY_SEQ").setColumn(5, "PK_NAME");
@@ -847,6 +886,7 @@ public class MetaCatalogBuilder
 				.setType(MetaCatalogBuilder.TABLE_TYPE)
 				.setName(MetaCatalogBuilder.PROCEDURE_COLUMNS_TABLE)
 				.setSchema(schema).setTableDef(tableDef)
+				.setRemarks(MetaCatalogBuilder.REMARK)
 				.setColumn(0, "PROCEDURE_CAT").setColumn(1, "PROCEDURE_SCHEM")
 				.setColumn(2, "PROCEDURE_NAME").setColumn(3, "COLUMN_NAME")
 				.setColumn(4, "COLUMN_TYPE").setColumn(5, "DATA_TYPE")
@@ -899,11 +939,12 @@ public class MetaCatalogBuilder
 		final RdfTable.Builder builder = new RdfTable.Builder()
 				.setType(MetaCatalogBuilder.TABLE_TYPE)
 				.setName(MetaCatalogBuilder.PROCEDURES_TABLE).setSchema(schema)
-				.setTableDef(tableDef).setColumn(0, "PROCEDURE_CAT")
-				.setColumn(1, "PROCEDURE_SCHEM").setColumn(2, "PROCEDURE_NAME")
-				.setColumn(3, "FUTURE1").setColumn(4, "FUTURE2")
-				.setColumn(5, "FUTURE3").setColumn(6, "REMARKS")
-				.setColumn(7, "PROCEDURE_TYPE").setColumn(8, "SPECIFIC_NAME");
+				.setTableDef(tableDef).setRemarks(MetaCatalogBuilder.REMARK)
+				.setColumn(0, "PROCEDURE_CAT").setColumn(1, "PROCEDURE_SCHEM")
+				.setColumn(2, "PROCEDURE_NAME").setColumn(3, "FUTURE1")
+				.setColumn(4, "FUTURE2").setColumn(5, "FUTURE3")
+				.setColumn(6, "REMARKS").setColumn(7, "PROCEDURE_TYPE")
+				.setColumn(8, "SPECIFIC_NAME");
 
 		setNull(builder).build(model);
 
@@ -926,24 +967,28 @@ public class MetaCatalogBuilder
 												.build(model)).setUnique(false)
 								.build(model)).build(model);
 
-		final String tblFmt = "%1$s"
-				+ String.format(" a <%s> .",
-						ResourceBuilder.getFQName(RdfSchema.class));
 		final RdfTable.Builder builder = new RdfTable.Builder()
 				.setType(MetaCatalogBuilder.TABLE_TYPE)
 				.setName(MetaCatalogBuilder.SCHEMAS_TABLE).setSchema(schema)
-				.setTableDef(tableDef).addQuerySegment(tblFmt)
+				.setTableDef(tableDef).setRemarks(MetaCatalogBuilder.REMARK)
 				.setColumn(0, "TABLE_SCHEM").setColumn(1, "TABLE_CATALOG");
-		RdfColumn.Builder colBuilder = builder.getColumn(0);
-		colBuilder
-				.addQuerySegment("%1$s  <http://www.w3.org/2000/01/rdf-schema#label>  %2$s .");
 
-		colBuilder = builder.getColumn(1);
-		colBuilder
+		final String vCat = "?" + NameUtils.createUUIDName();
+		builder.addQuerySegment(
+				makeQS("%1$s", RDF.type,
+						makeNode(ResourceBuilder.getFQName(RdfSchema.class))))
 				.addQuerySegment(
-						"_:catalog <http://org.xenei.jdbc4sparql/entity/Catalog#schemas> %1$s ;")
-				.addQuerySegment(
-						"  <http://www.w3.org/2000/01/rdf-schema#label>  %2$s .");
+						makeQS(vCat, resourceBuilder.getProperty(
+								RdfCatalog.class, "schemas"), "%1$s"));
+
+		// TABLE_SCHEM
+		builder.getColumn(0)
+				.addQuerySegment(makeQS("%1$s", RDFS.label, "%2$s"))
+				.setRemarks(MetaCatalogBuilder.REMARK);
+
+		// TABLE_CAT
+		builder.getColumn(1).addQuerySegment(makeQS(vCat, RDFS.label, "%2$s"))
+				.setRemarks(MetaCatalogBuilder.REMARK);
 
 		builder.build(model);
 	}
@@ -961,27 +1006,34 @@ public class MetaCatalogBuilder
 				.setType(MetaCatalogBuilder.TABLE_TYPE)
 				.setName(MetaCatalogBuilder.SUPER_TABLES_TABLE)
 				.setSchema(schema).setTableDef(tableDef)
+				.setRemarks(MetaCatalogBuilder.REMARK)
 				.setColumn(0, "TABLE_CAT").setColumn(1, "TABLE_SCHEM")
 				.setColumn(2, "TABLE_NAME").setColumn(3, "SUPERTABLE_NAME");
 
-		builder.getColumn(0)
+		final String vSchema = "?" + NameUtils.createUUIDName();
+		final String vCat = "?" + NameUtils.createUUIDName();
+		builder.addQuerySegment(
+				makeQS("%1$s", RDF.type,
+						makeNode(ResourceBuilder.getFQName(RdfTable.class))))
 				.addQuerySegment(
-						"_:schema a <http://org.xenei.jdbc4sparql/entity/Schema> ;")
+						makeQS(vSchema, resourceBuilder.getProperty(
+								RdfSchema.class, "tables"), "%1$s"))
 				.addQuerySegment(
-						"  <http://org.xenei.jdbc4sparql/entity/Schema#tables> %1$s .")
-				.addQuerySegment(
-						"_:catalog <http://org.xenei.jdbc4sparql/entity/Catalog#schemas> _:schema ;")
-				.addQuerySegment(
-						"  <http://www.w3.org/2000/01/rdf-schema#label>  %2$s .");
+						makeQS(vCat, resourceBuilder.getProperty(
+								RdfCatalog.class, "schemas"), vSchema));
 
+		// TABLE_CAT
+		builder.getColumn(0).addQuerySegment(makeQS(vCat, RDFS.label, "%2$s"))
+				.setRemarks(MetaCatalogBuilder.REMARK);
+		// TABLE_SCHEM
 		builder.getColumn(1)
-				.addQuerySegment(
-						"_:schema <http://org.xenei.jdbc4sparql/entity/Schema#tables> %1$s ;")
-				.addQuerySegment(
-						"  <http://www.w3.org/2000/01/rdf-schema#label> %2$s .");
+				.addQuerySegment(makeQS(vSchema, RDFS.label, "%2$s"))
+				.setRemarks(MetaCatalogBuilder.REMARK);
+		// TABLE_NAME
+		builder.getColumn(2)
+				.addQuerySegment(makeQS("%1$s", RDFS.label, "%2$s"))
+				.setRemarks(MetaCatalogBuilder.REMARK);
 
-		builder.getColumn(2).addQuerySegment(
-				"%1$s  <http://www.w3.org/2000/01/rdf-schema#label> %2$s .");
 		setNull(builder.getColumn(3));
 		builder.build(model);
 
@@ -1002,9 +1054,10 @@ public class MetaCatalogBuilder
 				.setType(MetaCatalogBuilder.TABLE_TYPE)
 				.setName(MetaCatalogBuilder.SUPER_TYPES_TABLE)
 				.setSchema(schema).setTableDef(tableDef)
-				.setColumn(0, "TYPE_CAT").setColumn(1, "TYPE_SCHEM")
-				.setColumn(2, "TYPE_NAME").setColumn(3, "SUPERTYPE_CAT")
-				.setColumn(4, "SUPERTYPE_SCHEM").setColumn(5, "SUPERTYPE_NAME");
+				.setRemarks(MetaCatalogBuilder.REMARK).setColumn(0, "TYPE_CAT")
+				.setColumn(1, "TYPE_SCHEM").setColumn(2, "TYPE_NAME")
+				.setColumn(3, "SUPERTYPE_CAT").setColumn(4, "SUPERTYPE_SCHEM")
+				.setColumn(5, "SUPERTYPE_NAME");
 
 		setNull(builder).build(model);
 	}
@@ -1043,6 +1096,7 @@ public class MetaCatalogBuilder
 				.setType(MetaCatalogBuilder.TABLE_TYPE)
 				.setName(MetaCatalogBuilder.TABLE_PRIVILEGES_TABLE)
 				.setSchema(schema).setTableDef(tableDef)
+				.setRemarks(MetaCatalogBuilder.REMARK)
 				.setColumn(0, "TABLE_CAT").setColumn(1, "TABLE_SCHEM")
 				.setColumn(2, "TABLE_NAME").setColumn(3, "GRANTOR")
 				.setColumn(4, "GRANTEE").setColumn(5, "PRIVILEGE")
@@ -1084,44 +1138,54 @@ public class MetaCatalogBuilder
 												.build(model)).setUnique(false)
 								.build(model)).build(model);
 
-		final String tblFmt = "%1$s"
-				+ String.format(" a <%s> .",
-						ResourceBuilder.getFQName(RdfTable.class));
 		final RdfTable.Builder builder = new RdfTable.Builder()
 				.setType(MetaCatalogBuilder.TABLE_TYPE)
 				.setName(MetaCatalogBuilder.TABLES_TABLE).setSchema(schema)
-				.setTableDef(tableDef).addQuerySegment(tblFmt)
+				.setTableDef(tableDef).setRemarks(MetaCatalogBuilder.REMARK)
 				.setColumn(0, "TABLE_CAT").setColumn(1, "TABLE_SCHEM")
 				.setColumn(2, "TABLE_NAME").setColumn(3, "TABLE_TYPE")
 				.setColumn(4, "REMARKS").setColumn(5, "TYPE_CAT")
 				.setColumn(6, "TYPE_SCHEM").setColumn(7, "TYPE_NAME")
 				.setColumn(8, "SELF_REFERENCING_COL_NAME")
 				.setColumn(9, "REF_GENERATION");
-		builder.getColumn(0)
-				.addQuerySegment(
-						"_:schema a <http://org.xenei.jdbc4sparql/entity/Schema> ;")
-				.addQuerySegment(
-						"  <http://org.xenei.jdbc4sparql/entity/Schema#tables> %1$s .")
-				.addQuerySegment(
-						"_:catalog <http://org.xenei.jdbc4sparql/entity/Catalog#schemas> _:schema ;")
-				.addQuerySegment(
-						"  <http://www.w3.org/2000/01/rdf-schema#label>  %2$s .");
 
+		final String vSchema = "?" + NameUtils.createUUIDName();
+		final String vCat = "?" + NameUtils.createUUIDName();
+		builder.addQuerySegment(
+				makeQS("%1$s", RDF.type,
+						makeNode(ResourceBuilder.getFQName(RdfTable.class))))
+				.addQuerySegment(
+						makeQS(vSchema, resourceBuilder.getProperty(
+								RdfSchema.class, "tables"), "%1$s"))
+				.addQuerySegment(
+						makeQS(vCat, resourceBuilder.getProperty(
+								RdfCatalog.class, "schemas"), vSchema));
+
+		// TABLE_CAT
+		builder.getColumn(0).addQuerySegment(makeQS(vCat, RDFS.label, "%2$s"))
+				.setRemarks(MetaCatalogBuilder.REMARK);
+		// TABLE_SCHEM
 		builder.getColumn(1)
-				.addQuerySegment(
-						"_:schema <http://org.xenei.jdbc4sparql/entity/Schema#tables> %1$s ;")
-				.addQuerySegment(
-						"  <http://www.w3.org/2000/01/rdf-schema#label> %2$s .");
-
-		builder.getColumn(2).addQuerySegment(
-				"%1$s  <http://www.w3.org/2000/01/rdf-schema#label> %2$s .");
-
+				.addQuerySegment(makeQS(vSchema, RDFS.label, "%2$s"))
+				.setRemarks(MetaCatalogBuilder.REMARK);
+		// TABLE_NAME
+		builder.getColumn(2)
+				.addQuerySegment(makeQS("%1$s", RDFS.label, "%2$s"))
+				.setRemarks(MetaCatalogBuilder.REMARK);
+		// TABLE_TYPE
 		builder.getColumn(3)
 				.addQuerySegment(
-						"%1$s  <http://org.xenei.jdbc4sparql/entity/Table#type> %2$s . ");
+						makeQS("%1$s", resourceBuilder.getProperty(
+								RdfTable.class, "type"), "%2$s"))
+				.setRemarks(MetaCatalogBuilder.REMARK);
+		// REMARKS
 		builder.getColumn(4)
 				.addQuerySegment(
-						"%1$s <http://org.xenei.jdbc4sparql/entity/Table#remarks> %2$s . ");
+						makeQS("%1$s", resourceBuilder.getProperty(
+								RdfTable.class, "remarks"), "%2$s"))
+				.setRemarks(MetaCatalogBuilder.REMARK);
+		// TYPE_CAT TYPE_SCHEM TYPE_NAME SELF_REFERENCING_COL_NAME
+		// REF_GENERATION
 		for (int i = 5; i < 10; i++)
 		{
 			setNull(builder.getColumn(i));
@@ -1142,17 +1206,21 @@ public class MetaCatalogBuilder
 												.build(model)).setUnique(true)
 								.build(model)).build(model);
 
-		final String tblFmt = "%1$s"
-				+ String.format(" a <%s> .",
-						ResourceBuilder.getFQName(RdfTable.class));
 		final RdfTable.Builder builder = new RdfTable.Builder()
 				.setType(MetaCatalogBuilder.TABLE_TYPE)
 				.setName(MetaCatalogBuilder.TABLE_TYPES_TABLE)
-				.setSchema(schema).setTableDef(tableDef)
-				.addQuerySegment(tblFmt).setColumn(0, "TABLE_TYPE");
+				.setSchema(schema)
+				.setTableDef(tableDef)
+				.setRemarks(MetaCatalogBuilder.REMARK)
+				.addQuerySegment(
+						makeQS("%1$s", RDF.type, makeNode(ResourceBuilder
+								.getFQName(RdfTable.class))))
+				.setColumn(0, "TABLE_TYPE");
 		builder.getColumn(0)
 				.addQuerySegment(
-						"%1$s  <http://org.xenei.jdbc4sparql/entity/Table#type> %2$s . ");
+						makeQS("%1$s", resourceBuilder.getProperty(
+								RdfTable.class, "type"), "%2$s"))
+				.setRemarks(MetaCatalogBuilder.REMARK);
 		builder.build(model);
 	}
 
@@ -1182,12 +1250,12 @@ public class MetaCatalogBuilder
 		final RdfTable.Builder builder = new RdfTable.Builder()
 				.setType(MetaCatalogBuilder.TABLE_TYPE)
 				.setName(MetaCatalogBuilder.TYPEINFO_TABLE).setSchema(schema)
-				.setTableDef(tableDef).setColumn(0, "TYPE_NAME")
-				.setColumn(1, "DATA_TYPE").setColumn(2, "PRECISION")
-				.setColumn(3, "LITERAL_PREFIX").setColumn(4, "LITERAL_SUFFIX")
-				.setColumn(5, "CREATE_PARAMS").setColumn(6, "NULLABLE")
-				.setColumn(7, "CASE_SENSITIVE").setColumn(8, "SEARCHABLE")
-				.setColumn(9, "UNSIGNED_ATTRIBUTE")
+				.setTableDef(tableDef).setRemarks(MetaCatalogBuilder.REMARK)
+				.setColumn(0, "TYPE_NAME").setColumn(1, "DATA_TYPE")
+				.setColumn(2, "PRECISION").setColumn(3, "LITERAL_PREFIX")
+				.setColumn(4, "LITERAL_SUFFIX").setColumn(5, "CREATE_PARAMS")
+				.setColumn(6, "NULLABLE").setColumn(7, "CASE_SENSITIVE")
+				.setColumn(8, "SEARCHABLE").setColumn(9, "UNSIGNED_ATTRIBUTE")
 				.setColumn(10, "FIXED_PREC_SCALE")
 				.setColumn(11, "AUTO_INCREMENT")
 				.setColumn(12, "LOCAL_TYPE_NAME")
@@ -1232,10 +1300,11 @@ public class MetaCatalogBuilder
 		final RdfTable.Builder builder = new RdfTable.Builder()
 				.setType(MetaCatalogBuilder.TABLE_TYPE)
 				.setName(MetaCatalogBuilder.UDT_TABLES).setSchema(schema)
-				.setTableDef(tableDef).setColumn(0, "TYPE_CAT")
-				.setColumn(1, "TYPE_SCHEM").setColumn(2, "TYPE_NAME")
-				.setColumn(3, "CLASS_NAME").setColumn(4, "DATA_TYPE")
-				.setColumn(5, "REMARKS").setColumn(6, "BASE_TYPE");
+				.setTableDef(tableDef).setRemarks(MetaCatalogBuilder.REMARK)
+				.setColumn(0, "TYPE_CAT").setColumn(1, "TYPE_SCHEM")
+				.setColumn(2, "TYPE_NAME").setColumn(3, "CLASS_NAME")
+				.setColumn(4, "DATA_TYPE").setColumn(5, "REMARKS")
+				.setColumn(6, "BASE_TYPE");
 
 		setNull(builder).build(model);
 
@@ -1257,7 +1326,8 @@ public class MetaCatalogBuilder
 		final RdfTable.Builder builder = new RdfTable.Builder()
 				.setType(MetaCatalogBuilder.TABLE_TYPE)
 				.setName(MetaCatalogBuilder.VERSION_COLUMNS_TABLE)
-				.setSchema(schema).setTableDef(tableDef).setColumn(0, "SCOPE")
+				.setSchema(schema).setTableDef(tableDef)
+				.setRemarks(MetaCatalogBuilder.REMARK).setColumn(0, "SCOPE")
 				.setColumn(1, "COLUMN_NAME").setColumn(2, "DATA_TYPE")
 				.setColumn(3, "TYPE_NAME").setColumn(4, "COLUMN_SIZE")
 				.setColumn(5, "BUFFER_LENGTH").setColumn(6, "DECIMAL_DIGITS")
@@ -1306,14 +1376,14 @@ public class MetaCatalogBuilder
 		final RdfTable.Builder builder = new RdfTable.Builder()
 				.setType(MetaCatalogBuilder.TABLE_TYPE)
 				.setName(MetaCatalogBuilder.XREF_TABLE).setSchema(schema)
-				.setTableDef(tableDef).setColumn(0, "PKTABLE_CAT")
-				.setColumn(1, "PKTABLE_SCHEM").setColumn(2, "PKTABLE_NAME")
-				.setColumn(3, "PKCOLUMN_NAME").setColumn(4, "FKTABLE_CAT")
-				.setColumn(5, "FKTABLE_SCHEM").setColumn(6, "FKTABLE_NAME")
-				.setColumn(7, "FKCOLUMN_NAME").setColumn(8, "KEY_SEQ")
-				.setColumn(9, "UPDATE_RULE").setColumn(10, "DELETE_RULE")
-				.setColumn(11, "FK_NAME").setColumn(12, "PK_NAME")
-				.setColumn(13, "DEFERRABILITY");
+				.setTableDef(tableDef).setRemarks(MetaCatalogBuilder.REMARK)
+				.setColumn(0, "PKTABLE_CAT").setColumn(1, "PKTABLE_SCHEM")
+				.setColumn(2, "PKTABLE_NAME").setColumn(3, "PKCOLUMN_NAME")
+				.setColumn(4, "FKTABLE_CAT").setColumn(5, "FKTABLE_SCHEM")
+				.setColumn(6, "FKTABLE_NAME").setColumn(7, "FKCOLUMN_NAME")
+				.setColumn(8, "KEY_SEQ").setColumn(9, "UPDATE_RULE")
+				.setColumn(10, "DELETE_RULE").setColumn(11, "FK_NAME")
+				.setColumn(12, "PK_NAME").setColumn(13, "DEFERRABILITY");
 
 		setNull(builder).build(model);
 	}
@@ -1346,10 +1416,26 @@ public class MetaCatalogBuilder
 		addXrefTable();
 	}
 
+	private String makeNode( final String s )
+	{
+		return String.format("<%s>", s);
+	}
+
+	private String makeQS( final String s, final Property p, final String o )
+	{
+		return makeQS(s, p.getURI(), o);
+	}
+
+	private String makeQS( final String s, final String p, final String o )
+	{
+		return String.format("%s <%s> %s .", s, p, o);
+	}
+
 	private RdfColumn.Builder setNull( final RdfColumn.Builder colBuilder )
 	{
-		colBuilder
-				.addQuerySegment("%1$s <http://org.xenei.jdbc4sparql/entity/Table#null> %2$s .");
+		colBuilder.addQuerySegment(
+				"%1$s <http://org.xenei.jdbc4sparql/entity/Table#null> %2$s .")
+				.setRemarks(MetaCatalogBuilder.REMARK);
 		return colBuilder;
 	}
 

@@ -17,7 +17,6 @@
  */
 package org.xenei.jdbc4sparql.iface;
 
-
 public interface Column extends NamedObject
 {
 	/**
@@ -26,6 +25,13 @@ public interface Column extends NamedObject
 	public Catalog getCatalog();
 
 	public ColumnDef getColumnDef();
+
+	/**
+	 * Get the remarks for the column
+	 * 
+	 * @return
+	 */
+	public String getRemarks();
 
 	/**
 	 * @return The schema this table is in

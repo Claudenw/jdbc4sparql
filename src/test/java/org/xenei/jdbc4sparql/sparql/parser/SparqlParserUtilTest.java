@@ -19,7 +19,6 @@ package org.xenei.jdbc4sparql.sparql.parser;
 
 import com.hp.hpl.jena.graph.Node;
 import com.hp.hpl.jena.graph.NodeFactory;
-import com.hp.hpl.jena.graph.Triple;
 import com.hp.hpl.jena.sparql.core.TriplePath;
 import com.hp.hpl.jena.sparql.core.Var;
 import com.hp.hpl.jena.sparql.path.P_Link;
@@ -40,58 +39,59 @@ public class SparqlParserUtilTest
 	Node nWho = NodeFactory.createURI("who");
 	Node nWhat = NodeFactory.createURI("what");
 	Path pWho = new P_Link(nWho);
-	Path pWhat =new P_Link(nWhat);
+	Path pWhat = new P_Link(nWhat);
 	Node nThis = NodeFactory.createLiteral("this");
 	Node nThat = NodeFactory.createLiteral("that");
-	
-	@Test
-	public void parseSingleQuerySegmentTest() throws Exception
-	{
-		Element parsed = SparqlParser.Util.parse("{ ?is <who> 'that' }");
 
-		Assert.assertTrue(parsed instanceof ElementGroup);
-		List<Element> lst = ((ElementGroup) parsed).getElements();
-		Assert.assertEquals(1, lst.size());
-		Element e = lst.get(0);
-		Assert.assertTrue( e instanceof ElementPathBlock);
-		ElementPathBlock epb = (ElementPathBlock) e;
-		List<TriplePath> l = epb.getPattern().getList();
-		Assert.assertEquals(1, l.size());
-		Assert.assertEquals( new TriplePath( vIs, pWho, nThat ), l.get(0));
-	}
-		@Test
-		public void parseLinkedQuerySegmentTest() throws Exception
-		{
-			Element parsed = SparqlParser.Util.parse("{ ?is <who> 'this' ;"
-				+ "	<what> 'that' }");
-		Assert.assertTrue(parsed instanceof ElementGroup);
-		List<Element> lst = ((ElementGroup) parsed).getElements();
-		Element e = lst.get(0);
-		Assert.assertTrue( e instanceof ElementPathBlock);
-		ElementPathBlock epb = (ElementPathBlock) e;
-		List<TriplePath> l = epb.getPattern().getList();
-		Assert.assertEquals(2, l.size());
-		Assert.assertEquals( new TriplePath( vIs, pWho, nThis ), l.get(0));
-		Assert.assertEquals( new TriplePath( vIs, pWhat, nThat ), l.get(1));
-	}
-	
 	@Test
 	public void parseDisjointQuerySegmentTest() throws Exception
 	{
-		Element parsed = SparqlParser.Util.parse("{ ?is <who> 'this' ."
+		final Element parsed = SparqlParser.Util.parse("{ ?is <who> 'this' ."
 				+ "?was <what> 'that' }");
 		Assert.assertTrue(parsed instanceof ElementGroup);
 		List<Element> lst = ((ElementGroup) parsed).getElements();
 		Assert.assertEquals(1, lst.size());
 		Assert.assertTrue(parsed instanceof ElementGroup);
 		lst = ((ElementGroup) parsed).getElements();
-		Element e = lst.get(0);
-		Assert.assertTrue( e instanceof ElementPathBlock);
-		ElementPathBlock epb = (ElementPathBlock) e;
-		List<TriplePath> l = epb.getPattern().getList();
+		final Element e = lst.get(0);
+		Assert.assertTrue(e instanceof ElementPathBlock);
+		final ElementPathBlock epb = (ElementPathBlock) e;
+		final List<TriplePath> l = epb.getPattern().getList();
 		Assert.assertEquals(2, l.size());
-		Assert.assertEquals( new TriplePath( vIs, pWho, nThis ), l.get(0));
-		Assert.assertEquals( new TriplePath( vWas, pWhat, nThat ), l.get(1));
+		Assert.assertEquals(new TriplePath(vIs, pWho, nThis), l.get(0));
+		Assert.assertEquals(new TriplePath(vWas, pWhat, nThat), l.get(1));
+	}
+
+	@Test
+	public void parseLinkedQuerySegmentTest() throws Exception
+	{
+		final Element parsed = SparqlParser.Util.parse("{ ?is <who> 'this' ;"
+				+ "	<what> 'that' }");
+		Assert.assertTrue(parsed instanceof ElementGroup);
+		final List<Element> lst = ((ElementGroup) parsed).getElements();
+		final Element e = lst.get(0);
+		Assert.assertTrue(e instanceof ElementPathBlock);
+		final ElementPathBlock epb = (ElementPathBlock) e;
+		final List<TriplePath> l = epb.getPattern().getList();
+		Assert.assertEquals(2, l.size());
+		Assert.assertEquals(new TriplePath(vIs, pWho, nThis), l.get(0));
+		Assert.assertEquals(new TriplePath(vIs, pWhat, nThat), l.get(1));
+	}
+
+	@Test
+	public void parseSingleQuerySegmentTest() throws Exception
+	{
+		final Element parsed = SparqlParser.Util.parse("{ ?is <who> 'that' }");
+
+		Assert.assertTrue(parsed instanceof ElementGroup);
+		final List<Element> lst = ((ElementGroup) parsed).getElements();
+		Assert.assertEquals(1, lst.size());
+		final Element e = lst.get(0);
+		Assert.assertTrue(e instanceof ElementPathBlock);
+		final ElementPathBlock epb = (ElementPathBlock) e;
+		final List<TriplePath> l = epb.getPattern().getList();
+		Assert.assertEquals(1, l.size());
+		Assert.assertEquals(new TriplePath(vIs, pWho, nThat), l.get(0));
 	}
 
 }

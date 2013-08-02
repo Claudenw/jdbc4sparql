@@ -157,6 +157,12 @@ class ExprColumn implements Column
 	}
 
 	@Override
+	public String getRemarks()
+	{
+		return "ExprColumn built column";
+	}
+
+	@Override
 	public Schema getSchema()
 	{
 		return table.getSchema();

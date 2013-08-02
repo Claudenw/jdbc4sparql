@@ -5,9 +5,7 @@ import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.RDFList;
 import com.hp.hpl.jena.rdf.model.RDFNode;
-import com.hp.hpl.jena.rdf.model.Resource;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.After;
@@ -17,9 +15,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.NameFilter;
-import org.xenei.jena.entities.EntityManager;
 import org.xenei.jena.entities.EntityManagerFactory;
-import org.xenei.jena.entities.MissingAnnotation;
 
 public class TableBuilderTest
 {
@@ -67,16 +63,15 @@ public class TableBuilderTest
 		Assert.assertEquals("StringCol", c.getName());
 		Assert.assertFalse(nf.hasNext());
 
-		// check the columns are in the model
-		final EntityManager entityManager = EntityManagerFactory
-				.getEntityManager();
-		
+		EntityManagerFactory.getEntityManager();
+
 		final Property p = model.createProperty(
 				ResourceBuilder.getNamespace(RdfTable.class), "column");
 
-		final List<RDFNode> columns = table.getResource().getRequiredProperty(p)
-				.getResource().as(RDFList.class).asJavaList();
-		
+		final List<RDFNode> columns = table.getResource()
+				.getRequiredProperty(p).getResource().as(RDFList.class)
+				.asJavaList();
+
 		Assert.assertEquals(2, columns.size());
 
 	}

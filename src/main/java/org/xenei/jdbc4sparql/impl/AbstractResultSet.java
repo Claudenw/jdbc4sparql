@@ -865,6 +865,12 @@ public abstract class AbstractResultSet implements ResultSet
 	@Override
 	public String getString( final String columnLabel ) throws SQLException
 	{
+		final int i = table.getColumnIndex(columnLabel);
+		if (i < 0)
+		{
+			throw new SQLException(String.format(
+					"%s is not found int result set", columnLabel));
+		}
 		return extractData(table.getColumnIndex(columnLabel), String.class);
 	}
 

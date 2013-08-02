@@ -21,6 +21,7 @@ package org.xenei.jdbc4sparql.sparql.parser.jsqlparser;
 
 import com.hp.hpl.jena.datatypes.xsd.XSDDatatype;
 import com.hp.hpl.jena.graph.Node;
+import com.hp.hpl.jena.graph.NodeFactory;
 import com.hp.hpl.jena.sparql.expr.E_Add;
 import com.hp.hpl.jena.sparql.expr.E_Divide;
 import com.hp.hpl.jena.sparql.expr.E_Equals;
@@ -32,6 +33,7 @@ import com.hp.hpl.jena.sparql.expr.E_LogicalAnd;
 import com.hp.hpl.jena.sparql.expr.E_LogicalOr;
 import com.hp.hpl.jena.sparql.expr.E_Multiply;
 import com.hp.hpl.jena.sparql.expr.E_NotEquals;
+import com.hp.hpl.jena.sparql.expr.E_OneOf;
 import com.hp.hpl.jena.sparql.expr.E_Subtract;
 import com.hp.hpl.jena.sparql.expr.Expr;
 import com.hp.hpl.jena.sparql.expr.ExprVar;
@@ -226,7 +228,7 @@ class SparqlExprVisitor implements ExpressionVisitor
 	public void visit( final DateValue dateValue )
 	{
 		final String val = dateValue.getValue().toString();
-		final Node n = Node.createLiteral(val, XSDDatatype.XSDdate);
+		final Node n = NodeFactory.createLiteral(val, XSDDatatype.XSDdate);
 		stack.push(new NodeValueDT(val, n));
 	}
 
@@ -279,7 +281,11 @@ class SparqlExprVisitor implements ExpressionVisitor
 	@Override
 	public void visit( final InExpression inExpression )
 	{
-		throw new UnsupportedOperationException("IN is not supported");
+		final SparqlItemsListVisitor listVisitor = new SparqlItemsListVisitor(
+				builder);
+		inExpression.getItemsList().accept(listVisitor);
+		inExpression.getLeftExpression().accept(this);
+		stack.push(new E_OneOf(stack.pop(), listVisitor.getResult()));
 	}
 
 	@Override

@@ -88,6 +88,10 @@ public class J4SStatement implements Statement
 	@Override
 	public void close() throws SQLException
 	{
+		if (resultSet != null && ! resultSet.isClosed())
+		{
+			resultSet.close();
+		}
 		closed = true;
 	}
 

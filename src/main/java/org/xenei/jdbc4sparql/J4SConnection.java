@@ -17,19 +17,17 @@
  */
 package org.xenei.jdbc4sparql;
 
-import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ResIterator;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.ResourceFactory;
-import com.hp.hpl.jena.tdb.TDBFactory;
 import com.hp.hpl.jena.util.iterator.WrappedIterator;
 import com.hp.hpl.jena.vocabulary.RDF;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URL;
 import java.sql.Array;
 import java.sql.Blob;
 import java.sql.CallableStatement;
@@ -47,27 +45,26 @@ import java.sql.Savepoint;
 import java.sql.Statement;
 import java.sql.Struct;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.UUID;
 import java.util.concurrent.Executor;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.jena.riot.RDFDataMgr;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xenei.jdbc4sparql.config.MemDatasetProducer;
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.DatasetProducer;
+import org.xenei.jdbc4sparql.iface.Schema;
+import org.xenei.jdbc4sparql.impl.AbstractDatasetProducer;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 import org.xenei.jdbc4sparql.impl.rdf.ResourceBuilder;
 import org.xenei.jdbc4sparql.meta.MetaCatalogBuilder;
+import org.xenei.jdbc4sparql.sparql.builders.SchemaBuilder;
 import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 import org.xenei.jena.entities.EntityManager;
 import org.xenei.jena.entities.EntityManagerFactory;
@@ -75,157 +72,9 @@ import org.xenei.jena.entities.MissingAnnotation;
 
 public class J4SConnection implements Connection
 {
-	private static class DatasetProducerImpl implements DatasetProducer
-	{
-		private File metaDir;
-		/**
-		 * The dataset of catalogs
-		 */
-		private Dataset metaData;
-
-		private File localDir;
-		/**
-		 * The dataset of local data
-		 */
-		private Dataset localData;
-
-		@Override
-		public void close()
-		{
-			if (metaData != null)
-			{
-				metaData.close();
-			}
-			if (localData != null)
-			{
-				localData.close();
-			}
-			FileUtils.deleteQuietly(metaDir);
-			FileUtils.deleteQuietly( localDir );
-			
-		}
-
-		@Override
-		public Dataset getLocalDataset()
-		{
-			if (localData == null)
-			{
-				// must be a local file
-				localDir = new File(System.getProperty("java.io.tmpdir"), UUID.randomUUID().toString());
-				localData = TDBFactory.createDataset(localDir.getAbsolutePath());
-			}
-			return localData;
-		}
-
-		@Override
-		public Dataset getMetaDataset()
-		{
-			if (metaData == null)
-			{
-				// must be a local file
-				metaDir = new File(System.getProperty("java.io.tmpdir"), UUID.randomUUID().toString());
-				metaData = TDBFactory.createDataset(metaDir.getAbsolutePath());
-			}
-			return metaData;
-		}
-		
-		@Override
-		public Model getMetaDatasetUnionModel()
-		{
-			return getMetaDataset().getNamedModel("urn:x-arq:UnionGraph");
-		}
-	}
-
-	private class NoCloseZipInputStream extends InputStream
-	{
-		ZipInputStream wrapped;
-
-		public NoCloseZipInputStream( final ZipInputStream is )
-		{
-			wrapped = is;
-		}
-
-		@Override
-		public int available() throws IOException
-		{
-			return wrapped.available();
-		}
-
-		@Override
-		public void close() throws IOException
-		{
-			wrapped.closeEntry();
-		}
-
-		@Override
-		public boolean equals( final Object obj )
-		{
-			return wrapped.equals(obj);
-		}
-
-		@Override
-		public int hashCode()
-		{
-			return wrapped.hashCode();
-		}
-
-		@Override
-		public void mark( final int readlimit )
-		{
-			wrapped.mark(readlimit);
-		}
-
-		@Override
-		public boolean markSupported()
-		{
-			return wrapped.markSupported();
-		}
-
-		@Override
-		public int read() throws IOException
-		{
-			return wrapped.read();
-		}
-
-		@Override
-		public int read( final byte[] b ) throws IOException
-		{
-			return wrapped.read(b);
-		}
-
-		@Override
-		public int read( final byte[] b, final int off, final int len )
-				throws IOException
-		{
-			return wrapped.read(b, off, len);
-		}
-
-		@Override
-		public void reset() throws IOException
-		{
-			wrapped.reset();
-		}
-
-		@Override
-		public long skip( final long n ) throws IOException
-		{
-			return wrapped.skip(n);
-		}
-
-		@Override
-		public String toString()
-		{
-			return wrapped.toString();
-		}
-
-	}
-
-	public static final String DATASET_PRODUCER = "DatasetProducer";
 	private Properties clientInfo;
 	private final J4SUrl url;
 	private final Map<String, Catalog> catalogMap;
-	private String currentCatalog;
-	private String currentSchema;
 	private final J4SDriver driver;
 	private int networkTimeout;
 	private boolean closed = false;
@@ -233,8 +82,9 @@ public class J4SConnection implements Connection
 	private final SparqlParser sparqlParser;
 	private SQLWarning sqlWarnings;
 	private int holdability;
-	private Logger log = LoggerFactory.getLogger(J4SConnection.class);
+	private final Logger log = LoggerFactory.getLogger(J4SConnection.class);
 	private DatasetProducer dsProducer = null;
+	private final Properties properties;
 
 	public J4SConnection( final J4SDriver driver, final J4SUrl url,
 			final Properties properties ) throws IOException,
@@ -245,50 +95,40 @@ public class J4SConnection implements Connection
 		{
 			throw new IllegalArgumentException("Properties may not be null");
 		}
+		this.properties = properties;
 		this.catalogMap = new HashMap<String, Catalog>();
 		this.sqlWarnings = null;
 		this.driver = driver;
 		this.url = url;
-		this.currentCatalog = url.getCatalog();
-		this.currentSchema = null;
 		this.clientInfo = new Properties();
 
 		this.holdability = ResultSet.HOLD_CURSORS_OVER_COMMIT;
-		
+
 		this.sparqlParser = url.getParser() != null ? url.getParser()
 				: SparqlParser.Util.getDefaultParser();
 
-		if (properties.containsKey(J4SConnection.DATASET_PRODUCER))
+		mergeProperties(url.getProperties());
+
+		if (!properties.containsKey(J4SPropertyNames.DATASET_PRODUCER))
 		{
-			final Class<? extends DatasetProducer> clazz = (Class<? extends DatasetProducer>) J4SConnection.class
-					.getClassLoader()
-					.loadClass(
-							properties
-									.getProperty(J4SConnection.DATASET_PRODUCER));
-			dsProducer = clazz.newInstance();
-		}
-		else
-		{
-			dsProducer = new DatasetProducerImpl();
+			properties.setProperty(J4SPropertyNames.DATASET_PRODUCER,
+					MemDatasetProducer.class.getCanonicalName());
 		}
 
 		configureCatalogMap();
-		
+
 		if (catalogMap.get(MetaCatalogBuilder.LOCAL_NAME) == null)
 		{
-			final Model metadataModel = dsProducer.getMetaDataset()
-					.getNamedModel(MetaCatalogBuilder.LOCAL_NAME);
-			final Catalog c = MetaCatalogBuilder.getInstance(metadataModel);
+			dsProducer.getMetaDataModel(MetaCatalogBuilder.LOCAL_NAME);
+			final Catalog c = MetaCatalogBuilder.getInstance(dsProducer);
 			catalogMap.put(c.getName(), c);
 		}
-		if (StringUtils.isNotEmpty(currentCatalog)
-				&& (catalogMap.get(currentCatalog) == null))
+		if (StringUtils.isNotEmpty(getCatalog())
+				&& (catalogMap.get(getCatalog()) == null))
 		{
-			throw new IllegalArgumentException("Catalog '" + currentCatalog
+			throw new IllegalArgumentException("Catalog '" + getCatalog()
 					+ "' not found in catalog map");
 		}
-
-		
 	}
 
 	@Override
@@ -299,18 +139,16 @@ public class J4SConnection implements Connection
 
 	public RdfCatalog addCatalog( final RdfCatalog.Builder catalogBuilder )
 	{
-		final Model model = dsProducer.getMetaDataset().getNamedModel(
-				catalogBuilder.getName());
+		final Model model = dsProducer.getMetaDataModel(catalogBuilder
+				.getName());
 		Model dataModel = catalogBuilder.getLocalModel();
 		if (dataModel != null)
 		{
-			dsProducer.getLocalDataset().addNamedModel(
-					catalogBuilder.getName(), dataModel);
+			dsProducer.addLocalDataModel(catalogBuilder.getName(), dataModel);
 		}
 		else
 		{
-			dataModel = dsProducer.getLocalDataset().getNamedModel(
-					catalogBuilder.getName());
+			dataModel = dsProducer.getLocalDataModel(catalogBuilder.getName());
 			if (dataModel != null)
 			{
 				catalogBuilder.setLocalModel(dataModel);
@@ -363,41 +201,44 @@ public class J4SConnection implements Connection
 
 		if (url.getType().equals(J4SUrl.TYPE_CONFIG))
 		{
-			loadConfig(url.getEndpoint().toURL().openStream());
+			loadConfig(url.getEndpoint().toURL());
 		}
 		else
 		{
+			dsProducer = DatasetProducer.Loader.load(filterProperties());
 			RdfCatalog catalog = null;
-			final Model model = getModel(dsProducer.getMetaDataset(),
-					currentCatalog);
+			final Model model = dsProducer.getMetaDataModel(getCatalog());
 
 			if (url.getType().equals(J4SUrl.TYPE_SPARQL))
 			{
 				catalog = new RdfCatalog.Builder()
 						.setSparqlEndpoint(url.getEndpoint().toURL())
-						.setName(currentCatalog).build(model);
+						.setName(getCatalog()).build(model);
 			}
 			else
 			{
-				final Model dataModel = getModel(dsProducer.getLocalDataset(),
-						currentCatalog);
-				dataModel.read(url.getEndpoint().toString(), url.getType());
+				final Model dataModel = dsProducer
+						.getLocalDataModel(getCatalog());
+				RDFDataMgr.read(dataModel, url.getEndpoint().toURL()
+						.openStream(), url.getLang());
 				catalog = new RdfCatalog.Builder().setLocalModel(dataModel)
-						.setName(currentCatalog).build(model);
+						.setName(getCatalog()).build(model);
 			}
 
 			final RdfSchema schema = new RdfSchema.Builder()
 					.setCatalog(catalog).setName("").build(model);
-			// schema.addTableDefs(builder.getTableDefs(catalog));
-			currentSchema = schema.getName();
+
 			catalogMap.put(catalog.getName(), catalog);
-			if (url.getBuilder() != null)
+
+			final SchemaBuilder builder = url.getBuilder();
+			if (builder != null)
 			{
-				for (final RdfTable table : url.getBuilder().getTables(catalog))
+				for (final RdfTable table : builder.getTables(catalog))
 				{
 					schema.addTables(table);
 				}
 			}
+
 		}
 
 	}
@@ -453,7 +294,7 @@ public class J4SConnection implements Connection
 			final int resultSetConcurrency, final int resultSetHoldability )
 			throws SQLException
 	{
-		final Catalog catalog = catalogMap.get(currentCatalog);
+		final Catalog catalog = catalogMap.get(getCatalog());
 		if (catalog instanceof RdfCatalog)
 		{
 			return new J4SStatement(this, (RdfCatalog) catalog, resultSetType,
@@ -461,7 +302,7 @@ public class J4SConnection implements Connection
 		}
 		else
 		{
-			throw new SQLException("Catalog '" + currentCatalog
+			throw new SQLException("Catalog '" + getCatalog()
 					+ "' does not support statements");
 		}
 	}
@@ -473,6 +314,21 @@ public class J4SConnection implements Connection
 		throw new SQLFeatureNotSupportedException();
 	}
 
+	/**
+	 * Filter out confidential data from properties. Specifically user ID and
+	 * password
+	 * 
+	 * @return
+	 */
+	private Properties filterProperties()
+	{
+		final Properties props = new Properties();
+		props.putAll(properties);
+		props.remove(J4SPropertyNames.USER_PROPERTY);
+		props.remove(J4SPropertyNames.PASSWORD_PROPERTY);
+		return props;
+	}
+
 	@Override
 	public boolean getAutoCommit() throws SQLException
 	{
@@ -480,9 +336,9 @@ public class J4SConnection implements Connection
 	}
 
 	@Override
-	public String getCatalog() throws SQLException
+	public String getCatalog()
 	{
-		return currentCatalog;
+		return properties.getProperty(J4SPropertyNames.CATALOG_PROPERTY, "");
 	}
 
 	public Map<String, Catalog> getCatalogs()
@@ -502,6 +358,11 @@ public class J4SConnection implements Connection
 		return clientInfo.getProperty(key);
 	}
 
+	public DatasetProducer getDatasetProducer()
+	{
+		return dsProducer;
+	}
+
 	@Override
 	public int getHoldability() throws SQLException
 	{
@@ -514,24 +375,6 @@ public class J4SConnection implements Connection
 		return new J4SDatabaseMetaData(this, driver);
 	}
 
-	private Model getModel( final Dataset dataset, final String modelName )
-	{
-		Model model = null;
-		if (StringUtils.isEmpty(modelName))
-		{
-			model = dataset.getDefaultModel();
-		}
-		else
-		{
-			model = dataset.getNamedModel(modelName);
-			if (dataset.containsNamedModel(modelName))
-			{
-				dataset.addNamedModel(modelName, model);
-			}
-		}
-		return model;
-	}
-
 	@Override
 	public int getNetworkTimeout() throws SQLException
 	{
@@ -539,9 +382,9 @@ public class J4SConnection implements Connection
 	}
 
 	@Override
-	public String getSchema() throws SQLException
+	public String getSchema()
 	{
-		return currentSchema;
+		return properties.getProperty(J4SPropertyNames.SCHEMA_PROPERTY);
 	}
 
 	public SparqlParser getSparqlParser()
@@ -596,95 +439,57 @@ public class J4SConnection implements Connection
 		return false;
 	}
 
-	private void loadConfig( final InputStream in ) throws IOException,
+	private void loadConfig( final URL url ) throws IOException,
 			MissingAnnotation
 	{
-		Dataset ds;
-		final ZipInputStream zis = new ZipInputStream(in);
-		for (ZipEntry e = zis.getNextEntry(); e != null; e = zis.getNextEntry())
-		{
-			Model m = null;
-			final String name = e.getName();
-			log.debug("zipFile: {}", name);
-			String graphName = name;
-			if (name.startsWith("/default/"))
-			{
-				graphName = name.substring("/default/".length());
-				if (graphName.startsWith("local"))
-				{
-					ds = dsProducer.getLocalDataset();
-				}
-				else if (graphName.startsWith("meta"))
-				{
-					ds = dsProducer.getMetaDataset();
-				}
-				else
-				{
-					throw new IllegalArgumentException("Unknown type " + name);
+		dsProducer = DatasetProducer.Loader.load(properties, url);
+		mergeProperties(dsProducer.getProperties());
 
-				}
-				m = ds.getDefaultModel();
-			}
-			else
-			{
-				if (name.startsWith("/local/"))
-				{
-					ds = dsProducer.getLocalDataset();
-					graphName = name.substring("/local/".length());
-				}
-				else if (name.startsWith("/meta/"))
-				{
-					ds = dsProducer.getMetaDataset();
-					graphName = name.substring("/meta/".length());
-				}
-				else
-				{
-					throw new IllegalArgumentException("Unknown type " + name);
-				}
-				graphName = graphName.substring(0,
-						graphName.length() - ".ttl".length());
-				m = ds.getNamedModel(graphName);
-				if (!ds.containsNamedModel(graphName))
-				{
-					ds.addNamedModel(graphName, m);
-				}
-			}
-
-			final NoCloseZipInputStream ncis = new NoCloseZipInputStream(zis);
-			m.read(ncis, graphName, "TURTLE");
-		}
-		zis.close();
 		// create the catalogs
 		final Resource catType = ResourceFactory.createResource(ResourceBuilder
 				.getFQName(RdfCatalog.class));
 		final EntityManager entityManager = EntityManagerFactory
 				.getEntityManager();
-		final List<String> names = WrappedIterator.create(dsProducer.getMetaDataset().listNames())
-				.toList();
+		final List<String> names = WrappedIterator.create(
+				dsProducer.listMetaDataNames()).toList();
 		names.add("");
 		for (final String name : names)
 		{
-			final Model m = getModel(dsProducer.getMetaDataset(), name);
-			final ResIterator ri = m
+			final Model metaModel = dsProducer.getMetaDataModel(name);
+			final ResIterator ri = metaModel
 					.listSubjectsWithProperty(RDF.type, catType);
 			while (ri.hasNext())
 			{
 				RdfCatalog cat = entityManager
 						.read(ri.next(), RdfCatalog.class);
-				Model localModel = null; 
-				
-				if (MetaCatalogBuilder.LOCAL_NAME.equals(name))
+				RdfCatalog.Builder builder = new RdfCatalog.Builder(cat);
+				if (AbstractDatasetProducer.getModelURI(MetaCatalogBuilder.LOCAL_NAME).equals( name))
 				{
-					localModel =dsProducer.getMetaDatasetUnionModel();
+					builder.setLocalModel(dsProducer.getMetaDatasetUnionModel());
 				}
 				else
 				{
-					localModel =getModel(dsProducer.getLocalDataset(), name);
+					builder.setLocalModel(dsProducer.getLocalDataModel(name));
 				}
-				cat = new RdfCatalog.Builder(cat).setLocalModel(localModel)
-						.build(m);
-				
+				cat = builder.build(metaModel);
+
 				catalogMap.put(cat.getName(), cat);
+			}
+		}
+	}
+
+	/**
+	 * Adds any new properties form the argument into our internal properties.
+	 * 
+	 * @param properties
+	 */
+	private void mergeProperties( final Properties properties )
+	{
+		for (final String s : properties.stringPropertyNames())
+		{
+			if (!this.properties.containsKey(s))
+			{
+				this.properties.put(s, properties.getProperty(s));
 			}
 		}
 	}
@@ -782,47 +587,27 @@ public class J4SConnection implements Connection
 	 * 
 	 * Reloading this file may be used in the URL as the configuration location.
 	 * 
-	 * @param The
-	 *            modelWriter to write the config to.
+	 * @param f
+	 *            The file to write the configuration to
+	 * @throws IOException
+	 */
+	public void saveConfig( final File f ) throws IOException
+	{
+		dsProducer.save(f);
+	}
+
+	/**
+	 * Save all the current RdfCatalogs to a configuration file.
+	 * 
+	 * Reloading this file may be used in the URL as the configuration location.
+	 * 
+	 * @param the
+	 *            outputstream to write the configuration to.
 	 * @throws IOException
 	 */
 	public void saveConfig( final OutputStream os ) throws IOException
 	{
-		final ZipOutputStream out = new ZipOutputStream(os);
-		Dataset ds = dsProducer.getMetaDataset();
-		String entryName;
-		ZipEntry e;
-		for (final Iterator<String> nIter = ds.listNames(); nIter.hasNext();)
-		{
-			final String name = nIter.next();
-			entryName = String.format("/meta/%s.ttl", name);
-			e = new ZipEntry(entryName);
-			out.putNextEntry(e);
-			ds.getNamedModel(name).write(out, "TURTLE");
-			out.closeEntry();
-		}
-		entryName = "/default/meta.ttl";
-		e = new ZipEntry(entryName);
-		out.putNextEntry(e);
-		ds.getDefaultModel().write(out, "TURTLE");
-		out.closeEntry();
-
-		ds = dsProducer.getLocalDataset();
-		for (final Iterator<String> nIter = ds.listNames(); nIter.hasNext();)
-		{
-			final String name = nIter.next();
-			entryName = String.format("/local/%s.ttl", name);
-			e = new ZipEntry(entryName);
-			out.putNextEntry(e);
-			ds.getNamedModel(name).write(out, "TURTLE");
-			out.closeEntry();
-		}
-		entryName = "/default/local.ttl";
-		e = new ZipEntry(entryName);
-		out.putNextEntry(e);
-		ds.getDefaultModel().write(out, "TURTLE");
-		out.closeEntry();
-		out.close();
+		dsProducer.save(os);
 	}
 
 	@Override
@@ -838,7 +623,7 @@ public class J4SConnection implements Connection
 		{
 			throw new SQLException("Catalog " + catalog + " was not found");
 		}
-		this.currentCatalog = catalog;
+		properties.setProperty(J4SPropertyNames.CATALOG_PROPERTY, catalog);
 	}
 
 	@Override
@@ -904,7 +689,26 @@ public class J4SConnection implements Connection
 	@Override
 	public void setSchema( final String schema ) throws SQLException
 	{
-		this.currentSchema = schema;
+		final Catalog cat = catalogMap.get(getCatalog());
+		if (cat == null)
+		{
+			throw new SQLException("Catalog '" + getCatalog()
+					+ "' was not found");
+		}
+		final Schema schem = cat.getSchema(schema);
+		if (schem == null)
+		{
+			throw new SQLException("Schema '" + schema + "' was not found");
+		}
+		if (schema != null)
+		{
+			this.properties.setProperty(J4SPropertyNames.SCHEMA_PROPERTY,
+					schema);
+		}
+		else
+		{
+			this.properties.remove(J4SPropertyNames.SCHEMA_PROPERTY);
+		}
 	}
 
 	@Override

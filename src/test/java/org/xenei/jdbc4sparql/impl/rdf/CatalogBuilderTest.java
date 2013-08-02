@@ -3,8 +3,6 @@ package org.xenei.jdbc4sparql.impl.rdf;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.util.Set;
 
 import org.junit.After;

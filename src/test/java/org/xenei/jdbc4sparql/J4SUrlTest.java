@@ -24,6 +24,30 @@ import org.junit.Test;
 public class J4SUrlTest
 {
 	@Test
+	public void testBuilderNoValueURL()
+	{
+		J4SUrl url;
+		url = new J4SUrl("jdbc:j4s?builder:http://example.com/test.file");
+
+		Assert.assertEquals("", url.getCatalog());
+		Assert.assertEquals(
+				"org.xenei.jdbc4sparql.sparql.builders.SimpleBuilder", url
+						.getBuilder().getClass().getName());
+		Assert.assertEquals("http://example.com/test.file", url.getEndpoint()
+				.toString());
+
+		url = new J4SUrl(
+				"jdbc:j4s?builder=org.xenei.jdbc4sparql.sparql.builders.SimpleBuilder:http://example.com/test.file");
+		Assert.assertEquals("", url.getCatalog());
+		Assert.assertEquals(
+				"org.xenei.jdbc4sparql.sparql.builders.SimpleBuilder", url
+						.getBuilder().getClass().getName());
+		Assert.assertEquals("http://example.com/test.file", url.getEndpoint()
+				.toString());
+
+	}
+
+	@Test
 	public void testBuilderURL()
 	{
 		J4SUrl url;
@@ -40,37 +64,14 @@ public class J4SUrlTest
 		url = new J4SUrl(
 				"jdbc:j4s?builder=org.xenei.jdbc4sparql.sparql.builders.SimpleBuilder:http://example.com/test.file");
 		Assert.assertEquals("", url.getCatalog());
-		Assert.assertEquals("org.xenei.jdbc4sparql.sparql.builders.SimpleBuilder", url
-				.getBuilder().getClass().getName());
-		Assert.assertEquals("http://example.com/test.file", url.getEndpoint()
-				.toString());
-
-	}
-
-	@Test
-	public void testBuilderNoValueURL()
-	{
-		J4SUrl url;
-		url = new J4SUrl(
-				"jdbc:j4s?builder:http://example.com/test.file");
-
-		Assert.assertEquals("", url.getCatalog());
 		Assert.assertEquals(
 				"org.xenei.jdbc4sparql.sparql.builders.SimpleBuilder", url
 						.getBuilder().getClass().getName());
 		Assert.assertEquals("http://example.com/test.file", url.getEndpoint()
 				.toString());
 
-		url = new J4SUrl(
-				"jdbc:j4s?builder=org.xenei.jdbc4sparql.sparql.builders.SimpleBuilder:http://example.com/test.file");
-		Assert.assertEquals("", url.getCatalog());
-		Assert.assertEquals("org.xenei.jdbc4sparql.sparql.builders.SimpleBuilder", url
-				.getBuilder().getClass().getName());
-		Assert.assertEquals("http://example.com/test.file", url.getEndpoint()
-				.toString());
-
 	}
-	
+
 	@Test
 	public void testCatalogURL()
 	{

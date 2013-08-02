@@ -238,18 +238,6 @@ public abstract class AbstractCollectionResultSet extends AbstractResultSet
 	{
 		this.data = tableData;
 		fixupPosition();
-		/*
-		 * switch (getFetchDirection())
-		 * {
-		 * case ResultSet.FETCH_REVERSE:
-		 * last();
-		 * break;
-		 * case ResultSet.FETCH_FORWARD:
-		 * default:
-		 * first();
-		 * break;
-		 * }
-		 */
 	}
 
 	@Override

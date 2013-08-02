@@ -29,7 +29,7 @@ import org.xenei.jdbc4sparql.impl.ListResultSet;
 
 public class SparqlResultSet extends ListResultSet
 {
-	Query query;
+	private Query query;
 
 	public SparqlResultSet( final Table table, final Query query )
 			throws SQLException

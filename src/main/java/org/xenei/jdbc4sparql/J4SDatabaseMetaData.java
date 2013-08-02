@@ -22,14 +22,10 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.RowIdLifetime;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.xenei.jdbc4sparql.iface.Catalog;
-import org.xenei.jdbc4sparql.iface.Column;
-import org.xenei.jdbc4sparql.iface.ColumnDef;
 import org.xenei.jdbc4sparql.iface.Key;
 import org.xenei.jdbc4sparql.iface.KeySegment;
 import org.xenei.jdbc4sparql.iface.NameFilter;
@@ -37,7 +33,12 @@ import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.TableDef;
 import org.xenei.jdbc4sparql.impl.DataTable;
+import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 import org.xenei.jdbc4sparql.meta.MetaCatalogBuilder;
+import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
+import org.xenei.jdbc4sparql.sparql.SparqlResultSet;
+import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
+import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlParserImpl;
 
 public class J4SDatabaseMetaData implements DatabaseMetaData
 {
@@ -179,53 +180,48 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 			final String schemaPattern, final String tableNamePattern,
 			final String columnNamePattern ) throws SQLException
 	{
-
-		final DataTable colTbl = new DataTable(
-				metaSchema.getTable(MetaCatalogBuilder.COLUMNS_TABLE));
-
-		for (final Catalog catalog : new NameFilter<Catalog>(catalogPattern,
-				catalogs.values()))
+		final RdfTable table = (RdfTable) metaSchema
+				.getTable(MetaCatalogBuilder.COLUMNS_TABLE);
+		if ((catalogPattern != null) || (schemaPattern != null)
+				|| (tableNamePattern != null) || (columnNamePattern != null))
 		{
-			for (final Schema schema : new NameFilter<Schema>(schemaPattern,
-					catalog.getSchemas()))
+
+			boolean hasWhere = false;
+			final StringBuilder query = new StringBuilder().append(String
+					.format("SELECT * FROM %s WHERE ", table.getSQLName()));
+			if (catalogPattern != null)
 			{
-				for (final Table table : new NameFilter<Table>(
-						tableNamePattern, schema.getTables()))
-				{
-					for (final Column column : new NameFilter<Column>(
-							columnNamePattern, table.getColumns()))
-					{
-						final ColumnDef colDef = column.getColumnDef();
-						final Object[] data = new Object[] { catalog.getName(), // TABLE_CAT
-								schema.getName(), // TABLE_SCHEMA
-								table.getName(), // TABLE_NAME
-								column.getName(), // COLUMN_NAME
-								colDef.getType(), // DATA_TYPE
-								null, // TYPE_NAME
-								colDef.getDisplaySize(), // COLUMN_SIZE
-								null, // BUFFER_LENGTH
-								colDef.getPrecision(), // DECIMAL_DIGITS
-								10, // NUM_PREC_RADIX
-								colDef.getNullable(), // NULLABLE
-								null, // REMARKS
-								null, // COLUMN_DEF
-								null, // SQL_DATA_TYPE
-								null, // SQL_DATETIME_SUB
-								1, // CHAR_OCTET_LENGTH
-								table.getColumnIndex(column) + 1, // ORDINAL_POSITION
-								getNullableString(colDef.getNullable()), // IS_NULLABLE
-								null, // SCOPE_CATLOG
-								null, // SCOPE_SCHEMA
-								null, // SCOPE_TABLE
-								null, // SOURCE_DATA_TYPE
-								(colDef.isAutoIncrement() ? "YES" : "NO"), // IS_AUTOINCREMENT
-						};
-						colTbl.addData(data);
-					}
-				}
+				query.append(String.format("TABLE_CAT = '%s'", catalogPattern));
+				hasWhere = true;
 			}
+			if (schemaPattern != null)
+			{
+				query.append(hasWhere ? " AND " : "").append(
+						String.format("TABLE_SCHEM = '%s'", schemaPattern));
+				hasWhere = true;
+			}
+			if (tableNamePattern != null)
+			{
+				query.append(hasWhere ? " AND " : "").append(
+						String.format("TABLE_NAME = '%s'", tableNamePattern));
+				hasWhere = true;
+			}
+			if (columnNamePattern != null)
+			{
+				query.append(hasWhere ? " AND " : "").append(
+						String.format("COLUMN_NAME = '%s'", columnNamePattern));
+				hasWhere = true;
+			}
+			final SparqlParser parser = new SparqlParserImpl();
+
+			final SparqlQueryBuilder sqb = parser.parse(table.getCatalog(),
+					query.toString()).setKey(table.getKey());
+			return new SparqlResultSet(table, sqb.build());
 		}
-		return colTbl.getResultSet();
+		else
+		{
+			return table.getResultSet();
+		}
 	}
 
 	@Override
@@ -523,19 +519,6 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 		return 0;
 	}
 
-	private String getNullableString( final int nullable )
-	{
-		if (nullable == DatabaseMetaData.columnNoNulls)
-		{
-			return "NO";
-		}
-		if (nullable == DatabaseMetaData.columnNullable)
-		{
-			return "YES";
-		}
-		return "";
-	}
-
 	@Override
 	public String getNumericFunctions() throws SQLException
 	{
@@ -639,19 +622,34 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	public ResultSet getSchemas( final String catalogPattern,
 			final String schemaPattern ) throws SQLException
 	{
-		final DataTable table = new DataTable(
-				metaSchema.getTable(MetaCatalogBuilder.SCHEMAS_TABLE));
-		for (final Catalog catalog : new NameFilter<Catalog>(catalogPattern,
-				catalogs.values()))
+		final RdfTable table = (RdfTable) metaSchema
+				.getTable(MetaCatalogBuilder.SCHEMAS_TABLE);
+		if ((catalogPattern != null) || (schemaPattern != null))
 		{
-			for (final Schema schema : new NameFilter<Schema>(schemaPattern,
-					catalog.getSchemas()))
+			boolean hasWhere = false;
+			final StringBuilder query = new StringBuilder().append(String
+					.format("SELECT * FROM %s WHERE ", table.getSQLName()));
+			if (catalogPattern != null)
 			{
-				table.addData(new Object[] { schema.getName(),
-						catalog.getName() });
+				query.append(String.format("TABLE_CAT = '%s'", catalogPattern));
+				hasWhere = true;
 			}
+			if (schemaPattern != null)
+			{
+				query.append(hasWhere ? " AND " : "").append(
+						String.format("TABLE_SCHEM = '%s'", schemaPattern));
+				hasWhere = true;
+			}
+
+			final SparqlParser parser = new SparqlParserImpl();
+			final SparqlQueryBuilder sqb = parser.parse(table.getCatalog(),
+					query.toString()).setKey(table.getKey());
+			return new SparqlResultSet(table, sqb.build());
 		}
-		return table.getResultSet();
+		else
+		{
+			return table.getResultSet();
+		}
 	}
 
 	@Override
@@ -785,66 +783,70 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 			final String schemaPattern, final String tableNamePattern,
 			final String[] types ) throws SQLException
 	{
-		final List<String> typeList = types == null ? null : Arrays
-				.asList(types);
-
-		final DataTable table = new DataTable(
-				metaSchema.getTable(MetaCatalogBuilder.TABLES_TABLE));
-		for (final Catalog catalog : new NameFilter<Catalog>(catalogPattern,
-				catalogs.values()))
+		final RdfTable table = (RdfTable) metaSchema
+				.getTable(MetaCatalogBuilder.TABLES_TABLE);
+		if ((catalogPattern != null) || (schemaPattern != null)
+				|| (tableNamePattern != null) || (types != null))
 		{
-			for (final Schema schema : new NameFilter<Schema>(schemaPattern,
-					catalog.getSchemas()))
+			boolean hasWhere = false;
+			final StringBuilder query = new StringBuilder().append(String
+					.format("SELECT * FROM %s WHERE ", table.getSQLName()));
+			if (catalogPattern != null)
 			{
-				for (final Table tbl : new NameFilter<Table>(tableNamePattern,
-						schema.getTables()))
-				{
-					if ((typeList == null) || typeList.contains(tbl.getType()))
-					{
-						final Object[] data = { catalog.getName(), // TABLE_CAT
-								schema.getName(), // TABLE_SCHEM
-								tbl.getName(), // TABLE_NAME
-								tbl.getType(), // TABLE_TYPE String => table
-												// type. Typical types are
-												// "TABLE", "VIEW",
-												// "SYSTEM TABLE",
-												// "GLOBAL TEMPORARY",
-												// "LOCAL TEMPORARY", "ALIAS",
-												// "SYNONYM".
-								"", // REMARKS
-								null, // TYPE_CAT
-								null, // TYPE_SCHEM
-								null, // TYPE_NAME
-								null, // SELF_REFERENCING_COL_NAME
-								null, // REF_GENERATION String
-						};
-						table.addData(data);
-					}
-				}
+				query.append(String.format("TABLE_CAT = '%s'", catalogPattern));
+				hasWhere = true;
 			}
+			if (schemaPattern != null)
+			{
+				query.append(hasWhere ? " AND " : "").append(
+						String.format("TABLE_SCHEM = '%s'", schemaPattern));
+				hasWhere = true;
+			}
+			if (tableNamePattern != null)
+			{
+				query.append(hasWhere ? " AND " : "").append(
+						String.format("TABLE_NAME = '%s'", tableNamePattern));
+				hasWhere = true;
+			}
+			if ((types != null) && (types.length > 0))
+			{
+				query.append(hasWhere ? " AND " : "").append("TABLE_TYPE ");
+				if (types.length == 1)
+				{
+					query.append(String.format("= '%s'", types[0]));
+				}
+				else
+				{
+					query.append("IN (");
+					boolean first = true;
+					for (final String s : types)
+					{
+						query.append(first ? "" : ", ").append(
+								String.format("'%s'", s));
+						first = false;
+					}
+					query.append(")");
+				}
+
+				hasWhere = true;
+			}
+
+			final SparqlParser parser = new SparqlParserImpl();
+			final SparqlQueryBuilder sqb = parser.parse(table.getCatalog(),
+					query.toString()).setKey(table.getKey());
+			return new SparqlResultSet(table, sqb.build());
 		}
-		return table.getResultSet();
+		else
+		{
+			return table.getResultSet();
+		}
 	}
 
 	@Override
 	public ResultSet getTableTypes() throws SQLException
 	{
-		final DataTable table = (DataTable) metaSchema
-				.getTable(MetaCatalogBuilder.TABLE_TYPES_TABLE);
-		if (table.isEmpty())
-		{
-			for (final Catalog catalog : catalogs.values())
-			{
-				for (final Schema schema : catalog.getSchemas())
-				{
-					for (final Table tbl : schema.getTables())
-					{
-						table.addData(new Object[] { tbl.getType() });
-					}
-				}
-			}
-		}
-		return table.getResultSet();
+		return ((RdfTable) metaSchema
+				.getTable(MetaCatalogBuilder.TABLE_TYPES_TABLE)).getResultSet();
 	}
 
 	@Override
@@ -857,15 +859,14 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	@Override
 	public ResultSet getTypeInfo() throws SQLException
 	{
-		final DataTable table = new DataTable(
-				metaSchema.getTable(MetaCatalogBuilder.TYPEINFO_TABLE));
-		// TODO populate table here.
-		return table.getResultSet();
+		return ((RdfTable) metaSchema
+				.getTable(MetaCatalogBuilder.TYPEINFO_TABLE)).getResultSet();
 	}
 
 	@Override
-	public ResultSet getUDTs( final String arg0, final String arg1,
-			final String arg2, final int[] arg3 ) throws SQLException
+	public ResultSet getUDTs( final String catalog, final String schemaPattern,
+			final String typeNamePattern, final int[] types )
+			throws SQLException
 	{
 		final DataTable table = new DataTable(
 				metaSchema.getTable(MetaCatalogBuilder.UDT_TABLES));

@@ -13,6 +13,9 @@ import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.util.iterator.WrappedIterator;
 import com.hp.hpl.jena.vocabulary.RDFS;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashSet;
@@ -36,9 +39,16 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 {
 	public static class Builder implements Catalog
 	{
+		public static String getFQName( final String shortName )
+		{
+			return String.format("%s/instance/N%s",
+					ResourceBuilder.getFQName(RdfCatalog.class), shortName);
+		}
+
 		private Model localModel;
 		private URL sparqlEndpoint;
 		private String name;
+
 		private final Set<RdfSchema> schemas = new HashSet<RdfSchema>();
 
 		public Builder()
@@ -61,6 +71,10 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 
 		public RdfCatalog build( final Model model )
 		{
+			if (model == null)
+			{
+				throw new IllegalArgumentException("Model may not be null");
+			}
 			checkBuildState();
 			final Class<?> typeClass = RdfCatalog.class;
 			final String fqName = getFQName();
@@ -147,8 +161,7 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 
 		private String getFQName()
 		{
-			return String.format("%s/instance/N%s",
-					ResourceBuilder.getFQName(RdfCatalog.class), name);
+			return Builder.getFQName(name);
 		}
 
 		public Model getLocalModel()
@@ -254,11 +267,25 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 	@Override
 	public List<QuerySolution> executeLocalQuery( final Query query )
 	{
-		final QueryExecution qexec = QueryExecutionFactory.create(query,
+		QueryExecution qexec = QueryExecutionFactory.create(query,
 				localModel);
 		try
 		{
-			return WrappedIterator.create(qexec.execSelect()).toList();
+			List<QuerySolution> retval = WrappedIterator.create(qexec.execSelect()).toList();
+			if (retval.size() == 0)
+			{
+				System.err.println( "NO SIZE");
+				 qexec = QueryExecutionFactory.create(query,localModel);
+				List<QuerySolution> retval2 = WrappedIterator.create(qexec.execSelect()).toList();
+				System.err.println( "RETVAL2 created");
+			}
+			return retval;
+		}
+		catch (Exception e)
+		{
+			System.err.println( "Exception: "+e.getMessage());
+			e.printStackTrace( System.out );
+			throw e;
 		}
 		finally
 		{
@@ -324,6 +351,11 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 		return schemaList;
 	}
 
+	public Model getLocalModel()
+	{
+		return localModel;
+	}
+
 	@Override
 	@Predicate( impl = true, namespace = "http://www.w3.org/2000/01/rdf-schema#", name = "label" )
 	public String getName()
@@ -358,7 +390,7 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 		return isService() ? NodeFactory.createURI(getSparqlEndpoint()) : null;
 	}
 
-	@Predicate( impl = true, emptyIsNull=true )
+	@Predicate( impl = true, emptyIsNull = true )
 	public String getSparqlEndpoint()
 	{
 		throw new EntityManagerRequiredException();
