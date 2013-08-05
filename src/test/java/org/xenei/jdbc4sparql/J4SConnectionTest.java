@@ -15,7 +15,6 @@ import java.util.concurrent.Executor;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.xenei.jdbc4sparql.iface.Catalog;

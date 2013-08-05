@@ -195,10 +195,12 @@ public class J4SDriver implements Driver
 	{
 		return false;
 	}
-	
+
 	@Override
-	public String toString() {
-		return String.format( "%s[%s.%s]", getName(), getMajorVersion(), getMinorVersion() );
+	public String toString()
+	{
+		return String.format("%s[%s.%s]", getName(), getMajorVersion(),
+				getMinorVersion());
 	}
 
 }

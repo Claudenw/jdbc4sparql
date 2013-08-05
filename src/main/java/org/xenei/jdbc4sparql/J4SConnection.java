@@ -131,11 +131,6 @@ public class J4SConnection implements Connection
 		}
 
 	}
-	
-	public String toString()
-	{
-		return new StringBuilder().append( "J4SConnection[" ).append( url.toString() ).append("]").toString();
-	}
 
 	@Override
 	public void abort( final Executor arg0 ) throws SQLException
@@ -462,14 +457,15 @@ public class J4SConnection implements Connection
 		for (final String name : names)
 		{
 			final Model metaModel = dsProducer.getMetaDataModel(name);
-			final ResIterator ri = metaModel
-					.listSubjectsWithProperty(RDF.type, catType);
+			final ResIterator ri = metaModel.listSubjectsWithProperty(RDF.type,
+					catType);
 			while (ri.hasNext())
 			{
 				RdfCatalog cat = entityManager
 						.read(ri.next(), RdfCatalog.class);
-				RdfCatalog.Builder builder = new RdfCatalog.Builder(cat);
-				if (AbstractDatasetProducer.getModelURI(MetaCatalogBuilder.LOCAL_NAME).equals( name))
+				final RdfCatalog.Builder builder = new RdfCatalog.Builder(cat);
+				if (AbstractDatasetProducer.getModelURI(
+						MetaCatalogBuilder.LOCAL_NAME).equals(name))
 				{
 					builder.setLocalModel(dsProducer.getMetaDatasetUnionModel());
 				}
@@ -728,6 +724,13 @@ public class J4SConnection implements Connection
 			throws SQLException
 	{
 		throw new SQLFeatureNotSupportedException();
+	}
+
+	@Override
+	public String toString()
+	{
+		return new StringBuilder().append("J4SConnection[")
+				.append(url.toString()).append("]").toString();
 	}
 
 	@Override

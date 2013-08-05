@@ -10,7 +10,6 @@ import java.util.List;
 
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public abstract class AbstractJ4SStatementTest
@@ -43,7 +42,9 @@ public abstract class AbstractJ4SStatementTest
 		try
 		{
 			if (stmt != null)
-			stmt.close();
+			{
+				stmt.close();
+			}
 		}
 		catch (final SQLException ignore)
 		{
@@ -51,7 +52,9 @@ public abstract class AbstractJ4SStatementTest
 		try
 		{
 			if (conn != null)
+			{
 				conn.close();
+			}
 		}
 		catch (final SQLException ignore)
 		{
@@ -134,8 +137,7 @@ public abstract class AbstractJ4SStatementTest
 		rset.close();
 
 	}
-	
-	
+
 	@Test
 	public void testInnerJoinSelect() throws SQLException
 	{

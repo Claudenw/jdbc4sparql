@@ -62,7 +62,7 @@ public class J4SStatementOuterJoinTest
 	}
 
 	@Test
-	@Ignore( "Full Outer Join not suported.")
+	@Ignore( "Full Outer Join not suported." )
 	public void testFullOuterJoin() throws ClassNotFoundException, SQLException
 	{
 		final ResultSet rset = stmt
@@ -126,7 +126,7 @@ public class J4SStatementOuterJoinTest
 	}
 
 	@Test
-	@Ignore( "Right Outer Join not suported.")
+	@Ignore( "Right Outer Join not suported." )
 	public void testRightOuterJoin() throws ClassNotFoundException,
 			SQLException
 	{

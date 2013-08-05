@@ -31,7 +31,7 @@ public class J4SStatementMemTest extends AbstractJ4SStatementTest
 		conn.setAutoCommit(false);
 		stmt = conn.createStatement();
 		// TODO remove this
-		//((J4SConnection)conn).saveConfig( new
+		// ((J4SConnection)conn).saveConfig( new
 		// java.io.File("/tmp/J4SStatementTest.zip"));
 	}
 

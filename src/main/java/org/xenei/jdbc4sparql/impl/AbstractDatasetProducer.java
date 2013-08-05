@@ -36,7 +36,29 @@ import org.xenei.jdbc4sparql.utils.NoCloseZipInputStream;
  */
 abstract public class AbstractDatasetProducer implements DatasetProducer
 {
+	public static String getModelURI( final String modelName )
+	{
+		String name = StringUtils.defaultString(modelName);
+		if (StringUtils.isEmpty(name))
+		{
+			name = RdfCatalog.Builder.getFQName(name);
+		}
+		else
+		{
+			final int i = Util.splitNamespace(name);
+			if (i == 1)
+			{
+				if (XMLChar.isNCNameStart(name.charAt(0)))
+				{// we have a short name
+					name = RdfCatalog.Builder.getFQName(name);
+				}
+			}
+		}
+		return name;
+	}
+
 	private final Properties properties;
+
 	private final RDFFormat format = RDFFormat.TRIG;
 
 	protected Dataset localData;
@@ -54,7 +76,7 @@ abstract public class AbstractDatasetProducer implements DatasetProducer
 	@Override
 	public void addLocalDataModel( final String modelName, final Model model )
 	{
-		final String name = getModelURI(modelName);
+		final String name = AbstractDatasetProducer.getModelURI(modelName);
 		getLocalDataset().addNamedModel(name, model);
 	}
 
@@ -119,7 +141,7 @@ abstract public class AbstractDatasetProducer implements DatasetProducer
 
 	private Model getModel( final Dataset dataset, final String modelName )
 	{
-		final String name = getModelURI(modelName);
+		final String name = AbstractDatasetProducer.getModelURI(modelName);
 		final Model model = dataset.getNamedModel(name);
 		if (!dataset.containsNamedModel(name))
 		{
@@ -128,27 +150,6 @@ abstract public class AbstractDatasetProducer implements DatasetProducer
 
 		return model;
 
-	}
-
-	public static String getModelURI( final String modelName )
-	{
-		String name = StringUtils.defaultString(modelName);
-		if (StringUtils.isEmpty(name))
-		{
-			name = RdfCatalog.Builder.getFQName(name);
-		}
-		else
-		{
-			final int i = Util.splitNamespace(name);
-			if (i == 1)
-			{
-				if (XMLChar.isNCNameStart(name.charAt(0)))
-				{// we have a short name
-					name = RdfCatalog.Builder.getFQName(name);
-				}
-			}
-		}
-		return name;
 	}
 
 	@Override

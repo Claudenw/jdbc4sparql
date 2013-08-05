@@ -13,9 +13,6 @@ import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.util.iterator.WrappedIterator;
 import com.hp.hpl.jena.vocabulary.RDFS;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashSet;
@@ -110,13 +107,13 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 					}
 				}
 			}
-			
+
 			// create RdfCatalog object from graph object
 			try
 			{
 				final RdfCatalog retval = entityManager.read(catalog,
 						RdfCatalog.class);
-				
+
 				model.register(retval.new ChangeListener());
 				retval.localModel = localModel != null ? localModel
 						: ModelFactory.createMemModelMaker().createFreshModel();
@@ -272,24 +269,24 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 	@Override
 	public List<QuerySolution> executeLocalQuery( final Query query )
 	{
-		QueryExecution qexec = QueryExecutionFactory.create(query,
-				localModel);
+		QueryExecution qexec = QueryExecutionFactory.create(query, localModel);
 		try
 		{
-			List<QuerySolution> retval = WrappedIterator.create(qexec.execSelect()).toList();
+			final List<QuerySolution> retval = WrappedIterator.create(
+					qexec.execSelect()).toList();
 			if (retval.size() == 0)
 			{
-				System.err.println( "NO SIZE");
-				 qexec = QueryExecutionFactory.create(query,localModel);
-				List<QuerySolution> retval2 = WrappedIterator.create(qexec.execSelect()).toList();
-				System.err.println( "RETVAL2 created");
+				System.err.println("NO SIZE");
+				qexec = QueryExecutionFactory.create(query, localModel);
+				WrappedIterator.create(qexec.execSelect()).toList();
+				System.err.println("RETVAL2 created");
 			}
 			return retval;
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
-			System.err.println( "Exception: "+e.getMessage());
-			e.printStackTrace( System.out );
+			System.err.println("Exception: " + e.getMessage());
+			e.printStackTrace(System.out);
 			throw e;
 		}
 		finally
