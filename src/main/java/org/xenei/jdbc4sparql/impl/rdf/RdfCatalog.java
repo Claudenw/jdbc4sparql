@@ -83,6 +83,7 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 			final EntityManager entityManager = EntityManagerFactory
 					.getEntityManager();
 
+			// create catalog graph resource
 			Resource catalog = null;
 			if (builder.hasResource(fqName))
 			{
@@ -109,14 +110,18 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 					}
 				}
 			}
+			
+			// create RdfCatalog object from graph object
 			try
 			{
 				final RdfCatalog retval = entityManager.read(catalog,
 						RdfCatalog.class);
+				
 				model.register(retval.new ChangeListener());
 				retval.localModel = localModel != null ? localModel
 						: ModelFactory.createMemModelMaker().createFreshModel();
 
+				// ensure default schema exists
 				new RdfSchema.Builder().setName(Catalog.DEFAULT_SCHEMA)
 						.setCatalog(retval).build(model);
 				return retval;

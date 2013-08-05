@@ -21,7 +21,7 @@ public abstract class AbstractJ4SStatementTest
 
 	protected Statement stmt;
 
-	private List<String> getColumnNames( final String table )
+	protected List<String> getColumnNames( final String table )
 			throws SQLException
 	{
 		final ResultSet rs = conn.getMetaData().getColumns(conn.getCatalog(),
@@ -42,6 +42,7 @@ public abstract class AbstractJ4SStatementTest
 	{
 		try
 		{
+			if (stmt != null)
 			stmt.close();
 		}
 		catch (final SQLException ignore)
@@ -49,7 +50,8 @@ public abstract class AbstractJ4SStatementTest
 		}
 		try
 		{
-			conn.close();
+			if (conn != null)
+				conn.close();
 		}
 		catch (final SQLException ignore)
 		{
@@ -132,7 +134,8 @@ public abstract class AbstractJ4SStatementTest
 		rset.close();
 
 	}
-
+	
+	
 	@Test
 	public void testInnerJoinSelect() throws SQLException
 	{

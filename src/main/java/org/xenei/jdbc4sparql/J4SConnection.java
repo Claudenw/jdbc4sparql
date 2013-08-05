@@ -129,6 +129,12 @@ public class J4SConnection implements Connection
 			throw new IllegalArgumentException("Catalog '" + getCatalog()
 					+ "' not found in catalog map");
 		}
+
+	}
+	
+	public String toString()
+	{
+		return new StringBuilder().append( "J4SConnection[" ).append( url.toString() ).append("]").toString();
 	}
 
 	@Override
