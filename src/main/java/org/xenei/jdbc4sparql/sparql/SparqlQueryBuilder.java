@@ -510,7 +510,7 @@ public class SparqlQueryBuilder
 			}
 			else if (n.isBlank())
 			{
-				columnObject = n.getBlankNodeId();
+				columnObject = n.getBlankNodeId().toString();
 			}
 			else if (n.isVariable())
 			{

@@ -276,7 +276,6 @@ public class TDBDatasetProducer extends AbstractDatasetProducer
 			catch (final Exception e1)
 			{ // must catch here as when we unlock app may stop on failure.
 				log.error("Error reading meta data stream", e1);
-				e1.printStackTrace(System.out);
 				return;
 			}
 			finally
@@ -291,7 +290,6 @@ public class TDBDatasetProducer extends AbstractDatasetProducer
 		catch (final Exception e1)
 		{ // must catch here as when we unlock app may stop on failure.
 			log.error("Error reading local data stream", e1);
-			e1.printStackTrace(System.out);
 			return;
 		}
 		finally

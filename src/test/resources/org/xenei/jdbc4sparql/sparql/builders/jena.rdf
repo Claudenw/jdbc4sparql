@@ -1,0 +1,116 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl"?>
+<rdf:RDF xml:lang="en"
+         xmlns="http://usefulinc.com/ns/doap#"
+         xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+         xmlns:asfext="http://projects.apache.org/ns/asfext#"
+         xmlns:foaf="http://xmlns.com/foaf/0.1/">
+<!--
+    Licensed to the Apache Software Foundation (ASF) under one or more
+    contributor license agreements.  See the NOTICE file distributed with
+    this work for additional information regarding copyright ownership.
+    The ASF licenses this file to You under the Apache License, Version 2.0
+    (the "License"); you may not use this file except in compliance with
+    the License.  You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+  <Project rdf:about="http://jena.apache.org">
+    <created>2012-07-03</created>
+    <license rdf:resource="http://usefulinc.com/doap/licenses/asl20" />
+    <name>Apache Jena</name>
+    <homepage rdf:resource="http://jena.apache.org" />
+    <asfext:pmc rdf:resource="http://jena.apache.org" />
+    <shortdesc>A framework for developing Semantic Web and Linked Data applications in Java.</shortdesc>
+    <description>Apache Jena provides a complete framework for building Semantic Web and Linked Data applications in Java, and provides: parsers for RDF/XML, Turtle and N-triples; a Java programming API; a complete implementation of the SPARQL query language; a rule-based inference engine for RDFS and OWL entailments; TDB (a non-SQL persistent triple store); SDB (a persistent triples store built on a relational store) and Fuseki, an RDF server using web protocols. Jena complies with all relevant recommendations for RDF and related technologies from the W3C.</description>
+    <bug-database rdf:resource="https://issues.apache.org/jira/browse/JENA" />
+    <mailing-list rdf:resource="http://jena.apache.org/help_and_support/index.html" />
+    <download-page rdf:resource="http://jena.apache.org/download/index.html" />
+    <programming-language>Java</programming-language>
+    <category rdf:resource="http://projects.apache.org/category/library" />
+    <release>
+      <Version>
+        <name>apache-jena-2.7.2</name>
+        <created>2012-07-02</created>
+        <revision>2.7.2</revision>
+      </Version>
+    </release>
+    <repository>
+      <SVNRepository>
+        <location rdf:resource="http://svn.apache.org/repos/asf/jena/trunk/"/>
+        <browse rdf:resource="http://svn.apache.org/viewvc/jena/"/>
+      </SVNRepository>
+    </repository>
+    <maintainer>
+      <foaf:Person>
+        <foaf:name>Andy Seaborne</foaf:name>
+          <foaf:mbox rdf:resource="mailto:andy@apache.org"/>
+      </foaf:Person>
+    </maintainer>
+    <maintainer>
+      <foaf:Person>
+        <foaf:name>Ian Dickinson</foaf:name>
+          <foaf:mbox rdf:resource="mailto:ijd@apache.org"/>
+      </foaf:Person>
+    </maintainer>
+    <maintainer>
+      <foaf:Person>
+        <foaf:name>Dave Reynolds</foaf:name>
+          <foaf:mbox rdf:resource="mailto:der@apache.org"/>
+      </foaf:Person>
+    </maintainer>
+    <maintainer>
+      <foaf:Person>
+        <foaf:name>Stephen Allen</foaf:name>
+          <foaf:mbox rdf:resource="mailto:sallen@apache.org"/>
+      </foaf:Person>
+    </maintainer>
+    <maintainer>
+      <foaf:Person>
+        <foaf:name>Chris Dollin</foaf:name>
+          <foaf:mbox rdf:resource="mailto:chrisdollin@apache.org"/>
+      </foaf:Person>
+    </maintainer>
+    <maintainer>
+      <foaf:Person>
+        <foaf:name>Damian Steer</foaf:name>
+          <foaf:mbox rdf:resource="mailto:damian@apache.org"/>
+      </foaf:Person>
+    </maintainer>
+    <maintainer>
+      <foaf:Person>
+        <foaf:name>Paolo Castagna</foaf:name>
+          <foaf:mbox rdf:resource="mailto:castagna@apache.org"/>
+      </foaf:Person>
+    </maintainer>
+    <maintainer>
+      <foaf:Person>
+        <foaf:name>Rob Vesse</foaf:name>
+          <foaf:mbox rdf:resource="mailto:rvesse@apache.org"/>
+      </foaf:Person>
+    </maintainer>
+
+    <asfext:implements>
+      <asfext:Standard>
+        <asfext:title>Resource Description Framework</asfext:title>
+        <asfext:body>W3C</asfext:body>
+        <asfext:id></asfext:id>
+        <asfext:url rdf:resource="http://www.w3.org/RDF/"/>
+     </asfext:Standard>
+    </asfext:implements>
+    <asfext:implements>
+      <asfext:Standard>
+        <asfext:title>SPARQL</asfext:title>
+        <asfext:body>W3C</asfext:body>
+        <asfext:id></asfext:id>
+        <asfext:url rdf:resource="http://www.w3.org/TR/rdf-sparql-query/"/>
+     </asfext:Standard>
+    </asfext:implements>
+  </Project>
+</rdf:RDF>

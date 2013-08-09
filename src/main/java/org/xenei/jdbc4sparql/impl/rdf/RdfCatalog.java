@@ -274,19 +274,11 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 		{
 			final List<QuerySolution> retval = WrappedIterator.create(
 					qexec.execSelect()).toList();
-			if (retval.size() == 0)
-			{
-				System.err.println("NO SIZE");
-				qexec = QueryExecutionFactory.create(query, localModel);
-				WrappedIterator.create(qexec.execSelect()).toList();
-				System.err.println("RETVAL2 created");
-			}
 			return retval;
 		}
 		catch (final Exception e)
 		{
 			System.err.println("Exception: " + e.getMessage());
-			e.printStackTrace(System.out);
 			throw e;
 		}
 		finally

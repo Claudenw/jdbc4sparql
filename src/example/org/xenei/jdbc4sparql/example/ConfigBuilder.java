@@ -21,7 +21,10 @@ import org.apache.commons.io.FileUtils;
 import org.apache.jena.riot.RDFLanguages;
 import org.xenei.jdbc4sparql.J4SConnection;
 import org.xenei.jdbc4sparql.J4SDriver;
+import org.xenei.jdbc4sparql.J4SPropertyNames;
 import org.xenei.jdbc4sparql.J4SUrl;
+import org.xenei.jdbc4sparql.config.MemDatasetProducer;
+import org.xenei.jdbc4sparql.config.TDBDatasetProducer;
 import org.xenei.jena.entities.MissingAnnotation;
 
 public class ConfigBuilder
@@ -41,6 +44,7 @@ public class ConfigBuilder
 			for (final String s : schemaFiles)
 			{
 				fUrl = ConfigBuilder.class.getResource(s);
+				System.out.println( "Processing: "+fUrl);
 				if (fUrl == null)
 				{
 					throw new IllegalArgumentException("Can not locate " + s);
@@ -48,7 +52,7 @@ public class ConfigBuilder
 				ontologyModel.read(fUrl.toURI().toASCIIString(), RDFLanguages
 						.filenameToLang(fUrl.getPath()).getName());
 			}
-
+			System.out.println( "creating output file");
 			final File outfile = File.createTempFile("cfgbld", ".ttl");
 			final FileOutputStream fos = new FileOutputStream(outfile);
 			try
@@ -59,13 +63,17 @@ public class ConfigBuilder
 			{
 				fos.close();
 				ontologyModel.close();
+				System.out.println( "created output file: "+outfile.getCanonicalPath());
 			}
 			return outfile;
 		}
 		finally
 		{
+			System.out.print( "Cleaning up.");
 			ds.close();
+			System.out.print(".");
 			FileUtils.deleteQuietly(dir);
+			System.out.println( ". complete");
 		}
 	}
 
@@ -89,29 +97,24 @@ public class ConfigBuilder
 		final J4SDriver driver = new J4SDriver();
 		final String urlStr = "jdbc:j4s?builder=org.xenei.jdbc4sparql.sparql.builders.RDFSBuilder&type=turtle:file:"
 				+ outFile.getCanonicalPath();
-		// + "/tmp/cfgbld4968555827338576078.ttl";
+		// + "/tmp/cfgbld8572787109218862303.ttl";
 		final J4SUrl url = new J4SUrl(urlStr);
-
-		final J4SConnection connection = new J4SConnection(driver, url,
-				new Properties());
+		System.out.println( "Opening "+url );
+		Properties properties = new Properties();
+		properties.setProperty(J4SPropertyNames.DATASET_PRODUCER,
+				TDBDatasetProducer.class.getCanonicalName());
+		
+		final J4SConnection connection = new J4SConnection(driver, url, properties );
 
 		final DatabaseMetaData metaData = connection.getMetaData();
 		final ResultSet rs = metaData.getColumns(null, null, null, null);
-		final ResultSetMetaData rsmd = rs.getMetaData();
-		while (rs.next())
-		{
-			for (int i = 1; i <= rsmd.getColumnCount(); i++)
-			{
-				System.out.print(String.format("[%s: %s]",
-						rsmd.getColumnName(i), rs.getString(i)));
-			}
-			System.out.println();
-		}
+		System.out.println("Writing configuration to "+args[0]);
 		final File f = new File(args[0]);
 		final FileOutputStream fos = new FileOutputStream(f);
 		connection.saveConfig(fos);
 		fos.close();
 		connection.close();
+		System.out.println("done");
 		// RDFSBuilder builder = new RDFSBuilder(ontologyModel);
 		//
 		// ModelFactory.createDefaultModel();

@@ -298,7 +298,9 @@
 		<name>xenei.org</name>
 	</organization>
 	<scm>
-		<url>https://github.com/Claudenw/jdbc4sparql</url>
+		<url>scm:git:git@github.com:Claudenw/jdbc4sparql.git</url>
+		<developerConnection>https://github.com/Claudenw/jdbc4sparql</developerConnection>
+		<connection>https://github.com/Claudenw/jdbc4sparql</connection>
 	</scm>
 	<parent>
 		<groupId>org.sonatype.oss</groupId>
@@ -308,4 +310,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
+	<issueManagement>
+		<system>Sourceforge Tickets</system>
+	</issueManagement>
 </project>
