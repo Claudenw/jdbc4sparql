@@ -14,7 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xenei.jdbc4sparql.impl.rdf.RdfColumn;
 
-public class QueryTableSet
+public class QueryInfoSet
 {
 
 	// the list of tables in the query indexed by SQL name.
@@ -23,9 +23,9 @@ public class QueryTableSet
 	// the list of columns in the query indexed by SQL name.
 	private final Map<QueryItemName, QueryColumnInfo> columnsInQuery;
 	
-	private static final Logger LOG = LoggerFactory.getLogger(QueryTableSet.class);
+	private static final Logger LOG = LoggerFactory.getLogger(QueryInfoSet.class);
 
-	public QueryTableSet()
+	public QueryInfoSet()
 	{
 		this.tablesInQuery = new HashMap<QueryItemName, QueryTableInfo>();
 		this.columnsInQuery = new HashMap<QueryItemName, QueryColumnInfo>();

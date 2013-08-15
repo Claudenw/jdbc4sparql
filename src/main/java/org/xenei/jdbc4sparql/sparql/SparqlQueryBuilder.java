@@ -98,7 +98,7 @@ public class SparqlQueryBuilder
 		return retval;
 	}
 
-	private final QueryTableSet tableSet;
+	private final QueryInfoSet infoSet;
 
 	// the query we are building.
 	private Query query;
@@ -137,7 +137,7 @@ public class SparqlQueryBuilder
 		this.catalog = catalog;
 		this.query = new Query();
 		this.isBuilt = false;
-		this.tableSet = new QueryTableSet();
+		this.infoSet = new QueryInfoSet();
 		this.columnsInUsing = new ArrayList<String>();
 		this.columnsInResult = new ArrayList<Column>();
 		query.setQuerySelectType();
@@ -202,25 +202,25 @@ public class SparqlQueryBuilder
 			LOG.debug("(addColumn-1-arg) looking for Column {}", column.getSQLName());
 		}
 		checkBuilt();
-		if (!tableSet.containsColumn(column.getSQLName()))
+		if (!infoSet.containsColumn(column.getSQLName()))
 		{
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("adding Column {}", column.getSQLName());
 			}
 			final String alias = column.getTable().getSQLName();
-			QueryTableInfo sti = tableSet.getTable(alias);
+			QueryTableInfo sti = infoSet.getTable(alias);
 			if (sti == null)
 			{
-				sti = new QueryTableInfo(tableSet, getElementGroup(),
+				sti = new QueryTableInfo(infoSet, getElementGroup(),
 						column.getTable(), alias, false);
 			}
-			return sti.addColumn(new QueryColumnInfo(tableSet, column, column
+			return sti.addColumn(new QueryColumnInfo(infoSet, column, column
 					.getSQLName()));
 		}
 		else
 		{
 			// already there, return node from the query.
-			return tableSet.getColumnByName(column.getSQLName()).getVar();
+			return infoSet.getColumnByName(column.getSQLName()).getVar();
 		}
 	}
 
@@ -243,7 +243,7 @@ public class SparqlQueryBuilder
 			LOG.debug("(addColumn-3-args) adding Column {}", NameUtils.getDBName(schemaName, tableName, columnName));
 		}
 		checkBuilt();
-		final QueryColumnInfo columnInfo = tableSet.findColumn(schemaName,
+		final QueryColumnInfo columnInfo = infoSet.findColumn(schemaName,
 				tableName, columnName);
 		return columnInfo.getVar();
 		// // get all the columns that match the name patterns
@@ -259,7 +259,7 @@ public class SparqlQueryBuilder
 		// {
 		// // wild table so look for table names currently in the query.
 		// // get the set of table names.
-		// final Set<String> tblNames = tableSet.getTableNames();
+		// final Set<String> tblNames = infoSet.getTableNames();
 		// RdfColumn col = null;
 		// RdfColumn thisCol = null;
 		// final Iterator<RdfColumn> iter = columns.iterator();
@@ -369,10 +369,10 @@ public class SparqlQueryBuilder
 		}
 		
 		// make sure the table is in the query.
-		QueryTableInfo sti = tableSet.getTable(tblName);
+		QueryTableInfo sti = infoSet.getTable(tblName);
 		if (sti == null)
 		{
-			sti = new QueryTableInfo(tableSet, getElementGroup(), table,
+			sti = new QueryTableInfo(infoSet, getElementGroup(), table,
 					tblName, optional);
 		}
 		return sti.getVar();
@@ -429,14 +429,14 @@ public class SparqlQueryBuilder
 	public void addUsing( final String columnName )
 	{
 		LOG.debug( "adding Using {}", columnName );
-		final Set<String> tableAliases = tableSet.getTableAliases();
+		final Set<String> tableAliases = infoSet.getTableAliases();
 		if (tableAliases.size() < 2)
 		{
 			throw new IllegalArgumentException(
 					"There must be at least 2 tables in the query");
 		}
 		final Iterator<String> iter = tableAliases.iterator();
-		final QueryTableInfo rti = tableSet.getTable(iter.next());
+		final QueryTableInfo rti = infoSet.getTable(iter.next());
 		final QueryColumnInfo baseColumn = rti.getColumn(columnName);
 		if (baseColumn == null)
 		{
@@ -449,7 +449,7 @@ public class SparqlQueryBuilder
 			final ExprVar left = new ExprVar(addColumn(baseColumn.getColumn()));
 			while (iter.hasNext())
 			{
-				final QueryTableInfo rti2 = tableSet.getTable(iter.next());
+				final QueryTableInfo rti2 = infoSet.getTable(iter.next());
 				final QueryColumnInfo col = rti2.getColumn(columnName);
 				if (col == null)
 				{
@@ -537,11 +537,11 @@ public class SparqlQueryBuilder
 			// if an alias is being used then do special registration
 			if ((alias != null) && !sparqlName.equalsIgnoreCase(col.getSPARQLName()))
 			{
-				QueryColumnInfo qci = new QueryColumnInfo(tableSet, col, alias);
+				QueryColumnInfo qci = new QueryColumnInfo(infoSet, col, alias);
 				final ElementBind bind = new ElementBind(Var.alloc(qci.getVar()), new ExprVar(v));
 				getElementGroup().addElement(bind);
 				// add the alias for the column to the columns list.
-				//new QueryColumnInfo(tableSet, col, v.getName());
+				//new QueryColumnInfo(infoSet, col, v.getName());
 			}
 			query.addResultVar(v);
 			// make sure SELECT * is processed
@@ -584,7 +584,7 @@ public class SparqlQueryBuilder
 			if (!catalog.isService())
 			{
 				// apply the type filters to each subpart.
-				for (final QueryTableInfo sti : tableSet.listTables())
+				for (final QueryTableInfo sti : infoSet.listTables())
 				{
 					sti.addTypeFilters();
 				}
@@ -711,7 +711,7 @@ public class SparqlQueryBuilder
 	private int getColCount( final Column col )
 	{
 		int retval = 0;
-		for (final Column c : tableSet.getColumns())
+		for (final Column c : infoSet.getColumns())
 		{
 			if (c.getName().equalsIgnoreCase(col.getName()))
 			{
@@ -756,7 +756,7 @@ public class SparqlQueryBuilder
 	
 	public QueryTableInfo getTable( QueryTableInfo.Name name )
 	{
-		return tableSet.getTable(name);
+		return infoSet.getTable(name);
 	}
 
 	private ElementGroup getElementGroup()
@@ -767,13 +767,13 @@ public class SparqlQueryBuilder
 	public QueryColumnInfo getNodeColumn( final Node n )
 	{
 		checkBuilt();
-		return tableSet.getColumnByNode(n);
+		return infoSet.getColumnByNode(n);
 	}
 
 	public QueryTableInfo getNodeTable( final Node n )
 	{
 		checkBuilt();
-		return tableSet.getTableByNode(n);
+		return infoSet.getTableByNode(n);
 	}
 
 	public List<Column> getResultColumns()
@@ -806,7 +806,7 @@ public class SparqlQueryBuilder
 			final String varColName = NameUtils
 					.convertSPARQL2DB(expr == null ? var.getName() : expr
 							.getExprVar().getVarName());
-			builder.addColumnDef(tableSet.getColumnByName(varColName)
+			builder.addColumnDef(infoSet.getColumnByName(varColName)
 					.getColumn().getColumnDef());
 
 		}
@@ -816,7 +816,7 @@ public class SparqlQueryBuilder
 	private Set<CheckTypeF> getTypeFilterList()
 	{
 		final Set<CheckTypeF> retval = new HashSet<CheckTypeF>();
-		for (final QueryTableInfo sti : tableSet.getTables())
+		for (final QueryTableInfo sti : infoSet.getTables())
 		{
 			retval.addAll(sti.getTypeFilterList());
 		}
@@ -845,7 +845,7 @@ public class SparqlQueryBuilder
 		LOG.debug( "Setting All Columns");
 		checkBuilt();
 		int i = 0;
-		for (final QueryTableInfo t : tableSet.getTables())
+		for (final QueryTableInfo t : infoSet.getTables())
 		{
 
 			final Iterator<RdfColumn> iter = t.getColumns();

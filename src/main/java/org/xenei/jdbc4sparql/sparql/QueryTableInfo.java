@@ -74,7 +74,7 @@ public class QueryTableInfo extends QueryItemInfo
 	/**
 	 * 
 	 */
-	private final QueryTableSet tableSet;
+	private final QueryInfoSet infoSet;
 	private final RdfTable table;
 	private final ElementGroup eg;
 
@@ -85,19 +85,19 @@ public class QueryTableInfo extends QueryItemInfo
 
 	private static Logger LOG = LoggerFactory.getLogger(QueryTableInfo.class);
 
-	public QueryTableInfo( final QueryTableSet tableSet,
+	public QueryTableInfo( final QueryInfoSet infoSet,
 			final ElementGroup queryElementGroup, final RdfTable table,
 			final String alias, final boolean optional )
 	{
 		super(QueryTableInfo.getNameInstance(alias));
-		this.tableSet = tableSet;
+		this.infoSet = infoSet;
 		this.table = table;
 		this.eg = new ElementGroup();
 		this.optional = optional;
 		this.typeFilterList = new HashSet<CheckTypeF>();
 
 		// add the table var to the nodes.
-		tableSet.addTable(this);
+		infoSet.addTable(this);
 		LOG.debug( "adding required columns");
 		final String eol = System.getProperty("line.separator");
 		final StringBuilder queryFmt = new StringBuilder("{ ")
@@ -110,7 +110,7 @@ public class QueryTableInfo extends QueryItemInfo
 			final RdfColumn column = colIter.next();
 			if (!column.isOptional())
 			{
-				final Node colVar = addColumn(new QueryColumnInfo(tableSet,
+				final Node colVar = addColumn(new QueryColumnInfo(infoSet,
 						column, column.getSQLName()));
 
 				final String fmt = column.getQuerySegmentFmt();
@@ -209,7 +209,7 @@ public class QueryTableInfo extends QueryItemInfo
 		{
 			qiName = QueryColumnInfo.getNameInstance(getName().getSchema(),
 					getName().getTable(), col.getName());
-			QueryColumnInfo qci = new QueryColumnInfo(tableSet, col, qiName.getDBName());
+			QueryColumnInfo qci = new QueryColumnInfo(infoSet, col, qiName.getDBName());
 			addColumn( qci );
 			return qci;
 		}

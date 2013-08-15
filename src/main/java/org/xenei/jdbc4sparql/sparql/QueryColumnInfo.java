@@ -1,13 +1,11 @@
 package org.xenei.jdbc4sparql.sparql;
 
-import org.apache.jena.atlas.logging.Log;
-import org.slf4j.LoggerFactory;
 import org.xenei.jdbc4sparql.impl.NameUtils;
 import org.xenei.jdbc4sparql.impl.rdf.RdfColumn;
 
 public class QueryColumnInfo extends QueryItemInfo
 {
-	private static class Name extends QueryItemName
+	public static class Name extends QueryItemName
 	{
 
 		private Name( QueryItemName name )
@@ -21,12 +19,12 @@ public class QueryColumnInfo extends QueryItemInfo
 		}
 	}
 
-	public static QueryItemName getNameInstance( final QueryItemName name)
+	public static Name getNameInstance( final QueryItemName name)
 	{
 		return new Name( name );
 	}
 	
-	public static QueryItemName getNameInstance( final String alias )
+	public static Name getNameInstance( final String alias )
 	{
 		if (alias == null)
 		{
@@ -51,29 +49,29 @@ public class QueryColumnInfo extends QueryItemInfo
 		}
 	}
 
-	public static QueryItemName getNameInstance( final String schemaName,
+	public static Name getNameInstance( final String schemaName,
 			final String tableName, final String columnName )
 	{
 		return new Name(schemaName, tableName, columnName);
 	}
 
 	private final RdfColumn column;
-	private final QueryTableSet tableSet;
+	private final QueryInfoSet infoSet;
 
-	public QueryColumnInfo( final QueryTableSet tableSet,
+	public QueryColumnInfo( final QueryInfoSet infoSet,
 			final RdfColumn column, final String alias )
 	{
 		super(QueryColumnInfo.getNameInstance(alias));
 		this.column = column;
-		this.tableSet = tableSet;
-		tableSet.addColumn(this);
+		this.infoSet = infoSet;
+		infoSet.addColumn(this);
 	}
 	
 	public QueryColumnInfo( QueryColumnInfo info, QueryItemName name )
 	{
 		super(name);
 		this.column = info.column;
-		this.tableSet = info.tableSet;
+		this.infoSet = info.infoSet;
 	}
 	
 	public RdfColumn getColumn()
