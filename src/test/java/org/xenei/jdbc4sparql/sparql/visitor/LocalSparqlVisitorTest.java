@@ -30,6 +30,7 @@ import com.hp.hpl.jena.sparql.syntax.ElementGroup;
 
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
@@ -37,7 +38,6 @@ import net.sf.jsqlparser.statement.Statement;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.xenei.jdbc4sparql.impl.NameUtils;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
@@ -206,9 +206,8 @@ public class LocalSparqlVisitorTest
 				strLst.add(e2.toString());
 			}
 		}
-		Assert.assertTrue(strLst.contains("FILTER ( ?testSchema"
-				+ NameUtils.SPARQL_DOT + "foo" + NameUtils.SPARQL_DOT
-				+ "StringCol != \"baz\" )"));
+		final String value = "FILTER ( ?"+NameUtils.getSPARQLName("testSchema","foo","StringCol")+" != \"baz\" )";
+		Assert.assertTrue(strLst.contains(value));
 
 		final List<Var> vLst = q.getProjectVars();
 		Assert.assertEquals(1, vLst.size());
@@ -217,10 +216,9 @@ public class LocalSparqlVisitorTest
 	}
 
 	@Test
-	@Ignore( "This only remains as a pattern for a complete test -- Mock can not support this test" )
-	public void testTwoTableJoin() throws Exception
+	public void testTableAliasParse() throws Exception
 	{
-		final String query = "SELECT * FROM foo, bar WHERE foo.IntCol = bar.IntCol";
+		final String query = "SELECT StringCol FROM foo bar WHERE StringCol != 'baz'";
 		final Statement stmt = parserManager.parse(new StringReader(query));
 		stmt.accept(sv);
 		final Query q = sv.getBuilder().build();
@@ -229,8 +227,59 @@ public class LocalSparqlVisitorTest
 		Assert.assertTrue(e instanceof ElementGroup);
 		final ElementGroup eg = (ElementGroup) e;
 		final List<Element> eLst = eg.getElements();
-		Assert.assertEquals(17, eLst.size());
+		Assert.assertEquals(2, eLst.size());
+		final List<String> strLst = new ArrayList<String>();
+		for (final Element e2 : eLst)
+		{
+			// there is one mock table entry
+			if (e2 instanceof ElementFilter)
+			{
+				strLst.add(e2.toString());
+			}
+		}
+		final String value = "FILTER ( ?"+NameUtils.getSPARQLName("testSchema","foo","StringCol")+" != \"baz\" )";
+		Assert.assertTrue(strLst.contains(value));
+
+		final List<Var> vLst = q.getProjectVars();
+		Assert.assertEquals(1, vLst.size());
+		Assert.assertEquals(Var.alloc("StringCol"), vLst.get(0));
+
+	}
+
+	@Test
+	// @Ignore(
+	// "This only remains as a pattern for a complete test -- Mock can not support this test"
+	// )
+	public void testTwoTableJoin() throws Exception
+	{
+		final String[] columnNames = { 
+			"?"+NameUtils.getSPARQLName("testSchema", "foo", "StringCol"),
+			"?"+NameUtils.getSPARQLName("testSchema", "foo", "NullableStringCol"),
+			"?"+NameUtils.getSPARQLName("testSchema", "foo", "IntCol"),
+			"?"+NameUtils.getSPARQLName("testSchema", "foo", "NullableIntCol"),
+			"?"+NameUtils.getSPARQLName("testSchema", "bar", "BarStringCol"),
+			"?"+NameUtils.getSPARQLName("testSchema", "bar", "BarNullableStringCol"),
+			"?"+NameUtils.getSPARQLName("testSchema", "bar", "BarIntCol"),
+			"?"+NameUtils.getSPARQLName("testSchema", "bar", "NullableIntCol") 
+		};
+		final String query = "SELECT * FROM foo, bar WHERE foo.IntCol = bar.BarIntCol";
+		final Statement stmt = parserManager.parse(new StringReader(query));
+		stmt.accept(sv);
+		final Query q = sv.getBuilder().build();
+
+		final Element e = q.getQueryPattern();
+		Assert.assertTrue(e instanceof ElementGroup);
+		final ElementGroup eg = (ElementGroup) e;
+		final List<Element> eLst = eg.getElements();
+		Assert.assertEquals(10, eLst.size());
 		final List<Var> vLst = q.getProjectVars();
 		Assert.assertEquals(8, vLst.size());
+		final List<String> colList = Arrays.asList(columnNames);
+		for (int i = 0; i < vLst.size(); i++)
+		{
+			Assert.assertTrue(
+					String.format("Column %s not expected", vLst.get(i)),
+					colList.contains(vLst.get(i).toString()));
+		}
 	}
 }

@@ -167,6 +167,23 @@ public abstract class AbstractJ4SStatementTest
 	}
 
 	@Test
+	public void testTableAlias() throws ClassNotFoundException, SQLException
+	{
+		final ResultSet rset = stmt
+				.executeQuery("select IntCol from fooTable tbl where StringCol='Foo2String'");
+		int i = 0;
+		while (rset.next())
+		{
+			Assert.assertEquals( 5, rset.getInt("IntCol"));
+			final StringBuilder sb = new StringBuilder();
+			i++;
+		}
+		Assert.assertEquals(1, i);
+		rset.close();
+		stmt.close();
+	}
+
+	@Test
 	public void testWhereEqualitySelect() throws SQLException
 	{
 		final ResultSet rset = stmt

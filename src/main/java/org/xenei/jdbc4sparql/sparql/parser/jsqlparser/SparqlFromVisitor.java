@@ -20,12 +20,17 @@
 package org.xenei.jdbc4sparql.sparql.parser.jsqlparser;
 
 import java.sql.SQLException;
+import java.util.Map;
 
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.FromItemVisitor;
 import net.sf.jsqlparser.statement.select.SubJoin;
 import net.sf.jsqlparser.statement.select.SubSelect;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.xenei.jdbc4sparql.sparql.QueryItemName;
+import org.xenei.jdbc4sparql.sparql.QueryTableInfo;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 
 class SparqlFromVisitor implements FromItemVisitor
@@ -35,6 +40,9 @@ class SparqlFromVisitor implements FromItemVisitor
 
 	private final SparqlQueryBuilder builder;
 	private final boolean optional;
+	private QueryItemName name;
+	private static Logger LOG = LoggerFactory
+			.getLogger(SparqlFromVisitor.class);
 
 	SparqlFromVisitor( final SparqlQueryBuilder builder )
 	{
@@ -63,10 +71,20 @@ class SparqlFromVisitor implements FromItemVisitor
 	@Override
 	public void visit( final Table tableName )
 	{
+		SparqlFromVisitor.LOG.debug("visit table: {}", tableName);
+		if (tableName.getAlias() != null )
+		{
+			name = QueryTableInfo.getNameInstance( tableName.getAlias() );
+		}
+		else
+		{
+			name = QueryTableInfo.getNameInstance( tableName.getSchemaName(), tableName.getName() );
+		}
 		try
 		{
+			// FIXME handle aliases here
 			builder.addTable(tableName.getSchemaName(), tableName.getName(),
-					optional);
+					tableName.getAlias(), optional);
 		}
 		catch (final SQLException e)
 		{
@@ -74,4 +92,8 @@ class SparqlFromVisitor implements FromItemVisitor
 		}
 	}
 
+	public QueryItemName getName()
+	{
+		return name;
+	}
 }

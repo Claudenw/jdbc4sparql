@@ -13,6 +13,8 @@ import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.util.iterator.WrappedIterator;
 import com.hp.hpl.jena.vocabulary.RDFS;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashSet;
@@ -20,6 +22,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.NameFilter;
 import org.xenei.jdbc4sparql.iface.Schema;
@@ -125,6 +129,9 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 			}
 			catch (final MissingAnnotation e)
 			{
+				RdfCatalog.LOG.error(
+						String.format("Error building %s: %s", name,
+								e.getMessage()), e);
 				throw new RuntimeException(e);
 			}
 
@@ -251,6 +258,8 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 
 	private Set<RdfSchema> schemaList;
 
+	private static Logger LOG = LoggerFactory.getLogger(RdfCatalog.class);
+
 	@Override
 	public void close()
 	{
@@ -269,7 +278,21 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 	@Override
 	public List<QuerySolution> executeLocalQuery( final Query query )
 	{
-		QueryExecution qexec = QueryExecutionFactory.create(query, localModel);
+		if (RdfCatalog.LOG.isDebugEnabled())
+		{
+			try
+			{
+				localModel.write(new FileOutputStream("/tmp/localModel.ttl"),
+						"TURTLE");
+			}
+			catch (final FileNotFoundException e1)
+			{
+				RdfCatalog.LOG.info("Error attempting to write debug file: "
+						+ e1.getMessage(), e1);
+			}
+		}
+		final QueryExecution qexec = QueryExecutionFactory.create(query,
+				localModel);
 		try
 		{
 			final List<QuerySolution> retval = WrappedIterator.create(
@@ -278,7 +301,8 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 		}
 		catch (final Exception e)
 		{
-			System.err.println("Exception: " + e.getMessage());
+			RdfCatalog.LOG.error(
+					"Error executing local query: " + e.getMessage(), e);
 			throw e;
 		}
 		finally

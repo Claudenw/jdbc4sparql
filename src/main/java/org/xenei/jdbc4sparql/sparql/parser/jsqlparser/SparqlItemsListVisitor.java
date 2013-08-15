@@ -9,11 +9,14 @@ import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.ItemsListVisitor;
 import net.sf.jsqlparser.statement.select.SubSelect;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 
 public class SparqlItemsListVisitor implements ItemsListVisitor
 {
-
+	private static Logger LOG = LoggerFactory
+			.getLogger(SparqlItemsListVisitor.class);
 	private final SparqlExprVisitor exprVisitor;
 	private ExprList result;
 
@@ -30,6 +33,7 @@ public class SparqlItemsListVisitor implements ItemsListVisitor
 	@Override
 	public void visit( final ExpressionList expressionList )
 	{
+		LOG.debug( "visit ExpressionList: {}", expressionList );
 		final List<Expression> l = expressionList.getExpressions();
 		result = new ExprList();
 		// accept them in reverse order
@@ -43,6 +47,7 @@ public class SparqlItemsListVisitor implements ItemsListVisitor
 	@Override
 	public void visit( final SubSelect subSelect )
 	{
+		LOG.debug( "visit SubSelect: {}", subSelect );
 		subSelect.accept(exprVisitor);
 	}
 

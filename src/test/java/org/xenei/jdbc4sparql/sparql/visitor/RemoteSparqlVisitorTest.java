@@ -167,7 +167,6 @@ public class RemoteSparqlVisitorTest
 		final Statement stmt = parserManager.parse(new StringReader(query));
 		stmt.accept(sv);
 		final Query q = sv.getBuilder().build();
-
 		final Element e = q.getQueryPattern();
 		Assert.assertTrue(e instanceof ElementGroup);
 		final ElementGroup eg = (ElementGroup) e;
@@ -183,14 +182,11 @@ public class RemoteSparqlVisitorTest
 				strLst.add(e2.toString());
 			}
 		}
-		Assert.assertTrue(strLst.contains("FILTER checkTypeF(?testSchema"
-				+ NameUtils.SPARQL_DOT + "foo" + NameUtils.SPARQL_DOT
-				+ "StringCol)"));
-
+		String name = NameUtils.getSPARQLName("testSchema", "foo", "StringCol");
+		Assert.assertTrue(strLst.contains("FILTER checkTypeF(?"+name+")"));
 		final List<Var> vLst = q.getProjectVars();
 		Assert.assertEquals(1, vLst.size());
 		Assert.assertEquals(Var.alloc("StringCol"), vLst.get(0));
-
 	}
 
 	@Test
@@ -216,9 +212,8 @@ public class RemoteSparqlVisitorTest
 				strLst.add(e2.toString());
 			}
 		}
-		Assert.assertTrue(strLst.contains("FILTER checkTypeF(?testSchema"
-				+ NameUtils.SPARQL_DOT + "foo" + NameUtils.SPARQL_DOT
-				+ "StringCol)"));
+		String name = NameUtils.getSPARQLName("testSchema", "foo", "StringCol");
+		Assert.assertTrue(strLst.contains("FILTER checkTypeF(?"+name+")"));
 		final List<Var> vLst = q.getProjectVars();
 		Assert.assertEquals(1, vLst.size());
 		Assert.assertEquals(Var.alloc("StringCol"), vLst.get(0));

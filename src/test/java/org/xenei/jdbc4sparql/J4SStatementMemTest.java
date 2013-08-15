@@ -4,6 +4,7 @@ import java.net.URL;
 import java.sql.DriverManager;
 import java.util.Properties;
 
+import org.apache.log4j.Level;
 import org.junit.Before;
 
 public class J4SStatementMemTest extends AbstractJ4SStatementTest
@@ -17,6 +18,10 @@ public class J4SStatementMemTest extends AbstractJ4SStatementTest
 	@Before
 	public void setup() throws Exception
 	{
+		LoggingConfig.setConsole(Level.DEBUG);
+		LoggingConfig.setRootLogger(Level.INFO);
+		LoggingConfig.setLogger("com.hp.hpl.jena.", Level.INFO);
+		LoggingConfig.setLogger("org.xenei.jdbc4sparql", Level.DEBUG);
 		Class.forName("org.xenei.jdbc4sparql.J4SDriver");
 
 		fUrl = J4SDriverTest.class.getResource("./J4SStatementTest.ttl");

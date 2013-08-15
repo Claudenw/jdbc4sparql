@@ -185,4 +185,10 @@ class ExprColumn implements Column
 	{
 		return table;
 	}
+	
+	@Override
+	public String toString()
+	{
+		return getSQLName();
+	}
 }

@@ -27,6 +27,8 @@ import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.util.deparser.StatementDeParser;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
@@ -36,6 +38,7 @@ public class SparqlParserImpl implements SparqlParser
 	public static final String PARSER_NAME = "JSqlParser";
 	public static final String DESCRIPTION = "Parser based on JSqlParser (http://jsqlparser.sourceforge.net/). Under LGPL V2 license";
 	private final CCJSqlParserManager parserManager = new CCJSqlParserManager();
+	private static Logger LOG = LoggerFactory.getLogger(SparqlParserImpl.class);
 
 	public SparqlParserImpl()
 	{
@@ -44,6 +47,7 @@ public class SparqlParserImpl implements SparqlParser
 	@Override
 	public String nativeSQL( final String sqlQuery ) throws SQLException
 	{
+		SparqlParserImpl.LOG.debug("nativeSQL: {}", sqlQuery);
 		try
 		{
 			final Statement stmt = parserManager.parse(new StringReader(
@@ -63,16 +67,23 @@ public class SparqlParserImpl implements SparqlParser
 	public SparqlQueryBuilder parse( final RdfCatalog catalog,
 			final String sqlQuery ) throws SQLException
 	{
+		SparqlParserImpl.LOG.debug("catalog: {} parsing SQL: {}",
+				catalog.getName(), sqlQuery);
 		try
 		{
 			final Statement stmt = parserManager.parse(new StringReader(
 					sqlQuery));
 			final SparqlVisitor sv = new SparqlVisitor(catalog);
 			stmt.accept(sv);
+			if (SparqlParserImpl.LOG.isDebugEnabled())
+			{
+				SparqlParserImpl.LOG.debug("Parsed as {}", sv.getBuilder());
+			}
 			return sv.getBuilder();
 		}
 		catch (final JSQLParserException e)
 		{
+			SparqlParserImpl.LOG.error("Error parsing: " + e.getMessage(), e);
 			throw new SQLException(e);
 		}
 	}

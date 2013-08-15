@@ -48,6 +48,7 @@ import javax.sql.rowset.serial.SerialBlob;
 import javax.sql.rowset.serial.SerialClob;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.jena.atlas.logging.Log;
 import org.xenei.jdbc4sparql.J4SResultSetMetaData;
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.Table;
@@ -865,6 +866,7 @@ public abstract class AbstractResultSet implements ResultSet
 	@Override
 	public String getString( final String columnLabel ) throws SQLException
 	{
+		Log.debug("getting String {}", columnLabel);
 		final int i = table.getColumnIndex(columnLabel);
 		if (i < 0)
 		{

@@ -28,6 +28,8 @@ import net.sf.jsqlparser.statement.select.AllTableColumns;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.SelectItemVisitor;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
@@ -43,6 +45,8 @@ class SparqlSelectItemVisitor implements SelectItemVisitor
 {
 	// the query builder.
 	private final SparqlQueryBuilder queryBuilder;
+	private static Logger LOG = LoggerFactory
+			.getLogger(SparqlSelectItemVisitor.class);
 
 	/**
 	 * Constructor
@@ -58,12 +62,14 @@ class SparqlSelectItemVisitor implements SelectItemVisitor
 	@Override
 	public void visit( final AllColumns allColumns )
 	{
+		SparqlSelectItemVisitor.LOG.debug("visit All Columns {}", allColumns);
 		try
 		{
 			queryBuilder.setAllColumns();
 		}
 		catch (final SQLException e)
 		{
+			LOG.error( "Error visitin all columns: "+e.getMessage(), e );
 			throw new RuntimeException(e);
 		}
 	}
@@ -71,6 +77,8 @@ class SparqlSelectItemVisitor implements SelectItemVisitor
 	@Override
 	public void visit( final AllTableColumns allTableColumns )
 	{
+		SparqlSelectItemVisitor.LOG.debug("visit All Table Columns {}",
+				allTableColumns.toString());
 		RdfTable tbl = null;
 
 		for (final Schema s : queryBuilder.getCatalog().findSchemas(
@@ -109,6 +117,7 @@ class SparqlSelectItemVisitor implements SelectItemVisitor
 			}
 			catch (final SQLException e)
 			{
+				LOG.error( "Error visitin all table columns: "+e.getMessage(), e );
 				throw new RuntimeException(e);
 			}
 		}
@@ -118,32 +127,27 @@ class SparqlSelectItemVisitor implements SelectItemVisitor
 	@Override
 	public void visit( final SelectExpressionItem selectExpressionItem )
 	{
-
+		SparqlSelectItemVisitor.LOG.debug("visit Select {}",
+				selectExpressionItem);
 		final SparqlExprVisitor v = new SparqlExprVisitor(queryBuilder);
 		selectExpressionItem.getExpression().accept(v);
 		final Expr expr = v.getResult();
 
 		// handle explicit name mapping
+		String exprAlias = null;
 		if (selectExpressionItem.getAlias() != null)
 		{
-			queryBuilder.addVar(expr, selectExpressionItem.getAlias());
+			exprAlias=  NameUtils
+					.convertDB2SPARQL(selectExpressionItem.getAlias());
 		}
-		else
+		else if (selectExpressionItem.getExpression() instanceof net.sf.jsqlparser.schema.Column)
 		{
-			// handle implicit name mapping
-			if (selectExpressionItem.getExpression() instanceof net.sf.jsqlparser.schema.Column)
-			{
-				queryBuilder.addVar(expr, NameUtils
-						.convertDB2SPARQL(selectExpressionItem.getExpression()
-								.toString()));
-			}
-			else
-			{
-				// handle no name mapping
-				queryBuilder.addVar(expr, null);
-			}
+			exprAlias= NameUtils
+					.convertDB2SPARQL(selectExpressionItem.getExpression()
+							.toString());
 		}
-
+			
+		queryBuilder.addVar(expr, exprAlias);
 	}
 
 }

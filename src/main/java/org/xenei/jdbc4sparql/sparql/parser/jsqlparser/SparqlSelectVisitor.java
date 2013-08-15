@@ -25,8 +25,10 @@ import com.hp.hpl.jena.sparql.expr.Expr;
 import com.hp.hpl.jena.sparql.expr.ExprFunction;
 import com.hp.hpl.jena.sparql.expr.ExprVar;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.Join;
@@ -41,6 +43,9 @@ import net.sf.jsqlparser.statement.select.Union;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xenei.jdbc4sparql.sparql.QueryColumnInfo;
+import org.xenei.jdbc4sparql.sparql.QueryItemName;
+import org.xenei.jdbc4sparql.sparql.QueryTableInfo;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 
 /**
@@ -67,12 +72,13 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 		this.queryBuilder = queryBuilder;
 	}
 
-	private void applyOuterExpr( final Expr aExpr )
+	private void applyOuterExpr( final Expr aExpr, QueryItemName mapFrom, QueryItemName mapTo )
 	{
+		LOG.debug("apply outer expr {}", aExpr);
 		final Expr expr = aExpr;
 		if (expr instanceof ExprFunction)
 		{
-			if (applyOuterExprSub(aExpr, aExpr))
+			if (applyOuterExprSub(aExpr, aExpr, mapFrom, mapTo))
 			{
 				return;
 			}
@@ -80,14 +86,15 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 		queryBuilder.addFilter(expr);
 	}
 
-	private boolean applyOuterExprSub( final Expr aExpr, final Expr toApply )
+	private boolean applyOuterExprSub( final Expr aExpr, final Expr toApply, QueryItemName mapFrom, QueryItemName mapTo )
 	{
+		LOG.debug("apply outer expr sub {} {}", aExpr, toApply);
 		final Expr expr = aExpr;
 		if (expr instanceof ExprFunction)
 		{
 			for (final Expr subExpr : ((ExprFunction) expr).getArgs())
 			{
-				if (applyOuterExprSub(subExpr, toApply))
+				if (applyOuterExprSub(subExpr, toApply, mapFrom, mapTo))
 				{
 					return true;
 				}
@@ -97,9 +104,8 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 		if (expr instanceof ExprVar)
 		{
 			final Node n = ((ExprVar) expr).getAsNode();
-			final SparqlQueryBuilder.RdfTableInfo sti = queryBuilder
-					.getNodeTable(n);
-			if ((sti != null) && sti.isOptional())
+			final QueryTableInfo sti = queryBuilder.getNodeTable(n);
+			if ((sti != null) && (sti.isOptional()))
 			{
 				sti.addFilter(toApply);
 				return true;
@@ -110,8 +116,9 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 	}
 
 	// take apart the join and figure out how to merge it.
-	private void deparseJoin( final Join join )
+	private void deparseJoin( final Join join, QueryItemName tableName )
 	{
+		LOG.debug( "deparse join {}", join );
 		if (join.isSimple())
 		{
 			final SparqlFromVisitor fromVisitor = new SparqlFromVisitor(
@@ -139,18 +146,21 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 						"FULL"));
 			}
 			else
-			{
+			{	
 				// handles left and not specified
 				final SparqlFromVisitor fromVisitor = new SparqlFromVisitor(
 						queryBuilder, SparqlFromVisitor.OPTIONAL);
 				join.getRightItem().accept(fromVisitor);
-
+	
 				if (join.getOnExpression() != null)
 				{
 					final SparqlExprVisitor expressionVisitor = new SparqlExprVisitor(
 							queryBuilder);
 					join.getOnExpression().accept(expressionVisitor);
-					applyOuterExpr(expressionVisitor.getResult());
+					ExpRewriter rewriter = new ExpRewriter(queryBuilder);
+					rewriter.addMap(fromVisitor.getName(),  tableName );
+					expressionVisitor.getResult().visit(rewriter);
+					applyOuterExpr(rewriter.getResult(), fromVisitor.getName(), tableName );
 				}
 			}
 		}
@@ -207,6 +217,7 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 	// process a limit
 	private void deparseLimit( final Limit limit )
 	{
+		LOG.debug( "deparse limit {}", limit );
 		// LIMIT n OFFSET skip
 		if (limit.isOffsetJdbcParameter())
 		{
@@ -236,7 +247,8 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 
 	private void deparseOrderBy( final List orderByElements )
 	{
-		for (final Iterator iter = orderByElements.iterator(); iter.hasNext();)
+		LOG.debug( "deparse orderby {}", orderByElements );
+		for (final Iterator<?> iter = orderByElements.iterator(); iter.hasNext();)
 		{
 			final OrderByElement orderByElement = (OrderByElement) iter.next();
 			orderByElement.accept(this);
@@ -256,6 +268,7 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 	@Override
 	public void visit( final OrderByElement orderBy )
 	{
+		SparqlSelectVisitor.LOG.debug("visit orderby: {}", orderBy);
 		final SparqlExprVisitor expressionVisitor = new SparqlExprVisitor(
 				queryBuilder);
 		orderBy.getExpression().accept(expressionVisitor);
@@ -270,8 +283,8 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 	@Override
 	public void visit( final PlainSelect plainSelect )
 	{
-		final SparqlFromVisitor fromVisitor = new SparqlFromVisitor(
-				queryBuilder);
+		SparqlSelectVisitor.LOG.debug("visit plainSelect: {}", plainSelect);
+		QueryItemName lastTableName = null;
 		final SparqlExprVisitor expressionVisitor = new SparqlExprVisitor(
 				queryBuilder);
 		final SparqlSelectItemVisitor selectItemVisitor = new SparqlSelectItemVisitor(
@@ -280,7 +293,10 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 		// Process FROM to get table names loaded in the builder
 		if (plainSelect.getFromItem() != null)
 		{
+			final SparqlFromVisitor fromVisitor = new SparqlFromVisitor(
+					queryBuilder);
 			plainSelect.getFromItem().accept(fromVisitor);
+			lastTableName = fromVisitor.getName();
 		}
 
 		if (plainSelect.getDistinct() != null)
@@ -296,16 +312,16 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 		// process Joins to pick up new tables
 		if (plainSelect.getJoins() != null)
 		{
-			for (final Iterator iter = plainSelect.getJoins().iterator(); iter
+			for (final Iterator<?> iter = plainSelect.getJoins().iterator(); iter
 					.hasNext();)
 			{
 				final Join join = (Join) iter.next();
-				deparseJoin(join);
+				deparseJoin(join, lastTableName);
 			}
 		}
 
 		// process the select -- All tables must be identified before this.
-		for (final Iterator iter = plainSelect.getSelectItems().iterator(); iter
+		for (final Iterator<?> iter = plainSelect.getSelectItems().iterator(); iter
 				.hasNext();)
 		{
 			final SelectItem selectItem = (SelectItem) iter.next();

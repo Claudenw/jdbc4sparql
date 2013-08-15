@@ -25,6 +25,8 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.Key;
 import org.xenei.jdbc4sparql.iface.KeySegment;
@@ -47,7 +49,8 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	private final Catalog metaCatalog;
 	private final Schema metaSchema;
 	private final Map<String, Catalog> catalogs;
-	private static DataTable CATALOGS_TABLE;
+	private static Logger LOG = LoggerFactory
+			.getLogger(J4SDatabaseMetaData.class);
 
 	public J4SDatabaseMetaData( final J4SConnection connection,
 			final J4SDriver driver )
@@ -141,7 +144,11 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	@Override
 	public ResultSet getCatalogs() throws SQLException
 	{
-		return J4SDatabaseMetaData.CATALOGS_TABLE.getResultSet();
+		J4SDatabaseMetaData.LOG.debug("Getting catalogs");
+		final RdfTable table = (RdfTable) metaSchema
+				.getTable(MetaCatalogBuilder.CATALOGS_TABLE);
+
+		return table.getResultSet();
 	}
 
 	@Override
@@ -180,6 +187,12 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 			final String schemaPattern, final String tableNamePattern,
 			final String columnNamePattern ) throws SQLException
 	{
+		if (J4SDatabaseMetaData.LOG.isDebugEnabled())
+		{
+			J4SDatabaseMetaData.LOG.debug(String.format(
+					"Getting columns %s.%s.%s.%s", catalogPattern,
+					schemaPattern, tableNamePattern, columnNamePattern));
+		}
 		final RdfTable table = (RdfTable) metaSchema
 				.getTable(MetaCatalogBuilder.COLUMNS_TABLE);
 		if ((catalogPattern != null) || (schemaPattern != null)
@@ -622,6 +635,11 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	public ResultSet getSchemas( final String catalogPattern,
 			final String schemaPattern ) throws SQLException
 	{
+		if (J4SDatabaseMetaData.LOG.isDebugEnabled())
+		{
+			J4SDatabaseMetaData.LOG.debug(String.format(
+					"getting schemas %s.%s", catalogPattern, schemaPattern));
+		}
 		final RdfTable table = (RdfTable) metaSchema
 				.getTable(MetaCatalogBuilder.SCHEMAS_TABLE);
 		if ((catalogPattern != null) || (schemaPattern != null))
@@ -783,6 +801,12 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 			final String schemaPattern, final String tableNamePattern,
 			final String[] types ) throws SQLException
 	{
+		if (J4SDatabaseMetaData.LOG.isDebugEnabled())
+		{
+			J4SDatabaseMetaData.LOG.debug(String.format(
+					"getting tables %s.%s.%s types %s", catalogPattern,
+					schemaPattern, tableNamePattern, types));
+		}
 		final RdfTable table = (RdfTable) metaSchema
 				.getTable(MetaCatalogBuilder.TABLES_TABLE);
 		if ((catalogPattern != null) || (schemaPattern != null)
@@ -908,15 +932,13 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	@Override
 	public boolean isCatalogAtStart() throws SQLException
 	{
-		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
 
 	@Override
 	public boolean isReadOnly() throws SQLException
 	{
-		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
 
 	@Override

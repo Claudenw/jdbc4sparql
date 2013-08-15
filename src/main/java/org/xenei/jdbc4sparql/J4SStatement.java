@@ -24,6 +24,8 @@ import java.sql.SQLFeatureNotSupportedException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.sparql.SparqlView;
 import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
@@ -42,6 +44,8 @@ public class J4SStatement implements Statement
 	private final int resultSetType;
 	private final int resultSetHoldability;
 	private boolean poolable;
+
+	private static Logger LOG = LoggerFactory.getLogger(J4SStatement.class);
 
 	public J4SStatement( final J4SConnection connection,
 			final RdfCatalog catalog, final int resultSetType,
@@ -104,6 +108,7 @@ public class J4SStatement implements Statement
 	@Override
 	public boolean execute( final String sql ) throws SQLException
 	{
+		J4SStatement.LOG.debug("execute {}", sql);
 		final SparqlView view = new SparqlView(parser.parse(catalog, sql));
 		resultSet = view.getResultSet();
 		resultSet.setFetchDirection(getFetchDirection());

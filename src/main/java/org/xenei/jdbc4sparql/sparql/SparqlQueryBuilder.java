@@ -18,64 +18,39 @@
 package org.xenei.jdbc4sparql.sparql;
 
 import com.hp.hpl.jena.graph.Node;
-import com.hp.hpl.jena.graph.NodeFactory;
 import com.hp.hpl.jena.graph.Triple;
 import com.hp.hpl.jena.query.Query;
-import com.hp.hpl.jena.query.QueryException;
-import com.hp.hpl.jena.rdf.model.AnonId;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.sparql.core.PathBlock;
-import com.hp.hpl.jena.sparql.core.TriplePath;
 import com.hp.hpl.jena.sparql.core.Var;
 import com.hp.hpl.jena.sparql.core.VarExprList;
-import com.hp.hpl.jena.sparql.engine.binding.Binding;
 import com.hp.hpl.jena.sparql.expr.E_Equals;
 import com.hp.hpl.jena.sparql.expr.Expr;
-import com.hp.hpl.jena.sparql.expr.ExprFunction1;
 import com.hp.hpl.jena.sparql.expr.ExprVar;
 import com.hp.hpl.jena.sparql.expr.NodeValue;
-import com.hp.hpl.jena.sparql.function.FunctionEnv;
-import com.hp.hpl.jena.sparql.lang.sparql_11.ParseException;
 import com.hp.hpl.jena.sparql.syntax.Element;
-import com.hp.hpl.jena.sparql.syntax.ElementAssign;
 import com.hp.hpl.jena.sparql.syntax.ElementBind;
-import com.hp.hpl.jena.sparql.syntax.ElementData;
-import com.hp.hpl.jena.sparql.syntax.ElementDataset;
-import com.hp.hpl.jena.sparql.syntax.ElementExists;
 import com.hp.hpl.jena.sparql.syntax.ElementFilter;
 import com.hp.hpl.jena.sparql.syntax.ElementGroup;
-import com.hp.hpl.jena.sparql.syntax.ElementMinus;
-import com.hp.hpl.jena.sparql.syntax.ElementNamedGraph;
-import com.hp.hpl.jena.sparql.syntax.ElementNotExists;
-import com.hp.hpl.jena.sparql.syntax.ElementOptional;
-import com.hp.hpl.jena.sparql.syntax.ElementPathBlock;
 import com.hp.hpl.jena.sparql.syntax.ElementService;
 import com.hp.hpl.jena.sparql.syntax.ElementSubQuery;
 import com.hp.hpl.jena.sparql.syntax.ElementTriplesBlock;
-import com.hp.hpl.jena.sparql.syntax.ElementUnion;
-import com.hp.hpl.jena.sparql.syntax.ElementVisitor;
-import com.hp.hpl.jena.util.iterator.Map1;
-import com.hp.hpl.jena.util.iterator.WrappedIterator;
 
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
-import org.xenei.jdbc4sparql.iface.TypeConverter;
-import org.xenei.jdbc4sparql.impl.AbstractResultSet;
 import org.xenei.jdbc4sparql.impl.NameUtils;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfColumn;
@@ -83,626 +58,18 @@ import org.xenei.jdbc4sparql.impl.rdf.RdfKey;
 import org.xenei.jdbc4sparql.impl.rdf.RdfKeySegment;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTableDef;
-import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 
 /**
  * Creates a SparqlQuery while tracking naming changes between nomenclatures.
  */
 public class SparqlQueryBuilder
 {
-
-	/**
-	 * Class to renumber bNodes to be unique within the query.
-	 */
-	private static class BnodeRenumber
-	{
-		private class ElementHandler implements ElementVisitor
-		{
-			EType type;
-
-			public EType getType()
-			{
-				return type;
-			}
-
-			@Override
-			public void visit( final ElementAssign el )
-			{
-				type = EType.Assign;
-			}
-
-			@Override
-			public void visit( final ElementBind el )
-			{
-				type = EType.Bind;
-			}
-
-			@Override
-			public void visit( final ElementData el )
-			{
-				type = EType.Data;
-			}
-
-			@Override
-			public void visit( final ElementDataset el )
-			{
-				type = EType.Dataset;
-			}
-
-			@Override
-			public void visit( final ElementExists el )
-			{
-				type = EType.Exists;
-			}
-
-			@Override
-			public void visit( final ElementFilter el )
-			{
-				type = EType.Filter;
-			}
-
-			@Override
-			public void visit( final ElementGroup el )
-			{
-				type = EType.Group;
-			}
-
-			@Override
-			public void visit( final ElementMinus el )
-			{
-				type = EType.Minus;
-			}
-
-			@Override
-			public void visit( final ElementNamedGraph el )
-			{
-				type = EType.NamedGraph;
-			}
-
-			@Override
-			public void visit( final ElementNotExists el )
-			{
-				type = EType.NotExists;
-			}
-
-			@Override
-			public void visit( final ElementOptional el )
-			{
-				type = EType.Optional;
-			}
-
-			@Override
-			public void visit( final ElementPathBlock el )
-			{
-				type = EType.PathBlock;
-			}
-
-			@Override
-			public void visit( final ElementService el )
-			{
-				type = EType.Service;
-			}
-
-			@Override
-			public void visit( final ElementSubQuery el )
-			{
-				type = EType.SubQuery;
-			}
-
-			@Override
-			public void visit( final ElementTriplesBlock el )
-			{
-				type = EType.TriplesBlock;
-			}
-
-			@Override
-			public void visit( final ElementUnion el )
-			{
-				type = EType.Union;
-			}
-		}
-
-		enum EType
-		{
-			Assign, Bind, Data, Dataset, Exists, Filter, Group, Minus, NamedGraph, NotExists, Optional, PathBlock, Service, SubQuery, TriplesBlock, Union
-		}
-
-		private int bnodeCount = 0;
-		private final ElementHandler handler = new ElementHandler();;
-		private Map<String, Node> renumberMap = new HashMap<String, Node>();
-
-		private final Stack<Map<String, Node>> renumberMapStack = new Stack<Map<String, Node>>();
-
-		private Node nextAnon()
-		{
-			final AnonId id = new AnonId("?" + bnodeCount);
-			bnodeCount++;
-			return NodeFactory.createAnon(id);
-		}
-
-		private Expr processExpr( final Expr expr )
-		{
-			if (expr.isVariable())
-			{
-				final ExprVar ev = expr.getExprVar();
-				if (ev.asVar().isBlankNodeVar())
-				{
-					return new ExprVar(nextAnon());
-				}
-			}
-			return expr;
-		}
-
-		private Node processNode( Node n )
-		{
-			if (n.isBlank())
-			{
-				Node retval = renumberMap.get(n.getBlankNodeLabel());
-				if (retval == null)
-				{
-					retval = nextAnon();
-					renumberMap.put(n.getBlankNodeLabel(), retval);
-				}
-				return retval;
-			}
-			if (n.isVariable())
-			{
-				n = processVar((Var) n);
-			}
-			return n;
-		}
-
-		private Var processVar( final Var var )
-		{
-			Var v = var;
-			if (v.isBlankNodeVar())
-			{
-				final String s = v.getVarName();
-				final AnonId id = new AnonId(s);
-				Node n = renumberMap.get(id.getLabelString());
-				if (n == null)
-				{
-					n = nextAnon();
-
-					renumberMap.put(id.getLabelString(), n);
-				}
-				v = Var.alloc(n.getBlankNodeId().getLabelString());
-			}
-			return v;
-		}
-
-		public Element renumber( final Element e )
-		{
-			Element retval = e;
-			e.visit(handler);
-			switch (handler.getType())
-			{
-				case Assign:
-					retval = renumberAssign((ElementAssign) e);
-					break;
-				case Bind:
-					retval = renumberBind((ElementBind) e);
-					break;
-				case Data:
-					retval = renumberData((ElementData) e);
-					break;
-				case Dataset:
-					throw new IllegalArgumentException(
-							"Dataset should not be used in parser");
-
-				case Exists:
-					retval = new ElementExists(
-							renumber(((ElementExists) e).getElement()));
-					break;
-				case Filter:
-					retval = new ElementFilter(
-							processExpr(((ElementFilter) e).getExpr()));
-					break;
-				case Group:
-					retval = renumberGroup((ElementGroup) e);
-					break;
-				case Minus:
-					retval = new ElementMinus(
-							renumber(((ElementMinus) e).getMinusElement()));
-					break;
-				case NamedGraph:
-					retval = renumberNamedGraph((ElementNamedGraph) e);
-					break;
-				case NotExists:
-					retval = new ElementNotExists(
-							renumber(((ElementNotExists) e).getElement()));
-					break;
-				case Optional:
-					retval = new ElementOptional(
-							renumber(((ElementOptional) e).getOptionalElement()));
-					break;
-				case PathBlock:
-					retval = renumberPathBlock((ElementPathBlock) e);
-					break;
-				case Service:
-					// default to returning e
-					break;
-				case SubQuery:
-					// default to returning e
-					break;
-				case TriplesBlock:
-					retval = renumberTriplesBlock((ElementTriplesBlock) e);
-					break;
-				case Union:
-					retval = renumberUnion((ElementUnion) e);
-					break;
-			}
-			return retval;
-
-		}
-
-		private ElementAssign renumberAssign( final ElementAssign e )
-		{
-			return new ElementAssign(processVar(e.getVar()),
-					processExpr(e.getExpr()));
-		}
-
-		private ElementBind renumberBind( final ElementBind e )
-		{
-			return new ElementBind(processVar(e.getVar()),
-					processExpr(e.getExpr()));
-		}
-
-		private ElementData renumberData( final ElementData e )
-		{
-			final List<Var> vars = e.getVars();
-			boolean foundBlank = false;
-			for (int i = 0; i < vars.size(); i++)
-			{
-				if (vars.get(i).isBlankNodeVar())
-				{
-					foundBlank = true;
-					vars.set(i, processVar(vars.get(i)));
-				}
-			}
-			ElementData retval = e;
-			if (foundBlank)
-			{
-				retval = new ElementData();
-				for (final Var v : vars)
-				{
-					retval.add(v);
-				}
-			}
-			return retval;
-		}
-
-		private ElementGroup renumberGroup( final ElementGroup e )
-		{
-			renumberMapStack.push(renumberMap);
-			renumberMap = new HashMap<String, Node>();
-			final ElementGroup retval = new ElementGroup();
-			for (final Element el : e.getElements())
-			{
-				retval.addElement(renumber(el));
-			}
-			renumberMap = renumberMapStack.pop();
-			return retval;
-		}
-
-		private ElementNamedGraph renumberNamedGraph( final ElementNamedGraph e )
-		{
-			final Node n = e.getGraphNameNode();
-			if (n != null)
-			{
-				return new ElementNamedGraph(processNode(n),
-						renumber(e.getElement()));
-			}
-			else
-			{
-				return new ElementNamedGraph(renumber(e.getElement()));
-			}
-		}
-
-		private ElementPathBlock renumberPathBlock( final ElementPathBlock e )
-		{
-			final ElementPathBlock retval = new ElementPathBlock();
-			final PathBlock pb = e.getPattern();
-			for (final TriplePath tp : pb.getList())
-			{
-				if (tp.isTriple())
-				{
-					final Triple t = new Triple(processNode(tp.getSubject()),
-							tp.getPredicate(), processNode(tp.getObject()));
-					retval.addTriple(t);
-				}
-				else
-				{
-					final TriplePath tp2 = new TriplePath(
-							processNode(tp.getSubject()), tp.getPath(),
-							processNode(tp.getObject()));
-					retval.addTriple(tp2);
-				}
-			}
-			return retval;
-		}
-
-		private ElementTriplesBlock renumberTriplesBlock(
-				final ElementTriplesBlock e )
-		{
-			final ElementTriplesBlock retval = new ElementTriplesBlock();
-			final Iterator<Triple> iter = e.patternElts();
-			while (iter.hasNext())
-			{
-				final Triple tp = iter.next();
-				retval.addTriple(new Triple(processNode(tp.getSubject()), tp
-						.getPredicate(), processNode(tp.getObject())));
-			}
-			return retval;
-		}
-
-		private ElementUnion renumberUnion( final ElementUnion e )
-		{
-			final ElementUnion retval = new ElementUnion();
-			for (final Element el : e.getElements())
-			{
-				retval.addElement(renumber(el));
-			}
-			return retval;
-		}
-	}
-
-	/**
-	 * A local filter that removes any values that are null and not allowed to
-	 * be null or that can not be converted
-	 * to the expected column value type.
-	 */
-	public class CheckTypeF extends ExprFunction1
-	{
-		private final RdfColumn column;
-
-		public CheckTypeF( final RdfColumn column, final Node columnVar )
-		{
-			super(new ExprVar(columnVar), "checkTypeF");
-			this.column = column;
-		}
-
-		@Override
-		public Expr copy( final Expr expr )
-		{
-			return new CheckTypeF(column, expr.asVar());
-		}
-
-		@Override
-		public boolean equals( final Object o )
-		{
-			if (o instanceof CheckTypeF)
-			{
-				final CheckTypeF cf = (CheckTypeF) o;
-				return column.equals(cf.column)
-						&& getExpr().asVar().equals(cf.getExpr().asVar());
-			}
-			return false;
-		}
-
-		@Override
-		public NodeValue eval( final NodeValue v )
-		{
-			return NodeValue.FALSE;
-		}
-
-		@Override
-		protected NodeValue evalSpecial( final Binding binding,
-				final FunctionEnv env )
-		{
-			final Var v = Var.alloc(column.getSPARQLName());
-			final Node n = binding.get(v);
-			if (n == null)
-			{
-				return column.getColumnDef().getNullable() == ResultSetMetaData.columnNullable ? NodeValue.TRUE
-						: NodeValue.FALSE;
-			}
-			final Class<?> resultingClass = TypeConverter.getJavaType(column
-					.getColumnDef().getType());
-			Object columnObject;
-			if (n.isLiteral())
-			{
-				columnObject = n.getLiteralValue();
-			}
-			else if (n.isURI())
-			{
-				columnObject = n.getURI();
-			}
-			else if (n.isBlank())
-			{
-				columnObject = n.getBlankNodeId().toString();
-			}
-			else if (n.isVariable())
-			{
-				columnObject = n.getName();
-			}
-			else
-			{
-				columnObject = n.toString();
-			}
-
-			try
-			{
-				AbstractResultSet.extractData(columnObject, resultingClass);
-				return NodeValue.TRUE;
-			}
-			catch (final SQLException e)
-			{
-				return NodeValue.FALSE;
-			}
-
-		}
-	}
-
-	public class RdfTableInfo
-	{
-		private final RdfTable table;
-		private final ElementGroup eg;
-		private final Node tableVar;
-		private final boolean optional;
-		// list of type filters to add at the end of the query
-		private final Set<CheckTypeF> typeFilterList;
-
-		private RdfTableInfo( final ElementGroup queryElementGroup,
-				final RdfTable table, final boolean optional )
-		{
-			this.table = table;
-			this.eg = new ElementGroup();
-			this.optional = optional;
-			this.typeFilterList = new HashSet<CheckTypeF>();
-
-			tablesInQuery.put(table.getSQLName(), this);
-			// add the table var to the nodes.
-			tableVar = NodeFactory.createVariable(table.getSPARQLName());
-			nodesInQuery.put(table.getSQLName(), tableVar);
-			final String eol = System.getProperty("line.separator");
-			final StringBuilder queryFmt = new StringBuilder("{ ")
-					.append(StringUtils.defaultString(
-							table.getQuerySegmentFmt(), ""));
-
-			for (final Iterator<RdfColumn> colIter = table.getColumns(); colIter
-					.hasNext();)
-			{
-				final RdfColumn column = colIter.next();
-				if (!column.isOptional())
-				{
-					final Node colVar = addColumn(column);
-
-					final String fmt = column.getQuerySegmentFmt();
-					if (StringUtils.isNotBlank(fmt))
-					{
-						queryFmt.append(String.format(fmt, tableVar, colVar))
-								.append(eol);
-					}
-				}
-			}
-			queryFmt.append("}");
-			final String queryStr = String
-					.format(queryFmt.toString(), tableVar);
-			try
-			{
-				eg.addElement(SparqlParser.Util.parse(queryStr));
-			}
-			catch (final ParseException e)
-			{
-				throw new IllegalStateException(table.getFQName()
-						+ " query segment " + queryStr, e);
-			}
-			catch (final QueryException e)
-			{
-				throw new IllegalStateException(table.getFQName()
-						+ " query segment " + queryStr, e);
-			}
-
-			if (optional)
-			{
-				queryElementGroup.addElement(new ElementOptional(eg));
-			}
-			else
-			{
-				queryElementGroup.addElement(eg);
-			}
-		}
-
-		/**
-		 * Add the column to the columns being returned from this table.
-		 * 
-		 * @param column
-		 *            the column to return
-		 * @return The columnVar node.
-		 * @Throws IllegalArgumentException if column is not from this table.
-		 */
-		public Node addColumn( final RdfColumn column )
-		{
-			if (!column.getTable().equals(table))
-			{
-				throw new IllegalArgumentException(String.format(
-						"Column %s may not be added to table %s",
-						column.getSQLName(), table.getSQLName()));
-			}
-			// add the column to the query.
-			final Node columnVar = NodeFactory.createVariable(column
-					.getSPARQLName());
-			// if the column does not allow null add triple
-
-			if (!columnsInQuery.containsKey(column.getSQLName()))
-			{
-				columnsInQuery.put(column.getSQLName(), column);
-				nodesInQuery.put(column.getSQLName(), columnVar);
-			}
-			if (column.isOptional())
-			{
-				eg.addElement(new ElementOptional(column.getQuerySegments(
-						tableVar, columnVar)));
-			}
-
-			typeFilterList.add(new CheckTypeF(column, columnVar));
-
-			return columnVar;
-		}
-
-		public void addFilter( final Expr expr )
-		{
-			eg.addElementFilter(new ElementFilter(expr));
-		}
-
-		public void addOptional( final ElementTriplesBlock etb )
-		{
-			eg.addElement(new ElementOptional(etb));
-		}
-
-		public void addTypeFilters()
-		{
-			for (final CheckTypeF f : typeFilterList)
-			{
-				addFilter(f);
-			}
-		}
-
-		/**
-		 * Returns the column or null if not found
-		 * 
-		 * @param name
-		 *            The name of the column to look for.
-		 * @return
-		 */
-		public RdfColumn getColumn( final String name )
-		{
-			return (RdfColumn) table.getColumn(name);
-		}
-
-		public Iterator<RdfColumn> getColumns()
-		{
-			return table.getColumns();
-		}
-
-		public String getSQLName()
-		{
-			return table.getSQLName();
-		}
-
-		public Node getTableVar()
-		{
-			return tableVar;
-		}
-
-		public Set<CheckTypeF> getTypeFilterList()
-		{
-			return typeFilterList;
-		}
-
-		public boolean isOptional()
-		{
-			return optional;
-		}
-	}
-
 	// a set of error messages.
-	private static final String NOT_FOUND_IN_QUERY = "%s not found in SPARQL query";
+	static final String NOT_FOUND_IN_QUERY = "%s not found in SPARQL query";
 
-	private static final String FOUND_IN_MULTIPLE_ = "%s was found in multiple %s";
+	static final String FOUND_IN_MULTIPLE_ = "%s was found in multiple %s";
 
-	private static final String NOT_FOUND_IN_ANY_ = "%s was not found in any %s";
+	static final String NOT_FOUND_IN_ANY_ = "%s was not found in any %s";
 
 	private static void addFilter( final Query query, final Expr filter )
 	{
@@ -731,6 +98,8 @@ public class SparqlQueryBuilder
 		return retval;
 	}
 
+	private final QueryTableSet tableSet;
+
 	// the query we are building.
 	private Query query;
 
@@ -740,15 +109,6 @@ public class SparqlQueryBuilder
 	// sparql catalog we are running against.
 	private final RdfCatalog catalog;
 
-	// the list of tables in the query indexed by SQL name.
-	private final Map<String, RdfTableInfo> tablesInQuery;
-
-	// the list of nodes in the query indexed by SQL name.
-	private final Map<String, Node> nodesInQuery;
-
-	// the list of columns in the query indexed by SQL name.
-	private final Map<String, RdfColumn> columnsInQuery;
-
 	// the list of columns not to be included in the "all columns" result.
 	// perhaps this should store column so that tables may be checked in case
 	// tables are added to the query later. But I don't think so.
@@ -756,6 +116,9 @@ public class SparqlQueryBuilder
 
 	// columns indexed by var.
 	private final List<Column> columnsInResult;
+
+	private static Logger LOG = LoggerFactory
+			.getLogger(SparqlQueryBuilder.class);
 
 	/**
 	 * Create a query builder for a catalog
@@ -774,9 +137,7 @@ public class SparqlQueryBuilder
 		this.catalog = catalog;
 		this.query = new Query();
 		this.isBuilt = false;
-		this.tablesInQuery = new HashMap<String, RdfTableInfo>();
-		this.nodesInQuery = new HashMap<String, Node>();
-		this.columnsInQuery = new HashMap<String, RdfColumn>();
+		this.tableSet = new QueryTableSet();
 		this.columnsInUsing = new ArrayList<String>();
 		this.columnsInResult = new ArrayList<Column>();
 		query.setQuerySelectType();
@@ -798,6 +159,7 @@ public class SparqlQueryBuilder
 	 */
 	public void addBGP( final Triple t )
 	{
+		LOG.debug( "addBGP: {}", t );
 		checkBuilt();
 		final ElementGroup eg = getElementGroup();
 		for (final Element el : eg.getElements())
@@ -836,22 +198,29 @@ public class SparqlQueryBuilder
 	 */
 	public Node addColumn( final RdfColumn column ) throws SQLException
 	{
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("(addColumn-1-arg) looking for Column {}", column.getSQLName());
+		}
 		checkBuilt();
-		if (!columnsInQuery.containsKey(column.getSQLName()))
+		if (!tableSet.containsColumn(column.getSQLName()))
 		{
-			RdfTableInfo sti = tablesInQuery
-					.get(column.getTable().getSQLName());
+			if (LOG.isDebugEnabled()) {
+				LOG.debug("adding Column {}", column.getSQLName());
+			}
+			final String alias = column.getTable().getSQLName();
+			QueryTableInfo sti = tableSet.getTable(alias);
 			if (sti == null)
 			{
-				sti = new RdfTableInfo(getElementGroup(), column.getTable(),
-						false);
+				sti = new QueryTableInfo(tableSet, getElementGroup(),
+						column.getTable(), alias, false);
 			}
-			return sti.addColumn(column);
+			return sti.addColumn(new QueryColumnInfo(tableSet, column, column
+					.getSQLName()));
 		}
 		else
 		{
 			// already there, return node from the query.
-			return getNodeBySQLName(column.getSQLName());
+			return tableSet.getColumnByName(column.getSQLName()).getVar();
 		}
 	}
 
@@ -870,65 +239,63 @@ public class SparqlQueryBuilder
 	public Node addColumn( final String schemaName, final String tableName,
 			final String columnName ) throws SQLException
 	{
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("(addColumn-3-args) adding Column {}", NameUtils.getDBName(schemaName, tableName, columnName));
+		}
 		checkBuilt();
-		// get all the columns that match the name patterns
-		final Collection<RdfColumn> columns = findColumns(schemaName,
+		final QueryColumnInfo columnInfo = tableSet.findColumn(schemaName,
 				tableName, columnName);
-
-		// if there are more than one see if only one is specified in the list
-		// of tables.
-		if (columns.size() > 1)
-		{
-			if (tableName == null)
-			{
-				// wild table so look for table names currently in the query.
-				// get the set of table names.
-				final Set<String> tblNames = WrappedIterator
-						.create(tablesInQuery.values().iterator())
-						.mapWith(new Map1<RdfTableInfo, String>() {
-
-							@Override
-							public String map1( final RdfTableInfo o )
-							{
-								return o.getSQLName();
-							}
-						}).toSet();
-				RdfColumn col = null;
-				RdfColumn thisCol = null;
-				final Iterator<RdfColumn> iter = columns.iterator();
-				while (iter.hasNext())
-				{
-					thisCol = iter.next();
-					if (tblNames.contains(thisCol.getTable().getSQLName()))
-					{
-						if (col != null)
-						{
-							throw new SQLException(String.format(
-									SparqlQueryBuilder.FOUND_IN_MULTIPLE_,
-									columnName, "tables"));
-						}
-						else
-						{
-							col = thisCol;
-						}
-					}
-				}
-				if (col != null)
-				{
-					return addColumn(col);
-				}
-
-			}
-			throw new SQLException(
-					String.format(SparqlQueryBuilder.FOUND_IN_MULTIPLE_,
-							columnName, "tables"));
-		}
-		if (columns.isEmpty())
-		{
-			throw new SQLException(String.format(
-					SparqlQueryBuilder.NOT_FOUND_IN_ANY_, columnName, "table"));
-		}
-		return addColumn(columns.iterator().next());
+		return columnInfo.getVar();
+		// // get all the columns that match the name patterns
+		// final Collection<RdfColumn> columns = findColumns(schemaName,
+		// tableName, columnName);
+		//
+		// // if there are more than one see if only one is specified in the
+		// list
+		// // of tables.
+		// if (columns.size() > 1)
+		// {
+		// if (tableName == null)
+		// {
+		// // wild table so look for table names currently in the query.
+		// // get the set of table names.
+		// final Set<String> tblNames = tableSet.getTableNames();
+		// RdfColumn col = null;
+		// RdfColumn thisCol = null;
+		// final Iterator<RdfColumn> iter = columns.iterator();
+		// while (iter.hasNext())
+		// {
+		// thisCol = iter.next();
+		// if (tblNames.contains(thisCol.getTable().getSQLName()))
+		// {
+		// if (col != null)
+		// {
+		// throw new SQLException(String.format(
+		// SparqlQueryBuilder.FOUND_IN_MULTIPLE_,
+		// columnName, "tables"));
+		// }
+		// else
+		// {
+		// col = thisCol;
+		// }
+		// }
+		// }
+		// if (col != null)
+		// {
+		// return addColumn(col);
+		// }
+		//
+		// }
+		// throw new SQLException(
+		// String.format(SparqlQueryBuilder.FOUND_IN_MULTIPLE_,
+		// columnName, "tables"));
+		// }
+		// if (columns.isEmpty())
+		// {
+		// throw new SQLException(String.format(
+		// SparqlQueryBuilder.NOT_FOUND_IN_ANY_, columnName, "table"));
+		// }
+		// return addColumn(columns.iterator().next());
 	}
 
 	/**
@@ -939,6 +306,7 @@ public class SparqlQueryBuilder
 	 */
 	public void addFilter( final Expr filter )
 	{
+		SparqlQueryBuilder.LOG.debug("adding Filter: {}", filter);
 		checkBuilt();
 		SparqlQueryBuilder.addFilter(query, filter);
 	}
@@ -957,6 +325,9 @@ public class SparqlQueryBuilder
 	public Node addOptionalTable( final String schemaName,
 			final String tableName ) throws SQLException
 	{
+		if (LOG.isDebugEnabled()) {
+			LOG.debug( "Adding optional table {}", NameUtils.getDBName(schemaName, tableName, null));
+		}
 		checkBuilt();
 		return addTable(schemaName, tableName, true);
 	}
@@ -971,6 +342,7 @@ public class SparqlQueryBuilder
 	 */
 	public void addOrderBy( final Expr expr, final boolean ascending )
 	{
+		LOG.debug( "Adding order by {} {}", expr, ascending?"Ascending":"Descending");
 		checkBuilt();
 		query.addOrderBy(expr, ascending ? Query.ORDER_ASCENDING
 				: Query.ORDER_DESCENDING);
@@ -978,18 +350,32 @@ public class SparqlQueryBuilder
 
 	public Node addTable( final RdfTable table )
 	{
-		return addTable(table, false);
+		return addTable(table, null, false);
 	}
 
 	public Node addTable( final RdfTable table, final boolean optional )
 	{
+		return addTable(table, null, optional);
+	}
+
+	public Node addTable( final RdfTable table, final String tableAlias,
+			final boolean optional )
+	{
+		final String tblName = StringUtils.defaultString(tableAlias,
+				table.getSQLName());
+		if (LOG.isDebugEnabled())
+		{
+			LOG.debug( "Adding Rdftable {} as {}", table.getSQLName(), tblName );
+		}
+		
 		// make sure the table is in the query.
-		RdfTableInfo sti = tablesInQuery.get(table.getSQLName());
+		QueryTableInfo sti = tableSet.getTable(tblName);
 		if (sti == null)
 		{
-			sti = new RdfTableInfo(getElementGroup(), table, optional);
+			sti = new QueryTableInfo(tableSet, getElementGroup(), table,
+					tblName, optional);
 		}
-		return sti.getTableVar();
+		return sti.getVar();
 	}
 
 	/**
@@ -1006,13 +392,23 @@ public class SparqlQueryBuilder
 	public Node addTable( final String schemaName, final String tableName )
 			throws SQLException
 	{
-		checkBuilt();
 		return addTable(schemaName, tableName, false);
 	}
 
 	public Node addTable( final String schemaName, final String tableName,
 			final boolean optional ) throws SQLException
 	{
+		return addTable(schemaName, tableName, null, optional);
+	}
+
+	public Node addTable( final String schemaName, final String tableName,
+			final String tableAlias, final boolean optional )
+			throws SQLException
+	{
+		if (LOG.isDebugEnabled())
+		{
+			LOG.debug( "Adding table {} alias {}", NameUtils.getDBName(schemaName, tableName, null), tableAlias );
+		}
 		checkBuilt();
 		final Collection<RdfTable> tables = findTables(schemaName, tableName);
 
@@ -1027,19 +423,21 @@ public class SparqlQueryBuilder
 			throw new SQLException(String.format(
 					SparqlQueryBuilder.NOT_FOUND_IN_ANY_, tableName, "schema"));
 		}
-		return addTable(tables.iterator().next(), optional);
+		return addTable(tables.iterator().next(), tableAlias, optional);
 	}
 
 	public void addUsing( final String columnName )
 	{
-		if (tablesInQuery.size() < 2)
+		LOG.debug( "adding Using {}", columnName );
+		final Set<String> tableAliases = tableSet.getTableAliases();
+		if (tableAliases.size() < 2)
 		{
 			throw new IllegalArgumentException(
 					"There must be at least 2 tables in the query");
 		}
-		final Iterator<String> iter = tablesInQuery.keySet().iterator();
-		final RdfTableInfo rti = tablesInQuery.get(iter.next());
-		final RdfColumn baseColumn = rti.getColumn(columnName);
+		final Iterator<String> iter = tableAliases.iterator();
+		final QueryTableInfo rti = tableSet.getTable(iter.next());
+		final QueryColumnInfo baseColumn = rti.getColumn(columnName);
 		if (baseColumn == null)
 		{
 			throw new IllegalArgumentException(String.format(
@@ -1048,11 +446,11 @@ public class SparqlQueryBuilder
 		columnsInUsing.add(columnName);
 		try
 		{
-			final ExprVar left = new ExprVar(addColumn(baseColumn));
+			final ExprVar left = new ExprVar(addColumn(baseColumn.getColumn()));
 			while (iter.hasNext())
 			{
-				final RdfTableInfo rti2 = tablesInQuery.get(iter.next());
-				final RdfColumn col = rti2.getColumn(columnName);
+				final QueryTableInfo rti2 = tableSet.getTable(iter.next());
+				final QueryColumnInfo col = rti2.getColumn(columnName);
 				if (col == null)
 				{
 					throw new IllegalArgumentException(
@@ -1060,7 +458,8 @@ public class SparqlQueryBuilder
 									rti2.getSQLName()));
 				}
 
-				addFilter(new E_Equals(left, new ExprVar(addColumn(col))));
+				addFilter(new E_Equals(left, new ExprVar(
+						addColumn(col.getColumn()))));
 			}
 		}
 		catch (final SQLException e)
@@ -1080,6 +479,7 @@ public class SparqlQueryBuilder
 	 */
 	public void addVar( final Expr expr, final String name )
 	{
+		LOG.debug( "Adding Var {} as {}", expr, name );
 		Column column;
 		checkBuilt();
 		final NodeValue nv = expr.getConstant();
@@ -1124,22 +524,27 @@ public class SparqlQueryBuilder
 		// figure out what name we are going to use.
 		final String sparqlName = StringUtils.defaultString(alias,
 				col.getSPARQLName());
+		if (LOG.isDebugEnabled())
+		{
+			LOG.debug( String.format("addVar %s as %s", col.getSPARQLName(), sparqlName ));
+		}
 
 		// allocate the var for the real name.
-		final Var v = Var.alloc(sparqlName);
+		final Var v = Var.alloc(col.getSPARQLName());
 		// if we have not seen this var before register all the info.
 		if (!query.getResultVars().contains(v.toString()))
 		{
 			// if an alias is being used then do special registration
-			if (sparqlName.equalsIgnoreCase(alias))
+			if ((alias != null) && !sparqlName.equalsIgnoreCase(col.getSPARQLName()))
 			{
-				final Node n = addColumn(col);
-				final ElementBind bind = new ElementBind(v, new ExprVar(n));
+				QueryColumnInfo qci = new QueryColumnInfo(tableSet, col, alias);
+				final ElementBind bind = new ElementBind(Var.alloc(qci.getVar()), new ExprVar(v));
 				getElementGroup().addElement(bind);
 				// add the alias for the column to the columns list.
-				columnsInQuery.put(v.getName(), col);
+				//new QueryColumnInfo(tableSet, col, v.getName());
 			}
 			query.addResultVar(v);
+			// make sure SELECT * is processed
 			query.getResultVars();
 			columnsInResult.add(col);
 		}
@@ -1179,7 +584,7 @@ public class SparqlQueryBuilder
 			if (!catalog.isService())
 			{
 				// apply the type filters to each subpart.
-				for (final RdfTableInfo sti : tablesInQuery.values())
+				for (final QueryTableInfo sti : tableSet.listTables())
 				{
 					sti.addTypeFilters();
 				}
@@ -1220,6 +625,7 @@ public class SparqlQueryBuilder
 				query = result;
 			}
 			isBuilt = true;
+			SparqlQueryBuilder.LOG.debug("Query parsed as {}", query);
 		}
 		return query;
 	}
@@ -1246,6 +652,12 @@ public class SparqlQueryBuilder
 	private Collection<RdfColumn> findColumns( final String schemaNamePattern,
 			final String tableNamePattern, final String columnNamePattern )
 	{
+		if (SparqlQueryBuilder.LOG.isDebugEnabled())
+		{
+			SparqlQueryBuilder.LOG.debug(String.format(
+					"Looking for column %s.%s.%s", schemaNamePattern,
+					tableNamePattern, columnNamePattern));
+		}
 		final List<RdfColumn> columns = new ArrayList<RdfColumn>();
 		for (final Schema schema : catalog.findSchemas(schemaNamePattern))
 		{
@@ -1266,6 +678,11 @@ public class SparqlQueryBuilder
 	private Collection<RdfTable> findTables( final String schemaName,
 			final String tableName )
 	{
+		if (SparqlQueryBuilder.LOG.isDebugEnabled())
+		{
+			SparqlQueryBuilder.LOG.debug(String.format(
+					"Looking for Table %s.%s", schemaName, tableName));
+		}
 		final List<RdfTable> tables = new ArrayList<RdfTable>();
 		for (final Schema schema : catalog.findSchemas(schemaName))
 		{
@@ -1294,7 +711,7 @@ public class SparqlQueryBuilder
 	private int getColCount( final Column col )
 	{
 		int retval = 0;
-		for (final Column c : columnsInQuery.values())
+		for (final Column c : tableSet.getColumns())
 		{
 			if (c.getName().equalsIgnoreCase(col.getName()))
 			{
@@ -1317,24 +734,29 @@ public class SparqlQueryBuilder
 	 *            The column name
 	 * @return The RdfColumn or null if no column is defined in the query.
 	 */
-	public RdfColumn getColumn( final String schemaName,
-			final String tableName, final String columnName )
+//	public RdfColumn getColumn( final String schemaName,
+//			final String tableName, final String columnName )
+//	{
+//		if (schemaName == null)
+//		{
+//			throw new IllegalArgumentException("Schema name may not be null");
+//		}
+//		if (tableName == null)
+//		{
+//			throw new IllegalArgumentException("Table name may not be null");
+//		}
+//		if (columnName == null)
+//		{
+//			throw new IllegalArgumentException("Column name may not be null");
+//		}
+//		final Iterator<RdfColumn> iter = findColumns(schemaName, tableName,
+//				columnName).iterator();
+//		return (iter.hasNext()) ? iter.next() : null;
+//	}
+	
+	public QueryTableInfo getTable( QueryTableInfo.Name name )
 	{
-		if (schemaName == null)
-		{
-			throw new IllegalArgumentException("Schema name may not be null");
-		}
-		if (tableName == null)
-		{
-			throw new IllegalArgumentException("Table name may not be null");
-		}
-		if (columnName == null)
-		{
-			throw new IllegalArgumentException("Column name may not be null");
-		}
-		final Iterator<RdfColumn> iter = findColumns(schemaName, tableName,
-				columnName).iterator();
-		return (iter.hasNext()) ? iter.next() : null;
+		return tableSet.getTable(name);
 	}
 
 	private ElementGroup getElementGroup()
@@ -1342,52 +764,16 @@ public class SparqlQueryBuilder
 		return SparqlQueryBuilder.getElementGroup(query);
 	}
 
-	private Node getNodeBySQLName( final String dbName )
-	{
-		final Node n = nodesInQuery.get(dbName);
-		if (n == null)
-		{
-			throw new IllegalStateException(String.format(
-					SparqlQueryBuilder.NOT_FOUND_IN_QUERY, dbName));
-		}
-		return n;
-	}
-
-	public RdfColumn getNodeColumn( final Node n )
+	public QueryColumnInfo getNodeColumn( final Node n )
 	{
 		checkBuilt();
-		for (final Map.Entry<String, Node> entry : nodesInQuery.entrySet())
-		{
-			if (entry.getValue().equals(n))
-			{
-				final String objectSQLName = entry.getKey();
-				return columnsInQuery.get(objectSQLName);
-			}
-		}
-		return null;
+		return tableSet.getColumnByNode(n);
 	}
 
-	public RdfTableInfo getNodeTable( final Node n )
+	public QueryTableInfo getNodeTable( final Node n )
 	{
 		checkBuilt();
-		for (final Map.Entry<String, Node> entry : nodesInQuery.entrySet())
-		{
-			if (entry.getValue().equals(n))
-			{
-				final String objectSQLName = entry.getKey();
-				RdfTableInfo sti = tablesInQuery.get(objectSQLName);
-				if (sti == null)
-				{
-					final RdfColumn col = columnsInQuery.get(objectSQLName);
-					if (col != null)
-					{
-						sti = tablesInQuery.get(col.getTable().getSQLName());
-					}
-				}
-				return sti;
-			}
-		}
-		return null;
+		return tableSet.getTableByNode(n);
 	}
 
 	public List<Column> getResultColumns()
@@ -1415,24 +801,13 @@ public class SparqlQueryBuilder
 		new ArrayList<Column>();
 		for (final Var var : expLst.getVars())
 		{
-			String varColName = null;
+
 			final Expr expr = expLst.getExpr(var);
-			if (expr != null)
-			{
-				varColName = expr.getExprVar().getVarName()
-						.replace(NameUtils.SPARQL_DOT, ".");
-			}
-			else
-			{
-				varColName = var.getName().replace(NameUtils.SPARQL_DOT, ".");
-			}
-			final Column c = columnsInQuery.get(varColName);
-			if (c == null)
-			{
-				throw new IllegalStateException(String.format(
-						SparqlQueryBuilder.NOT_FOUND_IN_QUERY, var));
-			}
-			builder.addColumnDef(c.getColumnDef());
+			final String varColName = NameUtils
+					.convertSPARQL2DB(expr == null ? var.getName() : expr
+							.getExprVar().getVarName());
+			builder.addColumnDef(tableSet.getColumnByName(varColName)
+					.getColumn().getColumnDef());
 
 		}
 		return builder.build(model);
@@ -1441,7 +816,7 @@ public class SparqlQueryBuilder
 	private Set<CheckTypeF> getTypeFilterList()
 	{
 		final Set<CheckTypeF> retval = new HashSet<CheckTypeF>();
-		for (final RdfTableInfo sti : tablesInQuery.values())
+		for (final QueryTableInfo sti : tableSet.getTables())
 		{
 			retval.addAll(sti.getTypeFilterList());
 		}
@@ -1467,16 +842,16 @@ public class SparqlQueryBuilder
 	 */
 	public void setAllColumns() throws SQLException
 	{
+		LOG.debug( "Setting All Columns");
 		checkBuilt();
 		int i = 0;
-		for (final RdfTableInfo t : tablesInQuery.values())
+		for (final QueryTableInfo t : tableSet.getTables())
 		{
 
 			final Iterator<RdfColumn> iter = t.getColumns();
 			while (iter.hasNext())
 			{
 				final RdfColumn col = iter.next();
-				col.getName();
 				if ((i == 0) || !columnsInUsing.contains(col.getName()))
 				{
 					addColumn(col);
@@ -1493,12 +868,14 @@ public class SparqlQueryBuilder
 	 */
 	public void setDistinct()
 	{
+		LOG.debug("Setting Distinct");
 		checkBuilt();
 		query.setDistinct(true);
 	}
 
 	public SparqlQueryBuilder setKey( final RdfKey key )
 	{
+		LOG.debug( "Setting key {}", key );
 		if (key != null)
 		{
 			setOrderBy(key);
@@ -1518,6 +895,7 @@ public class SparqlQueryBuilder
 	 */
 	public void setLimit( final Long limit )
 	{
+		LOG.debug( "Setting limit {}", limit );
 		checkBuilt();
 		query.setLimit(limit);
 	}
@@ -1530,12 +908,14 @@ public class SparqlQueryBuilder
 	 */
 	public void setOffset( final Long offset )
 	{
+		LOG.debug( "Setting Offset {}", offset );
 		checkBuilt();
 		query.setOffset(offset);
 	}
 
 	public void setOrderBy( final RdfKey key )
 	{
+		LOG.debug( "Setting orderBy {}", key );
 		final List<Var> vars = query.getProjectVars();
 		for (final RdfKeySegment seg : key.getSegments())
 		{

@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.apache.log4j.Level;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -29,6 +30,11 @@ public class J4SStatementOuterJoinTest
 	@Before
 	public void setup() throws Exception
 	{
+		LoggingConfig.setConsole(Level.DEBUG);
+		LoggingConfig.setRootLogger(Level.INFO);
+		LoggingConfig.setLogger("com.hp.hpl.jena.", Level.INFO);
+		LoggingConfig.setLogger("org.xenei.jdbc4sparql", Level.DEBUG);
+		
 		Class.forName("org.xenei.jdbc4sparql.J4SDriver");
 
 		fUrl = J4SDriverTest.class

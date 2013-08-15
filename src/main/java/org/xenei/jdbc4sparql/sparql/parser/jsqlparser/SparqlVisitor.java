@@ -29,12 +29,15 @@ import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 
 public class SparqlVisitor implements StatementVisitor
 {
 	private final SparqlQueryBuilder sparqlQueryBuilder;
+	private static Logger LOG = LoggerFactory.getLogger(SparqlVisitor.class);
 
 	public SparqlVisitor( final RdfCatalog catalog )
 	{
@@ -79,6 +82,7 @@ public class SparqlVisitor implements StatementVisitor
 	@Override
 	public void visit( final Select select )
 	{
+		SparqlVisitor.LOG.debug("visit: {}", select);
 		final SparqlSelectVisitor v = new SparqlSelectVisitor(
 				sparqlQueryBuilder);
 		select.getSelectBody().accept(v);

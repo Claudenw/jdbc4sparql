@@ -203,14 +203,19 @@ public class RdfKey implements Key
 	}
 
 	@Override
-	public final String getId()
+	public String toString()
 	{
 		final StringBuilder sb = new StringBuilder().append(isUnique());
 		for (final RdfKeySegment ks : getSegments())
 		{
 			sb.append(ks.getId());
 		}
-		return UUID.nameUUIDFromBytes(sb.toString().getBytes()).toString();
+		return sb.toString();
+	}
+	@Override
+	public final String getId()
+	{
+		return UUID.nameUUIDFromBytes(toString().getBytes()).toString();
 	}
 
 	/**

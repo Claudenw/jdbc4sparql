@@ -19,6 +19,11 @@ public class NameUtils
 		return dbName.replace(NameUtils.DB_DOT, NameUtils.SPARQL_DOT);
 	}
 
+	public static String convertSPARQL2DB( final String dbName )
+	{
+		return dbName.replace(NameUtils.SPARQL_DOT, NameUtils.DB_DOT);
+	}
+
 	private static String createName( final String schema, final String table,
 			final String col, final String separator )
 	{
