@@ -1,7 +1,10 @@
 package org.xenei.jdbc4sparql.sparql;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.xenei.jdbc4sparql.impl.NameUtils;
@@ -12,13 +15,13 @@ public abstract class QueryItemName
 	private final String table;
 	private final String col;
 
-	protected QueryItemName( QueryItemName name )
+	protected QueryItemName( final QueryItemName name )
 	{
 		this.schema = name.getSchema();
 		this.table = name.getTable();
 		this.col = name.getCol();
 	}
-	
+
 	protected QueryItemName( final String schema, final String table,
 			final String col )
 	{
@@ -26,6 +29,12 @@ public abstract class QueryItemName
 		this.table = table;
 		this.col = col;
 	}
+	
+	public String getShortName() {
+		return StringUtils.defaultIfEmpty(getCol(), StringUtils.defaultIfEmpty(getTable(), getSchema()));
+	}
+	
+
 
 	@Override
 	public boolean equals( final Object o )
@@ -49,11 +58,14 @@ public abstract class QueryItemName
 	/**
 	 * Find the object matching the key in the map.
 	 * Uses matches() method to determine match.
-	 * @param map The map to find the object in.
-	 * @return  The Object (T) or null if not found
-	 * @throws IllegalArgumentException if more than one object matches.
+	 * 
+	 * @param map
+	 *            The map to find the object in.
+	 * @return The Object (T) or null if not found
+	 * @throws IllegalArgumentException
+	 *             if more than one object matches.
 	 */
-	public <T> T findMatch( final Map<QueryItemName, T> map )
+	public <T> T findMatch( final Map<? extends QueryItemName, T> map )
 	{
 		// exact match
 		if (map.containsKey(this))
@@ -62,7 +74,7 @@ public abstract class QueryItemName
 		}
 		T retval = null;
 		// no match pattern
-		if ((schema == null) && (table == null) && (col == null))
+		if (isWild())
 		{
 			if (map.size() > 0)
 			{
@@ -78,7 +90,7 @@ public abstract class QueryItemName
 								.getClass().getSimpleName()));
 			}
 		}
-		else if ((schema == null) || (table == null) || (col == null))
+		else if (hasWild())
 		{
 			for (final QueryItemName n : map.keySet())
 			{
@@ -97,8 +109,34 @@ public abstract class QueryItemName
 		return retval;
 	}
 
+	
+	/**
+	 * Find the object matching the key in the map.
+	 * Uses matches() method to determine match.
+	 * 
+	 * @param map
+	 *            The map to find the object in.
+	 * @return The Object (T) or null if not found
+	 * @throws IllegalArgumentException
+	 *             if more than one object matches.
+	 */
+	public <T> Set<T> listMatches( final Map<? extends QueryItemName, T> map )
+	{
+		Set<T> retval = new HashSet<T>();
+		for (final QueryItemName n : map.keySet())
+		{
+			if (matches(n))
+			{
+				retval.add( map.get(n));
+			}
+		}
+		return retval;
+	}
+
+	
 	/**
 	 * Get the column name string
+	 * 
 	 * @return
 	 */
 	public String getCol()
@@ -108,6 +146,7 @@ public abstract class QueryItemName
 
 	/**
 	 * Get the name in DB format
+	 * 
 	 * @return
 	 */
 	public String getDBName()
@@ -117,6 +156,7 @@ public abstract class QueryItemName
 
 	/**
 	 * Get the schema segment of the name.
+	 * 
 	 * @return
 	 */
 	public String getSchema()
@@ -126,6 +166,7 @@ public abstract class QueryItemName
 
 	/**
 	 * Get the complete name in SPARQL format
+	 * 
 	 * @return
 	 */
 	public String getSPARQLName()
@@ -135,6 +176,7 @@ public abstract class QueryItemName
 
 	/**
 	 * Get the table portion of the complete name.
+	 * 
 	 * @return
 	 */
 	public String getTable()
@@ -188,5 +230,21 @@ public abstract class QueryItemName
 	public String toString()
 	{
 		return getDBName();
+	}
+	
+	/**
+	 * @return true if this is a complete wildcard name (e.g. all segments are null)
+	 */
+	public boolean isWild()
+	{
+		return getSchema() == null && getTable()==null && getCol() == null;
+	}
+	
+	/**
+	 * @return true if this has a wildcard (null) segment
+	 */
+	public boolean hasWild()
+	{
+		return getSchema() == null || getTable()==null || getCol() == null;
 	}
 }

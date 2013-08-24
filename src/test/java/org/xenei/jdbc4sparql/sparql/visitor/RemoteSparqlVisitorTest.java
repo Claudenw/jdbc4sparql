@@ -35,10 +35,12 @@ import java.util.List;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.statement.Statement;
 
+import org.apache.log4j.Level;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.xenei.jdbc4sparql.LoggingConfig;
 import org.xenei.jdbc4sparql.impl.NameUtils;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
@@ -56,6 +58,10 @@ public class RemoteSparqlVisitorTest
 	@Before
 	public void setUp() throws Exception
 	{
+		LoggingConfig.setConsole(Level.DEBUG);
+		LoggingConfig.setRootLogger(Level.INFO);
+		LoggingConfig.setLogger("com.hp.hpl.jena.", Level.INFO);
+		LoggingConfig.setLogger("org.xenei.jdbc4sparql", Level.DEBUG);
 		final Model model = ModelFactory.createDefaultModel();
 		final Model localModel = ModelFactory.createDefaultModel();
 		final RdfCatalog catalog = new RdfCatalog.Builder()
@@ -128,7 +134,7 @@ public class RemoteSparqlVisitorTest
 		Assert.assertTrue(e instanceof ElementGroup);
 		final ElementGroup eg = (ElementGroup) e;
 		final List<Element> eLst = eg.getElements();
-		Assert.assertEquals(9, eLst.size()); // 1 service, 8 columns
+		Assert.assertEquals(8, eLst.size()); // 1 service, 7 columns
 		final List<Var> vLst = q.getProjectVars();
 		Assert.assertEquals(7, vLst.size()); // seven vars
 
@@ -182,8 +188,7 @@ public class RemoteSparqlVisitorTest
 				strLst.add(e2.toString());
 			}
 		}
-		String name = NameUtils.getSPARQLName("testSchema", "foo", "StringCol");
-		Assert.assertTrue(strLst.contains("FILTER checkTypeF(?"+name+")"));
+		Assert.assertTrue(strLst.contains("FILTER checkTypeF(?StringCol)"));
 		final List<Var> vLst = q.getProjectVars();
 		Assert.assertEquals(1, vLst.size());
 		Assert.assertEquals(Var.alloc("StringCol"), vLst.get(0));
@@ -212,8 +217,9 @@ public class RemoteSparqlVisitorTest
 				strLst.add(e2.toString());
 			}
 		}
-		String name = NameUtils.getSPARQLName("testSchema", "foo", "StringCol");
-		Assert.assertTrue(strLst.contains("FILTER checkTypeF(?"+name+")"));
+
+		Assert.assertTrue(strLst.contains("FILTER checkTypeF(?StringCol)"));
+		Assert.assertTrue(strLst.contains("FILTER checkTypeF(?IntCol)"));
 		final List<Var> vLst = q.getProjectVars();
 		Assert.assertEquals(1, vLst.size());
 		Assert.assertEquals(Var.alloc("StringCol"), vLst.get(0));

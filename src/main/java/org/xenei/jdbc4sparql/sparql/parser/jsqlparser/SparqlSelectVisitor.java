@@ -21,14 +21,17 @@ package org.xenei.jdbc4sparql.sparql.parser.jsqlparser;
 
 import com.hp.hpl.jena.graph.Node;
 import com.hp.hpl.jena.query.Query;
+import com.hp.hpl.jena.sparql.expr.E_Bound;
+import com.hp.hpl.jena.sparql.expr.E_Equals;
 import com.hp.hpl.jena.sparql.expr.Expr;
 import com.hp.hpl.jena.sparql.expr.ExprFunction;
+import com.hp.hpl.jena.sparql.expr.ExprFunction2;
 import com.hp.hpl.jena.sparql.expr.ExprVar;
 
-import java.util.HashMap;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.Join;
@@ -60,6 +63,7 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 
 	private static Logger LOG = LoggerFactory
 			.getLogger(SparqlSelectVisitor.class);
+	
 
 	/**
 	 * Constructor
@@ -72,9 +76,10 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 		this.queryBuilder = queryBuilder;
 	}
 
-	private void applyOuterExpr( final Expr aExpr, QueryItemName mapFrom, QueryItemName mapTo )
+	private void applyOuterExpr( final Expr aExpr, final QueryItemName mapFrom,
+			final QueryItemName mapTo )
 	{
-		LOG.debug("apply outer expr {}", aExpr);
+		SparqlSelectVisitor.LOG.debug("apply outer expr {}", aExpr);
 		final Expr expr = aExpr;
 		if (expr instanceof ExprFunction)
 		{
@@ -86,9 +91,11 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 		queryBuilder.addFilter(expr);
 	}
 
-	private boolean applyOuterExprSub( final Expr aExpr, final Expr toApply, QueryItemName mapFrom, QueryItemName mapTo )
+	private boolean applyOuterExprSub( final Expr aExpr, final Expr toApply,
+			final QueryItemName mapFrom, final QueryItemName mapTo )
 	{
-		LOG.debug("apply outer expr sub {} {}", aExpr, toApply);
+		SparqlSelectVisitor.LOG.debug("apply outer expr sub {} {}", aExpr,
+				toApply);
 		final Expr expr = aExpr;
 		if (expr instanceof ExprFunction)
 		{
@@ -104,10 +111,10 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 		if (expr instanceof ExprVar)
 		{
 			final Node n = ((ExprVar) expr).getAsNode();
-			final QueryTableInfo sti = queryBuilder.getNodeTable(n);
-			if ((sti != null) && (sti.isOptional()))
+			final QueryTableInfo tableInfo = queryBuilder.getNodeTable(n);
+			if ((tableInfo != null) && (tableInfo.isOptional()))
 			{
-				sti.addFilter(toApply);
+				tableInfo.addFilter(toApply);
 				return true;
 			}
 			return false;
@@ -116,9 +123,9 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 	}
 
 	// take apart the join and figure out how to merge it.
-	private void deparseJoin( final Join join, QueryItemName tableName )
+	private void deparseJoin( final Join join, final QueryTableInfo.Name tableName) 
 	{
-		LOG.debug( "deparse join {}", join );
+		SparqlSelectVisitor.LOG.debug("deparse join {}", join);
 		if (join.isSimple())
 		{
 			final SparqlFromVisitor fromVisitor = new SparqlFromVisitor(
@@ -127,6 +134,15 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 		}
 		else if (join.isOuter())
 		{
+			deparseOuterJoin(join, tableName);
+		}
+		else {
+			deparseInnerJoin(join, tableName);
+		}
+	}
+	
+	private void deparseOuterJoin(final Join join, final QueryItemName tableName)
+	{
 			final String fmt = "%s OUTER JOIN Is not supported";
 
 			if (join.isRight())
@@ -146,26 +162,40 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 						"FULL"));
 			}
 			else
-			{	
+			{
 				// handles left and not specified
 				final SparqlFromVisitor fromVisitor = new SparqlFromVisitor(
-						queryBuilder, SparqlFromVisitor.OPTIONAL);
+						queryBuilder, SparqlQueryBuilder.OPTIONAL);
 				join.getRightItem().accept(fromVisitor);
-	
+
 				if (join.getOnExpression() != null)
 				{
 					final SparqlExprVisitor expressionVisitor = new SparqlExprVisitor(
-							queryBuilder);
+							queryBuilder,SparqlQueryBuilder.REQUIRED);
 					join.getOnExpression().accept(expressionVisitor);
-					ExpRewriter rewriter = new ExpRewriter(queryBuilder);
-					rewriter.addMap(fromVisitor.getName(),  tableName );
+					final ExpRewriter rewriter = new JoinRewriter(queryBuilder){
+						
+						protected Node addAlias( final QueryColumnInfo columnInfo,
+								final QueryColumnInfo.Name alias )
+						{
+							final QueryTableInfo.Name tName = QueryTableInfo
+									.getNameInstance(columnInfo.getName());
+							final QueryTableInfo tableInfo = queryBuilder.getTable(tName);
+							tableInfo.setEquals( columnInfo,  alias );
+							return queryBuilder.getColumn( alias ).getVar();
+							//return tableInfo.addColumnToQuery(columnInfo.getColumn(), columnInfo.getName());
+						}
+					};
+					rewriter.addMap(fromVisitor.getName(), tableName);
 					expressionVisitor.getResult().visit(rewriter);
-					applyOuterExpr(rewriter.getResult(), fromVisitor.getName(), tableName );
+					applyOuterExpr(rewriter.getResult(), fromVisitor.getName(),
+							tableName);
 				}
 			}
 		}
-		else
-		{
+	
+	private void deparseInnerJoin(final Join join, final QueryItemName tableName)
+	{
 			// inner join
 			// select * from table join othertable on table.id = othertable.fk
 			final String fmt = "%s INNER JOIN Is not supported";
@@ -198,12 +228,25 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 				if (join.getOnExpression() != null)
 				{
 					final SparqlExprVisitor expressionVisitor = new SparqlExprVisitor(
-							queryBuilder);
+							queryBuilder, SparqlQueryBuilder.REQUIRED);
 					join.getOnExpression().accept(expressionVisitor);
-					queryBuilder.addFilter(expressionVisitor.getResult());
+					final ExpRewriter rewriter = new JoinRewriter(queryBuilder){
+						protected Node addAlias( final QueryColumnInfo columnInfo,
+								final QueryColumnInfo.Name alias )
+						{
+							final QueryTableInfo.Name tName = QueryTableInfo
+									.getNameInstance(columnInfo.getName());
+							final QueryTableInfo tableInfo = queryBuilder.getTable(tName);
+							return tableInfo.addColumnToQuery(columnInfo, alias);
+						}
+					};
+					rewriter.addMap(fromVisitor.getName(), tableName);
+					expressionVisitor.getResult().visit(rewriter);
+					queryBuilder.addFilter(rewriter.getResult());
 				}
 				if (join.getUsingColumns() != null)
 				{
+					queryBuilder.setForceShortName(true);
 					for (final Object c : join.getUsingColumns())
 					{
 						queryBuilder.addUsing(((Column) c).getColumnName());
@@ -212,12 +255,12 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 			}
 		}
 
-	}
+	
 
 	// process a limit
 	private void deparseLimit( final Limit limit )
 	{
-		LOG.debug( "deparse limit {}", limit );
+		SparqlSelectVisitor.LOG.debug("deparse limit {}", limit);
 		// LIMIT n OFFSET skip
 		if (limit.isOffsetJdbcParameter())
 		{
@@ -247,8 +290,9 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 
 	private void deparseOrderBy( final List orderByElements )
 	{
-		LOG.debug( "deparse orderby {}", orderByElements );
-		for (final Iterator<?> iter = orderByElements.iterator(); iter.hasNext();)
+		SparqlSelectVisitor.LOG.debug("deparse orderby {}", orderByElements);
+		for (final Iterator<?> iter = orderByElements.iterator(); iter
+				.hasNext();)
 		{
 			final OrderByElement orderByElement = (OrderByElement) iter.next();
 			orderByElement.accept(this);
@@ -270,7 +314,7 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 	{
 		SparqlSelectVisitor.LOG.debug("visit orderby: {}", orderBy);
 		final SparqlExprVisitor expressionVisitor = new SparqlExprVisitor(
-				queryBuilder);
+				queryBuilder, SparqlQueryBuilder.REQUIRED);
 		orderBy.getExpression().accept(expressionVisitor);
 		queryBuilder.addOrderBy(expressionVisitor.getResult(), orderBy.isAsc());
 		if (!expressionVisitor.isEmpty())
@@ -284,9 +328,9 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 	public void visit( final PlainSelect plainSelect )
 	{
 		SparqlSelectVisitor.LOG.debug("visit plainSelect: {}", plainSelect);
-		QueryItemName lastTableName = null;
+		QueryTableInfo.Name lastTableName = null;
 		final SparqlExprVisitor expressionVisitor = new SparqlExprVisitor(
-				queryBuilder);
+				queryBuilder, SparqlQueryBuilder.OPTIONAL);
 		final SparqlSelectItemVisitor selectItemVisitor = new SparqlSelectItemVisitor(
 				queryBuilder);
 
@@ -320,7 +364,10 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 			}
 		}
 
-		// process the select -- All tables must be identified before this.
+		// add required columns -- All tables must be identified before this. 
+		queryBuilder.addRequiredColumns();
+		
+		// process the select 
 		for (final Iterator<?> iter = plainSelect.getSelectItems().iterator(); iter
 				.hasNext();)
 		{
@@ -395,4 +442,56 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 		throw new UnsupportedOperationException("UNION is not supported");
 	}
 
+	private abstract static class JoinRewriter extends ExpRewriter {
+		JoinRewriter( SparqlQueryBuilder queryBuilder){
+			super( queryBuilder );
+		}
+		
+		protected abstract Node addAlias( final QueryColumnInfo columnInfo,
+				final QueryColumnInfo.Name alias );
+		
+		public void visit( final ExprFunction2 func )
+		{
+			if (func instanceof E_Equals)
+			{
+				final E_Equals eq = (E_Equals) func;
+				if ((eq.getArg1() instanceof ExprVar)
+						&& (eq.getArg2() instanceof ExprVar))
+				{
+					final QueryColumnInfo ci1 = queryBuilder
+							.getNodeColumn(((ExprVar) eq.getArg1()).getAsNode());
+					if (ci1 != null)
+					{
+						final QueryColumnInfo ci2 = queryBuilder
+								.getNodeColumn(((ExprVar) eq.getArg2()).getAsNode());
+						if (ci2 != null)
+						{
+							final QueryColumnInfo.Name ci1a = isMapped(ci1);
+							final QueryColumnInfo.Name ci2a = isMapped(ci2);
+							if (((ci1a != null) && (ci2a == null))
+									|| ((ci1a == null) && (ci2a != null)))
+							{
+								Node n = null;
+								// equals and one of the columns is aliased.
+								if (ci1a != null)
+								{
+									// first one is aliased
+									n = addAlias(ci1, ci1a);
+								}
+								else
+								{
+									n = addAlias(ci2, ci2a);
+								}
+								stack.push(new E_Bound(new ExprVar(n)));
+								return;
+							}
+						}
+					}
+				}
+			}
+
+			pushArgs(func);
+			stack.push(func.copy(stack.pop(), stack.pop()));
+		}
+	};
 }

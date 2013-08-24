@@ -20,9 +20,7 @@ import com.hp.hpl.jena.sparql.expr.aggregate.Aggregator;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
@@ -31,226 +29,183 @@ import org.xenei.jdbc4sparql.sparql.QueryItemName;
 import org.xenei.jdbc4sparql.sparql.QueryTableInfo;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 
-public class ExpRewriter implements ExprVisitor
+public abstract class ExpRewriter implements ExprVisitor
 {
-	private Map<QueryItemName, QueryItemName> aliasMap = new HashMap<QueryItemName, QueryItemName>();
-	private SparqlQueryBuilder queryBuilder;
-	private Stack<Expr> stack = new Stack<Expr>();
-	
-	public ExpRewriter(SparqlQueryBuilder queryBuilder )
+	protected final Map<QueryItemName, QueryItemName> aliasMap = new HashMap<QueryItemName, 
+			QueryItemName>();
+	protected final SparqlQueryBuilder queryBuilder;
+	protected final Stack<Expr> stack = new Stack<Expr>();
+
+	public ExpRewriter( final SparqlQueryBuilder queryBuilder )
 	{
 		this.queryBuilder = queryBuilder;
 	}
+
 	
+
+	public void addMap( final QueryItemName from, final QueryItemName to )
+	{
+		aliasMap.put(from, to);
+	}
+
+	private ExprList createExprList( final ExprFunction expr )
+	{
+		pushArgs(expr);
+		final ExprList lst = new ExprList();
+		for (int i = 0; i < expr.numArgs(); i++)
+		{
+			lst.add(stack.pop());
+		}
+		return lst;
+	}
+
+	@Override
+	public void finishVisit()
+	{
+	}
+
 	public Expr getResult()
 	{
 		return stack.pop();
 	}
-	
-	public void addMap(QueryItemName from, QueryItemName to)
+
+	public QueryColumnInfo.Name isMapped( final QueryColumnInfo ci )
 	{
-		aliasMap.put( from, to );
+		for (final QueryItemName qi : aliasMap.keySet())
+		{
+			if (QueryColumnInfo.getNameInstance(qi).matches(ci.getName()))
+			{
+				final QueryItemName mapTo = aliasMap.get(qi);
+				return QueryColumnInfo.getNameInstance(mapTo.getSchema(),
+						mapTo.getTable(), ci.getName().getCol());
+			}
+		}
+		return null;
 	}
-	
+
+	/**
+	 * Push args in reverse order so we can pop them back in the proper order
+	 */
+	protected void pushArgs( final ExprFunction exp )
+	{
+		for (int i = exp.numArgs(); i > 0; i--)
+		{
+			exp.getArg(i).visit(this);
+		}
+	}
+
 	@Override
 	public void startVisit()
 	{
 	}
 
 	@Override
-	public void visit( ExprFunction0 func )
+	public void visit( final ExprAggregator eAgg )
 	{
-		stack.push( func );
-	}
-
-	@Override
-	public void visit( ExprFunction1 func )
-	{
-		func.getArg().visit(this);
-		stack.push( func.copy( stack.pop() ));
-	}
-	
-	/**
-	 * Push args in reverse order so we can pop them back in the proper order
-	 */
-	private void pushArgs( ExprFunction exp )
-	{
-		for (int i=exp.numArgs();i>0;i--)
-		{
-			exp.getArg(i).visit( this );
-		}
-	}
-	
-	public QueryItemName isMapped(QueryColumnInfo ci)
-	{
-		for (QueryItemName qi : aliasMap.keySet())
-		{
-			if (QueryColumnInfo.getNameInstance(qi).matches( ci.getName()))
-			{
-				QueryItemName mapTo = aliasMap.get(qi);
-				return QueryColumnInfo.getNameInstance(mapTo.getSchema(), mapTo.getTable(), ci.getName().getCol());
-			}
-		}
-		return null;
-	}
-	
-	private Node addAlias( QueryColumnInfo columnInfo, QueryItemName alias)
-	{
-		QueryTableInfo.Name qtn = QueryTableInfo.getNameInstance( columnInfo.getName() );
-		QueryTableInfo tableInfo = queryBuilder.getTable( qtn );
-		return tableInfo.addColumn(new QueryColumnInfo( columnInfo, alias ));
-	}
-
-	@Override
-	public void visit( ExprFunction2 func )
-	{
-		if (func instanceof E_Equals)
-		{
-			E_Equals eq = (E_Equals)func;
-			if ((eq.getArg1() instanceof ExprVar) &&
-					(eq.getArg2() instanceof ExprVar))
-			{
-				final QueryColumnInfo ci1 = queryBuilder.getNodeColumn(((ExprVar) eq.getArg1()).getAsNode());
-				if (ci1 != null)
-				{
-					final QueryColumnInfo ci2 = queryBuilder.getNodeColumn(((ExprVar) eq.getArg2()).getAsNode());
-					if (ci2 != null)
-					{
-						QueryItemName ci1a = isMapped( ci1 );
-						QueryItemName ci2a = isMapped( ci2 );
-						if ((ci1a != null && ci2a == null) ||
-								(ci1a == null && ci2a != null))
-						{
-							Node n = null;
-							// equals and one of the columns is aliased.
-							if (ci1a != null)
-							{
-								// first one is aliased
-								n= addAlias( ci1, ci1a );
-							}
-							else
-							{
-								n = addAlias( ci2, ci2a );
-							}
-							stack.push( new E_Bound( new ExprVar( n )) );
-							return;
-						}
-					}
-				}
-			}
-		}
-		
-		pushArgs( func );
-		stack.push( func.copy( stack.pop(), stack.pop() ));
-	}
-
-	@Override
-	public void visit( ExprFunction3 func )
-	{
-		pushArgs( func );
-		stack.push( func.copy( stack.pop(), stack.pop(), stack.pop() ));
-	}
-	
-	private ExprList createExprList( ExprFunction expr )
-	{
-		pushArgs( expr );
-		ExprList lst = new ExprList();
-		for (int i=0;i<expr.numArgs();i++)
-		{
-			lst.add( stack.pop() );
-		}
-		return lst;
-	}
-
-	@Override
-	public void visit( ExprFunctionN func )
-	{	
-		try {
-			  Method m = ExprFunctionN.class.getMethod("copy",ExprList.class);
-			   m.setAccessible(true);
-			   stack.push( (Expr) m.invoke( func, createExprList( func ) ));
-		}
-		catch (NoSuchMethodException e)
-		{
-			throw new IllegalStateException( String.format( "%s copy(ExprList) method is required", func.getClass()), e );
-		}
-		catch (SecurityException e)
-		{
-			throw new IllegalStateException( String.format( "Could not make %s copy(ExprList) method visible", func.getClass()), e );
-		}
-		catch (IllegalAccessException e)
-		{
-			throw new IllegalStateException( String.format( "Could not make %s copy(ExprList) method visible", func.getClass()), e );
-		}
-		catch (InvocationTargetException e)
-		{
-			throw new IllegalStateException( String.format( "Could not invoke %s copy(ExprList) method", func.getClass()), e );
-		}
-	}
-
-	@Override
-	public void visit( ExprFunctionOp funcOp )
-	{
-		stack.push( funcOp.copy( createExprList( funcOp ), funcOp.getGraphPattern() ));
-	}
-
-	@Override
-	public void visit( NodeValue nv )
-	{
-		stack.push( nv );
-	}
-
-	@Override
-	public void visit( ExprVar nv )
-	{
-		Node n = ((ExprVar) nv).getAsNode();
-//		final QueryTableInfo sti = queryBuilder.getNodeTable(n);
-//		if (sti != null) {
-//			if (sti.isOptional())
-//		
-//		{
-//			sti.addFilter(toApply);
-//			return true;
-//		}
-//			else
-//			{
-//				return false;
-//			}
-//		}
-//		else {
-			final QueryColumnInfo ci = queryBuilder.getNodeColumn(n);
-			if (ci != null)
-			{
-				for (QueryItemName qi : aliasMap.keySet())
-				{
-					if (QueryColumnInfo.getNameInstance(qi).matches( ci.getName()))
-					{
-						QueryItemName mapTo = aliasMap.get(qi);
-						mapTo = QueryColumnInfo.getNameInstance(mapTo.getSchema(), mapTo.getTable(), ci.getName().getCol());
-						stack.push(new ExprVar( mapTo.getSPARQLName() ));
-						return;
-					}
-				}
-			}
-			stack.push( nv );
-	}
-
-	@Override
-	public void visit( ExprAggregator eAgg )
-	{
-		Aggregator agg = eAgg.getAggregator();
+		final Aggregator agg = eAgg.getAggregator();
 		Expr exp = agg.getExpr();
 		if (exp != null)
 		{
 			exp.visit(this);
 			exp = stack.pop();
 		}
-		stack.push( new ExprAggregator( eAgg.getVar(), agg.copy(exp)));		
+		stack.push(new ExprAggregator(eAgg.getVar(), agg.copy(exp)));
 	}
 
 	@Override
-	public void finishVisit()
-	{	
+	public void visit( final ExprFunction0 func )
+	{
+		stack.push(func);
+	}
+
+	@Override
+	public void visit( final ExprFunction1 func )
+	{
+		func.getArg().visit(this);
+		stack.push(func.copy(stack.pop()));
+	}
+
+	@Override
+	public void visit( final ExprFunction2 func )
+	{
+		pushArgs(func);
+		stack.push(func.copy(stack.pop(), stack.pop()));
+	}
+
+	@Override
+	public void visit( final ExprFunction3 func )
+	{
+		pushArgs(func);
+		stack.push(func.copy(stack.pop(), stack.pop(), stack.pop()));
+	}
+
+	@Override
+	public void visit( final ExprFunctionN func )
+	{
+		try
+		{
+			final Method m = ExprFunctionN.class.getMethod("copy",
+					ExprList.class);
+			m.setAccessible(true);
+			stack.push((Expr) m.invoke(func, createExprList(func)));
+		}
+		catch (final NoSuchMethodException e)
+		{
+			throw new IllegalStateException(String.format(
+					"%s copy(ExprList) method is required", func.getClass()), e);
+		}
+		catch (final SecurityException e)
+		{
+			throw new IllegalStateException(String.format(
+					"Could not make %s copy(ExprList) method visible",
+					func.getClass()), e);
+		}
+		catch (final IllegalAccessException e)
+		{
+			throw new IllegalStateException(String.format(
+					"Could not make %s copy(ExprList) method visible",
+					func.getClass()), e);
+		}
+		catch (final InvocationTargetException e)
+		{
+			throw new IllegalStateException(String.format(
+					"Could not invoke %s copy(ExprList) method",
+					func.getClass()), e);
+		}
+	}
+
+	@Override
+	public void visit( final ExprFunctionOp funcOp )
+	{
+		stack.push(funcOp.copy(createExprList(funcOp), funcOp.getGraphPattern()));
+	}
+
+	@Override
+	public void visit( final ExprVar nv )
+	{
+		final Node n = nv.getAsNode();
+		final QueryColumnInfo ci = queryBuilder.getNodeColumn(n);
+		if (ci != null)
+		{
+			for (final QueryItemName qi : aliasMap.keySet())
+			{
+				if (QueryColumnInfo.getNameInstance(qi).matches(ci.getName()))
+				{
+					QueryItemName mapTo = aliasMap.get(qi);
+					mapTo = QueryColumnInfo.getNameInstance(mapTo.getSchema(),
+							mapTo.getTable(), ci.getName().getCol());
+					stack.push(new ExprVar(mapTo.getSPARQLName()));
+					return;
+				}
+			}
+		}
+		stack.push(nv);
+	}
+
+	@Override
+	public void visit( final NodeValue nv )
+	{
+		stack.push(nv);
 	}
 
 }

@@ -1,5 +1,6 @@
 package org.xenei.jdbc4sparql.impl.rdf;
 
+import com.hp.hpl.jena.graph.Node;
 import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Property;
@@ -25,6 +26,7 @@ import org.xenei.jdbc4sparql.iface.NameFilter;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.impl.NameUtils;
+import org.xenei.jdbc4sparql.sparql.QueryTableInfo;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 import org.xenei.jdbc4sparql.sparql.SparqlResultSet;
 import org.xenei.jena.entities.EntityManager;
@@ -545,14 +547,10 @@ public class RdfTable extends RdfNamespacedObject implements Table,
 		{
 			final RdfCatalog catalog = getCatalog();
 			queryBuilder = new SparqlQueryBuilder(catalog);
-			queryBuilder.addTable(getSchema().getName(), getName());
-			final Iterator<RdfColumn> iter = getColumns();
-			while (iter.hasNext())
-			{
-				final RdfColumn col = iter.next();
-				queryBuilder.addColumn(col);
-				queryBuilder.addVar(col, col.getName());
-			}
+			queryBuilder.setForceShortName(true);
+			Node n = queryBuilder.addTable(this, QueryTableInfo.getNameInstance( getSchema().getName(), getName()), SparqlQueryBuilder.REQUIRED);
+			queryBuilder.addRequiredColumns();
+			queryBuilder.addTableColumns(queryBuilder.getNodeTable(n));
 			final RdfKey key = getKey();
 
 			if (key != null)

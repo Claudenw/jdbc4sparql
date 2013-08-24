@@ -56,7 +56,7 @@ public class J4SDatabaseMetaDataTest
 			.getLogger(J4SDatabaseMetaDataTest.class);
 
 	@Test
-	@Ignore( "used for debelopment analysis only")
+	@Ignore( "used for debelopment analysis only" )
 	public void arbitraryQuery() throws Exception
 	{
 		final String eol = System.getProperty("line.separator");

@@ -203,16 +203,6 @@ public class RdfKey implements Key
 	}
 
 	@Override
-	public String toString()
-	{
-		final StringBuilder sb = new StringBuilder().append(isUnique());
-		for (final RdfKeySegment ks : getSegments())
-		{
-			sb.append(ks.getId());
-		}
-		return sb.toString();
-	}
-	@Override
 	public final String getId()
 	{
 		return UUID.nameUUIDFromBytes(toString().getBytes()).toString();
@@ -274,6 +264,17 @@ public class RdfKey implements Key
 	public boolean isUnique()
 	{
 		throw new EntityManagerRequiredException();
+	}
+
+	@Override
+	public String toString()
+	{
+		final StringBuilder sb = new StringBuilder().append(isUnique());
+		for (final RdfKeySegment ks : getSegments())
+		{
+			sb.append(ks.getId());
+		}
+		return sb.toString();
 	}
 
 }

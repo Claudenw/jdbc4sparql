@@ -36,9 +36,11 @@ import java.util.List;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.statement.Statement;
 
+import org.apache.log4j.Level;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.xenei.jdbc4sparql.LoggingConfig;
 import org.xenei.jdbc4sparql.impl.NameUtils;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
@@ -56,6 +58,12 @@ public class LocalSparqlVisitorTest
 	@Before
 	public void setUp() throws Exception
 	{
+		LoggingConfig.setConsole(Level.DEBUG);
+		LoggingConfig.setRootLogger(Level.INFO);
+		LoggingConfig.setLogger("com.hp.hpl.jena.", Level.INFO);
+		LoggingConfig.setLogger("org.xenei.jdbc4sparql", Level.DEBUG);
+		Class.forName("org.xenei.jdbc4sparql.J4SDriver");
+
 		final Model model = ModelFactory.createDefaultModel();
 		final Model localModel = ModelFactory.createDefaultModel();
 		final RdfCatalog catalog = new RdfCatalog.Builder()
@@ -127,7 +135,7 @@ public class LocalSparqlVisitorTest
 		Assert.assertTrue(e instanceof ElementGroup);
 		final ElementGroup eg = (ElementGroup) e;
 		final List<Element> eLst = eg.getElements();
-		Assert.assertEquals(10, eLst.size()); // 2 tables, 7 binds, 1 filter
+		Assert.assertEquals(2, eLst.size()); // 2 tables
 		final List<Var> vLst = q.getProjectVars();
 		Assert.assertEquals(7, vLst.size());
 
@@ -136,6 +144,7 @@ public class LocalSparqlVisitorTest
 	@Test
 	public void testNoColParse() throws Exception
 	{
+		String[] colNames = {"StringCol","NullableStringCol","IntCol","NullableIntCol"};
 		final String query = "SELECT * FROM foo";
 		final Statement stmt = parserManager.parse(new StringReader(query));
 		stmt.accept(sv);
@@ -143,31 +152,14 @@ public class LocalSparqlVisitorTest
 
 		final List<Var> vLst = q.getProjectVars();
 		Assert.assertEquals(4, vLst.size());
+		for (int i=0;i<colNames.length;i++)
+		{
+			Assert.assertTrue( String.format("missing var %s", colNames[i]), vLst.contains( Var.alloc(colNames[i])));
+		}
 		Assert.assertTrue(q.getQueryPattern() instanceof ElementGroup);
 		final ElementGroup eg = (ElementGroup) q.getQueryPattern();
 		final List<Element> eLst = eg.getElements();
-		Assert.assertEquals(5, eLst.size()); // table, 4 binds
-		final List<String> bindElements = new ArrayList<String>();
-		for (final Element e : eLst)
-		{
-			if (e instanceof ElementBind)
-			{
-				bindElements.add(e.toString());
-			}
-		}
-		Assert.assertEquals(4, bindElements.size());
-		Assert.assertTrue(bindElements.contains(String.format(
-				"BIND(?testSchema%1$sfoo%1$s%2$s AS ?%2$s)",
-				NameUtils.SPARQL_DOT, "StringCol")));
-		Assert.assertTrue(bindElements.contains(String.format(
-				"BIND(?testSchema%1$sfoo%1$s%2$s AS ?%2$s)",
-				NameUtils.SPARQL_DOT, "NullableStringCol")));
-		Assert.assertTrue(bindElements.contains(String.format(
-				"BIND(?testSchema%1$sfoo%1$s%2$s AS ?%2$s)",
-				NameUtils.SPARQL_DOT, "IntCol")));
-		Assert.assertTrue(bindElements.contains(String.format(
-				"BIND(?testSchema%1$sfoo%1$s%2$s AS ?%2$s)",
-				NameUtils.SPARQL_DOT, "NullableIntCol")));
+		Assert.assertEquals(1, eLst.size()); // table
 	}
 
 	@Test
@@ -206,7 +198,7 @@ public class LocalSparqlVisitorTest
 				strLst.add(e2.toString());
 			}
 		}
-		final String value = "FILTER ( ?"+NameUtils.getSPARQLName("testSchema","foo","StringCol")+" != \"baz\" )";
+		final String value = "FILTER ( ?StringCol != \"baz\" )";
 		Assert.assertTrue(strLst.contains(value));
 
 		final List<Var> vLst = q.getProjectVars();
@@ -237,7 +229,7 @@ public class LocalSparqlVisitorTest
 				strLst.add(e2.toString());
 			}
 		}
-		final String value = "FILTER ( ?"+NameUtils.getSPARQLName("testSchema","foo","StringCol")+" != \"baz\" )";
+		final String value = "FILTER ( ?StringCol != \"baz\" )";
 		Assert.assertTrue(strLst.contains(value));
 
 		final List<Var> vLst = q.getProjectVars();
@@ -252,16 +244,25 @@ public class LocalSparqlVisitorTest
 	// )
 	public void testTwoTableJoin() throws Exception
 	{
-		final String[] columnNames = { 
-			"?"+NameUtils.getSPARQLName("testSchema", "foo", "StringCol"),
-			"?"+NameUtils.getSPARQLName("testSchema", "foo", "NullableStringCol"),
-			"?"+NameUtils.getSPARQLName("testSchema", "foo", "IntCol"),
-			"?"+NameUtils.getSPARQLName("testSchema", "foo", "NullableIntCol"),
-			"?"+NameUtils.getSPARQLName("testSchema", "bar", "BarStringCol"),
-			"?"+NameUtils.getSPARQLName("testSchema", "bar", "BarNullableStringCol"),
-			"?"+NameUtils.getSPARQLName("testSchema", "bar", "BarIntCol"),
-			"?"+NameUtils.getSPARQLName("testSchema", "bar", "NullableIntCol") 
-		};
+		final String[] columnNames = {
+				"?" + NameUtils.getSPARQLName(null, "foo", "StringCol"),
+				"?"
+						+ NameUtils.getSPARQLName(null, "foo",
+								"NullableStringCol"),
+				"?" + NameUtils.getSPARQLName(null, "foo", "IntCol"),
+				"?"
+						+ NameUtils.getSPARQLName(null, "foo",
+								"NullableIntCol"),
+				"?"
+						+ NameUtils.getSPARQLName(null, "bar",
+								"BarStringCol"),
+				"?"
+						+ NameUtils.getSPARQLName(null, "bar",
+								"BarNullableStringCol"),
+				"?" + NameUtils.getSPARQLName(null, "bar", "BarIntCol"),
+				"?"
+						+ NameUtils.getSPARQLName(null, "bar",
+								"NullableIntCol") };
 		final String query = "SELECT * FROM foo, bar WHERE foo.IntCol = bar.BarIntCol";
 		final Statement stmt = parserManager.parse(new StringReader(query));
 		stmt.accept(sv);
@@ -271,7 +272,7 @@ public class LocalSparqlVisitorTest
 		Assert.assertTrue(e instanceof ElementGroup);
 		final ElementGroup eg = (ElementGroup) e;
 		final List<Element> eLst = eg.getElements();
-		Assert.assertEquals(10, eLst.size());
+		Assert.assertEquals(3, eLst.size()); // foo set, bar set and 1 filter
 		final List<Var> vLst = q.getProjectVars();
 		Assert.assertEquals(8, vLst.size());
 		final List<String> colList = Arrays.asList(columnNames);

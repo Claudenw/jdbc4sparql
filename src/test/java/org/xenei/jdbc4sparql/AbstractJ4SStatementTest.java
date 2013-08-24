@@ -11,6 +11,8 @@ import java.util.List;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class AbstractJ4SStatementTest
 {
@@ -19,6 +21,8 @@ public abstract class AbstractJ4SStatementTest
 	protected Connection conn;
 
 	protected Statement stmt;
+	
+	static private Logger LOG = LoggerFactory.getLogger(AbstractJ4SStatementTest.class);
 
 	protected List<String> getColumnNames( final String table )
 			throws SQLException
@@ -28,8 +32,7 @@ public abstract class AbstractJ4SStatementTest
 		final List<String> colNames = new ArrayList<String>();
 		while (rs.next())
 		{
-			// TODO remove this
-			System.out.println(String.format("%s %s %s %s", rs.getString(1),
+			LOG.debug(String.format("%s %s %s %s", rs.getString(1),
 					rs.getString(2), rs.getString(3), rs.getString(4)));
 			colNames.add(rs.getString(4));
 		}
@@ -174,8 +177,8 @@ public abstract class AbstractJ4SStatementTest
 		int i = 0;
 		while (rset.next())
 		{
-			Assert.assertEquals( 5, rset.getInt("IntCol"));
-			final StringBuilder sb = new StringBuilder();
+			Assert.assertEquals(5, rset.getInt("IntCol"));
+			new StringBuilder();
 			i++;
 		}
 		Assert.assertEquals(1, i);
@@ -183,6 +186,39 @@ public abstract class AbstractJ4SStatementTest
 		stmt.close();
 	}
 
+	/*
+	 *  SELECT tbl.* FROM Online_Account AS tbl
+	 */
+	@Test
+	public void testSelectAllTableAlias() throws Exception
+	{
+		final String[][] results = {
+				{ "[StringCol]=FooString",
+						"[NullableStringCol]=FooNullableFooString",
+						"[NullableIntCol]=6", "[IntCol]=5",
+						"[type]=http://example.com/jdbc4sparql#fooTable" },
+				{ "[StringCol]=Foo2String", "[NullableStringCol]=null",
+						"[NullableIntCol]=null", "[IntCol]=5",
+						"[type]=http://example.com/jdbc4sparql#fooTable" } };
+
+		// get the column names.
+		final List<String> colNames = getColumnNames("fooTable");
+		final ResultSet rset = stmt.executeQuery("select tbl.* from fooTable tbl");
+		int i = 0;
+		while (rset.next())
+		{
+			final List<String> lst = Arrays.asList(results[i]);
+			for (final String colName : colNames)
+			{
+				lst.contains(String.format("[%s]=%s", colName,
+						rset.getString(colName)));
+			}
+			i++;
+		}
+		Assert.assertEquals(2, i);
+		rset.close();
+	}
+	
 	@Test
 	public void testWhereEqualitySelect() throws SQLException
 	{

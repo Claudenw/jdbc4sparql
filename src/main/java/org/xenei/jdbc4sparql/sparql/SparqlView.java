@@ -17,11 +17,16 @@
  */
 package org.xenei.jdbc4sparql.sparql;
 
+import com.hp.hpl.jena.util.iterator.Map1;
+import com.hp.hpl.jena.util.iterator.WrappedIterator;
+
 import java.sql.SQLException;
 import java.util.Iterator;
+import java.util.Map;
 
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.Column;
+import org.xenei.jdbc4sparql.iface.ColumnDef;
 import org.xenei.jdbc4sparql.iface.NameFilter;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
@@ -52,7 +57,14 @@ public class SparqlView implements Table
 	public NameFilter<Column> findColumns( final String columnNamePattern )
 	{
 		return new NameFilter<Column>(columnNamePattern,
-				builder.getResultColumns());
+		 WrappedIterator.create(builder.getResultColumns().iterator()).mapWith( new Map1<QueryColumnInfo,Column>(){
+
+			@Override
+			public Column map1( QueryColumnInfo o )
+			{
+				return new RenamedColumn(o);
+			}})
+			);
 	}
 
 	@Override
@@ -64,17 +76,18 @@ public class SparqlView implements Table
 	@Override
 	public Column getColumn( final int idx )
 	{
-		return builder.getResultColumns().get(idx);
+		QueryColumnInfo columnInfo = builder.getColumn( idx );
+		return columnInfo==null?null:columnInfo.getColumn();
 	}
 
 	@Override
 	public Column getColumn( final String name )
 	{
-		for (final Column c : builder.getResultColumns())
+		for (final QueryColumnInfo columnInfo : builder.getResultColumns())
 		{
-			if (c.getName().equals(name))
+			if (columnInfo.getName().equals(name))
 			{
-				return c;
+				return columnInfo.getColumn();
 			}
 		}
 		return null;
@@ -83,7 +96,7 @@ public class SparqlView implements Table
 	@Override
 	public int getColumnCount()
 	{
-		return builder.getResultColumns().size();
+		return builder.getColumnCount();
 	}
 
 	@Override
@@ -102,20 +115,19 @@ public class SparqlView implements Table
 	@Override
 	public int getColumnIndex( final String columnName )
 	{
-		for (int i = 0; i < builder.getResultColumns().size(); i++)
-		{
-			if (builder.getResultColumns().get(i).getName().equals(columnName))
-			{
-				return i;
-			}
-		}
-		return -1;
+		return builder.getColumnIndex( columnName );
 	}
 
 	@Override
 	public Iterator<? extends Column> getColumns()
 	{
-		return builder.getResultColumns().iterator();
+		return WrappedIterator.create(builder.getResultColumns().iterator()).mapWith( new Map1<QueryColumnInfo,Column>(){
+
+			@Override
+			public Column map1( QueryColumnInfo o )
+			{
+				return o.getColumn();
+			}});
 	}
 
 	@Override
@@ -170,6 +182,59 @@ public class SparqlView implements Table
 	public String getType()
 	{
 		return "VIEW";
+	}
+	
+	class RenamedColumn implements Column {
+		
+		QueryColumnInfo columnInfo;
+		
+		RenamedColumn(QueryColumnInfo columnInfo)
+		{
+			this.columnInfo = columnInfo;
+		}
+		
+		public String getName()
+		{
+			return columnInfo.getName().getCol();
+		}
+
+		public Catalog getCatalog()
+		{
+			return getTable().getCatalog();
+		}
+
+		public ColumnDef getColumnDef()
+		{
+			return columnInfo.getColumn().getColumnDef();
+		}
+
+		public String getRemarks()
+		{
+			return columnInfo.getColumn().getRemarks();
+		}
+
+		public Schema getSchema()
+		{
+			return getTable().getSchema();
+		}
+
+		public String getSPARQLName()
+		{
+			return columnInfo.getName().getSPARQLName();
+		}
+
+		public String getSQLName()
+		{
+			return columnInfo.getName().getDBName();
+		}
+
+		public Table getTable()
+		{
+			return SparqlView.this;
+		}
+
+		
+		
 	}
 
 }

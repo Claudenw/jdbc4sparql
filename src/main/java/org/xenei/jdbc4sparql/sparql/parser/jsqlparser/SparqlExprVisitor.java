@@ -100,6 +100,8 @@ class SparqlExprVisitor implements ExpressionVisitor
 	private final SparqlQueryBuilder builder;
 	// A stack of expression elements.
 	private final Stack<Expr> stack;
+	
+	private final boolean optionalColumns;
 
 	private static Logger LOG = LoggerFactory
 			.getLogger(SparqlExprVisitor.class);
@@ -110,9 +112,10 @@ class SparqlExprVisitor implements ExpressionVisitor
 	 * @param builder
 	 *            The SparqlQueryBuilder to use.
 	 */
-	SparqlExprVisitor( final SparqlQueryBuilder builder )
+	SparqlExprVisitor( final SparqlQueryBuilder builder, final boolean optionalColumns )
 	{
 		this.builder = builder;
+		this.optionalColumns = optionalColumns;
 		stack = new Stack<Expr>();
 	}
 
@@ -218,7 +221,7 @@ class SparqlExprVisitor implements ExpressionVisitor
 		{
 			final Node columnVar = builder.addColumn(tableColumn.getTable()
 					.getSchemaName(), tableColumn.getTable().getName(),
-					tableColumn.getColumnName());
+					tableColumn.getColumnName(), optionalColumns);
 			stack.push(new ExprVar(columnVar));
 		}
 		catch (final SQLException e)

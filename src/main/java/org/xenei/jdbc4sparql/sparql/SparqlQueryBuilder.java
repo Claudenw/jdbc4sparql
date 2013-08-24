@@ -24,12 +24,9 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.sparql.core.Var;
 import com.hp.hpl.jena.sparql.core.VarExprList;
-import com.hp.hpl.jena.sparql.expr.E_Equals;
 import com.hp.hpl.jena.sparql.expr.Expr;
-import com.hp.hpl.jena.sparql.expr.ExprVar;
 import com.hp.hpl.jena.sparql.expr.NodeValue;
 import com.hp.hpl.jena.sparql.syntax.Element;
-import com.hp.hpl.jena.sparql.syntax.ElementBind;
 import com.hp.hpl.jena.sparql.syntax.ElementFilter;
 import com.hp.hpl.jena.sparql.syntax.ElementGroup;
 import com.hp.hpl.jena.sparql.syntax.ElementService;
@@ -39,10 +36,10 @@ import com.hp.hpl.jena.sparql.syntax.ElementTriplesBlock;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
@@ -70,6 +67,11 @@ public class SparqlQueryBuilder
 	static final String FOUND_IN_MULTIPLE_ = "%s was found in multiple %s";
 
 	static final String NOT_FOUND_IN_ANY_ = "%s was not found in any %s";
+
+	static final String NOT_FOUND_IN_ = "%s was not found in %s";
+
+	public static final boolean OPTIONAL = true;
+	public static final boolean REQUIRED = false;
 
 	private static void addFilter( final Query query, final Expr filter )
 	{
@@ -115,7 +117,7 @@ public class SparqlQueryBuilder
 	private final List<String> columnsInUsing;
 
 	// columns indexed by var.
-	private final List<Column> columnsInResult;
+	//private final List<Column> columnsInResult;
 
 	private static Logger LOG = LoggerFactory
 			.getLogger(SparqlQueryBuilder.class);
@@ -139,14 +141,19 @@ public class SparqlQueryBuilder
 		this.isBuilt = false;
 		this.infoSet = new QueryInfoSet();
 		this.columnsInUsing = new ArrayList<String>();
-		this.columnsInResult = new ArrayList<Column>();
+		//this.columnsInResult = new ArrayList<Column>();
 		query.setQuerySelectType();
 	}
-
-	public SparqlQueryBuilder( final RdfTable table )
+	
+	public int getColumnIndex(final String columnName )
 	{
-		this(table.getCatalog());
-		addTable(table);
+		QueryColumnInfo.Name cName = QueryColumnInfo.getNameInstance(columnName);	
+		return infoSet.getColumnIndex(cName);
+	}
+	
+	public int getColumnCount()
+	{
+		return infoSet.getColumns().size();
 	}
 
 	/**
@@ -159,7 +166,7 @@ public class SparqlQueryBuilder
 	 */
 	public void addBGP( final Triple t )
 	{
-		LOG.debug( "addBGP: {}", t );
+		SparqlQueryBuilder.LOG.debug("addBGP: {}", t);
 		checkBuilt();
 		final ElementGroup eg = getElementGroup();
 		for (final Element el : eg.getElements())
@@ -196,31 +203,41 @@ public class SparqlQueryBuilder
 	 * @return The SPARQL based node name for the column.
 	 * @throws SQLException
 	 */
-	public Node addColumn( final RdfColumn column ) throws SQLException
+	public Node addColumn( final RdfColumn column, final String alias )
+			throws SQLException
 	{
-		if (LOG.isDebugEnabled()) {
-			LOG.debug("(addColumn-1-arg) looking for Column {}", column.getSQLName());
+		final QueryColumnInfo.Name cName = QueryColumnInfo
+				.getNameInstance(alias);
+		if (SparqlQueryBuilder.LOG.isDebugEnabled())
+		{
+			SparqlQueryBuilder.LOG.debug(
+					"(addColumn-2-arg) looking for Column {} as {}",
+					column.getSQLName(), cName);
 		}
 		checkBuilt();
-		if (!infoSet.containsColumn(column.getSQLName()))
+		if (!infoSet.containsColumn(cName))
 		{
-			if (LOG.isDebugEnabled()) {
-				LOG.debug("adding Column {}", column.getSQLName());
-			}
-			final String alias = column.getTable().getSQLName();
-			QueryTableInfo sti = infoSet.getTable(alias);
-			if (sti == null)
+			if (SparqlQueryBuilder.LOG.isDebugEnabled())
 			{
-				sti = new QueryTableInfo(infoSet, getElementGroup(),
-						column.getTable(), alias, false);
+				SparqlQueryBuilder.LOG.debug("adding Column {}",
+						column.getSQLName());
 			}
-			return sti.addColumn(new QueryColumnInfo(infoSet, column, column
-					.getSQLName()));
+			final QueryTableInfo.Name tName = QueryTableInfo
+					.getNameInstance(cName);
+			QueryTableInfo tableInfo = infoSet.getTable(tName);
+			if (tableInfo == null)
+			{
+				tableInfo = new QueryTableInfo(infoSet, getElementGroup(),
+						column.getTable(), tName, false);
+				tableInfo.addRequiredColumns(false,
+						Collections.<String> emptyList());
+			}
+			return tableInfo.addColumnToQuery(column, cName);
 		}
 		else
 		{
 			// already there, return node from the query.
-			return infoSet.getColumnByName(column.getSQLName()).getVar();
+			return infoSet.getColumnByName(cName).getVar();
 		}
 	}
 
@@ -237,65 +254,30 @@ public class SparqlQueryBuilder
 	 * @throws SQLException
 	 */
 	public Node addColumn( final String schemaName, final String tableName,
-			final String columnName ) throws SQLException
+			final String columnName, boolean optional ) throws SQLException
 	{
-		if (LOG.isDebugEnabled()) {
-			LOG.debug("(addColumn-3-args) adding Column {}", NameUtils.getDBName(schemaName, tableName, columnName));
+		if (SparqlQueryBuilder.LOG.isDebugEnabled())
+		{
+			SparqlQueryBuilder.LOG.debug("(addColumn-3-args) adding Column {}",
+					NameUtils.getDBName(schemaName, tableName, columnName));
 		}
 		checkBuilt();
-		final QueryColumnInfo columnInfo = infoSet.findColumn(schemaName,
-				tableName, columnName);
+		final QueryColumnInfo.Name cName = QueryColumnInfo.getNameInstance(
+				schemaName, tableName, columnName);
+		QueryColumnInfo columnInfo = infoSet.scanTablesForColumn(cName);
+		if (columnInfo == null)
+		{
+			QueryTableInfo.Name tName = QueryTableInfo.getNameInstance(cName);
+			if (tName.isWild())
+			{
+				throw new SQLException(String.format(
+						SparqlQueryBuilder.NOT_FOUND_IN_ANY_, cName, "table"));
+			} else {
+				throw new SQLException(String.format(
+						SparqlQueryBuilder.NOT_FOUND_IN_, cName, tName));
+			}
+		}
 		return columnInfo.getVar();
-		// // get all the columns that match the name patterns
-		// final Collection<RdfColumn> columns = findColumns(schemaName,
-		// tableName, columnName);
-		//
-		// // if there are more than one see if only one is specified in the
-		// list
-		// // of tables.
-		// if (columns.size() > 1)
-		// {
-		// if (tableName == null)
-		// {
-		// // wild table so look for table names currently in the query.
-		// // get the set of table names.
-		// final Set<String> tblNames = infoSet.getTableNames();
-		// RdfColumn col = null;
-		// RdfColumn thisCol = null;
-		// final Iterator<RdfColumn> iter = columns.iterator();
-		// while (iter.hasNext())
-		// {
-		// thisCol = iter.next();
-		// if (tblNames.contains(thisCol.getTable().getSQLName()))
-		// {
-		// if (col != null)
-		// {
-		// throw new SQLException(String.format(
-		// SparqlQueryBuilder.FOUND_IN_MULTIPLE_,
-		// columnName, "tables"));
-		// }
-		// else
-		// {
-		// col = thisCol;
-		// }
-		// }
-		// }
-		// if (col != null)
-		// {
-		// return addColumn(col);
-		// }
-		//
-		// }
-		// throw new SQLException(
-		// String.format(SparqlQueryBuilder.FOUND_IN_MULTIPLE_,
-		// columnName, "tables"));
-		// }
-		// if (columns.isEmpty())
-		// {
-		// throw new SQLException(String.format(
-		// SparqlQueryBuilder.NOT_FOUND_IN_ANY_, columnName, "table"));
-		// }
-		// return addColumn(columns.iterator().next());
 	}
 
 	/**
@@ -312,27 +294,6 @@ public class SparqlQueryBuilder
 	}
 
 	/**
-	 * Add an optional table to the query.
-	 * 
-	 * @param schemaName
-	 *            The schema name
-	 * @param tableName
-	 *            The table name
-	 * @return The node that represents the table.
-	 * @throws SQLException
-	 *             if the table is in multiple schemas or not found.
-	 */
-	public Node addOptionalTable( final String schemaName,
-			final String tableName ) throws SQLException
-	{
-		if (LOG.isDebugEnabled()) {
-			LOG.debug( "Adding optional table {}", NameUtils.getDBName(schemaName, tableName, null));
-		}
-		checkBuilt();
-		return addTable(schemaName, tableName, true);
-	}
-
-	/**
 	 * Add an order by to the query.
 	 * 
 	 * @param expr
@@ -342,93 +303,81 @@ public class SparqlQueryBuilder
 	 */
 	public void addOrderBy( final Expr expr, final boolean ascending )
 	{
-		LOG.debug( "Adding order by {} {}", expr, ascending?"Ascending":"Descending");
+		SparqlQueryBuilder.LOG.debug("Adding order by {} {}", expr,
+				ascending ? "Ascending" : "Descending");
 		checkBuilt();
 		query.addOrderBy(expr, ascending ? Query.ORDER_ASCENDING
 				: Query.ORDER_DESCENDING);
 	}
 
-	public Node addTable( final RdfTable table )
+	public void addRequiredColumns()
 	{
-		return addTable(table, null, false);
-	}
-
-	public Node addTable( final RdfTable table, final boolean optional )
-	{
-		return addTable(table, null, optional);
-	}
-
-	public Node addTable( final RdfTable table, final String tableAlias,
-			final boolean optional )
-	{
-		final String tblName = StringUtils.defaultString(tableAlias,
-				table.getSQLName());
-		if (LOG.isDebugEnabled())
-		{
-			LOG.debug( "Adding Rdftable {} as {}", table.getSQLName(), tblName );
-		}
-		
-		// make sure the table is in the query.
-		QueryTableInfo sti = infoSet.getTable(tblName);
-		if (sti == null)
-		{
-			sti = new QueryTableInfo(infoSet, getElementGroup(), table,
-					tblName, optional);
-		}
-		return sti.getVar();
+		infoSet.addRequiredColumns(Collections.<String> emptyList());
 	}
 
 	/**
 	 * Add a table to the query.
 	 * 
-	 * @param schemaName
-	 *            The schema name
-	 * @param tableName
+	 * @param name
 	 *            The table name
+	 * @param optional
+	 *            if true table is optional.
 	 * @return The node that represents the table.
 	 * @throws SQLException
 	 *             if the table is in multiple schemas or not found.
 	 */
-	public Node addTable( final String schemaName, final String tableName )
+	public Node addTable( final QueryTableInfo.Name name, QueryTableInfo.Name asName, final boolean optional )
 			throws SQLException
 	{
-		return addTable(schemaName, tableName, false);
-	}
 
-	public Node addTable( final String schemaName, final String tableName,
-			final boolean optional ) throws SQLException
-	{
-		return addTable(schemaName, tableName, null, optional);
-	}
-
-	public Node addTable( final String schemaName, final String tableName,
-			final String tableAlias, final boolean optional )
-			throws SQLException
-	{
-		if (LOG.isDebugEnabled())
+		if (SparqlQueryBuilder.LOG.isDebugEnabled())
 		{
-			LOG.debug( "Adding table {} alias {}", NameUtils.getDBName(schemaName, tableName, null), tableAlias );
+			SparqlQueryBuilder.LOG.debug(String.format("Adding %s table %s as %s",
+					optional ? "optional" : "required", name, asName));
 		}
 		checkBuilt();
-		final Collection<RdfTable> tables = findTables(schemaName, tableName);
+		final Collection<RdfTable> tables = findTables(name);
 
 		if (tables.size() > 1)
 		{
-			throw new SQLException(
-					String.format(SparqlQueryBuilder.FOUND_IN_MULTIPLE_,
-							tableName, "schemas"));
+			throw new SQLException(String.format(
+					SparqlQueryBuilder.FOUND_IN_MULTIPLE_, name, "schemas"));
 		}
 		if (tables.isEmpty())
 		{
 			throw new SQLException(String.format(
-					SparqlQueryBuilder.NOT_FOUND_IN_ANY_, tableName, "schema"));
+					SparqlQueryBuilder.NOT_FOUND_IN_ANY_, name, "schema"));
 		}
-		return addTable(tables.iterator().next(), tableAlias, optional);
+		return addTable(tables.iterator().next(), asName, optional);
+	}
+
+	public Node addTable( final RdfTable table, final QueryTableInfo.Name name,
+			final boolean optional )
+	{
+		if (SparqlQueryBuilder.LOG.isDebugEnabled())
+		{
+			SparqlQueryBuilder.LOG.debug("Adding Rdftable {} as {}",
+					table.getSQLName(), name);
+		}
+
+		// make sure the table is in the query.
+		QueryTableInfo tableInfo = infoSet.getTable(name);
+		if (tableInfo == null)
+		{
+			tableInfo = new QueryTableInfo(infoSet, getElementGroup(), table,
+					name, optional);
+		}
+		return tableInfo.getVar();
+	}
+
+	public void addTableColumns( final QueryTableInfo tableInfo )
+	{
+		tableInfo.addTableColumns(query);
 	}
 
 	public void addUsing( final String columnName )
 	{
-		LOG.debug( "adding Using {}", columnName );
+		SparqlQueryBuilder.LOG.debug("adding Using {}", columnName);
 		final Set<String> tableAliases = infoSet.getTableAliases();
 		if (tableAliases.size() < 2)
 		{
@@ -436,36 +385,32 @@ public class SparqlQueryBuilder
 					"There must be at least 2 tables in the query");
 		}
 		final Iterator<String> iter = tableAliases.iterator();
-		final QueryTableInfo rti = infoSet.getTable(iter.next());
-		final QueryColumnInfo baseColumn = rti.getColumn(columnName);
-		if (baseColumn == null)
+		final QueryTableInfo tableInfo = infoSet.getTable(iter.next());
+		final QueryColumnInfo.Name cName = QueryColumnInfo
+				.getNameInstance(columnName);
+		final QueryColumnInfo columnInfo = tableInfo.getColumn(cName, false);
+		if (columnInfo == null)
 		{
 			throw new IllegalArgumentException(String.format(
-					"column %s not found in %s", columnName, rti.getSQLName()));
+					"column %s not found in %s", columnName,
+					tableInfo.getSQLName()));
 		}
 		columnsInUsing.add(columnName);
-		try
+		// final ExprVar left = new ExprVar(columnInfo.getVar());
+		while (iter.hasNext())
 		{
-			final ExprVar left = new ExprVar(addColumn(baseColumn.getColumn()));
-			while (iter.hasNext())
+			final QueryTableInfo tableInfo2 = infoSet.getTable(iter.next());
+			final QueryColumnInfo columnInfo2 = tableInfo2.getColumn(cName,
+					false);
+			if (columnInfo2 == null)
 			{
-				final QueryTableInfo rti2 = infoSet.getTable(iter.next());
-				final QueryColumnInfo col = rti2.getColumn(columnName);
-				if (col == null)
-				{
-					throw new IllegalArgumentException(
-							String.format("column %s not found in %s", col,
-									rti2.getSQLName()));
-				}
-
-				addFilter(new E_Equals(left, new ExprVar(
-						addColumn(col.getColumn()))));
+				throw new IllegalArgumentException(String.format(
+						"column %s not found in %s", columnInfo2,
+						tableInfo2.getSQLName()));
 			}
+			// addFilter(new E_Equals(left, new ExprVar(columnInfo2.getVar())));
 		}
-		catch (final SQLException e)
-		{
-			throw new IllegalArgumentException(e.getMessage(), e);
-		}
+
 	}
 
 	/**
@@ -479,7 +424,7 @@ public class SparqlQueryBuilder
 	 */
 	public void addVar( final Expr expr, final String name )
 	{
-		LOG.debug( "Adding Var {} as {}", expr, name );
+		SparqlQueryBuilder.LOG.debug("Adding Var {} as {}", expr, name);
 		Column column;
 		checkBuilt();
 		final NodeValue nv = expr.getConstant();
@@ -503,7 +448,7 @@ public class SparqlQueryBuilder
 			query.addResultVar(nv.getNode());
 		}
 		query.getResultVars();
-		columnsInResult.add(column);
+		//columnsInResult.add(column);
 	}
 
 	/**
@@ -517,36 +462,72 @@ public class SparqlQueryBuilder
 	 * @throws SQLException
 	 */
 	public void addVar( final RdfColumn col, final String alias )
-			throws SQLException
 	{
 		checkBuilt();
 
 		// figure out what name we are going to use.
-		final String sparqlName = StringUtils.defaultString(alias,
-				col.getSPARQLName());
-		if (LOG.isDebugEnabled())
+		final QueryColumnInfo.Name cName = QueryColumnInfo
+				.getNameInstance(StringUtils.defaultIfBlank(alias,
+						col.getSQLName()));
+
+		if (SparqlQueryBuilder.LOG.isDebugEnabled())
 		{
-			LOG.debug( String.format("addVar %s as %s", col.getSPARQLName(), sparqlName ));
+			SparqlQueryBuilder.LOG.debug(String.format("addVar %s as %s",
+					col.getSPARQLName(), cName));
 		}
 
 		// allocate the var for the real name.
-		final Var v = Var.alloc(col.getSPARQLName());
+		final Var v = Var.alloc(cName.getSPARQLName());
 		// if we have not seen this var before register all the info.
 		if (!query.getResultVars().contains(v.toString()))
 		{
-			// if an alias is being used then do special registration
-			if ((alias != null) && !sparqlName.equalsIgnoreCase(col.getSPARQLName()))
+			// see if we have registered the name
+			QueryColumnInfo columnInfo = infoSet.getColumnByName(cName);
+			if (columnInfo == null)
 			{
-				QueryColumnInfo qci = new QueryColumnInfo(infoSet, col, alias);
-				final ElementBind bind = new ElementBind(Var.alloc(qci.getVar()), new ExprVar(v));
-				getElementGroup().addElement(bind);
-				// add the alias for the column to the columns list.
-				//new QueryColumnInfo(infoSet, col, v.getName());
+				QueryTableInfo tableInfo = null;
+				// see if we have registered the column before
+				columnInfo = infoSet.getColumnByName(col.getSQLName());
+				if (columnInfo == null)
+				{
+					// add native column to query
+					tableInfo = infoSet.getTable(col.getTable().getSQLName());
+					if (tableInfo == null)
+					{
+						throw new IllegalStateException(String.format(
+								SparqlQueryBuilder.NOT_FOUND_IN_QUERY, col
+										.getTable().getSQLName()));
+					}
+					columnInfo = tableInfo.getColumn(QueryColumnInfo
+							.getNameInstance(col.getSQLName()));
+					if (columnInfo == null)
+					{
+						throw new IllegalStateException(String.format(
+								SparqlQueryBuilder.NOT_FOUND_IN_,
+								col.getSQLName(), tableInfo.getName()));
+					}
+				}
+				if (!columnInfo.getName().equals(cName))
+				{
+					if (tableInfo == null)
+					{
+						tableInfo = infoSet.getTable(col.getTable()
+								.getSQLName());
+						if (tableInfo == null)
+						{
+							throw new IllegalStateException(String.format(
+									SparqlQueryBuilder.NOT_FOUND_IN_QUERY, col
+											.getTable().getSQLName()));
+						}
+					}
+					tableInfo.addColumnToQuery(columnInfo, cName);
+				}
+
 			}
 			query.addResultVar(v);
 			// make sure SELECT * is processed
 			query.getResultVars();
-			columnsInResult.add(col);
+			//columnsInResult.add(col);
 		}
 	}
 
@@ -638,55 +619,17 @@ public class SparqlQueryBuilder
 		}
 	}
 
-	/**
-	 * Find all the columns for the given schema, table, and column patterns
-	 * 
-	 * @param schemaNamePattern
-	 *            The schema name pattern. null = no restriction.
-	 * @param tableNamePattern
-	 *            The table name pattern. null = no restriction.
-	 * @param columnNamePattern
-	 *            The column name pattern. null = no restriction.
-	 * @return
-	 */
-	private Collection<RdfColumn> findColumns( final String schemaNamePattern,
-			final String tableNamePattern, final String columnNamePattern )
+	private Collection<RdfTable> findTables( QueryItemName name )
 	{
 		if (SparqlQueryBuilder.LOG.isDebugEnabled())
 		{
 			SparqlQueryBuilder.LOG.debug(String.format(
-					"Looking for column %s.%s.%s", schemaNamePattern,
-					tableNamePattern, columnNamePattern));
-		}
-		final List<RdfColumn> columns = new ArrayList<RdfColumn>();
-		for (final Schema schema : catalog.findSchemas(schemaNamePattern))
-		{
-			for (final Table table : schema.findTables(tableNamePattern))
-			{
-				for (final Column column : table.findColumns(columnNamePattern))
-				{
-					if (column instanceof RdfColumn)
-					{
-						columns.add((RdfColumn) column);
-					}
-				}
-			}
-		}
-		return columns;
-	}
-
-	private Collection<RdfTable> findTables( final String schemaName,
-			final String tableName )
-	{
-		if (SparqlQueryBuilder.LOG.isDebugEnabled())
-		{
-			SparqlQueryBuilder.LOG.debug(String.format(
-					"Looking for Table %s.%s", schemaName, tableName));
+					"Looking for Table %s.%s", name.getSchema(), name.getTable()));
 		}
 		final List<RdfTable> tables = new ArrayList<RdfTable>();
-		for (final Schema schema : catalog.findSchemas(schemaName))
+		for (final Schema schema : catalog.findSchemas(name.getSchema()))
 		{
-			for (final Table table : schema.findTables(tableName))
+			for (final Table table : schema.findTables(name.getTable()))
 			{
 				if (table instanceof RdfTable)
 				{
@@ -710,53 +653,17 @@ public class SparqlQueryBuilder
 	// get the number of columns in the selected tables with the same name
 	private int getColCount( final Column col )
 	{
+		QueryColumnInfo.Name cName = QueryColumnInfo.getNameInstance(col.getName());
+		
 		int retval = 0;
-		for (final Column c : infoSet.getColumns())
+		for (final QueryColumnInfo columnInfo : infoSet.getColumns())
 		{
-			if (c.getName().equalsIgnoreCase(col.getName()))
+			if (cName.matches( columnInfo.getName()))
 			{
 				retval++;
 			}
 		}
 		return retval;
-	}
-
-	/**
-	 * Get a column from the query.
-	 * 
-	 * None of the parameters may be null.
-	 * 
-	 * @param schemaName
-	 *            The schema name
-	 * @param tableName
-	 *            The table name
-	 * @param columnName
-	 *            The column name
-	 * @return The RdfColumn or null if no column is defined in the query.
-	 */
-//	public RdfColumn getColumn( final String schemaName,
-//			final String tableName, final String columnName )
-//	{
-//		if (schemaName == null)
-//		{
-//			throw new IllegalArgumentException("Schema name may not be null");
-//		}
-//		if (tableName == null)
-//		{
-//			throw new IllegalArgumentException("Table name may not be null");
-//		}
-//		if (columnName == null)
-//		{
-//			throw new IllegalArgumentException("Column name may not be null");
-//		}
-//		final Iterator<RdfColumn> iter = findColumns(schemaName, tableName,
-//				columnName).iterator();
-//		return (iter.hasNext()) ? iter.next() : null;
-//	}
-	
-	public QueryTableInfo getTable( QueryTableInfo.Name name )
-	{
-		return infoSet.getTable(name);
 	}
 
 	private ElementGroup getElementGroup()
@@ -776,9 +683,33 @@ public class SparqlQueryBuilder
 		return infoSet.getTableByNode(n);
 	}
 
-	public List<Column> getResultColumns()
+	public QueryColumnInfo getColumn( QueryColumnInfo.Name cName )
 	{
-		return columnsInResult;
+		return infoSet.getColumnByName(cName);
+	}
+	
+	public QueryColumnInfo getColumn( int i )
+	{
+		return (QueryColumnInfo) infoSet.getColumns().toArray()[i];
+	}
+	
+	public List<QueryColumnInfo> getResultColumns()
+	{
+		return infoSet.getColumns();
+	}
+
+	/**
+	 * Get a table from the query.
+	 * 
+	 * @param name
+	 *            The table name.
+	 * @return The query table info for the name or null if none found
+	 * @throws IllegalArgumentException
+	 *             if more than one object matches.
+	 */
+	public QueryTableInfo getTable( final QueryTableInfo.Name name )
+	{
+		return infoSet.getTable(name);
 	}
 
 	/**
@@ -798,10 +729,8 @@ public class SparqlQueryBuilder
 		final Model model = ModelFactory.createDefaultModel();
 
 		final VarExprList expLst = query.getProject();
-		new ArrayList<Column>();
 		for (final Var var : expLst.getVars())
 		{
-
 			final Expr expr = expLst.getExpr(var);
 			final String varColName = NameUtils
 					.convertSPARQL2DB(expr == null ? var.getName() : expr
@@ -842,24 +771,41 @@ public class SparqlQueryBuilder
 	 */
 	public void setAllColumns() throws SQLException
 	{
-		LOG.debug( "Setting All Columns");
+		SparqlQueryBuilder.LOG.debug("Setting All Columns");
 		checkBuilt();
-		int i = 0;
-		for (final QueryTableInfo t : infoSet.getTables())
-		{
 
-			final Iterator<RdfColumn> iter = t.getColumns();
+		final Collection<QueryTableInfo> tableInfos = infoSet.getTables();
+		if (tableInfos.size() == 0)
+		{
+			throw new IllegalArgumentException(
+					"There must be a least one table");
+		}
+		//final boolean shortName = (tableInfos.size() == 1) || forceShortName;
+		QueryColumnInfo.Name name = null;
+		for (final QueryTableInfo tableInfo : tableInfos)
+		{
+			final Iterator<RdfColumn> iter = tableInfo.getRdfTable()
+					.getColumns();
 			while (iter.hasNext())
 			{
 				final RdfColumn col = iter.next();
-				if ((i == 0) || !columnsInUsing.contains(col.getName()))
+				if (infoSet.getShortNames())
 				{
-					addColumn(col);
-					addVar(col, i == 0 ? col.getName()
-							: getColCount(col) > 1 ? null : col.getName());
+					name = QueryColumnInfo.getNameInstance(col.getName());
+				}
+				else
+				{
+					name = tableInfo.getName().getColumnName(col.getName());
+				}
+
+				final QueryColumnInfo columnInfo = tableInfo.getColumn(name,
+						col.isOptional());
+				final Var v = Var.alloc(columnInfo.getVar());
+				if (!query.getResultVars().contains(v.toString()))
+				{
+					query.addResultVar(v);
 				}
 			}
-			i++;
 		}
 	}
 
@@ -868,14 +814,19 @@ public class SparqlQueryBuilder
 	 */
 	public void setDistinct()
 	{
-		LOG.debug("Setting Distinct");
+		SparqlQueryBuilder.LOG.debug("Setting Distinct");
 		checkBuilt();
 		query.setDistinct(true);
 	}
 
+	public void setForceShortName( final boolean state )
+	{
+		infoSet.setShortNames( state );
+	}
+
 	public SparqlQueryBuilder setKey( final RdfKey key )
 	{
-		LOG.debug( "Setting key {}", key );
+		SparqlQueryBuilder.LOG.debug("Setting key {}", key);
 		if (key != null)
 		{
 			setOrderBy(key);
@@ -895,7 +846,7 @@ public class SparqlQueryBuilder
 	 */
 	public void setLimit( final Long limit )
 	{
-		LOG.debug( "Setting limit {}", limit );
+		SparqlQueryBuilder.LOG.debug("Setting limit {}", limit);
 		checkBuilt();
 		query.setLimit(limit);
 	}
@@ -908,14 +859,14 @@ public class SparqlQueryBuilder
 	 */
 	public void setOffset( final Long offset )
 	{
-		LOG.debug( "Setting Offset {}", offset );
+		SparqlQueryBuilder.LOG.debug("Setting Offset {}", offset);
 		checkBuilt();
 		query.setOffset(offset);
 	}
 
 	public void setOrderBy( final RdfKey key )
 	{
-		LOG.debug( "Setting orderBy {}", key );
+		SparqlQueryBuilder.LOG.debug("Setting orderBy {}", key);
 		final List<Var> vars = query.getProjectVars();
 		for (final RdfKeySegment seg : key.getSegments())
 		{

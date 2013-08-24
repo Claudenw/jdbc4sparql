@@ -3,27 +3,38 @@ package org.xenei.jdbc4sparql.sparql;
 import org.xenei.jdbc4sparql.impl.NameUtils;
 import org.xenei.jdbc4sparql.impl.rdf.RdfColumn;
 
-public class QueryColumnInfo extends QueryItemInfo
+/**
+ * A column in a table in the query.  This class maps the column to an alias name.
+ */
+public class QueryColumnInfo extends QueryItemInfo<QueryColumnInfo.Name>
 {
+	/**
+	 * A wild card column name.
+	 */
+	public static Name WILDNAME = new Name(null, null, null);
+	
+	/**
+	 * The name for the QueryColumnInfo.
+	 */
 	public static class Name extends QueryItemName
 	{
-
-		private Name( QueryItemName name )
-		{
-			super( name );
-		}
 		
+		private Name( final QueryItemName name )
+		{
+			super(name);
+		}
+
 		private Name( final String schema, final String table, final String col )
 		{
 			super(schema, table, col);
 		}
 	}
 
-	public static Name getNameInstance( final QueryItemName name)
+	public static Name getNameInstance( final QueryItemName name )
 	{
-		return new Name( name );
+		return new Name(name);
 	}
-	
+
 	public static Name getNameInstance( final String alias )
 	{
 		if (alias == null)
@@ -56,32 +67,30 @@ public class QueryColumnInfo extends QueryItemInfo
 	}
 
 	private final RdfColumn column;
-	private final QueryInfoSet infoSet;
 
-	public QueryColumnInfo( final QueryInfoSet infoSet,
-			final RdfColumn column, final String alias )
+	public QueryColumnInfo( final QueryInfoSet infoSet, final QueryTableInfo tableInfo, final RdfColumn column,
+			final QueryColumnInfo.Name alias, boolean optional)
 	{
-		super(QueryColumnInfo.getNameInstance(alias));
+		super(alias, optional);
+		if (column == null)
+		{
+			throw new IllegalArgumentException( "Column may not be null");
+		}
+		if (infoSet == null)
+		{
+			throw new IllegalArgumentException( "QueryTableInfo may not be null");
+		}
 		this.column = column;
-		this.infoSet = infoSet;
-		infoSet.addColumn(this);
+		infoSet.addColumn(tableInfo, this);
 	}
-	
-	public QueryColumnInfo( QueryColumnInfo info, QueryItemName name )
+
+	public void setOptional( boolean optional )
 	{
-		super(name);
-		this.column = info.column;
-		this.infoSet = info.infoSet;
+		super.setOptional( optional );
 	}
-	
 	public RdfColumn getColumn()
 	{
 		return column;
-	}
-
-	public boolean isOptional()
-	{
-		return column.isOptional();
 	}
 
 	@Override
@@ -89,5 +98,19 @@ public class QueryColumnInfo extends QueryItemInfo
 	{
 		return String.format("QueryColumnInfo[%s(%s)]", column.getSQLName(),
 				getName());
+	}
+	
+	public boolean equals( Object o )
+	{
+		if (o != null && o instanceof QueryColumnInfo)
+		{
+			QueryColumnInfo colInfo = (QueryColumnInfo) o;
+			return getName().equals( colInfo.getName() ) && column.equals(colInfo.getColumn());
+		}
+		return false;
+	}
+	
+	public int hashCode() {
+		return getName().hashCode();
 	}
 }

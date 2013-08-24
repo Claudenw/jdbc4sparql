@@ -20,7 +20,6 @@
 package org.xenei.jdbc4sparql.sparql.parser.jsqlparser;
 
 import java.sql.SQLException;
-import java.util.Map;
 
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.FromItemVisitor;
@@ -35,24 +34,27 @@ import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 
 class SparqlFromVisitor implements FromItemVisitor
 {
-	public static final boolean OPTIONAL = true;
-	public static final boolean REQUIRED = false;
 
 	private final SparqlQueryBuilder builder;
 	private final boolean optional;
-	private QueryItemName name;
+	private QueryTableInfo.Name name;
 	private static Logger LOG = LoggerFactory
 			.getLogger(SparqlFromVisitor.class);
 
 	SparqlFromVisitor( final SparqlQueryBuilder builder )
 	{
-		this(builder, SparqlFromVisitor.REQUIRED);
+		this(builder, SparqlQueryBuilder.REQUIRED);
 	}
 
 	SparqlFromVisitor( final SparqlQueryBuilder builder, final boolean optional )
 	{
 		this.builder = builder;
 		this.optional = optional;
+	}
+
+	public QueryTableInfo.Name getName()
+	{
+		return name;
 	}
 
 	@Override
@@ -72,28 +74,16 @@ class SparqlFromVisitor implements FromItemVisitor
 	public void visit( final Table tableName )
 	{
 		SparqlFromVisitor.LOG.debug("visit table: {}", tableName);
-		if (tableName.getAlias() != null )
-		{
-			name = QueryTableInfo.getNameInstance( tableName.getAlias() );
-		}
-		else
-		{
-			name = QueryTableInfo.getNameInstance( tableName.getSchemaName(), tableName.getName() );
-		}
 		try
 		{
-			// FIXME handle aliases here
-			builder.addTable(tableName.getSchemaName(), tableName.getName(),
-					tableName.getAlias(), optional);
+			QueryTableInfo.Name tName = QueryTableInfo.getNameInstance(tableName.getSchemaName(), tableName.getName());
+			name = (tableName.getAlias() != null)?QueryTableInfo.getNameInstance(tableName.getAlias()):tName;			
+			builder.addTable(tName, name, optional);
+			
 		}
 		catch (final SQLException e)
 		{
 			throw new RuntimeException(e);
 		}
-	}
-
-	public QueryItemName getName()
-	{
-		return name;
 	}
 }

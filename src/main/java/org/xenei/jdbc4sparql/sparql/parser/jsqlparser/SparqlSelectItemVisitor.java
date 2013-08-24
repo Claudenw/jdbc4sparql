@@ -22,6 +22,8 @@ package org.xenei.jdbc4sparql.sparql.parser.jsqlparser;
 import com.hp.hpl.jena.sparql.expr.Expr;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.AllTableColumns;
@@ -36,6 +38,8 @@ import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.impl.NameUtils;
 import org.xenei.jdbc4sparql.impl.rdf.RdfColumn;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
+import org.xenei.jdbc4sparql.sparql.QueryColumnInfo;
+import org.xenei.jdbc4sparql.sparql.QueryTableInfo;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 
 /**
@@ -69,7 +73,8 @@ class SparqlSelectItemVisitor implements SelectItemVisitor
 		}
 		catch (final SQLException e)
 		{
-			LOG.error( "Error visitin all columns: "+e.getMessage(), e );
+			SparqlSelectItemVisitor.LOG.error(
+					"Error visitin all columns: " + e.getMessage(), e);
 			throw new RuntimeException(e);
 		}
 	}
@@ -79,49 +84,20 @@ class SparqlSelectItemVisitor implements SelectItemVisitor
 	{
 		SparqlSelectItemVisitor.LOG.debug("visit All Table Columns {}",
 				allTableColumns.toString());
-		RdfTable tbl = null;
-
-		for (final Schema s : queryBuilder.getCatalog().findSchemas(
-				allTableColumns.getTable().getSchemaName()))
+		
+		QueryTableInfo.Name name = null;
+		if (allTableColumns.getTable().getAlias() != null)
 		{
-			for (final Table t : s.findTables(allTableColumns.getTable()
-					.getName()))
-			{
-				if (t instanceof RdfTable)
-				{
-					if (tbl == null)
-					{
-						tbl = (RdfTable) t;
-					}
-					else
-					{
-						throw new IllegalStateException(
-								"Duplicate table names "
-										+ allTableColumns.getTable()
-												.getWholeTableName());
-					}
-				}
-			}
+			name = QueryTableInfo.getNameInstance(allTableColumns.getTable().getAlias());
 		}
-		if (tbl == null)
+		else
 		{
-			throw new IllegalStateException("Table "
-					+ allTableColumns.getTable().getWholeTableName()
-					+ " not found");
+			name =QueryTableInfo.getNameInstance(allTableColumns.getTable().getSchemaName(),
+					allTableColumns.getTable().getName());
 		}
-		for (final Column c : tbl.findColumns(null))
-		{
-			try
-			{
-				queryBuilder.addVar((RdfColumn) c, null);
-			}
-			catch (final SQLException e)
-			{
-				LOG.error( "Error visitin all table columns: "+e.getMessage(), e );
-				throw new RuntimeException(e);
-			}
-		}
-
+		
+		QueryTableInfo tableInfo = queryBuilder.getTable( name );
+		queryBuilder.addTableColumns( tableInfo );
 	}
 
 	@Override
@@ -129,7 +105,7 @@ class SparqlSelectItemVisitor implements SelectItemVisitor
 	{
 		SparqlSelectItemVisitor.LOG.debug("visit Select {}",
 				selectExpressionItem);
-		final SparqlExprVisitor v = new SparqlExprVisitor(queryBuilder);
+		final SparqlExprVisitor v = new SparqlExprVisitor(queryBuilder, SparqlQueryBuilder.OPTIONAL);
 		selectExpressionItem.getExpression().accept(v);
 		final Expr expr = v.getResult();
 
@@ -137,16 +113,15 @@ class SparqlSelectItemVisitor implements SelectItemVisitor
 		String exprAlias = null;
 		if (selectExpressionItem.getAlias() != null)
 		{
-			exprAlias=  NameUtils
-					.convertDB2SPARQL(selectExpressionItem.getAlias());
+			exprAlias = NameUtils.convertDB2SPARQL(selectExpressionItem
+					.getAlias());
 		}
 		else if (selectExpressionItem.getExpression() instanceof net.sf.jsqlparser.schema.Column)
 		{
-			exprAlias= NameUtils
-					.convertDB2SPARQL(selectExpressionItem.getExpression()
-							.toString());
+			exprAlias = NameUtils.convertDB2SPARQL(selectExpressionItem
+					.getExpression().toString());
 		}
-			
+
 		queryBuilder.addVar(expr, exprAlias);
 	}
 

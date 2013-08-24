@@ -34,7 +34,7 @@ public class J4SStatementOuterJoinTest
 		LoggingConfig.setRootLogger(Level.INFO);
 		LoggingConfig.setLogger("com.hp.hpl.jena.", Level.INFO);
 		LoggingConfig.setLogger("org.xenei.jdbc4sparql", Level.DEBUG);
-		
+
 		Class.forName("org.xenei.jdbc4sparql.J4SDriver");
 
 		fUrl = J4SDriverTest.class

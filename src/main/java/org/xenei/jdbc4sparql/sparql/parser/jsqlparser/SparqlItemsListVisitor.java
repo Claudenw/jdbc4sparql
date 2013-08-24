@@ -22,7 +22,7 @@ public class SparqlItemsListVisitor implements ItemsListVisitor
 
 	SparqlItemsListVisitor( final SparqlQueryBuilder builder )
 	{
-		exprVisitor = new SparqlExprVisitor(builder);
+		exprVisitor = new SparqlExprVisitor(builder, SparqlQueryBuilder.OPTIONAL);
 	}
 
 	public ExprList getResult()
@@ -33,7 +33,8 @@ public class SparqlItemsListVisitor implements ItemsListVisitor
 	@Override
 	public void visit( final ExpressionList expressionList )
 	{
-		LOG.debug( "visit ExpressionList: {}", expressionList );
+		SparqlItemsListVisitor.LOG.debug("visit ExpressionList: {}",
+				expressionList);
 		final List<Expression> l = expressionList.getExpressions();
 		result = new ExprList();
 		// accept them in reverse order
@@ -47,7 +48,7 @@ public class SparqlItemsListVisitor implements ItemsListVisitor
 	@Override
 	public void visit( final SubSelect subSelect )
 	{
-		LOG.debug( "visit SubSelect: {}", subSelect );
+		SparqlItemsListVisitor.LOG.debug("visit SubSelect: {}", subSelect);
 		subSelect.accept(exprVisitor);
 	}
 
