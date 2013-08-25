@@ -336,8 +336,7 @@ public class QueryTableInfo extends QueryItemInfo<QueryTableInfo.Name>
 		if (!infoSet.listColumns(getName().getColumnName(null)).contains( tableColumnInfo ))
 		{
 			throw new IllegalStateException( String.format( SparqlQueryBuilder.NOT_FOUND_IN_, tableColumnInfo.getName(), getName()));
-		}
-		
+		}	
 		
 		if (optional)
 		{
@@ -348,14 +347,8 @@ public class QueryTableInfo extends QueryItemInfo<QueryTableInfo.Name>
 		{
 			eg.addElement(new ElementOptional(tableColumnInfo.getColumn()
 					.getQuerySegments(getVar(), aliasColumnInfo.getVar())));
-		}
-		
+		}	
 	}
-//	public void addOptional( final ElementTriplesBlock etb )
-//	{
-//		QueryTableInfo.LOG.debug("Adding optional: {}", etb);
-//		eg.addElement(new ElementOptional(etb));
-//	}
 
 	public void addTypeFilters()
 	{

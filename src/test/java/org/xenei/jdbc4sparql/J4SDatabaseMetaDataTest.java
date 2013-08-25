@@ -446,7 +446,57 @@ public class J4SDatabaseMetaDataTest
 
 		// test all columns with the name TABLE_CAT
 		rs = metadata.getColumns(MetaCatalogBuilder.LOCAL_NAME,
-				MetaCatalogBuilder.SCHEMA_LOCAL_NAME, null, "TABLE_CAT");
+				MetaCatalogBuilder.SCHEMA_LOCAL_NAME, null, "TABLE\\_CAT");
+		try
+		{
+			Assert.assertTrue(rs.first());
+			int ord = 0;
+			while (!rs.isAfterLast())
+			{
+				Assert.assertEquals(MetaCatalogBuilder.LOCAL_NAME,
+						rs.getString("TABLE_CAT"));
+				Assert.assertEquals(MetaCatalogBuilder.SCHEMA_LOCAL_NAME,
+						rs.getString("TABLE_SCHEM"));
+				Assert.assertEquals("TABLE_CAT", rs.getString("COLUMN_NAME"));
+				Assert.assertTrue("Ordinal out of sequence",
+						ord <= rs.getInt("ORDINAL_POSITION"));
+				ord = rs.getInt("ORDINAL_POSITION");
+				rs.next();
+			}
+		}
+		finally
+		{
+			rs.close();
+		}
+
+		// test all columns with the name TABLE_CAT (TABLE\\_C_T)
+		rs = metadata.getColumns(MetaCatalogBuilder.LOCAL_NAME,
+				MetaCatalogBuilder.SCHEMA_LOCAL_NAME, null, "TABLE\\_C_T");
+		try
+		{
+			Assert.assertTrue(rs.first());
+			int ord = 0;
+			while (!rs.isAfterLast())
+			{
+				Assert.assertEquals(MetaCatalogBuilder.LOCAL_NAME,
+						rs.getString("TABLE_CAT"));
+				Assert.assertEquals(MetaCatalogBuilder.SCHEMA_LOCAL_NAME,
+						rs.getString("TABLE_SCHEM"));
+				Assert.assertEquals("TABLE_CAT", rs.getString("COLUMN_NAME"));
+				Assert.assertTrue("Ordinal out of sequence",
+						ord <= rs.getInt("ORDINAL_POSITION"));
+				ord = rs.getInt("ORDINAL_POSITION");
+				rs.next();
+			}
+		}
+		finally
+		{
+			rs.close();
+		}
+
+		// test all columns with the name TABLE_CAT (TA%CAT)
+		rs = metadata.getColumns(MetaCatalogBuilder.LOCAL_NAME,
+				MetaCatalogBuilder.SCHEMA_LOCAL_NAME, null, "TAB%CAT");
 		try
 		{
 			Assert.assertTrue(rs.first());

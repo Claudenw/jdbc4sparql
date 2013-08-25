@@ -140,7 +140,6 @@ public class QueryInfoSet
 			QueryTableInfo tableInfo = null;
 			for (QueryTableInfo testTableInfo : listTables(tName))
 			{
-				System.out.println( testTableInfo.toString() );
 				if (testTableInfo.getColumn( cName ) != null)
 				{
 					if (tableInfo != null)

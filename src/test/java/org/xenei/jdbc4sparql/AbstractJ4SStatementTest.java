@@ -13,6 +13,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xenei.jdbc4sparql.meta.MetaCatalogBuilder;
 
 public abstract class AbstractJ4SStatementTest
 {
@@ -155,6 +156,20 @@ public abstract class AbstractJ4SStatementTest
 		rset.close();
 	}
 
+	@Test
+	public void testMetadataQuery() throws Exception
+	{
+		conn.setCatalog( MetaCatalogBuilder.LOCAL_NAME );
+		stmt.close();
+		stmt = conn.createStatement();
+		final ResultSet rset = stmt
+				.executeQuery("select tbl.* from Tables tbl");
+		while (rset.next())
+		{
+			rset.getString(1); // force a read.
+		}
+		rset.close();
+	}
 	@Test
 	public void testJoinSelect() throws SQLException
 	{

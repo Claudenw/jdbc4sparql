@@ -341,12 +341,12 @@ public class SparqlQueryBuilder
 		if (tables.size() > 1)
 		{
 			throw new SQLException(String.format(
-					SparqlQueryBuilder.FOUND_IN_MULTIPLE_, name, "schemas"));
+					SparqlQueryBuilder.FOUND_IN_MULTIPLE_+" of catalog '%s'", name, "schemas", catalog.getName()));
 		}
 		if (tables.isEmpty())
 		{
 			throw new SQLException(String.format(
-					SparqlQueryBuilder.NOT_FOUND_IN_ANY_, name, "schema"));
+					SparqlQueryBuilder.NOT_FOUND_IN_ANY_+" of catalog '%s'", name, "schema", catalog.getName()));
 		}
 		return addTable(tables.iterator().next(), asName, optional);
 	}
@@ -624,9 +624,10 @@ public class SparqlQueryBuilder
 		if (SparqlQueryBuilder.LOG.isDebugEnabled())
 		{
 			SparqlQueryBuilder.LOG.debug(String.format(
-					"Looking for Table %s.%s", name.getSchema(), name.getTable()));
+					"Looking for Table %s.%s in '%s' catalog", name.getSchema(), name.getTable(), catalog.getName()));
 		}
 		final List<RdfTable> tables = new ArrayList<RdfTable>();
+		
 		for (final Schema schema : catalog.findSchemas(name.getSchema()))
 		{
 			for (final Table table : schema.findTables(name.getTable()))

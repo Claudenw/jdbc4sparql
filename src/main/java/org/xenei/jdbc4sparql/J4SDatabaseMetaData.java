@@ -204,25 +204,25 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 					.format("SELECT * FROM %s WHERE ", table.getSQLName()));
 			if (catalogPattern != null)
 			{
-				query.append(String.format("TABLE_CAT = '%s'", catalogPattern));
+				query.append(String.format("TABLE_CAT LIKE '%s'", catalogPattern));
 				hasWhere = true;
 			}
 			if (schemaPattern != null)
 			{
 				query.append(hasWhere ? " AND " : "").append(
-						String.format("TABLE_SCHEM = '%s'", schemaPattern));
+						String.format("TABLE_SCHEM LIKE '%s'", schemaPattern));
 				hasWhere = true;
 			}
 			if (tableNamePattern != null)
 			{
 				query.append(hasWhere ? " AND " : "").append(
-						String.format("TABLE_NAME = '%s'", tableNamePattern));
+						String.format("TABLE_NAME LIKE '%s'", tableNamePattern));
 				hasWhere = true;
 			}
 			if (columnNamePattern != null)
 			{
 				query.append(hasWhere ? " AND " : "").append(
-						String.format("COLUMN_NAME = '%s'", columnNamePattern));
+						String.format("COLUMN_NAME LIKE '%s'", columnNamePattern));
 				hasWhere = true;
 			}
 			final SparqlParser parser = new SparqlParserImpl();

@@ -30,10 +30,12 @@ import com.hp.hpl.jena.sparql.expr.E_GreaterThanOrEqual;
 import com.hp.hpl.jena.sparql.expr.E_LessThan;
 import com.hp.hpl.jena.sparql.expr.E_LessThanOrEqual;
 import com.hp.hpl.jena.sparql.expr.E_LogicalAnd;
+import com.hp.hpl.jena.sparql.expr.E_LogicalNot;
 import com.hp.hpl.jena.sparql.expr.E_LogicalOr;
 import com.hp.hpl.jena.sparql.expr.E_Multiply;
 import com.hp.hpl.jena.sparql.expr.E_NotEquals;
 import com.hp.hpl.jena.sparql.expr.E_OneOf;
+import com.hp.hpl.jena.sparql.expr.E_Regex;
 import com.hp.hpl.jena.sparql.expr.E_Subtract;
 import com.hp.hpl.jena.sparql.expr.Expr;
 import com.hp.hpl.jena.sparql.expr.ExprVar;
@@ -43,7 +45,11 @@ import com.hp.hpl.jena.sparql.expr.nodevalue.NodeValueInteger;
 import com.hp.hpl.jena.sparql.expr.nodevalue.NodeValueString;
 
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Stack;
+import java.util.StringTokenizer;
+import java.util.regex.Pattern;
 
 import net.sf.jsqlparser.expression.AllComparisonExpression;
 import net.sf.jsqlparser.expression.AnyComparisonExpression;
@@ -96,11 +102,29 @@ import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
  */
 class SparqlExprVisitor implements ExpressionVisitor
 {
+	private class RegexNodeValue extends NodeValueString
+	{
+		private final boolean wildcard;
+
+		public RegexNodeValue( final String str, final boolean wildcard )
+		{
+			super(str);
+			this.wildcard = wildcard;
+		}
+
+		public boolean isWildcard()
+		{
+			return wildcard;
+		}
+
+	}
+
 	// the query builder
 	private final SparqlQueryBuilder builder;
+
 	// A stack of expression elements.
 	private final Stack<Expr> stack;
-	
+
 	private final boolean optionalColumns;
 
 	private static Logger LOG = LoggerFactory
@@ -112,7 +136,8 @@ class SparqlExprVisitor implements ExpressionVisitor
 	 * @param builder
 	 *            The SparqlQueryBuilder to use.
 	 */
-	SparqlExprVisitor( final SparqlQueryBuilder builder, final boolean optionalColumns )
+	SparqlExprVisitor( final SparqlQueryBuilder builder,
+			final boolean optionalColumns )
 	{
 		this.builder = builder;
 		this.optionalColumns = optionalColumns;
@@ -136,6 +161,56 @@ class SparqlExprVisitor implements ExpressionVisitor
 	public boolean isEmpty()
 	{
 		return stack.isEmpty();
+	}
+
+	private RegexNodeValue parseWildCard( final String part )
+	{
+		final Map<String, String> conversion = new HashMap<String, String>();
+		conversion.put("_", ".");
+		conversion.put("%", "(.+)");
+
+		final StringTokenizer tokenizer = new StringTokenizer(part, "_%", true);
+		final StringBuilder sb = new StringBuilder().append("^");
+		final StringBuilder workingToken = new StringBuilder();
+		boolean wildcard = false;
+		while (tokenizer.hasMoreTokens())
+		{
+			final String candidate = tokenizer.nextToken();
+			if ((candidate.length() == 1)
+					&& conversion.keySet().contains(candidate))
+			{
+				// token
+				if ((workingToken.length() > 0)
+						&& (workingToken.charAt(workingToken.length() - 1) == '\\'))
+				{
+					// escaped token
+					workingToken.setCharAt(workingToken.length() - 1,
+							candidate.charAt(0));
+				}
+				else
+				{
+					sb.append(
+							workingToken.length() > 0 ? Pattern
+									.quote(workingToken.toString()) : "")
+							.append(conversion.get(candidate));
+					workingToken.setLength(0);
+					wildcard = true;
+				}
+			}
+			else
+			{
+				workingToken.append(candidate);
+			}
+		}
+		// end of while
+		if (workingToken.length() > 0)
+		{
+			sb.append(Pattern.quote(workingToken.toString()));
+		}
+		sb.append("$");
+		final RegexNodeValue retval = new RegexNodeValue(
+				wildcard ? sb.toString() : workingToken.toString(), wildcard);
+		return retval;
 	}
 
 	// process a binary expression.
@@ -266,6 +341,63 @@ class SparqlExprVisitor implements ExpressionVisitor
 		SparqlExprVisitor.LOG.debug("visit EqualsTo: {}", equalsTo);
 		process(equalsTo);
 		stack.push(new E_Equals(stack.pop(), stack.pop()));
+//
+//		final Expr left = stack.pop();
+//		final Expr right = stack.pop();
+//		if (((left instanceof NodeValueString) || (right instanceof NodeValueString))
+//				&& !((left instanceof NodeValueString) && (right instanceof NodeValueString)))
+//		{
+//			// one is a string
+//			if (left instanceof NodeValueString)
+//			{
+//				final NodeValueString nvs = (NodeValueString) left;
+//				final String s = nvs.asUnquotedString();
+//				if (s.contains("_") || s.contains("%"))
+//				{
+//					final RegexNodeValue rnv = parseWildCard(s);
+//					if (rnv.isWildcard())
+//					{
+//						stack.push(new E_Regex(right, rnv, new NodeValueString(
+//								"")));
+//					}
+//					else
+//					{
+//						stack.push(new E_Equals(rnv, right));
+//					}
+//				}
+//				else
+//				{
+//					stack.push(new E_Equals(left, right));
+//				}
+//			}
+//			else
+//			{
+//				// right is a string
+//				final NodeValueString nvs = (NodeValueString) right;
+//				final String s = nvs.asUnquotedString();
+//				if (s.contains("_") || s.contains("%"))
+//				{
+//					final RegexNodeValue rnv = parseWildCard(s);
+//					if (rnv.isWildcard())
+//					{
+//						stack.push(new E_Regex(left, rnv, new NodeValueString(
+//								"")));
+//					}
+//					else
+//					{
+//						stack.push(new E_Equals(left, rnv));
+//					}
+//				}
+//				else
+//				{
+//					stack.push(new E_Equals(left, right));
+//				}
+//			}
+//		}
+//		else
+//		{
+//			stack.push(new E_Equals(stack.pop(), stack.pop()));
+//		}
 	}
 
 	@Override
@@ -336,8 +468,28 @@ class SparqlExprVisitor implements ExpressionVisitor
 	@Override
 	public void visit( final LikeExpression likeExpression )
 	{
-		// TODO convert this to a regex function.
-		throw new UnsupportedOperationException("LIKE is not supported");
+		SparqlExprVisitor.LOG.debug("visit LikeExpression: {}", likeExpression);
+		process(likeExpression);
+		final Expr left = stack.pop();
+		final Expr right = stack.pop();
+		if (right instanceof NodeValueString)
+		{
+			RegexNodeValue rnv = parseWildCard(((NodeValueString) right)
+					.getString());
+			if (rnv.isWildcard())
+			{
+				stack.push(new E_Regex(left, rnv, new NodeValueString("")));
+			}
+			else
+			{
+				stack.push(new E_Equals(left, rnv));
+			}
+		}
+		else
+		{
+			throw new UnsupportedOperationException(
+					"LIKE must have string for right hand argument");
+		}
 	}
 
 	@Override
@@ -384,6 +536,64 @@ class SparqlExprVisitor implements ExpressionVisitor
 		SparqlExprVisitor.LOG.debug("visit not wquals: {}", notEqualsTo);
 		process(notEqualsTo);
 		stack.push(new E_NotEquals(stack.pop(), stack.pop()));
+
+//		final Expr left = stack.pop();
+//		final Expr right = stack.pop();
+//		if (((left instanceof NodeValueString) || (right instanceof NodeValueString))
+//				&& !((left instanceof NodeValueString) && (right instanceof NodeValueString)))
+//		{
+//			// one is a string
+//			if (left instanceof NodeValueString)
+//			{
+//				final NodeValueString nvs = (NodeValueString) left;
+//				final String s = nvs.asUnquotedString();
+//				if (s.contains("_") || s.contains("%"))
+//				{
+//					final RegexNodeValue rnv = parseWildCard(s);
+//					if (rnv.isWildcard())
+//					{
+//
+//						stack.push(new E_LogicalNot(new E_Regex(right, rnv,
+//								new NodeValueString(""))));
+//					}
+//					else
+//					{
+//						stack.push(new E_NotEquals(rnv, right));
+//					}
+//				}
+//				else
+//				{
+//					stack.push(new E_NotEquals(left, right));
+//				}
+//			}
+//			else
+//			{
+//				// right is a string
+//				final NodeValueString nvs = (NodeValueString) right;
+//				final String s = nvs.asUnquotedString();
+//				if (s.contains("_") || s.contains("%"))
+//				{
+//					final RegexNodeValue rnv = parseWildCard(s);
+//					if (rnv.isWildcard())
+//					{
+//						stack.push(new E_LogicalNot(new E_Regex(left, rnv,
+//								new NodeValueString(""))));
+//					}
+//					else
+//					{
+//						stack.push(new E_NotEquals(left, rnv));
+//					}
+//				}
+//				else
+//				{
+//					stack.push(new E_NotEquals(left, right));
+//				}
+//			}
+//		}
+//		else
+//		{
+//			stack.push(new E_NotEquals(left, right));
+//		}
 	}
 
 	@Override
@@ -455,5 +665,4 @@ class SparqlExprVisitor implements ExpressionVisitor
 	{
 		throw new UnsupportedOperationException("WHEN is not supported");
 	}
-
 }

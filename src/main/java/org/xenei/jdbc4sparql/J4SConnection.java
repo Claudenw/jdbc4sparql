@@ -51,6 +51,7 @@ import java.util.Properties;
 import java.util.concurrent.Executor;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.jena.atlas.logging.Log;
 import org.apache.jena.riot.RDFDataMgr;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -239,7 +240,6 @@ public class J4SConnection implements Connection
 					schema.addTables(table);
 				}
 			}
-
 		}
 
 	}
@@ -621,6 +621,7 @@ public class J4SConnection implements Connection
 	@Override
 	public void setCatalog( final String catalog ) throws SQLException
 	{
+		log.debug( "Setting catalog to '{}'", catalog );
 		if (catalogMap.get(catalog) == null)
 		{
 			throw new SQLException("Catalog " + catalog + " was not found");

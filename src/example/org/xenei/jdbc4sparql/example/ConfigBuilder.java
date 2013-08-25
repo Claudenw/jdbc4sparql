@@ -114,46 +114,5 @@ public class ConfigBuilder
 		fos.close();
 		connection.close();
 		System.out.println("done");
-		// RDFSBuilder builder = new RDFSBuilder(ontologyModel);
-		//
-		// ModelFactory.createDefaultModel();
-		//
-		// final URL cfgUrl = new URL(fUrl.toExternalForm().replace("foaf.rdf",
-		// "example.ttl"));
-		//
-		// // SimpleBuilder builder = new SimpleBuilder();
-		// // final Catalog catalog = new RdfCatalog.Builder()
-		// // .setLocalModel(dataModel).setName( "catalog" ).build(model);
-		//
-		// // final Schema schema = new
-		// //
-		// RdfSchema.Builder().setCatalog((RdfCatalog)catalog).setName("schema").build(model);
-		//
-		// // schema.addTables(builder.getTables((RdfCatalog)catalog));
-		// //
-		// // final ConfigSerializer cs = new ConfigSerializer();
-		// // cs.add(catalog);
-		// // cs.save(new ModelWriter(new File(cfgUrl.getPath())));
-		// // cs.save( new ModelWriter( System.out));
-		//
-		// Class.forName("org.xenei.jdbc4sparql.J4SDriver");
-		//
-		// url = new J4SUrl("jdbc:J4S:" + cfgUrl.toExternalForm());
-		// connection = new J4SConnection(driver, url, new Properties());
-		// connection.setCatalog("catalog");
-		// connection.setSchema("schema");
-		// ConfigBuilder.getMetaData(connection);
-		// connection.close();
-		//
-		// /*
-		// * fUrl = ConfigBuilder.class.getResource("./rdf_am-data.ttl");
-		// *
-		// * final J4SDriver driver = new J4SDriver();
-		// * J4SUrl url = new J4SUrl("jdbc:J4S:"+ cfgUrl.toExternalForm() );
-		// * J4SConnection connection = new J4SConnection( driver, url, null );
-		// * connection.getModelReader().read( fUrl.toString() );
-		// * connection.setCatalog(catalog.getLocalName());
-		// * checkResults( connection );
-		// */
 	}
 }

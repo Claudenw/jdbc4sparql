@@ -67,7 +67,7 @@ public class SparqlParserImpl implements SparqlParser
 	public SparqlQueryBuilder parse( final RdfCatalog catalog,
 			final String sqlQuery ) throws SQLException
 	{
-		SparqlParserImpl.LOG.debug("catalog: {} parsing SQL: {}",
+		SparqlParserImpl.LOG.debug("catalog: '{}' parsing SQL: {}",
 				catalog.getName(), sqlQuery);
 		try
 		{
