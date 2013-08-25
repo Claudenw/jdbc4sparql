@@ -325,6 +325,18 @@ public class J4SDatabaseMetaDataTest
 	{
 		final String[] names = { "TABLE_CAT", };
 		columnChecking(MetaCatalogBuilder.CATALOGS_TABLE, names);
+		
+		ResultSet rs = metadata.getCatalogs();
+		try
+		{
+			Assert.assertTrue(rs.first());
+			Assert.assertEquals( "METADATA", rs.getString("TABLE_CAT"));
+			Assert.assertFalse(rs.next());
+		}
+		finally
+		{
+			rs.close();
+		}
 	}
 
 	@Test
@@ -693,6 +705,76 @@ public class J4SDatabaseMetaDataTest
 	{
 		final String[] names = { "TABLE_SCHEM", "TABLE_CATALOG", };
 		columnChecking(MetaCatalogBuilder.SCHEMAS_TABLE, names);
+		
+		ResultSet rs = metadata.getSchemas(null, null);
+		try
+		{
+			Assert.assertTrue(rs.first());
+			String cat = null;
+			String schema = null;
+			while (!rs.isAfterLast())
+			{
+				if (cat == null)
+				{
+					cat = rs.getString("TABLE_CATALOG");
+					schema = rs.getString("TABLE_SCHEM");
+				}
+				else if (!cat.equals(rs.getString("TABLE_CATALOG")))
+				{
+					// catalog changed
+					Assert.assertTrue("Catalog out of sequence",
+							cat.compareTo(rs.getString("TABLE_CATALOG")) < 0);
+					cat = rs.getString("TABLE_CATALOG");
+					schema = rs.getString("TABLE_SCHEM");
+				}
+				else {
+				Assert.assertEquals(cat, rs.getString("TABLE_CATALOG"));
+				Assert.assertTrue("Schema out of sequence",
+						schema.compareTo(rs.getString("TABLE_SCHEM")) < 0);
+				}
+				rs.next();
+			}
+		}
+		finally
+		{
+			rs.close();
+		}
+		
+		rs = metadata.getSchemas(null, "Schema");
+		try
+		{
+			Assert.assertTrue(rs.first());
+			Assert.assertEquals( "Schema", rs.getString("TABLE_SCHEM"));
+			Assert.assertFalse("returned too many schemas", rs.next());
+		}
+		finally
+		{
+			rs.close();
+		}
+		
+		rs = metadata.getSchemas(null, "Sch_ma");
+		try
+		{
+			Assert.assertTrue(rs.first());
+			Assert.assertEquals( "Schema", rs.getString("TABLE_SCHEM"));
+			Assert.assertFalse("returned too many schemas", rs.next());
+		}
+		finally
+		{
+			rs.close();
+		}
+		
+		rs = metadata.getSchemas(null, "Sc%a");
+		try
+		{
+			Assert.assertTrue(rs.first());
+			Assert.assertEquals( "Schema", rs.getString("TABLE_SCHEM"));
+			Assert.assertFalse("returned too many schemas", rs.next());
+		}
+		finally
+		{
+			rs.close();
+		}
 	}
 
 	@Test
@@ -839,6 +921,54 @@ public class J4SDatabaseMetaDataTest
 			rs.close();
 		}
 
+		// test the column names wildcard
+				rs = metadata.getTables(MetaCatalogBuilder.LOCAL_NAME,
+						MetaCatalogBuilder.SCHEMA_LOCAL_NAME, "Col_mns",
+						new String[] { MetaCatalogBuilder.TABLE_TYPE });
+				try
+				{
+					Assert.assertTrue(rs.first());
+					while (!rs.isAfterLast())
+					{
+						Assert.assertEquals(MetaCatalogBuilder.TABLE_TYPE,
+								rs.getString("TABLE_TYPE"));
+						Assert.assertEquals(MetaCatalogBuilder.LOCAL_NAME,
+								rs.getString("TABLE_CAT"));
+						Assert.assertEquals(MetaCatalogBuilder.SCHEMA_LOCAL_NAME,
+								rs.getString("TABLE_SCHEM"));
+						Assert.assertEquals("Columns", rs.getString("TABLE_NAME"));
+						rs.next();
+					}
+				}
+				finally
+				{
+					rs.close();
+				}
+		
+				// test the column names wildcard
+				rs = metadata.getTables(MetaCatalogBuilder.LOCAL_NAME,
+						MetaCatalogBuilder.SCHEMA_LOCAL_NAME, "Col%ns",
+						new String[] { MetaCatalogBuilder.TABLE_TYPE });
+				try
+				{
+					Assert.assertTrue(rs.first());
+					while (!rs.isAfterLast())
+					{
+						Assert.assertEquals(MetaCatalogBuilder.TABLE_TYPE,
+								rs.getString("TABLE_TYPE"));
+						Assert.assertEquals(MetaCatalogBuilder.LOCAL_NAME,
+								rs.getString("TABLE_CAT"));
+						Assert.assertEquals(MetaCatalogBuilder.SCHEMA_LOCAL_NAME,
+								rs.getString("TABLE_SCHEM"));
+						Assert.assertEquals("Columns", rs.getString("TABLE_NAME"));
+						rs.next();
+					}
+				}
+				finally
+				{
+					rs.close();
+				}
+		
 		// test multi table type query
 		rs = metadata.getTables(null, null, null, new String[] {
 				MetaCatalogBuilder.TABLE_TYPE, "TABLE" });

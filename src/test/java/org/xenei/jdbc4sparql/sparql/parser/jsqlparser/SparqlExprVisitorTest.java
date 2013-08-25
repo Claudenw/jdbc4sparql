@@ -2,7 +2,9 @@ package org.xenei.jdbc4sparql.sparql.parser.jsqlparser;
 
 import com.hp.hpl.jena.graph.NodeFactory;
 import com.hp.hpl.jena.sparql.expr.E_Equals;
+import com.hp.hpl.jena.sparql.expr.E_LogicalAnd;
 import com.hp.hpl.jena.sparql.expr.E_LogicalNot;
+import com.hp.hpl.jena.sparql.expr.E_LogicalOr;
 import com.hp.hpl.jena.sparql.expr.E_NotEquals;
 import com.hp.hpl.jena.sparql.expr.E_Regex;
 import com.hp.hpl.jena.sparql.expr.Expr;
@@ -11,7 +13,10 @@ import com.hp.hpl.jena.sparql.expr.nodevalue.NodeValueString;
 import java.util.HashMap;
 import java.util.Map;
 
+import net.sf.jsqlparser.expression.Parenthesis;
 import net.sf.jsqlparser.expression.StringValue;
+import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
+import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
 import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
@@ -243,5 +248,68 @@ public class SparqlExprVisitorTest
 			runNotEqualsRight(s);
 			assertPlainNotEquals(s, 2, s);
 		}
+	}
+	
+	@Test
+	public void testParenthesis() throws Exception
+	{
+		Mockito.when(
+				queryBuilder.addColumn(Matchers.anyString(),
+						Matchers.anyString(), Matchers.anyString(),
+						Matchers.anyBoolean())).thenReturn(
+				NodeFactory.createVariable("testVar"));
+		Parenthesis paren = new Parenthesis();
+			
+		EqualsTo eq = new EqualsTo();
+		eq.setLeftExpression(new StringValue(String.format("'%s'", "one")));
+		eq.setRightExpression(col);
+		
+		EqualsTo eq2 = new EqualsTo();
+		eq2.setLeftExpression(new StringValue(String.format("'%s'", "two")));
+		eq2.setRightExpression(col);
+		
+		OrExpression or = new OrExpression( eq, eq2);
+		
+		eq =  new EqualsTo();
+		eq.setLeftExpression(new StringValue(String.format("'%s'", "three")));
+		eq.setRightExpression(col);
+		
+		or = new OrExpression( or, eq );
+		paren.setExpression(or);
+		
+		eq =  new EqualsTo();
+		eq.setLeftExpression(new StringValue(String.format("'%s'", "four")));
+		eq.setRightExpression(col);
+		
+		AndExpression and = new AndExpression( eq, paren );
+		
+		eq =  new EqualsTo();
+		eq.setLeftExpression(new StringValue(String.format("'%s'", "five")));
+		eq.setRightExpression(col); 
+		and =  new AndExpression( and, eq );
+		System.out.println( and );
+		visitor.visit(and);
+		Expr expr = visitor.getResult();
+		Assert.assertTrue( expr instanceof E_LogicalAnd );
+		Assert.assertTrue( ((E_LogicalAnd)expr).getArg2() instanceof E_Equals);
+		Assert.assertEquals( "five", ((NodeValueString)((E_Equals)((E_LogicalAnd)expr).getArg2()).getArg1()).asString());
+		Assert.assertTrue( ((E_LogicalAnd)expr).getArg1() instanceof E_LogicalAnd);
+		E_LogicalAnd eAnd = (E_LogicalAnd)((E_LogicalAnd)expr).getArg1();
+		
+		Assert.assertTrue( eAnd.getArg1() instanceof E_Equals);
+		Assert.assertEquals( "four", ((NodeValueString)((E_Equals)eAnd.getArg1()).getArg1()).asString());
+		Assert.assertTrue( eAnd.getArg2() instanceof E_LogicalOr);
+		E_LogicalOr eOr = (E_LogicalOr) eAnd.getArg2();
+		
+		Assert.assertTrue( eOr.getArg2() instanceof E_Equals);
+		Assert.assertEquals( "three", ((NodeValueString)((E_Equals)eOr.getArg2()).getArg1()).asString());
+		Assert.assertTrue( eOr.getArg1() instanceof E_LogicalOr);
+		eOr = (E_LogicalOr) eOr.getArg1();
+		
+		Assert.assertTrue( eOr.getArg2() instanceof E_Equals);
+		Assert.assertEquals( "two", ((NodeValueString)((E_Equals)eOr.getArg2()).getArg1()).asString());
+		Assert.assertTrue( eOr.getArg1() instanceof E_Equals);
+		Assert.assertEquals( "one", ((NodeValueString)((E_Equals)eOr.getArg1()).getArg1()).asString());
+		
 	}
 }

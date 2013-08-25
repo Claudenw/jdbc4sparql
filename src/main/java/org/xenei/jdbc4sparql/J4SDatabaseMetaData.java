@@ -112,6 +112,11 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 		return false;
 	}
 
+	private String escapeString( final String s )
+	{
+		return s.replace("\\'", "'").replace("'", "\\'");
+	}
+
 	@Override
 	public boolean generatedKeyAlwaysReturned() throws SQLException
 	{
@@ -204,25 +209,29 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 					.format("SELECT * FROM %s WHERE ", table.getSQLName()));
 			if (catalogPattern != null)
 			{
-				query.append(String.format("TABLE_CAT LIKE '%s'", catalogPattern));
+				query.append(String.format("TABLE_CAT LIKE '%s'",
+						escapeString(catalogPattern)));
 				hasWhere = true;
 			}
 			if (schemaPattern != null)
 			{
 				query.append(hasWhere ? " AND " : "").append(
-						String.format("TABLE_SCHEM LIKE '%s'", schemaPattern));
+						String.format("TABLE_SCHEM LIKE '%s'",
+								escapeString(schemaPattern)));
 				hasWhere = true;
 			}
 			if (tableNamePattern != null)
 			{
 				query.append(hasWhere ? " AND " : "").append(
-						String.format("TABLE_NAME LIKE '%s'", tableNamePattern));
+						String.format("TABLE_NAME LIKE '%s'",
+								escapeString(tableNamePattern)));
 				hasWhere = true;
 			}
 			if (columnNamePattern != null)
 			{
 				query.append(hasWhere ? " AND " : "").append(
-						String.format("COLUMN_NAME LIKE '%s'", columnNamePattern));
+						String.format("COLUMN_NAME LIKE '%s'",
+								escapeString(columnNamePattern)));
 				hasWhere = true;
 			}
 			final SparqlParser parser = new SparqlParserImpl();
@@ -649,13 +658,15 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 					.format("SELECT * FROM %s WHERE ", table.getSQLName()));
 			if (catalogPattern != null)
 			{
-				query.append(String.format("TABLE_CAT = '%s'", catalogPattern));
+				query.append(String.format("TABLE_CAT LIKE '%s'",
+						escapeString(catalogPattern)));
 				hasWhere = true;
 			}
 			if (schemaPattern != null)
 			{
 				query.append(hasWhere ? " AND " : "").append(
-						String.format("TABLE_SCHEM = '%s'", schemaPattern));
+						String.format("TABLE_SCHEM LIKE '%s'",
+								escapeString(schemaPattern)));
 				hasWhere = true;
 			}
 
@@ -817,40 +828,36 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 					.format("SELECT * FROM %s WHERE ", table.getSQLName()));
 			if (catalogPattern != null)
 			{
-				query.append(String.format("TABLE_CAT = '%s'", catalogPattern));
+				query.append(String.format("TABLE_CAT LIKE '%s'",
+						escapeString(catalogPattern)));
 				hasWhere = true;
 			}
 			if (schemaPattern != null)
 			{
 				query.append(hasWhere ? " AND " : "").append(
-						String.format("TABLE_SCHEM = '%s'", schemaPattern));
+						String.format("TABLE_SCHEM LIKE '%s'",
+								escapeString(schemaPattern)));
 				hasWhere = true;
 			}
 			if (tableNamePattern != null)
 			{
 				query.append(hasWhere ? " AND " : "").append(
-						String.format("TABLE_NAME = '%s'", tableNamePattern));
+						String.format("TABLE_NAME LIKE '%s'",
+								escapeString(tableNamePattern)));
 				hasWhere = true;
 			}
 			if ((types != null) && (types.length > 0))
 			{
-				query.append(hasWhere ? " AND " : "").append("TABLE_TYPE ");
-				if (types.length == 1)
+				query.append(hasWhere ? " AND (" : "(");
+				for (int i = 0; i < types.length; i++)
 				{
-					query.append(String.format("= '%s'", types[0]));
+					query.append(i > 0 ? " OR " : "")
+							.append(types.length > 1 ? "(" : "")
+							.append(String.format("TABLE_TYPE LIKE '%s'",
+									escapeString(types[i])))
+							.append(types.length > 1 ? ")" : "");
 				}
-				else
-				{
-					query.append("IN (");
-					boolean first = true;
-					for (final String s : types)
-					{
-						query.append(first ? "" : ", ").append(
-								String.format("'%s'", s));
-						first = false;
-					}
-					query.append(")");
-				}
+				query.append(")");
 
 				hasWhere = true;
 			}
@@ -1157,8 +1164,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	@Override
 	public boolean supportsColumnAliasing() throws SQLException
 	{
-		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
 
 	@Override
@@ -1314,8 +1320,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	@Override
 	public boolean supportsMultipleResultSets() throws SQLException
 	{
-		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
 
 	@Override

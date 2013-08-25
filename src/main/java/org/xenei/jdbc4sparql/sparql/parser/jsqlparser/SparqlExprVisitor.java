@@ -615,10 +615,8 @@ class SparqlExprVisitor implements ExpressionVisitor
 	@Override
 	public void visit( final Parenthesis parenthesis )
 	{
-		throw new UnsupportedOperationException("Parenthesis are not supported");
-		// buffer.append("(");
-		// parenthesis.getExpression().accept(this);
-		// buffer.append(")");
+		SparqlExprVisitor.LOG.debug("visit Parenthesis: {}", parenthesis);
+		parenthesis.getExpression().accept(this);
 	}
 
 	@Override
