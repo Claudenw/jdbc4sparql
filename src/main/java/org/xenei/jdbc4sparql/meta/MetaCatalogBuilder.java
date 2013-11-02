@@ -44,7 +44,7 @@ public class MetaCatalogBuilder
 {
 	public static final String NS = "http://org.xenei.jdbc4sparql/meta#";
 	public static final String LOCAL_NAME = "METADATA";
-	public static final String SCHEMA_LOCAL_NAME = "Schema";
+	public static final String SCHEMA_NAME = "Schema";
 	public static final String TABLE_TYPE = "SYSTEM TABLE";
 
 	public static final String CATALOGS_TABLE = "Catalogs";
@@ -84,7 +84,7 @@ public class MetaCatalogBuilder
 				.build(model);
 
 		final RdfSchema schema = new RdfSchema.Builder().setCatalog(cat)
-				.setName(MetaCatalogBuilder.SCHEMA_LOCAL_NAME).build(model);
+				.setName(SCHEMA_NAME).build(model);
 		// populate the catalog
 		new MetaCatalogBuilder(schema, model).build();
 		return cat;

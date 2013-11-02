@@ -19,6 +19,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.xenei.jdbc4sparql.config.MemDatasetProducer;
+import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.DatasetProducer;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
@@ -110,7 +111,7 @@ public class MetaCatalogValuesTests
 		verifyNames(MetaCatalogBuilder.COLUMNS_TABLE, names);
 
 		final RdfSchema schema = catalog
-				.getSchema(MetaCatalogBuilder.SCHEMA_LOCAL_NAME);
+				.getSchema(MetaCatalogBuilder.SCHEMA_NAME);
 		final RdfTable table = schema
 				.getTable(MetaCatalogBuilder.COLUMNS_TABLE);
 		final SparqlResultSet rs = table.getResultSet();
@@ -250,7 +251,7 @@ public class MetaCatalogValuesTests
 		verifyNames(MetaCatalogBuilder.TABLES_TABLE, names);
 
 		final RdfSchema schema = catalog
-				.getSchema(MetaCatalogBuilder.SCHEMA_LOCAL_NAME);
+				.getSchema(MetaCatalogBuilder.SCHEMA_NAME);
 		final RdfTable table = schema.getTable(MetaCatalogBuilder.TABLES_TABLE);
 		final SparqlResultSet rs = table.getResultSet();
 		Assert.assertTrue(rs.first());

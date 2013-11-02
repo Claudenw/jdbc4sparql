@@ -245,7 +245,7 @@ public class J4SConnectionTest
 	{
 		connection = new J4SConnection(driver, url, properties);
 		final String catName = connection.getCatalog();
-		Assert.assertEquals("", catName);
+		Assert.assertEquals("local", catName);
 	}
 
 	@Test
@@ -591,8 +591,8 @@ public class J4SConnectionTest
 	public void testSetCatalog() throws Exception
 	{
 		connection = new J4SConnection(driver, url, properties);
-		connection.setCatalog("");
-		Assert.assertEquals("", connection.getCatalog());
+		connection.setCatalog(MetaCatalogBuilder.LOCAL_NAME);
+		Assert.assertEquals(MetaCatalogBuilder.LOCAL_NAME, connection.getCatalog());
 		try
 		{
 			connection.setCatalog("foo");
@@ -717,10 +717,11 @@ public class J4SConnectionTest
 		}
 		catch (final SQLException e)
 		{
-			Assert.assertEquals("Schema 'foo' was not found", e.getMessage());
+			Assert.assertEquals("Schema 'foo' was not found in catalog 'local'", e.getMessage());
 		}
-		connection.setSchema("");
-		Assert.assertEquals("", connection.getSchema());
+		connection.setCatalog(MetaCatalogBuilder.LOCAL_NAME);
+		connection.setSchema(MetaCatalogBuilder.SCHEMA_NAME);
+		Assert.assertEquals(MetaCatalogBuilder.SCHEMA_NAME, connection.getSchema());
 		connection.setSchema(null);
 		Assert.assertNull(connection.getSchema());
 	}

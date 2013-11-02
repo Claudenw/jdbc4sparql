@@ -72,6 +72,11 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 
 		public RdfCatalog build( final Model model )
 		{
+			if (StringUtils.isBlank(name))
+			{
+				throw new IllegalArgumentException( "Catalog Name may not be blank");
+			}
+			
 			if (model == null)
 			{
 				throw new IllegalArgumentException("Model may not be null");
@@ -123,8 +128,8 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 						: ModelFactory.createMemModelMaker().createFreshModel();
 
 				// ensure default schema exists
-				new RdfSchema.Builder().setName(Catalog.DEFAULT_SCHEMA)
-						.setCatalog(retval).build(model);
+				//new RdfSchema.Builder().setName(Catalog.DEFAULT_SCHEMA)
+				//		.setCatalog(retval).build(model);
 				return retval;
 			}
 			catch (final MissingAnnotation e)
@@ -205,6 +210,10 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 
 		public Builder setName( final String name )
 		{
+			if (StringUtils.isBlank(name))
+			{
+				throw new IllegalArgumentException( "Catalog Name may not be blank");
+			}
 			this.name = name;
 			return this;
 		}

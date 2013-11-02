@@ -37,10 +37,12 @@ import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 public class RDFSBuilderTest
 {
 	private RdfCatalog catalog;
+	private RdfSchema schema;
 	// data model
 	private Model model;
 	// schema model
 	private Model schemaModel;
+	
 	private SchemaBuilder builder;
 
 	private final String[] tableNames = { "Project", "Version", "Repository",
@@ -50,7 +52,7 @@ public class RDFSBuilderTest
 	@Test
 	public void buildRdfTableTest() throws SQLException
 	{
-		final Set<RdfTable> tables = builder.getTables(catalog);
+		final Set<RdfTable> tables = builder.getTables(schema);
 		new HashMap<String, Integer>();
 		final List<String> tblNames = Arrays.asList(tableNames);
 		for (final RdfTable tbl : tables)
@@ -75,7 +77,7 @@ public class RDFSBuilderTest
 		catalog = new RdfCatalog.Builder().setLocalModel(model)
 				.setName("SimpleSparql").build(schemaModel);
 
-		new RdfSchema.Builder().setCatalog(catalog).setName("builderTest")
+		schema = new RdfSchema.Builder().setCatalog(catalog).setName("builderTest")
 				.build(schemaModel);
 
 		builder = new RDFSBuilder();

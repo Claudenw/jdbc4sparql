@@ -48,7 +48,6 @@ import javax.sql.rowset.serial.SerialBlob;
 import javax.sql.rowset.serial.SerialClob;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.jena.atlas.logging.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xenei.jdbc4sparql.J4SResultSetMetaData;
@@ -139,8 +138,8 @@ public abstract class AbstractResultSet implements ResultSet
 		// if null result then throw an exception
 		if (retval == null)
 		{
-			throw new SQLException(String.format(" Can not cast %s to %s",
-					columnObject.getClass(), resultingClass));
+			throw new SQLException(String.format(" Can not cast %s (%s) to %s",
+					columnObject.getClass(), columnObject.toString(), resultingClass));
 		}
 		return retval;
 	}
@@ -417,6 +416,8 @@ public abstract class AbstractResultSet implements ResultSet
 
 	protected void checkColumn( final int columnOrdinal ) throws SQLException
 	{
+		LOG.debug( "checkColumn: {} ", columnOrdinal );
+		
 		if (!isValidColumn(columnOrdinal))
 		{
 			throw new SQLException("Invalid column ordinal: " + columnOrdinal);
@@ -449,6 +450,7 @@ public abstract class AbstractResultSet implements ResultSet
 		{
 			throw new SQLException(columnName + " is not a column");
 		}
+		LOG.debug( "{} is at column {}", columnName, idx );
 		return idx;
 	}
 

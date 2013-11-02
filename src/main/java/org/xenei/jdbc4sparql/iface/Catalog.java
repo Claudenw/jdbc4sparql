@@ -25,8 +25,6 @@ import java.util.Set;
 
 public interface Catalog extends NamedObject
 {
-	public static final String DEFAULT_SCHEMA = "";
-
 	/**
 	 * Close release all associated resources.
 	 */

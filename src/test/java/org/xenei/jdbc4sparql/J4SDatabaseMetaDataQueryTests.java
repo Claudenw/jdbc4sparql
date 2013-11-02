@@ -27,6 +27,7 @@ import com.hp.hpl.jena.util.iterator.WrappedIterator;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URL;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -35,13 +36,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import org.apache.log4j.Level;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xenei.jdbc4sparql.config.MemDatasetProducer;
@@ -49,13 +50,13 @@ import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.DatasetProducer;
 import org.xenei.jdbc4sparql.meta.MetaCatalogBuilder;
 
-public class J4SDatabaseMetaDataTest
+public class J4SDatabaseMetaDataQueryTests
 {
 	private J4SConnection connection;
 	private J4SDatabaseMetaData metadata;
 	private DatasetProducer dp;
 	private static Logger LOG = LoggerFactory
-			.getLogger(J4SDatabaseMetaDataTest.class);
+			.getLogger(J4SDatabaseMetaDataQueryTests.class);
 
 	@Test
 	@Ignore( "used for debelopment analysis only" )
@@ -244,7 +245,7 @@ public class J4SDatabaseMetaDataTest
 		}
 		catch (final Exception e)
 		{
-			J4SDatabaseMetaDataTest.LOG.error("Error executing local query: "
+			J4SDatabaseMetaDataQueryTests.LOG.error("Error executing local query: "
 					+ e.getMessage(), e);
 			throw e;
 		}
@@ -282,26 +283,26 @@ public class J4SDatabaseMetaDataTest
 	}
 	
 	@Before
-	public void setup() throws IOException, InstantiationException,
-			IllegalAccessException, ClassNotFoundException
+	public void setup() throws Exception
 	{
 		LoggingConfig.setConsole(Level.DEBUG);
 		LoggingConfig.setRootLogger(Level.INFO);
 		LoggingConfig.setLogger("com.hp.hpl.jena.", Level.INFO);
 		LoggingConfig.setLogger("org.xenei.jdbc4sparql", Level.DEBUG);
 		final J4SDriver driver = new J4SDriver();
-		connection = Mockito.mock(J4SConnection.class);
+		URL url = J4SDatabaseMetaDataQueryTests.class.getResource("J4SStatementTest.zip");
+		final J4SUrl j4sUrl = new J4SUrl("jdbc:j4s?builder=org.xenei.jdbc4sparql.sparql.builders.SimpleBuilder:"+url.toExternalForm());
+		connection = new J4SConnection(driver, j4sUrl, new Properties());
 		final Map<String, Catalog> catalogs = new HashMap<String, Catalog>();
 		dp = new MemDatasetProducer();
 		final Catalog cat = MetaCatalogBuilder.getInstance(dp);
 
-		if (J4SDatabaseMetaDataTest.LOG.isDebugEnabled())
+		if (J4SDatabaseMetaDataQueryTests.LOG.isDebugEnabled())
 		{
 			dp.getMetaDatasetUnionModel().write(
 					new FileOutputStream("/tmp/cat.ttl"), "TURTLE");
 		}
 		catalogs.put(cat.getName(), cat);
-		Mockito.when(connection.getCatalogs()).thenReturn(catalogs);
 		metadata = new J4SDatabaseMetaData(connection, driver);
 	}
 
@@ -333,11 +334,14 @@ public class J4SDatabaseMetaDataTest
 		final String[] names = { "TABLE_CAT", };
 		columnChecking(MetaCatalogBuilder.CATALOGS_TABLE, names);
 		
+		int i = 0;
 		ResultSet rs = metadata.getCatalogs();
 		try
 		{
 			Assert.assertTrue(rs.first());
 			Assert.assertEquals( "METADATA", rs.getString("TABLE_CAT"));
+			Assert.assertTrue(rs.next());
+			Assert.assertEquals( "test", rs.getString("TABLE_CAT"));
 			Assert.assertFalse(rs.next());
 		}
 		finally
@@ -345,7 +349,7 @@ public class J4SDatabaseMetaDataTest
 			rs.close();
 		}
 	}
-
+	
 	@Test
 	public void testClientInfoPropertiesDef() throws SQLException
 	{
@@ -363,6 +367,18 @@ public class J4SDatabaseMetaDataTest
 		columnChecking(MetaCatalogBuilder.COLUMN_PRIVILIGES_TABLE, names);
 	}
 
+	private void verifyNames( ResultSet rs, String[] names ) throws SQLException
+	{
+		ResultSetMetaData rsmd = rs.getMetaData();
+		Assert.assertEquals( names.length, rsmd.getColumnCount());
+		Assert.assertTrue("No records", rs.first());
+		for (int i=0;i<names.length; i++)
+		{
+			Assert.assertEquals( names[i], rsmd.getColumnName(i+1));
+			Assert.assertEquals( rs.getString(i+1), rs.getString( names[i]));
+		}	
+	}
+	
 	@Test
 	public void testColumnsDef() throws SQLException
 	{
@@ -373,172 +389,22 @@ public class J4SDatabaseMetaDataTest
 				"SQL_DATETIME_SUB", "CHAR_OCTET_LENGTH", "ORDINAL_POSITION",
 				"IS_NULLABLE", "SCOPE_CATLOG", "SCOPE_SCHEMA", "SCOPE_TABLE",
 				"SOURCE_DATA_TYPE", "IS_AUTOINCREMENT", };
+
+		Statement stmt = connection.createStatement();
+		try {
+			Assert.assertTrue( stmt.execute( "select tbl.* from Schema.Columns tbl" ));
+			ResultSet rs = stmt.getResultSet();
+			try {
+				verifyNames(rs, names);
+			}
+			finally {
+				rs.close();
+			}
+		}
+		finally {
+		stmt.close();
+		}
 		
-		columnChecking(MetaCatalogBuilder.COLUMNS_TABLE, names);
-
-		// read entire column suite
-		ResultSet rs = metadata.getColumns(null, null, null, null);
-		try
-		{
-			Assert.assertTrue(rs.first());
-			String cat = null;
-			String schema = null;
-			String table = null;
-			int ord = 0;
-			while (!rs.isAfterLast())
-			{
-				if (table == null)
-				{
-					cat = rs.getString("TABLE_CAT");
-					schema = rs.getString("TABLE_SCHEM");
-					table = rs.getString("TABLE_NAME");
-					ord = 1;
-				}
-				else if (!cat.equals(rs.getString("TABLE_CAT")))
-				{
-					// catalog changed
-					Assert.assertTrue("Catalog out of sequence",
-							cat.compareTo(rs.getString("TABLE_CAT")) < 0);
-					cat = rs.getString("TABLE_CAT");
-					schema = rs.getString("TABLE_SCHEM");
-					table = rs.getString("TABLE_NAME");
-					ord = 1;
-				}
-				else if (!schema.equals(rs.getString("TABLE_SCHEM")))
-				{
-					Assert.assertTrue("Schema out of sequence",
-							schema.compareTo(rs.getString("TABLE_SCHEM")) < 0);
-					schema = rs.getString("TABLE_SCHEM");
-					table = rs.getString("TABLE_NAME");
-					ord = 1;
-				}
-				else if (!table.equals(rs.getString("TABLE_NAME")))
-				{
-					Assert.assertTrue("Table out of sequence",
-							table.compareTo(rs.getString("TABLE_NAME")) < 0);
-					table = rs.getString("TABLE_NAME");
-					ord = 1;
-				}
-				else
-				{
-					++ord;
-				}
-				Assert.assertEquals(cat, rs.getString("TABLE_CAT"));
-				Assert.assertEquals(schema, rs.getString("TABLE_SCHEM"));
-				Assert.assertEquals(table, rs.getString("TABLE_NAME"));
-				Assert.assertEquals(ord, rs.getInt("ORDINAL_POSITION"));
-				Assert.assertEquals(String.format(
-						"Incorrect remarks for %s.%s.%s.%s", cat, schema,
-						table, rs.getString("COLUMN_NAME")),
-						MetaCatalogBuilder.REMARK, rs.getString("REMARKS"));
-				rs.next();
-			}
-		}
-		finally
-		{
-			rs.close();
-		}
-
-		// test the column names
-		rs = metadata.getColumns(MetaCatalogBuilder.LOCAL_NAME,
-				MetaCatalogBuilder.SCHEMA_NAME, "Columns", null);
-		try
-		{
-			Assert.assertTrue(rs.first());
-			int i = 0;
-
-			while (!rs.isAfterLast())
-			{
-				Assert.assertEquals(MetaCatalogBuilder.LOCAL_NAME,
-						rs.getString("TABLE_CAT"));
-				Assert.assertEquals(MetaCatalogBuilder.SCHEMA_NAME,
-						rs.getString("TABLE_SCHEM"));
-				Assert.assertEquals("Columns", rs.getString("TABLE_NAME"));
-				Assert.assertEquals(names[i++], rs.getString("COLUMN_NAME"));
-				Assert.assertEquals(i, rs.getInt("ORDINAL_POSITION"));
-				rs.next();
-			}
-		}
-		finally
-		{
-			rs.close();
-		}
-
-		// test all columns with the name TABLE_CAT
-		rs = metadata.getColumns(MetaCatalogBuilder.LOCAL_NAME,
-				MetaCatalogBuilder.SCHEMA_NAME, null, "TABLE\\_CAT");
-		try
-		{
-			Assert.assertTrue(rs.first());
-			int ord = 0;
-			while (!rs.isAfterLast())
-			{
-				Assert.assertEquals(MetaCatalogBuilder.LOCAL_NAME,
-						rs.getString("TABLE_CAT"));
-				Assert.assertEquals(MetaCatalogBuilder.SCHEMA_NAME,
-						rs.getString("TABLE_SCHEM"));
-				Assert.assertEquals("TABLE_CAT", rs.getString("COLUMN_NAME"));
-				Assert.assertTrue("Ordinal out of sequence",
-						ord <= rs.getInt("ORDINAL_POSITION"));
-				ord = rs.getInt("ORDINAL_POSITION");
-				rs.next();
-			}
-		}
-		finally
-		{
-			rs.close();
-		}
-
-		// test all columns with the name TABLE_CAT (TABLE\\_C_T)
-		rs = metadata.getColumns(MetaCatalogBuilder.LOCAL_NAME,
-				MetaCatalogBuilder.SCHEMA_NAME, null, "TABLE\\_C_T");
-		try
-		{
-			Assert.assertTrue(rs.first());
-			int ord = 0;
-			while (!rs.isAfterLast())
-			{
-				Assert.assertEquals(MetaCatalogBuilder.LOCAL_NAME,
-						rs.getString("TABLE_CAT"));
-				Assert.assertEquals(MetaCatalogBuilder.SCHEMA_NAME,
-						rs.getString("TABLE_SCHEM"));
-				Assert.assertEquals("TABLE_CAT", rs.getString("COLUMN_NAME"));
-				Assert.assertTrue("Ordinal out of sequence",
-						ord <= rs.getInt("ORDINAL_POSITION"));
-				ord = rs.getInt("ORDINAL_POSITION");
-				rs.next();
-			}
-		}
-		finally
-		{
-			rs.close();
-		}
-
-		// test all columns with the name TABLE_CAT (TA%CAT)
-		rs = metadata.getColumns(MetaCatalogBuilder.LOCAL_NAME,
-				MetaCatalogBuilder.SCHEMA_NAME, null, "TAB%CAT");
-		try
-		{
-			Assert.assertTrue(rs.first());
-			int ord = 0;
-			while (!rs.isAfterLast())
-			{
-				Assert.assertEquals(MetaCatalogBuilder.LOCAL_NAME,
-						rs.getString("TABLE_CAT"));
-				Assert.assertEquals(MetaCatalogBuilder.SCHEMA_NAME,
-						rs.getString("TABLE_SCHEM"));
-				Assert.assertEquals("TABLE_CAT", rs.getString("COLUMN_NAME"));
-				Assert.assertTrue("Ordinal out of sequence",
-						ord <= rs.getInt("ORDINAL_POSITION"));
-				ord = rs.getInt("ORDINAL_POSITION");
-				rs.next();
-			}
-		}
-		finally
-		{
-			rs.close();
-		}
-
 	}
 
 	@Test

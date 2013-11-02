@@ -52,12 +52,12 @@ public class J4SUrlTest
 	{
 		J4SUrl url;
 		url = new J4SUrl(
-				"jdbc:j4s?builder=org.xenei.jdbc4sparql.sparql.builders.SimpleBuilder:http://example.com/test.file");
+				"jdbc:j4s?parser=org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlParserImpl:http://example.com/test.file");
 
 		Assert.assertEquals("", url.getCatalog());
 		Assert.assertEquals(
-				"org.xenei.jdbc4sparql.sparql.builders.SimpleBuilder", url
-						.getBuilder().getClass().getName());
+				"org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlParserImpl", url
+						.getParser().getClass().getName());
 		Assert.assertEquals("http://example.com/test.file", url.getEndpoint()
 				.toString());
 

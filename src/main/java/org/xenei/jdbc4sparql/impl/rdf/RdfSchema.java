@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+import org.apache.commons.lang3.StringUtils;
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.NameFilter;
 import org.xenei.jdbc4sparql.iface.Schema;
@@ -154,6 +155,11 @@ public class RdfSchema extends RdfNamespacedObject implements Schema,
 
 		public Builder setName( final String name )
 		{
+			if (StringUtils.isBlank(name))
+			{
+				throw new IllegalArgumentException( "Schema Name may not be blank");
+			}
+
 			this.name = name;
 			return this;
 		}

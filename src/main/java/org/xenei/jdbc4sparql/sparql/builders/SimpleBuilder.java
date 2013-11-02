@@ -36,6 +36,7 @@ import org.xenei.jdbc4sparql.impl.rdf.RdfColumnDef;
 import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTableDef;
+import org.xenei.jdbc4sparql.meta.MetaCatalogBuilder;
 
 /**
  * A simple builder that builds tables for all subjects of [?x a rdfs:Class]
@@ -86,13 +87,13 @@ public class SimpleBuilder implements SchemaBuilder
 	}
 
 	@Override
-	public Set<RdfTable> getTables( final RdfCatalog catalog )
+	public Set<RdfTable> getTables( final RdfSchema schema )
 	{
-		final Model model = catalog.getResource().getModel();
+		RdfCatalog catalog = schema.getCatalog();
+		final Model model = schema.getResource().getModel();
 		final HashSet<RdfTable> retval = new HashSet<RdfTable>();
 		final List<QuerySolution> solns = catalog
 				.executeQuery(SimpleBuilder.TABLE_QUERY);
-		final RdfSchema schema = catalog.getSchema(Catalog.DEFAULT_SCHEMA);
 		for (final QuerySolution soln : solns)
 		{
 			final Resource tName = soln.getResource("tName");

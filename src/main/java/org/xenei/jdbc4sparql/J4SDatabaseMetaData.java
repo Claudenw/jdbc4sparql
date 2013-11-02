@@ -25,6 +25,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xenei.jdbc4sparql.iface.Catalog;
@@ -59,8 +60,12 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 		this.driver = driver;
 		this.catalogs = new HashMap<String, Catalog>(connection.getCatalogs());
 		metaCatalog = catalogs.get(MetaCatalogBuilder.LOCAL_NAME);
-		metaSchema = metaCatalog
-				.getSchema(MetaCatalogBuilder.SCHEMA_LOCAL_NAME);
+		metaSchema =  metaCatalog
+				.getSchema(MetaCatalogBuilder.SCHEMA_NAME);
+		if (metaSchema == null)
+		{
+			throw new IllegalStateException( String.format( "Metadata schema '%s' not defined", MetaCatalogBuilder.SCHEMA_NAME));
+		}
 	}
 
 	@Override
@@ -187,6 +192,32 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 		return table.getResultSet();
 	}
 
+	private String getCatalogName(String pattern)
+	{
+		if (pattern == null)
+		{
+			throw new IllegalArgumentException( "Catalog name may not be null");
+		}
+		if (StringUtils.isBlank(pattern))
+		{
+			return escapeString("");
+		}
+		return escapeString(pattern);
+	}
+	
+	private String getSchemaName(String pattern)
+	{
+		if (pattern == null)
+		{
+			throw new IllegalArgumentException( "Schema name may not be null");
+		}
+		if (StringUtils.isBlank(pattern))
+		{
+			return escapeString("");
+		}
+		return escapeString(pattern);
+	}
+	
 	@Override
 	public ResultSet getColumns( final String catalogPattern,
 			final String schemaPattern, final String tableNamePattern,
@@ -210,14 +241,14 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 			if (catalogPattern != null)
 			{
 				query.append(String.format("TABLE_CAT LIKE '%s'",
-						escapeString(catalogPattern)));
+						getCatalogName(catalogPattern)));
 				hasWhere = true;
 			}
 			if (schemaPattern != null)
 			{
 				query.append(hasWhere ? " AND " : "").append(
 						String.format("TABLE_SCHEM LIKE '%s'",
-								escapeString(schemaPattern)));
+								getSchemaName(schemaPattern)));
 				hasWhere = true;
 			}
 			if (tableNamePattern != null)
@@ -659,14 +690,14 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 			if (catalogPattern != null)
 			{
 				query.append(String.format("TABLE_CAT LIKE '%s'",
-						escapeString(catalogPattern)));
+						getCatalogName(catalogPattern)));
 				hasWhere = true;
 			}
 			if (schemaPattern != null)
 			{
 				query.append(hasWhere ? " AND " : "").append(
 						String.format("TABLE_SCHEM LIKE '%s'",
-								escapeString(schemaPattern)));
+								getSchemaName(schemaPattern)));
 				hasWhere = true;
 			}
 
@@ -829,14 +860,14 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 			if (catalogPattern != null)
 			{
 				query.append(String.format("TABLE_CAT LIKE '%s'",
-						escapeString(catalogPattern)));
+						getCatalogName(catalogPattern)));
 				hasWhere = true;
 			}
 			if (schemaPattern != null)
 			{
 				query.append(hasWhere ? " AND " : "").append(
 						String.format("TABLE_SCHEM LIKE '%s'",
-								escapeString(schemaPattern)));
+								getSchemaName(schemaPattern)));
 				hasWhere = true;
 			}
 			if (tableNamePattern != null)
@@ -1129,7 +1160,6 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	@Override
 	public boolean supportsCatalogsInDataManipulation() throws SQLException
 	{
-		// TODO Auto-generated method stub
 		return false;
 	}
 
@@ -1157,8 +1187,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	@Override
 	public boolean supportsCatalogsInTableDefinitions() throws SQLException
 	{
-		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
 
 	@Override
@@ -1418,8 +1447,19 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	@Override
 	public boolean supportsResultSetType( final int arg0 ) throws SQLException
 	{
-		// TODO Auto-generated method stub
-		return false;
+		switch (arg0) {
+			case ResultSet.TYPE_FORWARD_ONLY:
+			case ResultSet.CONCUR_READ_ONLY:
+			case ResultSet.TYPE_SCROLL_INSENSITIVE:
+			case ResultSet.HOLD_CURSORS_OVER_COMMIT:
+				return true;
+			
+			case ResultSet.CLOSE_CURSORS_AT_COMMIT:
+			case ResultSet.CONCUR_UPDATABLE:
+			case ResultSet.TYPE_SCROLL_SENSITIVE:
+			default:
+				return false;
+		}
 	}
 
 	@Override
@@ -1432,8 +1472,8 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	@Override
 	public boolean supportsSchemasInDataManipulation() throws SQLException
 	{
-		// TODO Auto-generated method stub
-		return false;
+		LOG.debug( "supportsSchemasInDataManipulation: true ");
+		return true;
 	}
 
 	@Override
@@ -1460,8 +1500,8 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	@Override
 	public boolean supportsSchemasInTableDefinitions() throws SQLException
 	{
-		// TODO Auto-generated method stub
-		return false;
+		LOG.debug( "supportsSchemasInTableDefinitions: true ");
+		return true;
 	}
 
 	@Override

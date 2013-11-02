@@ -11,6 +11,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.Schema;
+import org.xenei.jdbc4sparql.meta.MetaCatalogBuilder;
 
 public class CatalogBuilderTest
 {
@@ -61,7 +62,7 @@ public class CatalogBuilderTest
 		Assert.assertEquals("catalog", catalog.getName());
 		Assert.assertNotNull(catalog.getSchemas());
 		Assert.assertEquals(1, catalog.getSchemas().size());
-		Assert.assertNotNull(catalog.getSchema(Catalog.DEFAULT_SCHEMA));
+		Assert.assertNotNull(catalog.getSchema(MetaCatalogBuilder.SCHEMA_NAME));
 	}
 
 	@Test
@@ -105,7 +106,7 @@ public class CatalogBuilderTest
 		Set<? extends Schema> schemas = catalog.getSchemas();
 		Assert.assertNotNull(schemas);
 		Assert.assertEquals(1, schemas.size());
-		Assert.assertNotNull(catalog.getSchema(Catalog.DEFAULT_SCHEMA));
+		Assert.assertNotNull(catalog.getSchema(MetaCatalogBuilder.SCHEMA_NAME));
 
 		schemaBldr.setCatalog(catalog);
 

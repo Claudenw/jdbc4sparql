@@ -26,6 +26,7 @@ import java.sql.Statement;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.sparql.SparqlView;
 import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
@@ -33,7 +34,7 @@ import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 public class J4SStatement implements Statement
 {
 	private final J4SConnection connection;
-	private final RdfCatalog catalog;
+	private RdfCatalog catalog;
 	private SQLWarning warnings = null;
 	private boolean closed = false;
 	private final SparqlParser parser;
@@ -52,6 +53,7 @@ public class J4SStatement implements Statement
 			final int resultSetConcurrency, final int resultSetHoldability )
 			throws SQLException
 	{
+		LOG.debug( "Creating statement");
 		this.connection = connection;
 		this.catalog = catalog;
 		this.queryTimeout = connection.getNetworkTimeout();
@@ -105,14 +107,81 @@ public class J4SStatement implements Statement
 		throw new SQLFeatureNotSupportedException();
 	}
 
+	private void executeUse( String[] parts ) throws SQLException
+	{
+		if (parts.length == 3)
+		{
+			if (parts[1].toLowerCase().startsWith( "cat") )
+			{
+				final Catalog catalog = connection.getCatalogs().get( parts[2]);
+				if (catalog == null)
+				{
+					throw new SQLException( String.format( "Catalog '%s' not found", parts[2]));
+				}
+				if (catalog instanceof RdfCatalog)
+				{
+					this.catalog = (RdfCatalog) catalog;
+					connection.setCatalog(parts[2]);
+				}
+				else
+				{
+					throw new SQLException( String.format( 
+							"Catalog '%s' does not support statements",
+							parts[2]));
+				}
+				return;
+			}
+			if (parts[1].toLowerCase().startsWith( "sch") )
+			{
+				connection.setSchema(parts[2]);
+				return;
+			}
+		}
+		throw new SQLException( "use must be followed by CATalog or SCHema and a name.");	
+	}
+	
+	private ResultSet executeShow( String[] parts ) throws SQLException
+	{
+		if (parts.length == 2)
+		{
+			if (parts[1].toLowerCase().startsWith( "cat") )
+			{
+				return connection.getMetaData().getCatalogs();
+			}
+			if (parts[1].toLowerCase().startsWith( "sch") )
+			{
+				return connection.getMetaData().getSchemas( connection.getCatalog(), null );
+			}
+			if (parts[1].toLowerCase().startsWith( "tab") )
+			{
+				return connection.getMetaData().getTables( connection.getCatalog(), 
+						connection.getSchema(), null, null );
+			}
+		}
+		throw new SQLException( "show must be followed by CATalog, SCHema, or TABle.");	
+	}
+	
 	@Override
 	public boolean execute( final String sql ) throws SQLException
 	{
+		resultSet = null;
 		J4SStatement.LOG.debug("execute {}", sql);
-		final SparqlView view = new SparqlView(parser.parse(catalog, sql));
-		resultSet = view.getResultSet();
-		resultSet.setFetchDirection(getFetchDirection());
-		return true;
+		String [] parts = sql.trim().split("\\s");
+		if (parts[0].equalsIgnoreCase("use"))
+		{
+			executeUse( parts );
+		}
+		else if (parts[0].equalsIgnoreCase("show"))
+		{
+			resultSet = executeShow( parts );
+		}
+		else
+		{
+			final SparqlView view = new SparqlView(parser.parse(catalog, sql));
+			resultSet = view.getResultSet();
+			resultSet.setFetchDirection(getFetchDirection());
+		}
+		return resultSet != null;
 	}
 
 	@Override
@@ -257,7 +326,7 @@ public class J4SStatement implements Statement
 	@Override
 	public int getUpdateCount() throws SQLException
 	{
-		return 0; // don't do updates
+		return -1; // don't do updates
 	}
 
 	@Override

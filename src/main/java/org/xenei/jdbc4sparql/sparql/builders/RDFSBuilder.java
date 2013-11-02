@@ -43,6 +43,7 @@ import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTableDef;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTableDef.Builder;
+import org.xenei.jdbc4sparql.meta.MetaCatalogBuilder;
 
 /**
  *
@@ -206,16 +207,16 @@ public class RDFSBuilder implements SchemaBuilder
 	 * xenei.jdbc4sparql.sparql.SparqlCatalog)
 	 */
 	@Override
-	public Set<RdfTable> getTables( final RdfCatalog catalog )
+	public Set<RdfTable> getTables( final RdfSchema schema )
 	{
+		RdfCatalog catalog = schema.getCatalog();
 		final InfModel rdfsOntology = ModelFactory.createRDFSModel(catalog
 				.getLocalModel());
 
 		// we have to build the table defs piece by piece
-		final Model model = catalog.getResource().getModel();
+		final Model model = schema.getResource().getModel();
 		final Map<String, RdfTableDef.Builder> tables = new HashMap<String, Builder>();
 		final Map<String, List<Resource>> columnName = new HashMap<String, List<Resource>>();
-		final RdfSchema schema = catalog.getSchema(Catalog.DEFAULT_SCHEMA);
 		for (final Statement stmt : rdfsOntology.listStatements(null,
 				RDFS.domain, (RDFNode) null).toList())
 		{

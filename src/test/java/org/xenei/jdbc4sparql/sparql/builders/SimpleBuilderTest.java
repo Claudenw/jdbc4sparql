@@ -76,7 +76,7 @@ public class SimpleBuilderTest
 	@Test
 	public void buildRdfTableTest() throws SQLException
 	{
-		final Set<RdfTable> tables = builder.getTables(catalog);
+		final Set<RdfTable> tables = builder.getTables(schema);
 		final Map<String, Integer> counter = new HashMap<String, Integer>();
 		final String[] columnNames = { "StringCol", "NullableStringCol",
 				"IntCol", "NullableIntCol" };
@@ -120,7 +120,7 @@ public class SimpleBuilderTest
 	public void checkNullReturnValues() throws SQLException
 	{
 
-		final Set<RdfTable> tables = builder.getTables(catalog);
+		final Set<RdfTable> tables = builder.getTables(schema);
 		for (final RdfTable tbl : tables)
 		{
 			final ResultSet rs = tbl.getResultSet();

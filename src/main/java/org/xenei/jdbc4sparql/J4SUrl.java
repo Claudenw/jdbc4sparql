@@ -26,6 +26,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang.StringUtils;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFLanguages;
+import org.xenei.jdbc4sparql.meta.MetaCatalogBuilder;
 import org.xenei.jdbc4sparql.sparql.builders.SchemaBuilder;
 import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 
@@ -83,6 +84,20 @@ public class J4SUrl
 			throw new IllegalArgumentException(
 					"Not a valid J4S JDBC URL -- missing endpoint");
 		}
+		
+		// configure catalog name
+		if (StringUtils.isBlank( getCatalog() ))
+		{
+			String catalogName = getEndpoint().getHost();
+			if (StringUtils.isBlank( catalogName ))
+			{
+				catalogName = "local";
+			}
+			else {
+				catalogName = catalogName.replace( "^[A-Za-z0-9", "_");
+			}
+			properties.setProperty(J4SPropertyNames.CATALOG_PROPERTY, catalogName);
+		}	
 	}
 
 	private boolean doComp( final String target, final int pos,
@@ -107,12 +122,11 @@ public class J4SUrl
 	/**
 	 * Get the default catalog for the URL.
 	 * 
-	 * @return the default catalog name or an empty string if none was
-	 *         specified.
+	 * @return the default catalog name or build one from URL name
 	 */
 	public String getCatalog()
 	{
-		return properties.getProperty(J4SPropertyNames.CATALOG_PROPERTY, "");
+		return properties.getProperty(J4SPropertyNames.CATALOG_PROPERTY);
 	}
 
 	/**
