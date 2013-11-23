@@ -201,7 +201,7 @@ public class QueryTableInfo extends QueryItemInfo<QueryTableInfo.Name>
 	/**
 	 * Adds all of the table columns to the query.
 	 * @param query The query to add the columns to
-	 * @param shortNames If true use short names otherwise use fully qualified names
+	 * 
 	 */
 	public void addTableColumns( Query query )
 	{

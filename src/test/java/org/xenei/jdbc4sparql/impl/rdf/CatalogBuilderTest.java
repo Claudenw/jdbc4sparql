@@ -42,13 +42,13 @@ public class CatalogBuilderTest
 		final RdfCatalog catalog = builder.build(model);
 		Assert.assertEquals("catalog", catalog.getName());
 		Assert.assertNotNull(catalog.getSchemas());
-		Assert.assertEquals(1, catalog.getSchemas().size());
+		Assert.assertEquals(0, catalog.getSchemas().size());
 		schemaBldr.setCatalog(catalog);
 
 		schemaBldr.build(model);
 
 		Assert.assertNotNull(catalog.getSchemas());
-		Assert.assertEquals(2, catalog.getSchemas().size());
+		Assert.assertEquals(1, catalog.getSchemas().size());
 	}
 
 	@Test
@@ -61,8 +61,8 @@ public class CatalogBuilderTest
 
 		Assert.assertEquals("catalog", catalog.getName());
 		Assert.assertNotNull(catalog.getSchemas());
-		Assert.assertEquals(1, catalog.getSchemas().size());
-		Assert.assertNotNull(catalog.getSchema(MetaCatalogBuilder.SCHEMA_NAME));
+		Assert.assertEquals(0, catalog.getSchemas().size());
+		Assert.assertNull(catalog.getSchema(MetaCatalogBuilder.SCHEMA_NAME));
 	}
 
 	@Test
@@ -102,11 +102,10 @@ public class CatalogBuilderTest
 
 		final RdfCatalog catalog = builder.build(model);
 
-		// should contain default schema
 		Set<? extends Schema> schemas = catalog.getSchemas();
 		Assert.assertNotNull(schemas);
-		Assert.assertEquals(1, schemas.size());
-		Assert.assertNotNull(catalog.getSchema(MetaCatalogBuilder.SCHEMA_NAME));
+		Assert.assertEquals(0, schemas.size());
+		Assert.assertNull(catalog.getSchema(MetaCatalogBuilder.SCHEMA_NAME));
 
 		schemaBldr.setCatalog(catalog);
 
@@ -114,7 +113,7 @@ public class CatalogBuilderTest
 
 		schemas = catalog.getSchemas();
 		Assert.assertNotNull(schemas);
-		Assert.assertEquals(2, schemas.size());
+		Assert.assertEquals(1, schemas.size());
 
 	}
 }

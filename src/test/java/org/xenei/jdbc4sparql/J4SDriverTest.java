@@ -111,9 +111,17 @@ public class J4SDriverTest
 
 	private void verifyCorrect() throws SQLException
 	{
-		// verify table exists
 		final DatabaseMetaData metaData = conn.getMetaData();
-		final ResultSet rs = metaData.getTables("test", "", "fooTable", null);
+		
+		// verify table exists
+		final ResultSet rs1 = metaData.getTables( null, null, null, null );
+		while (rs1.next())
+		{
+			System.out.println( String.format( "cat: %s, schem: %s, tbl: %s", rs1.getString(1), rs1.getString(2), rs1.getString(3)));
+		}
+		
+		
+		final ResultSet rs = metaData.getTables("test", null, "fooTable", null);
 		Assert.assertTrue(rs.next());
 
 		// get the column names.

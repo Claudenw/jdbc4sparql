@@ -152,13 +152,21 @@ public class J4SStatement implements Statement
 			{
 				return connection.getMetaData().getSchemas( connection.getCatalog(), null );
 			}
-			if (parts[1].toLowerCase().startsWith( "tab") )
+			if (parts[1].toLowerCase().startsWith( "show tab") )
 			{
 				return connection.getMetaData().getTables( connection.getCatalog(), 
 						connection.getSchema(), null, null );
 			}
 		}
-		throw new SQLException( "show must be followed by CATalog, SCHema, or TABle.");	
+		if (parts.length == 3)
+		{
+			if (parts[1].toLowerCase().startsWith( "show col") )
+			{
+				return connection.getMetaData().getColumns( connection.getCatalog(), 
+						connection.getSchema(), parts[2], null );
+			}	
+		}
+		throw new SQLException( "show must be followed by CATalog, SCHema, TABle or COLums [tablename]");	
 	}
 	
 	@Override

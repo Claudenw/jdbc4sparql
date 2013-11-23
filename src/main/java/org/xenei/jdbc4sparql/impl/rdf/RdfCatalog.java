@@ -72,10 +72,6 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 
 		public RdfCatalog build( final Model model )
 		{
-			if (StringUtils.isBlank(name))
-			{
-				throw new IllegalArgumentException( "Catalog Name may not be blank");
-			}
 			
 			if (model == null)
 			{
@@ -210,11 +206,7 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 
 		public Builder setName( final String name )
 		{
-			if (StringUtils.isBlank(name))
-			{
-				throw new IllegalArgumentException( "Catalog Name may not be blank");
-			}
-			this.name = name;
+			this.name = StringUtils.defaultString(name);
 			return this;
 		}
 
@@ -430,7 +422,12 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 	 */
 	public RdfSchema getViewSchema()
 	{
-		return getSchema(null);
+		RdfSchema retval = getSchema("");
+		if (retval == null)
+		{
+			retval = new RdfSchema.Builder().setName("").setCatalog(this).build(this.getResource().getModel());
+		}
+		return retval;
 	}
 
 	public boolean isService()

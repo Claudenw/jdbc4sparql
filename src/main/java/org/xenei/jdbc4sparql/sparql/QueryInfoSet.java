@@ -1,6 +1,7 @@
 package org.xenei.jdbc4sparql.sparql;
 
 import com.hp.hpl.jena.graph.Node;
+import com.hp.hpl.jena.sparql.core.Var;
 import com.hp.hpl.jena.util.iterator.Map1;
 import com.hp.hpl.jena.util.iterator.WrappedIterator;
 
@@ -14,6 +15,7 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xenei.jdbc4sparql.impl.NameUtils;
 import org.xenei.jdbc4sparql.impl.rdf.RdfColumn;
 
 /**
@@ -172,6 +174,16 @@ public class QueryInfoSet
 		return getColumnByName( QueryColumnInfo.getNameInstance(name) );
 	}
 
+	/**
+	 * Retrieves the column form the list of query columns
+	 * @param name The name to retrieve
+	 * @return The column info for the named column
+	 * @throws IllegalStateException if the column is not found
+	 */
+	public QueryColumnInfo getColumnByName( final Var name )
+	{
+		return getColumnByName( QueryColumnInfo.getNameInstance( NameUtils.convertSPARQL2DB(name.getVarName())) );
+	}
 	/**
 	 * Retrieves the column form the list of query columns
 	 * @param name The name to retrieve

@@ -153,7 +153,13 @@ public class SparqlQueryBuilder
 	
 	public int getColumnCount()
 	{
-		return infoSet.getColumns().size();
+		if (!isBuilt)
+		{
+			//return infoSet.getColumns().size();
+			throw new IllegalStateException( "Column count may not be retrieved from a builder until after query is built");
+		}
+		
+		return query.getProjectVars().size();
 	}
 
 	/**
@@ -691,7 +697,16 @@ public class SparqlQueryBuilder
 	
 	public QueryColumnInfo getColumn( int i )
 	{
-		return (QueryColumnInfo) infoSet.getColumns().toArray()[i];
+		if (!isBuilt)
+		{
+			//return (QueryColumnInfo) infoSet.getColumns().toArray()[i];
+			throw new IllegalStateException( "Columns may not be retrieved from a builder until after query is built");
+		}
+		
+		Var v = query.getProjectVars().get(i);
+		return infoSet.getColumnByName( v );
+		//return (QueryColumnInfo) infoSet.getColumns().toArray()[i];
+		
 	}
 	
 	public List<QueryColumnInfo> getResultColumns()

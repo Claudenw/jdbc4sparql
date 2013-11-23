@@ -29,6 +29,7 @@ import org.apache.jena.riot.RDFLanguages;
 import org.xenei.jdbc4sparql.meta.MetaCatalogBuilder;
 import org.xenei.jdbc4sparql.sparql.builders.SchemaBuilder;
 import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
+import org.xenei.jdbc4sparql.utils.SQLNameUtil;
 
 public class J4SUrl
 {
@@ -89,14 +90,11 @@ public class J4SUrl
 		if (StringUtils.isBlank( getCatalog() ))
 		{
 			String catalogName = getEndpoint().getHost();
-			if (StringUtils.isBlank( catalogName ))
+			if (!StringUtils.isBlank( catalogName ))
 			{
-				catalogName = "local";
+				catalogName = SQLNameUtil.clean(catalogName );
+				properties.setProperty(J4SPropertyNames.CATALOG_PROPERTY, catalogName);
 			}
-			else {
-				catalogName = catalogName.replace( "^[A-Za-z0-9", "_");
-			}
-			properties.setProperty(J4SPropertyNames.CATALOG_PROPERTY, catalogName);
 		}	
 	}
 
@@ -126,7 +124,7 @@ public class J4SUrl
 	 */
 	public String getCatalog()
 	{
-		return properties.getProperty(J4SPropertyNames.CATALOG_PROPERTY);
+		return properties.getProperty(J4SPropertyNames.CATALOG_PROPERTY, "");
 	}
 
 	/**

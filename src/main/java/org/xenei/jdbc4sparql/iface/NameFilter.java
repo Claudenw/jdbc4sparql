@@ -17,8 +17,12 @@
  */
 package org.xenei.jdbc4sparql.iface;
 
+import com.hp.hpl.jena.util.iterator.WrappedIterator;
+
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Filters a namespacedObject by name.
@@ -116,4 +120,21 @@ public class NameFilter<T extends NamedObject> implements Iterator<T>,
 		throw new UnsupportedOperationException();
 	}
 
+	/**
+	 * Return the data as a list.
+	 * @return
+	 */
+	public List<T> toList()
+	{
+		return WrappedIterator.create(this).toList();
+	}
+	
+	/**
+	 * Return the data as a list.
+	 * @return
+	 */
+	public Set<T> toSet()
+	{
+		return WrappedIterator.create(this).toSet();
+	}
 }

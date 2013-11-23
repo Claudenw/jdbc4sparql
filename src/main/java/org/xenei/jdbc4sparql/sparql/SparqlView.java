@@ -24,6 +24,8 @@ import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.ColumnDef;
@@ -35,6 +37,7 @@ import org.xenei.jdbc4sparql.impl.NameUtils;
 
 public class SparqlView implements Table
 {
+	private final static Logger LOG = LoggerFactory.getLogger(SparqlView.class);
 	private final String name;
 	private final SparqlQueryBuilder builder;
 
@@ -42,6 +45,7 @@ public class SparqlView implements Table
 
 	public SparqlView( final SparqlQueryBuilder builder )
 	{
+		LOG.debug( builder.toString());
 		this.builder = builder;
 		this.name = NameUtils.createUUIDName();
 	}

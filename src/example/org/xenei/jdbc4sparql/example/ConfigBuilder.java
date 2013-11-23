@@ -2,7 +2,13 @@ package org.xenei.jdbc4sparql.example;
 
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.rdf.model.RDFNode;
+import com.hp.hpl.jena.rdf.model.StmtIterator;
+import com.hp.hpl.jena.reasoner.ReasonerRegistry;
 import com.hp.hpl.jena.tdb.TDBFactory;
+import com.hp.hpl.jena.vocabulary.RDF;
+import com.hp.hpl.jena.vocabulary.RDFS;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -36,7 +42,9 @@ public class ConfigBuilder
 		final Dataset ds = TDBFactory.createDataset(dir.getCanonicalPath());
 		try
 		{
-			final Model ontologyModel = ds.getDefaultModel();
+			//final Model ontologyModel = ModelFactory.createInfModel( ReasonerRegistry.(), ds.getDefaultModel());
+			final Model ontologyModel = ModelFactory.createRDFSModel(ds.getDefaultModel());
+			
 			URL fUrl = null;
 			for (final String s : schemaFiles)
 			{
@@ -49,6 +57,7 @@ public class ConfigBuilder
 				ontologyModel.read(fUrl.toURI().toASCIIString(), RDFLanguages
 						.filenameToLang(fUrl.getPath()).getName());
 			}
+			
 			System.out.println("creating output file");
 			final File outfile = File.createTempFile("cfgbld", ".ttl");
 			final FileOutputStream fos = new FileOutputStream(outfile);
@@ -93,7 +102,8 @@ public class ConfigBuilder
 				.subList(1, args.length));
 
 		final J4SDriver driver = new J4SDriver();
-		final String urlStr = "jdbc:j4s?builder=org.xenei.jdbc4sparql.sparql.builders.RDFSBuilder&type=turtle:file:"
+//		final String urlStr = "jdbc:j4s?builder=org.xenei.jdbc4sparql.sparql.builders.RDFSBuilder&type=turtle:file:"
+		final String urlStr = "jdbc:j4s?builder=org.xenei.jdbc4sparql.sparql.builders.SimpleBuilder&type=turtle:file:"
 				+ outFile.getCanonicalPath();
 		// + "/tmp/cfgbld8572787109218862303.ttl";
 		final J4SUrl url = new J4SUrl(urlStr);
@@ -106,6 +116,13 @@ public class ConfigBuilder
 				properties);
 
 		final DatabaseMetaData metaData = connection.getMetaData();
+		
+		System.out.println("creating metadata file");
+		final File outfile = File.createTempFile("cfgmtd", ".ttl");
+		final FileOutputStream fos2 = new FileOutputStream(outfile);
+		System.out.println( "Writing metadata to "+outfile.getCanonicalPath() ); 
+		connection.getDatasetProducer().getMetaDatasetUnionModel().write(fos2, "N-TRIPLE");
+		
 		metaData.getColumns(null, null, null, null);
 		System.out.println("Writing configuration to " + args[0]);
 		final File f = new File(args[0]);

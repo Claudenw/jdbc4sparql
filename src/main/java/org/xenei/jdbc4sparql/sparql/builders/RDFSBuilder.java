@@ -44,6 +44,7 @@ import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTableDef;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTableDef.Builder;
 import org.xenei.jdbc4sparql.meta.MetaCatalogBuilder;
+import org.xenei.jdbc4sparql.utils.SQLNameUtil;
 
 /**
  *
@@ -91,7 +92,7 @@ public class RDFSBuilder implements SchemaBuilder
 
 	private String fixupLiteral( final Literal l )
 	{
-		return l.getValue().toString().replaceAll("[^A-Za-z0-9]+", "_");
+		return SQLNameUtil.clean(l.getValue().toString());
 	}
 
 	private String getComment( final Resource cr )

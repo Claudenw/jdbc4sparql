@@ -896,7 +896,7 @@ public abstract class AbstractResultSet implements ResultSet
 
 	private int getColumnIndex( final String columnLabel) throws SQLException
 	{
-		final int i = table.getColumnIndex(columnLabel);
+		final int i = columnNameIdx.get(columnLabel);//table.getColumnIndex(columnLabel);
 		if (i < 0)
 		{
 			throw new SQLException(String.format(

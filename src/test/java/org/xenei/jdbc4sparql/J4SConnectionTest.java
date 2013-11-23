@@ -34,7 +34,7 @@ public class J4SConnectionTest
 		driver = new J4SDriver();
 		final URL fUrl = J4SConnectionTest.class
 				.getResource("./J4SDriverTest.ttl");
-		url = new J4SUrl("jdbc:j4s?type=turtle:" + fUrl.toExternalForm());
+		url = new J4SUrl("jdbc:j4s?catalog=local&type=turtle:" + fUrl.toExternalForm());
 		properties = new Properties();
 		properties.setProperty("DatasetProducer",
 				"org.xenei.jdbc4sparql.config.MemDatasetProducer");

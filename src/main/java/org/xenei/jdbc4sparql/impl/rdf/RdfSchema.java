@@ -155,11 +155,6 @@ public class RdfSchema extends RdfNamespacedObject implements Schema,
 
 		public Builder setName( final String name )
 		{
-			if (StringUtils.isBlank(name))
-			{
-				throw new IllegalArgumentException( "Schema Name may not be blank");
-			}
-
 			this.name = name;
 			return this;
 		}

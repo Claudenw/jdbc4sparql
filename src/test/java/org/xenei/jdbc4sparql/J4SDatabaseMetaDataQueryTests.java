@@ -374,6 +374,10 @@ public class J4SDatabaseMetaDataQueryTests
 		Assert.assertTrue("No records", rs.first());
 		for (int i=0;i<names.length; i++)
 		{
+			System.out.println( String.format( "%s %s", i, rsmd.getColumnName(i+1)));
+		}
+		for (int i=0;i<names.length; i++)
+		{
 			Assert.assertEquals( names[i], rsmd.getColumnName(i+1));
 			Assert.assertEquals( rs.getString(i+1), rs.getString( names[i]));
 		}	
@@ -390,6 +394,7 @@ public class J4SDatabaseMetaDataQueryTests
 				"IS_NULLABLE", "SCOPE_CATLOG", "SCOPE_SCHEMA", "SCOPE_TABLE",
 				"SOURCE_DATA_TYPE", "IS_AUTOINCREMENT", };
 
+		connection.setCatalog( MetaCatalogBuilder.LOCAL_NAME);
 		Statement stmt = connection.createStatement();
 		try {
 			Assert.assertTrue( stmt.execute( "select tbl.* from Schema.Columns tbl" ));

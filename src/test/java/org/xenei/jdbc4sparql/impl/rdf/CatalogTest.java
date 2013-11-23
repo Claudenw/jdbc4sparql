@@ -157,70 +157,30 @@ public class CatalogTest
 				.build(model);
 
 		NameFilter<RdfSchema> schemas = catalog.findSchemas(null);
-		int i = 0;
-		for (final RdfSchema s : schemas)
-		{
-			i++;
-		}
-		Assert.assertEquals(3, i);
+		Assert.assertEquals(2, schemas.toList().size());
 
 		schemas = catalog.findSchemas("");
-		i = 0;
-		for (final RdfSchema s : schemas)
-		{
-			i++;
-		}
-		Assert.assertEquals(1, i);
+		Assert.assertEquals(0, schemas.toList().size());
 
 		schemas = catalog.findSchemas("testSchema1");
-		i = 0;
-		for (final RdfSchema s : schemas)
-		{
-			i++;
-		}
-		Assert.assertEquals(1, i);
+		Assert.assertEquals(1, schemas.toList().size());
 
 		schemas = catalog.findSchemas("testSchema2");
-		i = 0;
-		for (final RdfSchema s : schemas)
-		{
-			i++;
-		}
-		Assert.assertEquals(1, i);
+		Assert.assertEquals(1, schemas.toList().size());
 
 		entityManager.read(catalog.getResource(), RdfCatalog.class);
 
 		schemas = catalog.findSchemas(null);
-		i = 0;
-		for (final RdfSchema s : schemas)
-		{
-			i++;
-		}
-		Assert.assertEquals(3, i);
+		Assert.assertEquals(2, schemas.toList().size());
 
 		schemas = catalog.findSchemas("");
-		i = 0;
-		for (final RdfSchema s : schemas)
-		{
-			i++;
-		}
-		Assert.assertEquals(1, i);
+		Assert.assertEquals(0, schemas.toList().size());
 
 		schemas = catalog.findSchemas("testSchema1");
-		i = 0;
-		for (final RdfSchema s : schemas)
-		{
-			i++;
-		}
-		Assert.assertEquals(1, i);
+		Assert.assertEquals(1, schemas.toList().size());
 
 		schemas = catalog.findSchemas("testSchema2");
-		i = 0;
-		for (final RdfSchema s : schemas)
-		{
-			i++;
-		}
-		Assert.assertEquals(1, i);
+		Assert.assertEquals(1, schemas.toList().size());
 	}
 
 	@Test
@@ -240,30 +200,20 @@ public class CatalogTest
 	@Test
 	public void testGetSchema() throws Exception
 	{
-		// the default schema always exists
-		RdfSchema schema = catalog.getSchema(null);
-		Assert.assertNotNull(schema);
-		Assert.assertEquals("", schema.getName());
-
-		schema = catalog.getSchema("");
-		Assert.assertNotNull(schema);
-		Assert.assertEquals("", schema.getName());
-
+		Assert.assertNull(catalog.getSchema(null));
+		Assert.assertNull(catalog.getSchema(""));
+		
 		Assert.assertNull(catalog.getSchema("testSchema1"));
 		Assert.assertNull(catalog.getSchema("testSchema2"));
 
 		new RdfSchema.Builder().setName("testSchema1").setCatalog(catalog)
 				.build(model);
 
-		schema = catalog.getSchema(null);
-		Assert.assertNotNull(schema);
-		Assert.assertEquals("", schema.getName());
 
-		schema = catalog.getSchema("");
-		Assert.assertNotNull(schema);
-		Assert.assertEquals("", schema.getName());
-
-		schema = catalog.getSchema("testSchema1");
+		Assert.assertNull(catalog.getSchema(null));
+		Assert.assertNull(catalog.getSchema(""));
+		
+		RdfSchema schema = catalog.getSchema("testSchema1");
 		Assert.assertNotNull(schema);
 		Assert.assertEquals("testSchema1", schema.getName());
 
@@ -272,13 +222,8 @@ public class CatalogTest
 		new RdfSchema.Builder().setName("testSchema2").setCatalog(catalog)
 				.build(model);
 
-		schema = catalog.getSchema(null);
-		Assert.assertNotNull(schema);
-		Assert.assertEquals("", schema.getName());
-
-		schema = catalog.getSchema("");
-		Assert.assertNotNull(schema);
-		Assert.assertEquals("", schema.getName());
+		Assert.assertNull(catalog.getSchema(null));
+		Assert.assertNull(catalog.getSchema(""));
 
 		schema = catalog.getSchema("testSchema1");
 		Assert.assertNotNull(schema);
@@ -290,13 +235,8 @@ public class CatalogTest
 
 		entityManager.read(catalog.getResource(), RdfCatalog.class);
 
-		schema = catalog.getSchema(null);
-		Assert.assertNotNull(schema);
-		Assert.assertEquals("", schema.getName());
-
-		schema = catalog.getSchema("");
-		Assert.assertNotNull(schema);
-		Assert.assertEquals("", schema.getName());
+		Assert.assertNull(catalog.getSchema(null));
+		Assert.assertNull(catalog.getSchema(""));
 
 		schema = catalog.getSchema("testSchema1");
 		Assert.assertNotNull(schema);
@@ -312,17 +252,15 @@ public class CatalogTest
 	{
 
 		final List<String> names = new ArrayList<String>();
-		names.add("");
 
 		Set<RdfSchema> schemas = catalog.getSchemas();
-		Assert.assertEquals(1, schemas.size());
-		Assert.assertEquals("", schemas.iterator().next().getName());
+		Assert.assertEquals(0, schemas.size());
 
 		new RdfSchema.Builder().setName("testSchema1").setCatalog(catalog)
 				.build(model);
 		names.add("testSchema1");
 		schemas = catalog.getSchemas();
-		Assert.assertEquals(2, schemas.size());
+		Assert.assertEquals(1, schemas.size());
 		for (final RdfSchema schema : schemas)
 		{
 			Assert.assertTrue(names.contains(schema.getName()));
@@ -333,7 +271,7 @@ public class CatalogTest
 				.build(model);
 		names.add("testSchema2");
 		schemas = catalog.getSchemas();
-		Assert.assertEquals(3, schemas.size());
+		Assert.assertEquals(2, schemas.size());
 		for (final RdfSchema schema : schemas)
 		{
 			Assert.assertTrue(names.contains(schema.getName()));
@@ -344,7 +282,7 @@ public class CatalogTest
 				RdfCatalog.class);
 
 		schemas = cat2.getSchemas();
-		Assert.assertEquals(3, schemas.size());
+		Assert.assertEquals(2, schemas.size());
 		for (final RdfSchema schema : schemas)
 		{
 			Assert.assertTrue(names.contains(schema.getName()));
