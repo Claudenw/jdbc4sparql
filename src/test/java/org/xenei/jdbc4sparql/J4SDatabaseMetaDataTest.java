@@ -27,6 +27,7 @@ import com.hp.hpl.jena.util.iterator.WrappedIterator;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;

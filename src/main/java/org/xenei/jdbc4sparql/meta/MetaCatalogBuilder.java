@@ -365,7 +365,7 @@ public class MetaCatalogBuilder
 				.addColumnDef(nullableInt) // DECIMAL_DIGITS
 				.addColumnDef(nullableInt) // NUM_PREC_RADIX
 				.addColumnDef(nonNullInt) // NULLABLE
-				.addColumnDef(nonNullString) // REMARKS
+				.addColumnDef(nullableString) // REMARKS
 				.addColumnDef(nullableString) // COLUMN_DEF
 				.addColumnDef(nullableInt) // SQL_DATA_TYPE
 				.addColumnDef(nullableInt) // SQL_DATETIME_SUB

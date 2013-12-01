@@ -1,10 +1,34 @@
 package org.xenei.jdbc4sparql;
 
+import com.hp.hpl.jena.query.Query;
+import com.hp.hpl.jena.query.QueryExecution;
+import com.hp.hpl.jena.query.QueryExecutionFactory;
+import com.hp.hpl.jena.query.QueryFactory;
+import com.hp.hpl.jena.query.QuerySolution;
+import com.hp.hpl.jena.util.iterator.WrappedIterator;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.URL;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
+import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.xenei.jdbc4sparql.config.MemDatasetProducer;
+import org.xenei.jdbc4sparql.iface.Catalog;
+import org.xenei.jdbc4sparql.iface.DatasetProducer;
+import org.xenei.jdbc4sparql.meta.MetaCatalogBuilder;
 
 public class J4SStatementTDBTest extends AbstractJ4SStatementTest
 {
@@ -32,9 +56,7 @@ public class J4SStatementTDBTest extends AbstractJ4SStatementTest
 		conn = DriverManager.getConnection(url, prop);
 		conn.setAutoCommit(false);
 		stmt = conn.createStatement();
-		// TODO remove this
-		// ((J4SConnection)conn).saveConfig( new
-		// File("/tmp/J4SStatementTestTDB.zip"));
 	}
-
+	
+	
 }

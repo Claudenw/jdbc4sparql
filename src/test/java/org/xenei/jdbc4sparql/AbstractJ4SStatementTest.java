@@ -10,6 +10,7 @@ import java.util.List;
 
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,6 +65,7 @@ public abstract class AbstractJ4SStatementTest
 		{
 		}
 	}
+
 
 	@Test
 	public void testBadValueInEqualsConst() throws ClassNotFoundException,
@@ -170,6 +172,7 @@ public abstract class AbstractJ4SStatementTest
 		}
 		rset.close();
 	}
+
 	@Test
 	public void testJoinSelect() throws SQLException
 	{
@@ -233,7 +236,7 @@ public abstract class AbstractJ4SStatementTest
 		Assert.assertEquals(2, i);
 		rset.close();
 	}
-	
+
 	@Test
 	public void testWhereEqualitySelect() throws SQLException
 	{

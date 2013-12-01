@@ -6,6 +6,7 @@ import java.util.Properties;
 
 import org.apache.log4j.Level;
 import org.junit.Before;
+import org.junit.Ignore;
 
 public class J4SStatementMemTest extends AbstractJ4SStatementTest
 {

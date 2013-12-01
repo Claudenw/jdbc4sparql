@@ -68,6 +68,7 @@ public class CheckTypeF extends ExprFunction1
 		final Node n = binding.get(v);
 		if (n == null)
 		{
+			boolean b = column.getColumnDef().getNullable() == ResultSetMetaData.columnNullable;
 			return column.getColumnDef().getNullable() == ResultSetMetaData.columnNullable ? NodeValue.TRUE
 					: NodeValue.FALSE;
 		}

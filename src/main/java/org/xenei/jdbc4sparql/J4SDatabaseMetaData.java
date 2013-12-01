@@ -67,6 +67,12 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 			throw new IllegalStateException( String.format( "Metadata schema '%s' not defined", MetaCatalogBuilder.SCHEMA_NAME));
 		}
 	}
+	
+	// TODO remvoe this
+	public Catalog getCatalog( String name )
+	{
+		return catalogs.get(name);
+	}
 
 	@Override
 	public boolean allProceduresAreCallable() throws SQLException
