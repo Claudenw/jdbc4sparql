@@ -2,11 +2,15 @@ package org.xenei.jdbc4sparql;
 
 import java.net.URL;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.log4j.Level;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
+import org.junit.Test;
 
 public class J4SStatementMemTest extends AbstractJ4SStatementTest
 {
@@ -41,4 +45,32 @@ public class J4SStatementMemTest extends AbstractJ4SStatementTest
 		// java.io.File("/tmp/J4SStatementTest.zip"));
 	}
 
+	@Test
+	public void testFunction() throws Exception
+	{
+		final List<String> colNames = getColumnNames("fooTable");
+		final ResultSet rset = stmt
+				.executeQuery("select count(*) from fooTable where StringCol='Foo2String'");
+		int i = 0;
+		while (rset.next())
+		{
+			final StringBuilder sb = new StringBuilder();
+			for (final String colName : colNames)
+			{
+				sb.append(String.format("[%s]=%s ", colName,
+						rset.getString(colName)));
+			}
+			final String s = sb.toString();
+			Assert.assertTrue(s.contains("[StringCol]=Foo2String"));
+			Assert.assertTrue(s.contains("[IntCol]=5"));
+			Assert.assertTrue(s
+					.contains("[type]=http://example.com/jdbc4sparql#fooTable"));
+			Assert.assertTrue(s.contains("[NullableStringCol]=null"));
+			Assert.assertTrue(s.contains("[NullableIntCol]=null"));
+			i++;
+		}
+		Assert.assertEquals(1, i);
+		rset.close();
+		stmt.close();
+	}
 }

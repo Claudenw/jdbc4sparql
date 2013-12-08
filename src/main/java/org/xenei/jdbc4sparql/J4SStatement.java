@@ -110,64 +110,67 @@ public class J4SStatement implements Statement
 
 	private void executeUse( String[] parts ) throws SQLException
 	{
-		if (parts.length == 3)
+		if (parts.length == 1)
 		{
-			if (parts[1].toLowerCase().startsWith( "cat") )
-			{
-				final Catalog catalog = connection.getCatalogs().get( parts[2]);
-				if (catalog == null)
-				{
-					throw new SQLException( String.format( "Catalog '%s' not found", parts[2]));
-				}
-				if (catalog instanceof RdfCatalog)
-				{
-					this.catalog = (RdfCatalog) catalog;
-					connection.setCatalog(parts[2]);
-				}
-				else
-				{
-					throw new SQLException( String.format( 
-							"Catalog '%s' does not support statements",
-							parts[2]));
-				}
-				return;
-			}
-			if (parts[1].toLowerCase().startsWith( "sch") )
-			{
-				connection.setSchema(parts[2]);
-				return;
-			}
+			throw new SQLException( "use must be followed by CATalog or SCHema and a name.");	
 		}
-		throw new SQLException( "use must be followed by CATalog or SCHema and a name.");	
+		
+		String name = (parts.length == 2)?"":parts[2];
+		if (parts[1].toLowerCase().startsWith( "cat") )
+		{
+
+			final Catalog catalog = connection.getCatalogs().get( name );
+			if (catalog == null)
+			{
+				throw new SQLException( String.format( "Catalog '%s' not found", parts[2]));
+			}
+			if (catalog instanceof RdfCatalog)
+			{
+				this.catalog = (RdfCatalog) catalog;
+				connection.setCatalog(parts[2]);
+			}
+			else
+			{
+				throw new SQLException( String.format( 
+						"Catalog '%s' does not support statements",
+						name));
+			}
+			return;
+		}
+		if (parts[1].toLowerCase().startsWith( "sch") )
+		{
+			connection.setSchema(name);
+			return;
+		}	
 	}
 	
 	private ResultSet executeShow( String[] parts ) throws SQLException
 	{
-		if (parts.length == 2)
+		if (parts.length == 1)
 		{
-			if (parts[1].toLowerCase().startsWith( "cat") )
-			{
-				return connection.getMetaData().getCatalogs();
-			}
-			if (parts[1].toLowerCase().startsWith( "sch") )
-			{
-				return connection.getMetaData().getSchemas( connection.getCatalog(), null );
-			}
-			if (parts[1].toLowerCase().startsWith( "show tab") )
-			{
-				return connection.getMetaData().getTables( connection.getCatalog(), 
-						connection.getSchema(), null, null );
-			}
+			throw new SQLException( "show must be followed by CATalog, SCHema, TABle or COLums [tablename]");	
 		}
-		if (parts.length == 3)
+		String name = (parts.length == 2)?null:parts[2];	
+		
+		if (parts[1].toLowerCase().startsWith( "cat") )
 		{
-			if (parts[1].toLowerCase().startsWith( "show col") )
-			{
-				return connection.getMetaData().getColumns( connection.getCatalog(), 
-						connection.getSchema(), parts[2], null );
-			}	
+			return connection.getMetaData().getCatalogs();
 		}
-		throw new SQLException( "show must be followed by CATalog, SCHema, TABle or COLums [tablename]");	
+		if (parts[1].toLowerCase().startsWith( "sch") )
+		{
+			return connection.getMetaData().getSchemas( connection.getCatalog(), name );
+		}
+		if (parts[1].toLowerCase().startsWith( "tab") )
+		{
+			return connection.getMetaData().getTables( connection.getCatalog(), 
+					connection.getSchema(), name, null );
+		}
+		if (parts[1].toLowerCase().startsWith( "col") )
+		{
+			return connection.getMetaData().getColumns( connection.getCatalog(), 
+					connection.getSchema(), name, null );
+		}	
+		throw new SQLException( "show must be followed by CATalog, SCHema, TABle or COLums [tablename]");
 	}
 	
 	@Override

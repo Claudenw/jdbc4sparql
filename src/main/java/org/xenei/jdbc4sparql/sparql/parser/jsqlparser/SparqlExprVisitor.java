@@ -39,6 +39,7 @@ import com.hp.hpl.jena.sparql.expr.E_Regex;
 import com.hp.hpl.jena.sparql.expr.E_Subtract;
 import com.hp.hpl.jena.sparql.expr.Expr;
 import com.hp.hpl.jena.sparql.expr.ExprVar;
+import com.hp.hpl.jena.sparql.expr.aggregate.AggCount;
 import com.hp.hpl.jena.sparql.expr.nodevalue.NodeValueDT;
 import com.hp.hpl.jena.sparql.expr.nodevalue.NodeValueDouble;
 import com.hp.hpl.jena.sparql.expr.nodevalue.NodeValueInteger;

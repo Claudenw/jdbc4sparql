@@ -211,11 +211,14 @@ public class J4SConnection implements Connection
 		else
 		{
 			// otherwise we have to read the data and parse the input.
-			dsProducer = DatasetProducer.Loader.load(filterProperties());
+			dsProducer = DatasetProducer.Loader.load(properties);
 			RdfCatalog catalog = null;
 			
+			// if the catalog name is not set the set to "" (empty string)
+			// can not use setCatalog here as the catalog map is not yet set.
+			properties.setProperty(J4SPropertyNames.CATALOG_PROPERTY, StringUtils.defaultString(getCatalog(),""));
+			
 			// the schema name is the produced by the builder name.
-
 			SchemaBuilder builder = url.getBuilder();
 			if (builder == null)
 			{
@@ -340,7 +343,7 @@ public class J4SConnection implements Connection
 	 * 
 	 * @return
 	 */
-	private Properties filterProperties()
+	private Properties filterProperties(Properties properties)
 	{
 		final Properties props = new Properties();
 		props.putAll(properties);
