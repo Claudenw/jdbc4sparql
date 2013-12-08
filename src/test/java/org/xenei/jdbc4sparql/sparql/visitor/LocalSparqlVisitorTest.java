@@ -118,7 +118,7 @@ public class LocalSparqlVisitorTest
 				"%1$s <http://example.com/three> %2$s . ");
 		bldr.build(model);
 
-		sv = new SparqlVisitor(catalog);
+		sv = new SparqlVisitor(catalog, schema);
 
 	}
 

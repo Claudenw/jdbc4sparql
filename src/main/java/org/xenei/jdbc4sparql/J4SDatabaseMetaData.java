@@ -273,7 +273,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 			}
 			final SparqlParser parser = new SparqlParserImpl();
 
-			final SparqlQueryBuilder sqb = parser.parse(table.getCatalog(),
+			final SparqlQueryBuilder sqb = parser.parse(table.getCatalog(), table.getSchema(),
 					query.toString()).setKey(table.getKey());
 			return new SparqlResultSet(table, sqb.build());
 		}
@@ -695,7 +695,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 					.format("SELECT * FROM %s WHERE ", table.getSQLName()));
 			if (catalogPattern != null)
 			{
-				query.append(String.format("TABLE_CAT LIKE '%s'",
+				query.append(String.format("TABLE_CATALOG LIKE '%s'",
 						getCatalogName(catalogPattern)));
 				hasWhere = true;
 			}
@@ -708,7 +708,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 			}
 
 			final SparqlParser parser = new SparqlParserImpl();
-			final SparqlQueryBuilder sqb = parser.parse(table.getCatalog(),
+			final SparqlQueryBuilder sqb = parser.parse(table.getCatalog(), table.getSchema(),
 					query.toString()).setKey(table.getKey());
 			return new SparqlResultSet(table, sqb.build());
 		}
@@ -900,7 +900,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 			}
 
 			final SparqlParser parser = new SparqlParserImpl();
-			final SparqlQueryBuilder sqb = parser.parse(table.getCatalog(),
+			final SparqlQueryBuilder sqb = parser.parse(table.getCatalog(), table.getSchema(),
 					query.toString()).setKey(table.getKey());
 			return new SparqlResultSet(table, sqb.build());
 		}

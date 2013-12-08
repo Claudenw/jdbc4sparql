@@ -32,6 +32,7 @@ import net.sf.jsqlparser.statement.update.Update;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
+import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 
 public class SparqlVisitor implements StatementVisitor
@@ -39,9 +40,9 @@ public class SparqlVisitor implements StatementVisitor
 	private final SparqlQueryBuilder sparqlQueryBuilder;
 	private static Logger LOG = LoggerFactory.getLogger(SparqlVisitor.class);
 
-	public SparqlVisitor( final RdfCatalog catalog )
+	public SparqlVisitor( final RdfCatalog catalog, final RdfSchema schema )
 	{
-		sparqlQueryBuilder = new SparqlQueryBuilder(catalog);
+		sparqlQueryBuilder = new SparqlQueryBuilder(catalog, schema);
 	}
 
 	public SparqlQueryBuilder getBuilder()

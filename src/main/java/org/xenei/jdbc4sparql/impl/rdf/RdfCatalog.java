@@ -279,19 +279,7 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 	@Override
 	public List<QuerySolution> executeLocalQuery( final Query query )
 	{
-		if (RdfCatalog.LOG.isDebugEnabled())
-		{
-			try
-			{
-				localModel.write(new FileOutputStream("/tmp/localModel.ttl"),
-						"TURTLE");
-			}
-			catch (final FileNotFoundException e1)
-			{
-				RdfCatalog.LOG.info("Error attempting to write debug file: "
-						+ e1.getMessage(), e1);
-			}
-		}
+		
 		final QueryExecution qexec = QueryExecutionFactory.create(query,
 				localModel);
 		try
@@ -311,7 +299,7 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 			qexec.close();
 		}
 	}
-
+	
 	/**
 	 * Execute a jena query against the data.
 	 * 

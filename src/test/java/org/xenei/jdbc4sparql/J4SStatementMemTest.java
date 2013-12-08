@@ -46,6 +46,7 @@ public class J4SStatementMemTest extends AbstractJ4SStatementTest
 	}
 
 	@Test
+	@Ignore( "Ignore until functions are supported")
 	public void testFunction() throws Exception
 	{
 		final List<String> colNames = getColumnNames("fooTable");

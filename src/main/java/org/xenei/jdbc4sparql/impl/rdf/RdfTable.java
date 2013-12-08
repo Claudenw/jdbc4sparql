@@ -546,7 +546,7 @@ public class RdfTable extends RdfNamespacedObject implements Table,
 		if (queryBuilder == null)
 		{
 			final RdfCatalog catalog = getCatalog();
-			queryBuilder = new SparqlQueryBuilder(catalog);
+			queryBuilder = new SparqlQueryBuilder(catalog, schema);
 			queryBuilder.setForceShortName(true);
 			Node n = queryBuilder.addTable(this, QueryTableInfo.getNameInstance( getSchema().getName(), getName()), SparqlQueryBuilder.REQUIRED);
 			queryBuilder.addRequiredColumns();

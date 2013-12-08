@@ -53,6 +53,7 @@ import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfColumn;
 import org.xenei.jdbc4sparql.impl.rdf.RdfKey;
 import org.xenei.jdbc4sparql.impl.rdf.RdfKeySegment;
+import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTableDef;
 
@@ -110,6 +111,9 @@ public class SparqlQueryBuilder
 
 	// sparql catalog we are running against.
 	private final RdfCatalog catalog;
+	
+	// sparql schema for default tables
+	private final RdfSchema schema;
 
 	// the list of columns not to be included in the "all columns" result.
 	// perhaps this should store column so that tables may be checked in case
@@ -130,13 +134,14 @@ public class SparqlQueryBuilder
 	 * @throws IllegalArgumentException
 	 *             if catalog is null.
 	 */
-	public SparqlQueryBuilder( final RdfCatalog catalog )
+	public SparqlQueryBuilder( final RdfCatalog catalog, RdfSchema schema )
 	{
 		if (catalog == null)
 		{
 			throw new IllegalArgumentException("Catalog may not be null");
 		}
 		this.catalog = catalog;
+		this.schema = schema;
 		this.query = new Query();
 		this.isBuilt = false;
 		this.infoSet = new QueryInfoSet();
@@ -625,13 +630,20 @@ public class SparqlQueryBuilder
 		}
 	}
 
+	private String getDefaultSchemaName()
+	{
+		return schema==null?null:schema.getName();
+	}
+	
 	private Collection<RdfTable> findTables( QueryItemName name )
 	{
+
 		if (SparqlQueryBuilder.LOG.isDebugEnabled())
 		{
 			SparqlQueryBuilder.LOG.debug(String.format(
 					"Looking for Table %s.%s in '%s' catalog", name.getSchema(), name.getTable(), catalog.getName()));
 		}
+		
 		final List<RdfTable> tables = new ArrayList<RdfTable>();
 		
 		for (final Schema schema : catalog.findSchemas(name.getSchema()))

@@ -30,6 +30,7 @@ import net.sf.jsqlparser.util.deparser.StatementDeParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
+import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 
@@ -64,7 +65,7 @@ public class SparqlParserImpl implements SparqlParser
 	}
 
 	@Override
-	public SparqlQueryBuilder parse( final RdfCatalog catalog,
+	public SparqlQueryBuilder parse( final RdfCatalog catalog, final RdfSchema schema,
 			final String sqlQuery ) throws SQLException
 	{
 		SparqlParserImpl.LOG.debug("catalog: '{}' parsing SQL: {}",
@@ -73,7 +74,7 @@ public class SparqlParserImpl implements SparqlParser
 		{
 			final Statement stmt = parserManager.parse(new StringReader(
 					sqlQuery));
-			final SparqlVisitor sv = new SparqlVisitor(catalog);
+			final SparqlVisitor sv = new SparqlVisitor(catalog, schema);
 			stmt.accept(sv);
 			if (SparqlParserImpl.LOG.isDebugEnabled())
 			{
