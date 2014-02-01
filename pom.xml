@@ -277,12 +277,12 @@
 			<groupId>org.apache.jena</groupId>
 			<artifactId>apache-jena</artifactId>
 			<type>pom</type>
-			<version>2.11.1-SNAPSHOT</version>
+			<version>2.11.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.xenei</groupId>
 			<artifactId>PA4RDF</artifactId>
-			<version>1.1.1</version>
+			<version>1.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
