@@ -1,4 +1,4 @@
-package org.xenei.jdbc4sparql.sparql;
+package org.xenei.jdbc4sparql.iface;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -9,20 +9,22 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.xenei.jdbc4sparql.impl.NameUtils;
 
-public abstract class QueryItemName
+public abstract class ItemName
 {
+	static final String FOUND_IN_MULTIPLE_ = "%s was found in multiple %s";
+
 	private final String schema;
 	private final String table;
 	private final String col;
 
-	protected QueryItemName( final QueryItemName name )
+	protected ItemName( final ItemName name )
 	{
 		this.schema = name.getSchema();
 		this.table = name.getTable();
 		this.col = name.getCol();
 	}
 
-	protected QueryItemName( final String schema, final String table,
+	protected ItemName( final String schema, final String table,
 			final String col )
 	{
 		this.schema = schema;
@@ -33,7 +35,6 @@ public abstract class QueryItemName
 	public String getShortName() {
 		return StringUtils.defaultIfEmpty(getCol(), StringUtils.defaultIfEmpty(getTable(), getSchema()));
 	}
-	
 
 
 	@Override
@@ -43,9 +44,9 @@ public abstract class QueryItemName
 		{
 			return true;
 		}
-		if (o instanceof QueryItemName)
+		if (this.getClass().equals( o.getClass()))
 		{
-			final QueryItemName n = (QueryItemName) o;
+			final ItemName n = (ItemName) o;
 			return new EqualsBuilder().append(this.getClass(), o.getClass())
 					.append(this.getSchema(), n.getSchema())
 					.append(this.getTable(), n.getTable())
@@ -65,7 +66,7 @@ public abstract class QueryItemName
 	 * @throws IllegalArgumentException
 	 *             if more than one object matches.
 	 */
-	public <T> T findMatch( final Map<? extends QueryItemName, T> map )
+	public <T> T findMatch( final Map<? extends ItemName, T> map )
 	{
 		// exact match
 		if (map.containsKey(this))
@@ -86,20 +87,20 @@ public abstract class QueryItemName
 					return retval;
 				}
 				throw new IllegalArgumentException(String.format(
-						SparqlQueryBuilder.FOUND_IN_MULTIPLE_, this, retval
+						FOUND_IN_MULTIPLE_, this, retval
 								.getClass().getSimpleName()));
 			}
 		}
 		else if (hasWild())
 		{
-			for (final QueryItemName n : map.keySet())
+			for (final ItemName n : map.keySet())
 			{
 				if (matches(n))
 				{
 					if (retval != null)
 					{
 						throw new IllegalArgumentException(String.format(
-								SparqlQueryBuilder.FOUND_IN_MULTIPLE_, this,
+								FOUND_IN_MULTIPLE_, this,
 								retval.getClass().getSimpleName()));
 					}
 					retval = map.get(n);
@@ -120,10 +121,10 @@ public abstract class QueryItemName
 	 * @throws IllegalArgumentException
 	 *             if more than one object matches.
 	 */
-	public <T> Set<T> listMatches( final Map<? extends QueryItemName, T> map )
+	public <T> Set<T> listMatches( final Map<? extends ItemName, T> map )
 	{
 		Set<T> retval = new HashSet<T>();
-		for (final QueryItemName n : map.keySet())
+		for (final ItemName n : map.keySet())
 		{
 			if (matches(n))
 			{
@@ -151,7 +152,7 @@ public abstract class QueryItemName
 	 */
 	public String getDBName()
 	{
-		return NameUtils.getDBName(schema, table, col);
+		return createName( NameUtils.DB_DOT );
 	}
 
 	/**
@@ -171,7 +172,7 @@ public abstract class QueryItemName
 	 */
 	public String getSPARQLName()
 	{
-		return NameUtils.getSPARQLName(schema, table, col);
+		return createName( NameUtils.SPARQL_DOT );
 	}
 
 	/**
@@ -203,7 +204,7 @@ public abstract class QueryItemName
 	 * @param n
 	 * @return
 	 */
-	public boolean matches( final QueryItemName that )
+	public boolean matches( final ItemName that )
 	{
 		if (that == null)
 		{
@@ -246,5 +247,31 @@ public abstract class QueryItemName
 	public boolean hasWild()
 	{
 		return getSchema() == null || getTable()==null || getCol() == null;
+	}
+	
+	public String createName( final String separator )
+	{
+		final StringBuilder sb = new StringBuilder();
+
+		if (StringUtils.isNotEmpty(schema))
+		{
+			sb.append(schema).append(separator);
+		}
+
+		if (StringUtils.isNotEmpty(table) || (sb.length() > 0))
+		{
+			sb.append(table);
+		}
+
+		if (StringUtils.isNotEmpty(col))
+		{
+			if (sb.length() > 0)
+			{
+				sb.append(separator);
+			}
+			sb.append(col);
+		}
+
+		return sb.toString();
 	}
 }

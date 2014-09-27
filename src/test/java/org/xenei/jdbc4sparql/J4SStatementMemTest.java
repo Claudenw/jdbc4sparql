@@ -1,8 +1,11 @@
 package org.xenei.jdbc4sparql;
 
+import static org.junit.Assert.*;
+
 import java.net.URL;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.util.List;
 import java.util.Properties;
 
@@ -11,6 +14,10 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import com.hp.hpl.jena.query.Query;
+import com.hp.hpl.jena.query.QueryFactory;
+import com.hp.hpl.jena.query.QuerySolution;
 
 public class J4SStatementMemTest extends AbstractJ4SStatementTest
 {
@@ -46,32 +53,43 @@ public class J4SStatementMemTest extends AbstractJ4SStatementTest
 	}
 
 	@Test
-	@Ignore( "Ignore until functions are supported")
 	public void testFunction() throws Exception
 	{
-		final List<String> colNames = getColumnNames("fooTable");
-		final ResultSet rset = stmt
-				.executeQuery("select count(*) from fooTable where StringCol='Foo2String'");
-		int i = 0;
-		while (rset.next())
-		{
-			final StringBuilder sb = new StringBuilder();
-			for (final String colName : colNames)
-			{
-				sb.append(String.format("[%s]=%s ", colName,
-						rset.getString(colName)));
-			}
-			final String s = sb.toString();
-			Assert.assertTrue(s.contains("[StringCol]=Foo2String"));
-			Assert.assertTrue(s.contains("[IntCol]=5"));
-			Assert.assertTrue(s
-					.contains("[type]=http://example.com/jdbc4sparql#fooTable"));
-			Assert.assertTrue(s.contains("[NullableStringCol]=null"));
-			Assert.assertTrue(s.contains("[NullableIntCol]=null"));
-			i++;
-		}
-		Assert.assertEquals(1, i);
+		
+		String queryString = "SELECT (count(*) as ?x) where { ?fooTable <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.com/jdbc4sparql#fooTable> }"; 
+		Query query = QueryFactory.create(queryString);
+		
+		List<QuerySolution> qs = ((J4SConnection)conn).getCatalogs().get( conn.getCatalog() ).executeLocalQuery(query);
+		
+
+		// count all the rows
+		ResultSet rset = stmt
+				.executeQuery("select count(*) from fooTable" ); 
+		ResultSetMetaData rsm = rset.getMetaData();
+		assertEquals( 1, rsm.getColumnCount());
+		rset.next();
+		assertEquals( 3L, rset.getLong(1));
 		rset.close();
+		
+		// count one row
+		rset = stmt
+				.executeQuery("select count(*) from fooTable where StringCol='Foo2String'");
+		rsm = rset.getMetaData();
+		assertEquals( 1, rsm.getColumnCount());
+		rset.next();
+		assertEquals( 1L, rset.getLong(1));
+		rset.close();
+		
+		// count all the rows
+		rset = stmt
+				.executeQuery("select count(*) as junk from fooTable" ); 
+		rsm = rset.getMetaData();
+		assertEquals( 1, rsm.getColumnCount());
+		rset.next();
+		assertEquals( 3L, rset.getLong(1));
+		assertEquals( 3L, rset.getLong( "junk"));
+		rset.close();
+
 		stmt.close();
 	}
 }

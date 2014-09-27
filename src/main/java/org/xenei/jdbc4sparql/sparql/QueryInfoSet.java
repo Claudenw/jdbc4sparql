@@ -15,6 +15,9 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xenei.jdbc4sparql.iface.ColumnName;
+import org.xenei.jdbc4sparql.iface.ItemName;
+import org.xenei.jdbc4sparql.iface.TableName;
 import org.xenei.jdbc4sparql.impl.NameUtils;
 import org.xenei.jdbc4sparql.impl.rdf.RdfColumn;
 
@@ -26,10 +29,10 @@ public class QueryInfoSet
 {
 
 	// the list of tables in the query indexed by SQL name.
-	private final Map<QueryTableInfo.Name, QueryTableInfo> tablesInQuery;
+	private final Map<TableName, QueryTableInfo> tablesInQuery;
 
 	// the list of columns in the query indexed by SQL name.
-	private final Map<QueryColumnInfo.Name, QueryColumnInfo> columnsInQuery;
+	private final Map<ColumnName, QueryColumnInfo> columnsInQuery;
 
 	private static final Logger LOG = LoggerFactory
 			.getLogger(QueryInfoSet.class);
@@ -38,8 +41,8 @@ public class QueryInfoSet
 
 	public QueryInfoSet()
 	{
-		this.tablesInQuery = new LinkedHashMap<QueryTableInfo.Name, QueryTableInfo>();
-		this.columnsInQuery = new LinkedHashMap<QueryColumnInfo.Name, QueryColumnInfo>();
+		this.tablesInQuery = new LinkedHashMap<TableName, QueryTableInfo>();
+		this.columnsInQuery = new LinkedHashMap<ColumnName, QueryColumnInfo>();
 		this.shortNames = true;
 	}
 	
@@ -61,10 +64,10 @@ public class QueryInfoSet
 		{
 			throw new IllegalArgumentException( "tableInfo may not be null");
 		}
-		QueryColumnInfo.Name cName = null;
+		ColumnName cName = null;
 		// check for short names
 		if (shortNames) {
-			cName = QueryColumnInfo.getNameInstance(columnInfo.getName().getCol());
+			cName = ColumnName.getNameInstance(columnInfo.getName().getCol());
 		}
 		else {
 			cName = tableInfo.getName().getColumnName(columnInfo.getName().getCol());
@@ -98,7 +101,7 @@ public class QueryInfoSet
 	 */
 	public boolean containsColumn( final String columnName )
 	{
-		return containsColumn( QueryColumnInfo.getNameInstance(columnName) );
+		return containsColumn( ColumnName.getNameInstance(columnName) );
 	}
 	
 	/**
@@ -107,7 +110,7 @@ public class QueryInfoSet
 	 * @param name The name to match
 	 * @return true if the name matches is found.
 	 */
-	public boolean containsColumn( QueryItemName name)
+	public boolean containsColumn( ItemName name)
 	{
 		return name.findMatch(columnsInQuery) != null;
 	}
@@ -120,7 +123,7 @@ public class QueryInfoSet
 	 * @param columnName
 	 * @return columnInfo for column or null if not found.
 	 */
-	public QueryColumnInfo findColumn( QueryColumnInfo.Name name )
+	public QueryColumnInfo findColumn( ColumnName name )
 	{
 		return name.findMatch(columnsInQuery);
 	}
@@ -131,14 +134,14 @@ public class QueryInfoSet
 	 * @param name
 	 * @return
 	 */
-	public QueryColumnInfo scanTablesForColumn( QueryColumnInfo.Name cName ) 
+	public QueryColumnInfo scanTablesForColumn( ColumnName cName ) 
 	{
 		// check exact match
 		QueryColumnInfo retval = findColumn( cName );
 		if (retval == null)
 		{		
 			// table name may be wild card
-			QueryTableInfo.Name tName = QueryTableInfo.getNameInstance(cName);
+			TableName tName = TableName.getNameInstance(cName);
 			QueryTableInfo tableInfo = null;
 			for (QueryTableInfo testTableInfo : listTables(tName))
 			{
@@ -171,7 +174,7 @@ public class QueryInfoSet
 	 */
 	public QueryColumnInfo getColumnByName( final String name )
 	{
-		return getColumnByName( QueryColumnInfo.getNameInstance(name) );
+		return getColumnByName( ColumnName.getNameInstance(name) );
 	}
 
 	/**
@@ -182,7 +185,7 @@ public class QueryInfoSet
 	 */
 	public QueryColumnInfo getColumnByName( final Var name )
 	{
-		return getColumnByName( QueryColumnInfo.getNameInstance( NameUtils.convertSPARQL2DB(name.getVarName())) );
+		return getColumnByName( ColumnName.getNameInstance( NameUtils.convertSPARQL2DB(name.getVarName())) );
 	}
 	/**
 	 * Retrieves the column form the list of query columns
@@ -190,7 +193,7 @@ public class QueryInfoSet
 	 * @return The column info for the named column
 	 * @throws IllegalStateException if the column is not found
 	 */
-	public QueryColumnInfo getColumnByName( final QueryColumnInfo.Name name )
+	public QueryColumnInfo getColumnByName( final ColumnName name )
 	{
 		final QueryColumnInfo retval = name.findMatch(columnsInQuery);
 		if (retval == null)
@@ -202,10 +205,10 @@ public class QueryInfoSet
 	}
 	
 	
-	public int getColumnIndex( final QueryColumnInfo.Name name )
+	public int getColumnIndex( final ColumnName name )
 	{
 		int i = 0;
-		for (QueryColumnInfo.Name cName : columnsInQuery.keySet())
+		for (ColumnName cName : columnsInQuery.keySet())
 		{
 			if (name.equals( cName ))
 			{
@@ -224,6 +227,7 @@ public class QueryInfoSet
 	 */
 	public QueryColumnInfo getColumnByNode( final Node node )
 	{
+		
 		return getItemByNode(columnsInQuery, node);
 	}
 
@@ -233,7 +237,7 @@ public class QueryInfoSet
 	}
 
 	private <T extends QueryItemInfo<?>> T getItemByNode(
-			final Map<? extends QueryItemName, T> map, final Node n )
+			final Map<? extends ItemName, T> map, final Node n )
 	{
 		for (final T entry : map.values())
 		{
@@ -252,7 +256,7 @@ public class QueryInfoSet
 	 * @throws IllegalArgumentException
 	 *             if more than one object matches.
 	 */
-	public QueryTableInfo getTable( final QueryTableInfo.Name name )
+	public QueryTableInfo getTable( final TableName name )
 	{
 		return name.findMatch(tablesInQuery);
 	}
@@ -266,16 +270,16 @@ public class QueryInfoSet
 	 */
 	public QueryTableInfo getTable( final String name )
 	{
-		return getTable(QueryTableInfo.getNameInstance(name));
+		return getTable(TableName.getNameInstance(name));
 	}
 
 	public Set<String> getTableAliases()
 	{
 		return WrappedIterator.create(tablesInQuery.keySet().iterator())
-				.mapWith(new Map1<QueryTableInfo.Name, String>() {
+				.mapWith(new Map1<TableName, String>() {
 
 					@Override
-					public String map1( final QueryTableInfo.Name o )
+					public String map1( final TableName o )
 					{
 						return o.toString();
 					}
@@ -310,7 +314,7 @@ public class QueryInfoSet
 		return tablesInQuery.values();
 	}
 	
-	public Collection<QueryTableInfo> listTables(QueryTableInfo.Name name)
+	public Collection<QueryTableInfo> listTables(TableName name)
 	{
 		return name.listMatches(tablesInQuery);
 	}
@@ -320,7 +324,7 @@ public class QueryInfoSet
 	 * @param name The Column name to match
 	 * @return The list o
 	 */
-	public Collection<QueryColumnInfo> listColumns( QueryColumnInfo.Name name )
+	public Collection<QueryColumnInfo> listColumns( ColumnName name )
 	{
 		return name.listMatches(columnsInQuery);
 	}

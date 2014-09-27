@@ -302,7 +302,7 @@ public class J4SDatabaseMetaDataQueryTests
 			dp.getMetaDatasetUnionModel().write(
 					new FileOutputStream("/tmp/cat.ttl"), "TURTLE");
 		}
-		catalogs.put(cat.getName(), cat);
+		catalogs.put(cat.getName().getShortName(), cat);
 		metadata = new J4SDatabaseMetaData(connection, driver);
 	}
 

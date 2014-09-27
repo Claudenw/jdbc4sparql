@@ -21,6 +21,9 @@ package org.xenei.jdbc4sparql.sparql.parser.jsqlparser;
 
 import java.io.StringReader;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
@@ -29,10 +32,14 @@ import net.sf.jsqlparser.util.deparser.StatementDeParser;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
+import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.functions.NumericFunctionHandler;
+import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.functions.StringFunctionHandler;
+import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.functions.SystemFunctionHandler;
 
 public class SparqlParserImpl implements SparqlParser
 {
@@ -40,7 +47,7 @@ public class SparqlParserImpl implements SparqlParser
 	public static final String DESCRIPTION = "Parser based on JSqlParser (http://jsqlparser.sourceforge.net/). Under LGPL V2 license";
 	private final CCJSqlParserManager parserManager = new CCJSqlParserManager();
 	private static Logger LOG = LoggerFactory.getLogger(SparqlParserImpl.class);
-
+	
 	public SparqlParserImpl()
 	{
 	}
@@ -65,7 +72,7 @@ public class SparqlParserImpl implements SparqlParser
 	}
 
 	@Override
-	public SparqlQueryBuilder parse( final RdfCatalog catalog, final RdfSchema schema,
+	public SparqlQueryBuilder parse(final Map<String, Catalog> catalogs, final RdfCatalog catalog, final RdfSchema schema,
 			final String sqlQuery ) throws SQLException
 	{
 		SparqlParserImpl.LOG.debug("catalog: '{}' parsing SQL: {}",
@@ -74,7 +81,7 @@ public class SparqlParserImpl implements SparqlParser
 		{
 			final Statement stmt = parserManager.parse(new StringReader(
 					sqlQuery));
-			final SparqlVisitor sv = new SparqlVisitor(catalog, schema);
+			final SparqlVisitor sv = new SparqlVisitor( catalogs, this, catalog, schema);
 			stmt.accept(sv);
 			if (SparqlParserImpl.LOG.isDebugEnabled())
 			{
@@ -87,5 +94,20 @@ public class SparqlParserImpl implements SparqlParser
 			SparqlParserImpl.LOG.error("Error parsing: " + e.getMessage(), e);
 			throw new SQLException(e);
 		}
+	}
+
+	@Override
+	public List<String> getSupportedNumericFunctions() {
+		return Arrays.asList(NumericFunctionHandler.NUMERIC_FUNCTIONS); 
+	}
+
+	@Override
+	public List<String> getSupportedStringFunctions() {
+		return Arrays.asList(StringFunctionHandler.STRING_FUNCTIONS); 
+	}
+
+	@Override
+	public List<String> getSupportedSystemFunctions() {
+		return Arrays.asList(SystemFunctionHandler.SYSTEM_FUNCTIONS); 
 	}
 }

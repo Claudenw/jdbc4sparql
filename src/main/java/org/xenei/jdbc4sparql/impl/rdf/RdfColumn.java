@@ -1,13 +1,9 @@
 package org.xenei.jdbc4sparql.impl.rdf;
 
-import com.hp.hpl.jena.graph.Node;
-import com.hp.hpl.jena.query.QueryException;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.shared.Lock;
-import com.hp.hpl.jena.sparql.lang.sparql_11.ParseException;
-import com.hp.hpl.jena.sparql.syntax.Element;
 import com.hp.hpl.jena.vocabulary.RDFS;
 
 import java.sql.DatabaseMetaData;
@@ -19,10 +15,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.ColumnDef;
+import org.xenei.jdbc4sparql.iface.ColumnName;
+import org.xenei.jdbc4sparql.iface.ItemName;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.impl.NameUtils;
-import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 import org.xenei.jena.entities.EntityManager;
 import org.xenei.jena.entities.EntityManagerFactory;
 import org.xenei.jena.entities.EntityManagerRequiredException;
@@ -45,7 +42,7 @@ public class RdfColumn extends RdfNamespacedObject implements Column,
 		}
 
 		private ColumnDef columnDef;
-		private Table table;
+		private Table<?> table;
 		private String name;
 		private final Class<? extends RdfColumn> typeClass = RdfColumn.class;
 		private String remarks = null;
@@ -98,7 +95,7 @@ public class RdfColumn extends RdfNamespacedObject implements Column,
 
 				final Property querySegmentProp = builder.getProperty(
 						typeClass, "querySegmentFmt");
-				column.addLiteral(querySegmentProp, getQueryStrFmt());
+				column.addLiteral(querySegmentProp, getQuerySegmentFmt());
 				querySegments.clear();
 			}
 
@@ -150,7 +147,7 @@ public class RdfColumn extends RdfNamespacedObject implements Column,
 				throw new IllegalStateException("table must be set");
 			}
 
-			if (StringUtils.isBlank(getName()))
+			if (StringUtils.isBlank(name))
 			{
 				throw new IllegalStateException("Name must be set");
 			}
@@ -179,19 +176,20 @@ public class RdfColumn extends RdfNamespacedObject implements Column,
 			final ResourceWrapper rw = (ResourceWrapper) getColumnDef();
 			final StringBuilder sb = new StringBuilder()
 					.append(rw.getResource().getURI()).append(" ").append(name)
-					.append(" ").append(getQueryStrFmt());
+					.append(" ").append(getQuerySegmentFmt());
 			return String.format("%s/instance/UUID-%s",
 					ResourceBuilder.getFQName(RdfColumn.class),
 					UUID.nameUUIDFromBytes(sb.toString().getBytes()));
 		}
 
 		@Override
-		public String getName()
+		public ColumnName getName()
 		{
-			return name;
+			return table.getName().getColumnName( name );
 		}
 
-		private String getQueryStrFmt()
+		@Override
+		public String getQuerySegmentFmt()
 		{
 			final String eol = System.getProperty("line.separator");
 			final StringBuilder sb = new StringBuilder();
@@ -266,9 +264,21 @@ public class RdfColumn extends RdfNamespacedObject implements Column,
 			this.table = table;
 			return this;
 		}
+		
+		@Override
+		public boolean hasQuerySegments(){
+			return querySegments.size()>0;
+		}
+		
+		@Override
+		public boolean isOptional()
+		{
+			return getColumnDef().getNullable() != DatabaseMetaData.columnNoNulls;
+		}
 	}
 
 	private RdfTable table;
+	private ColumnName columnName;
 
 	public void delete()
 	{
@@ -300,37 +310,31 @@ public class RdfColumn extends RdfNamespacedObject implements Column,
 	}
 
 	@Override
+	public ColumnName getName()
+	{
+		if (columnName == null)
+		{
+			columnName = getTable().getName().getColumnName( getSimpleName() );
+		}
+		return columnName;
+	}
+	
 	@Predicate( impl = true, namespace = "http://www.w3.org/2000/01/rdf-schema#", name = "label" )
-	public String getName()
+	public String getSimpleName()
 	{
 		throw new EntityManagerRequiredException();
 	}
 
+	@Override
 	@Predicate( impl = true )
 	public String getQuerySegmentFmt()
 	{
 		throw new EntityManagerRequiredException();
 	}
 
-	public Element getQuerySegments( final Node tableVar, final Node columnVar )
-	{
-		final String fmt = "{" + getQuerySegmentFmt() + "}";
-
-		try
-		{
-			return SparqlParser.Util.parse(String.format(fmt, tableVar,
-					columnVar));
-		}
-		catch (final ParseException e)
-		{
-			throw new IllegalStateException(getFQName() + " query segment "
-					+ fmt, e);
-		}
-		catch (final QueryException e)
-		{
-			throw new IllegalStateException(getFQName() + " query segment "
-					+ fmt, e);
-		}
+	@Override
+	public boolean hasQuerySegments(){
+		return true;
 	}
 
 	@Override
@@ -371,6 +375,7 @@ public class RdfColumn extends RdfNamespacedObject implements Column,
 		return table;
 	}
 
+	@Override
 	public boolean isOptional()
 	{
 		return getColumnDef().getNullable() != DatabaseMetaData.columnNoNulls;

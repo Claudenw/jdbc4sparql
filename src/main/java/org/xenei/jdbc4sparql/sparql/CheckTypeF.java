@@ -12,6 +12,7 @@ import com.hp.hpl.jena.sparql.function.FunctionEnv;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
+import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.TypeConverter;
 import org.xenei.jdbc4sparql.impl.AbstractResultSet;
 import org.xenei.jdbc4sparql.impl.rdf.RdfColumn;
@@ -23,9 +24,9 @@ import org.xenei.jdbc4sparql.impl.rdf.RdfColumn;
  */
 public class CheckTypeF extends ExprFunction1
 {
-	private final RdfColumn column;
+	private final Column column;
 
-	public CheckTypeF( final RdfColumn column, final Var columnVar )
+	public CheckTypeF( final Column column, final Var columnVar )
 	{
 		super(new ExprVar(columnVar), "checkTypeF");
 		if (column == null)

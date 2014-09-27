@@ -6,7 +6,10 @@ import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
 import org.xenei.jdbc4sparql.iface.Column;
+import org.xenei.jdbc4sparql.iface.ItemName;
+import org.xenei.jdbc4sparql.iface.NamedObject;
 import org.xenei.jdbc4sparql.iface.Table;
+import org.xenei.jdbc4sparql.iface.TableName;
 
 public class NameUtils
 {
@@ -24,67 +27,24 @@ public class NameUtils
 		return dbName.replace(NameUtils.SPARQL_DOT, NameUtils.DB_DOT);
 	}
 
-	private static String createName( final String schema, final String table,
-			final String col, final String separator )
-	{
-		final StringBuilder sb = new StringBuilder();
-
-		if (StringUtils.isNotEmpty(schema))
-		{
-			sb.append(schema).append(separator);
-		}
-
-		if (StringUtils.isNotEmpty(table) || (sb.length() > 0))
-		{
-			sb.append(table);
-		}
-
-		if (StringUtils.isNotEmpty(col))
-		{
-			if (sb.length() > 0)
-			{
-				sb.append(separator);
-			}
-			sb.append(col);
-		}
-
-		return sb.toString();
-	}
-
 	public static String createUUIDName()
 	{
 		return ("v_" + UUID.randomUUID().toString()).replace("-", "_");
 	}
 
-	public static String getCursorName( final String schema, final String table )
+	public static String getCursorName( TableName name )
 	{
-		return "CURSOR_" + NameUtils.createName(schema, table, null, "_");
+		return "CURSOR_" + name.createName( "_" );
 	}
 
-	public static String getCursorName( final Table t )
+	public static String getCursorName( final Table<?> t )
 	{
-		return NameUtils.getCursorName(t.getSchema().getName(), t.getName());
+		return NameUtils.getCursorName( t.getName());
 	}
 
-	public static String getDBName( final Column column )
+	public static String getDBName( final NamedObject<?> namedObject )
 	{
-		column.getSchema().getName();
-		column.getTable().getName();
-		column.getName();
-		return NameUtils.getDBName(column.getSchema().getName(), column
-				.getTable().getName(), column.getName());
-	}
-
-	public static String getDBName( final String schema, final String table,
-			final String col )
-	{
-		return NameUtils.createName(schema, table, col, NameUtils.DB_DOT);
-	}
-
-	public static String getDBName( final Table table )
-	{
-		return NameUtils.getDBName(table.getSchema().getName(),
-				table.getName(), null);
+		return namedObject.getName().getDBName();
 	}
 
 	public static String getDBName( final Var var )
@@ -92,21 +52,11 @@ public class NameUtils
 		return var.getName().replace(NameUtils.SPARQL_DOT, NameUtils.DB_DOT);
 	}
 
-	public static String getSPARQLName( final Column column )
+	public static String getSPARQLName( final NamedObject<?> namedObject )
 	{
-		return NameUtils.getSPARQLName(column.getSchema().getName(), column
-				.getTable().getName(), column.getName());
+		return namedObject.getName().getSPARQLName();
 	}
 
-	public static String getSPARQLName( final String schema,
-			final String table, final String col )
-	{
-		return NameUtils.createName(schema, table, col, NameUtils.SPARQL_DOT);
-	}
+	
 
-	public static String getSPARQLName( final Table table )
-	{
-		return NameUtils.getSPARQLName(table.getSchema().getName(),
-				table.getName(), null);
-	}
 }

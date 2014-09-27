@@ -301,7 +301,7 @@ public class J4SDatabaseMetaDataTest
 			dp.getMetaDatasetUnionModel().write(
 					new FileOutputStream("/tmp/cat.ttl"), "TURTLE");
 		}
-		catalogs.put(cat.getName(), cat);
+		catalogs.put(cat.getName().getShortName(), cat);
 		Mockito.when(connection.getCatalogs()).thenReturn(catalogs);
 		metadata = new J4SDatabaseMetaData(connection, driver);
 	}

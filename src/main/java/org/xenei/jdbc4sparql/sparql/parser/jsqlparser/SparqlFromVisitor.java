@@ -28,8 +28,7 @@ import net.sf.jsqlparser.statement.select.SubSelect;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xenei.jdbc4sparql.sparql.QueryItemName;
-import org.xenei.jdbc4sparql.sparql.QueryTableInfo;
+import org.xenei.jdbc4sparql.iface.TableName;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 
 class SparqlFromVisitor implements FromItemVisitor
@@ -37,7 +36,7 @@ class SparqlFromVisitor implements FromItemVisitor
 
 	private final SparqlQueryBuilder builder;
 	private final boolean optional;
-	private QueryTableInfo.Name name;
+	private TableName name;
 	private static Logger LOG = LoggerFactory
 			.getLogger(SparqlFromVisitor.class);
 
@@ -52,7 +51,7 @@ class SparqlFromVisitor implements FromItemVisitor
 		this.optional = optional;
 	}
 
-	public QueryTableInfo.Name getName()
+	public TableName getName()
 	{
 		return name;
 	}
@@ -76,8 +75,8 @@ class SparqlFromVisitor implements FromItemVisitor
 		SparqlFromVisitor.LOG.debug("visit table: {}", tableName);
 		try
 		{
-			QueryTableInfo.Name tName = QueryTableInfo.getNameInstance(tableName.getSchemaName(), tableName.getName());
-			name = (tableName.getAlias() != null)?QueryTableInfo.getNameInstance(tableName.getAlias()):tName;			
+			TableName tName = TableName.getNameInstance(tableName.getSchemaName(), tableName.getName());
+			name = (tableName.getAlias() != null)?TableName.getNameInstance(tableName.getAlias()):tName;			
 			builder.addTable(tName, name, optional);
 			
 		}

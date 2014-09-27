@@ -28,6 +28,8 @@ import java.util.TreeSet;
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.Key;
 import org.xenei.jdbc4sparql.iface.Table;
+import org.xenei.jdbc4sparql.iface.TableName;
+import org.xenei.jdbc4sparql.sparql.QueryTableInfo;
 
 /**
  * An implementation of AbstractTable that stores the data
@@ -35,7 +37,7 @@ import org.xenei.jdbc4sparql.iface.Table;
  * 
  * This table is useful for fixed data sets (e.g. schema tables)
  */
-public class DataTable extends AbstractTable
+public class DataTable extends AbstractWrappedTable<Column>
 {
 	private Collection<Object[]> data;
 	private DataTable superDataTable;
@@ -111,7 +113,7 @@ public class DataTable extends AbstractTable
 	}
 
 	@Override
-	public String getName()
+	public TableName getName()
 	{
 		return getTable().getName();
 	}
@@ -197,4 +199,15 @@ public class DataTable extends AbstractTable
 	{
 		return data.isEmpty();
 	}
+
+	@Override
+	public String getQuerySegmentFmt() {
+		return null;
+	}
+
+	@Override
+	public boolean hasQuerySegments() {
+		return false;
+	}
+
 }

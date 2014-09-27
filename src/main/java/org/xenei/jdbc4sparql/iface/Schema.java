@@ -19,7 +19,7 @@ package org.xenei.jdbc4sparql.iface;
 
 import java.util.Set;
 
-public interface Schema extends NamedObject
+public interface Schema extends NamedObject<SchemaName>
 {
 
 	NameFilter<? extends Table> findTables( String tableNamePattern );

@@ -9,6 +9,8 @@ import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.ResourceFactory;
 import com.hp.hpl.jena.shared.Lock;
+import com.hp.hpl.jena.util.iterator.Map1;
+import com.hp.hpl.jena.util.iterator.WrappedIterator;
 import com.hp.hpl.jena.vocabulary.RDFS;
 
 import java.sql.SQLException;
@@ -17,6 +19,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
@@ -25,10 +28,11 @@ import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.NameFilter;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
+import org.xenei.jdbc4sparql.iface.TableName;
 import org.xenei.jdbc4sparql.impl.NameUtils;
-import org.xenei.jdbc4sparql.sparql.QueryTableInfo;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 import org.xenei.jdbc4sparql.sparql.SparqlResultSet;
+import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 import org.xenei.jena.entities.EntityManager;
 import org.xenei.jena.entities.EntityManagerFactory;
 import org.xenei.jena.entities.EntityManagerRequiredException;
@@ -38,10 +42,10 @@ import org.xenei.jena.entities.annotations.Predicate;
 import org.xenei.jena.entities.annotations.Subject;
 
 @Subject( namespace = "http://org.xenei.jdbc4sparql/entity/Table#" )
-public class RdfTable extends RdfNamespacedObject implements Table,
+public class RdfTable extends RdfNamespacedObject implements Table<RdfColumn>,
 		ResourceWrapper
 {
-	public static class Builder implements Table
+	public static class Builder implements Table<RdfColumn.Builder>
 	{
 		public static RdfTable fixupSchema( final RdfSchema schema,
 				final RdfTable table )
@@ -108,7 +112,7 @@ public class RdfTable extends RdfNamespacedObject implements Table,
 				{
 					final Property querySegmentProp = builder.getProperty(
 							RdfTable.class, "querySegmentFmt");
-					table.addLiteral(querySegmentProp, getQueryStrFmt());
+					table.addLiteral(querySegmentProp, getQuerySegmentFmt());
 					querySegments.clear();
 				}
 
@@ -258,16 +262,16 @@ public class RdfTable extends RdfNamespacedObject implements Table,
 		}
 
 		@Override
-		public Iterator<? extends Column> getColumns()
+		public Iterator<RdfColumn.Builder> getColumns()
 		{
 			return Arrays.asList(columns).iterator();
 		}
 
-		private String getFQName()
+		public String getFQName()
 		{
 			final StringBuilder sb = new StringBuilder()
 					.append(schema.getResource().getURI()).append(" ")
-					.append(name).append(" ").append(getQueryStrFmt());
+					.append(name).append(" ").append(getQuerySegmentFmt());
 
 			return String
 					.format("%s/instance/N%s", ResourceBuilder
@@ -277,12 +281,12 @@ public class RdfTable extends RdfNamespacedObject implements Table,
 		}
 
 		@Override
-		public String getName()
+		public TableName getName()
 		{
-			return name;
+			return getSchema().getName().getTableName(name);
 		}
 
-		private String getQueryStrFmt()
+		public String getQuerySegmentFmt()
 		{
 			final String eol = System.getProperty("line.separator");
 			final StringBuilder sb = new StringBuilder();
@@ -328,7 +332,7 @@ public class RdfTable extends RdfNamespacedObject implements Table,
 		}
 
 		@Override
-		public RdfTable getSuperTable()
+		public Table<RdfColumn.Builder> getSuperTable()
 		{
 			throw new UnsupportedOperationException();
 		}
@@ -416,12 +420,22 @@ public class RdfTable extends RdfNamespacedObject implements Table,
 			return this;
 		}
 
+		@Override
+		public boolean hasQuerySegments() {
+			return !querySegments.isEmpty();
+		}
+
+		@Override
+		public List<RdfColumn.Builder> getColumnList() {
+			return Arrays.asList(columns);
+		}
 	}
 
 	private List<RdfColumn> columns;
 	private RdfTableDef tableDef;
 	private RdfSchema schema;
 	private SparqlQueryBuilder queryBuilder;
+	private TableName tableName;
 
 	@Override
 	public void delete()
@@ -433,7 +447,7 @@ public class RdfTable extends RdfNamespacedObject implements Table,
 		try
 		{
 			// preserve the column objects
-			final List<RdfColumn> cols = readColumns();
+			final List<RdfColumn> cols = getColumnList();
 
 			final Property p = model.createProperty(
 					ResourceBuilder.getNamespace(RdfTable.class), "column");
@@ -441,9 +455,9 @@ public class RdfTable extends RdfNamespacedObject implements Table,
 					.removeList();
 
 			// delete the column objects
-			for (final RdfColumn col : cols)
+			for (final Column col : cols)
 			{
-				col.delete();
+				((RdfColumn)col).delete();
 			}
 			model.remove(null, null, tbl);
 			model.remove(tbl, null, null);
@@ -457,7 +471,7 @@ public class RdfTable extends RdfNamespacedObject implements Table,
 	@Override
 	public NameFilter<Column> findColumns( final String columnNamePattern )
 	{
-		return new NameFilter<Column>(columnNamePattern, readColumns());
+		return new NameFilter<Column>(columnNamePattern, getColumnList());
 	}
 
 	@Override
@@ -467,15 +481,15 @@ public class RdfTable extends RdfNamespacedObject implements Table,
 	}
 
 	@Override
-	public RdfColumn getColumn( final int idx )
+	public Column getColumn( final int idx )
 	{
-		return readColumns().get(idx);
+		return getColumnList().get(idx);
 	}
 
 	@Override
 	public Column getColumn( final String name )
 	{
-		for (final RdfColumn col : readColumns())
+		for (final Column col : getColumnList())
 		{
 			if (col.getName().equals(name))
 			{
@@ -488,13 +502,13 @@ public class RdfTable extends RdfNamespacedObject implements Table,
 	@Override
 	public int getColumnCount()
 	{
-		return readColumns().size();
+		return getColumnList().size();
 	}
 
 	@Override
 	public int getColumnIndex( final Column column )
 	{
-		return readColumns().indexOf(column);
+		return getColumnList().indexOf(column);
 	}
 
 	/**
@@ -507,7 +521,7 @@ public class RdfTable extends RdfNamespacedObject implements Table,
 	@Override
 	public int getColumnIndex( final String columnName )
 	{
-		final List<RdfColumn> cols = readColumns();
+		final List<RdfColumn> cols = getColumnList();
 		for (int i = 0; i < cols.size(); i++)
 		{
 			if (cols.get(i).getName().equals(columnName))
@@ -521,7 +535,7 @@ public class RdfTable extends RdfNamespacedObject implements Table,
 	@Override
 	public Iterator<RdfColumn> getColumns()
 	{
-		return readColumns().iterator();
+		return getColumnList().iterator();
 	}
 
 	public RdfKey getKey()
@@ -535,20 +549,29 @@ public class RdfTable extends RdfNamespacedObject implements Table,
 	}
 
 	@Override
+	public TableName getName()
+	{
+		if (tableName == null)
+		{
+			tableName = getSchema().getName().getTableName(getShortName());
+		}
+		return tableName;
+	}
+	
 	@Predicate( impl = true, namespace = "http://www.w3.org/2000/01/rdf-schema#", name = "label" )
-	public String getName()
+	public String getShortName()
 	{
 		throw new EntityManagerRequiredException();
 	}
 
-	private Query getQuery() throws SQLException
+	private Query getQuery(Map<String,Catalog> catalogs, SparqlParser parser ) throws SQLException
 	{
 		if (queryBuilder == null)
 		{
 			final RdfCatalog catalog = getCatalog();
-			queryBuilder = new SparqlQueryBuilder(catalog, schema);
+			queryBuilder = new SparqlQueryBuilder(catalogs, parser, catalog, schema);
 			queryBuilder.setForceShortName(true);
-			Node n = queryBuilder.addTable(this, QueryTableInfo.getNameInstance( getSchema().getName(), getName()), SparqlQueryBuilder.REQUIRED);
+			Node n = queryBuilder.addTable(this, getName(),  SparqlQueryBuilder.REQUIRED);
 			queryBuilder.addRequiredColumns();
 			queryBuilder.addTableColumns(queryBuilder.getNodeTable(n));
 			final RdfKey key = getKey();
@@ -588,9 +611,9 @@ public class RdfTable extends RdfNamespacedObject implements Table,
 		throw new EntityManagerRequiredException();
 	}
 
-	public SparqlResultSet getResultSet() throws SQLException
+	public SparqlResultSet getResultSet(Map<String,Catalog> catalogs, SparqlParser parser) throws SQLException
 	{
-		return new SparqlResultSet(this, getQuery());
+		return new SparqlResultSet(this, getQuery(catalogs, parser));
 	}
 
 	@Override
@@ -638,7 +661,8 @@ public class RdfTable extends RdfNamespacedObject implements Table,
 		throw new EntityManagerRequiredException();
 	}
 
-	private synchronized List<RdfColumn> readColumns()
+	
+	public synchronized List<RdfColumn> getColumnList()
 	{
 		if (columns == null)
 		{
@@ -678,5 +702,10 @@ public class RdfTable extends RdfNamespacedObject implements Table,
 			tableDef = getTableDef();
 		}
 		return tableDef;
+	}
+
+	@Override
+	public boolean hasQuerySegments() {
+		return true;
 	}
 }

@@ -31,6 +31,7 @@ import java.io.StringReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.statement.Statement;
@@ -41,17 +42,19 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.xenei.jdbc4sparql.LoggingConfig;
-import org.xenei.jdbc4sparql.impl.NameUtils;
+import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTableDef;
 import org.xenei.jdbc4sparql.meta.MetaCatalogBuilder;
+import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlVisitor;
 
 public class RemoteSparqlVisitorTest
 {
-
+	private Map<String,Catalog> catalogs;
+	private SparqlParser parser;
 	private final CCJSqlParserManager parserManager = new CCJSqlParserManager();
 	private SparqlVisitor sv;
 
@@ -117,7 +120,7 @@ public class RemoteSparqlVisitorTest
 				"%1$s <http://example.com/three> %2$s .");
 		bldr.build(model);
 
-		sv = new SparqlVisitor(catalog, schema);
+		sv = new SparqlVisitor(catalogs, parser, catalog, schema);
 
 	}
 

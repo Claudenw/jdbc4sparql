@@ -27,13 +27,13 @@ import com.hp.hpl.jena.sparql.expr.Expr;
 import com.hp.hpl.jena.sparql.expr.ExprFunction;
 import com.hp.hpl.jena.sparql.expr.ExprFunction2;
 import com.hp.hpl.jena.sparql.expr.ExprVar;
-
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.statement.select.Distinct;
 import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.Limit;
 import net.sf.jsqlparser.statement.select.OrderByElement;
@@ -46,8 +46,10 @@ import net.sf.jsqlparser.statement.select.Union;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xenei.jdbc4sparql.iface.ColumnName;
+import org.xenei.jdbc4sparql.iface.ItemName;
+import org.xenei.jdbc4sparql.iface.TableName;
 import org.xenei.jdbc4sparql.sparql.QueryColumnInfo;
-import org.xenei.jdbc4sparql.sparql.QueryItemName;
 import org.xenei.jdbc4sparql.sparql.QueryTableInfo;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 
@@ -76,8 +78,8 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 		this.queryBuilder = queryBuilder;
 	}
 
-	private void applyOuterExpr( final Expr aExpr, final QueryItemName mapFrom,
-			final QueryItemName mapTo )
+	private void applyOuterExpr( final Expr aExpr, final ItemName mapFrom,
+			final ItemName mapTo )
 	{
 		SparqlSelectVisitor.LOG.debug("apply outer expr {}", aExpr);
 		final Expr expr = aExpr;
@@ -92,7 +94,7 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 	}
 
 	private boolean applyOuterExprSub( final Expr aExpr, final Expr toApply,
-			final QueryItemName mapFrom, final QueryItemName mapTo )
+			final ItemName mapFrom, final ItemName mapTo )
 	{
 		SparqlSelectVisitor.LOG.debug("apply outer expr sub {} {}", aExpr,
 				toApply);
@@ -123,7 +125,7 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 	}
 
 	// take apart the join and figure out how to merge it.
-	private void deparseJoin( final Join join, final QueryTableInfo.Name tableName) 
+	private void deparseJoin( final Join join, final TableName tableName) 
 	{
 		SparqlSelectVisitor.LOG.debug("deparse join {}", join);
 		if (join.isSimple())
@@ -141,7 +143,7 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 		}
 	}
 	
-	private void deparseOuterJoin(final Join join, final QueryItemName tableName)
+	private void deparseOuterJoin(final Join join, final ItemName tableName)
 	{
 			final String fmt = "%s OUTER JOIN Is not supported";
 
@@ -175,10 +177,11 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 					join.getOnExpression().accept(expressionVisitor);
 					final ExpRewriter rewriter = new JoinRewriter(queryBuilder){
 						
+						@Override
 						protected Node addAlias( final QueryColumnInfo columnInfo,
-								final QueryColumnInfo.Name alias )
+								final ColumnName alias )
 						{
-							final QueryTableInfo.Name tName = QueryTableInfo
+							final TableName tName = TableName
 									.getNameInstance(columnInfo.getName());
 							final QueryTableInfo tableInfo = queryBuilder.getTable(tName);
 							tableInfo.setEquals( columnInfo,  alias );
@@ -194,7 +197,7 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 			}
 		}
 	
-	private void deparseInnerJoin(final Join join, final QueryItemName tableName)
+	private void deparseInnerJoin(final Join join, final ItemName tableName)
 	{
 			// inner join
 			// select * from table join othertable on table.id = othertable.fk
@@ -231,10 +234,11 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 							queryBuilder, SparqlQueryBuilder.REQUIRED);
 					join.getOnExpression().accept(expressionVisitor);
 					final ExpRewriter rewriter = new JoinRewriter(queryBuilder){
+						@Override
 						protected Node addAlias( final QueryColumnInfo columnInfo,
-								final QueryColumnInfo.Name alias )
+								final ColumnName alias )
 						{
-							final QueryTableInfo.Name tName = QueryTableInfo
+							final TableName tName = TableName
 									.getNameInstance(columnInfo.getName());
 							final QueryTableInfo tableInfo = queryBuilder.getTable(tName);
 							return tableInfo.addColumnToQuery(columnInfo, alias);
@@ -260,6 +264,10 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 	// process a limit
 	private void deparseLimit( final Limit limit )
 	{
+		if (limit == null)
+		{
+			return;
+		}
 		SparqlSelectVisitor.LOG.debug("deparse limit {}", limit);
 		// LIMIT n OFFSET skip
 		if (limit.isOffsetJdbcParameter())
@@ -287,9 +295,28 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 					"LIMIT with no parameter is not supported");
 		}
 	}
-
-	private void deparseOrderBy( final List orderByElements )
+	
+	private void deparseDistinct( Distinct distinct )
 	{
+		if (distinct == null)
+		{
+			return;
+		}
+		
+		queryBuilder.setDistinct();
+		if (distinct.getOnSelectItems() != null)
+		{
+			throw new UnsupportedOperationException(
+					"DISTINCT ON() is not supported");
+		}
+	}
+
+	private void deparseOrderBy( final List<?> orderByElements )
+	{
+		if (orderByElements == null)
+		{
+			return;
+		}
 		SparqlSelectVisitor.LOG.debug("deparse orderby {}", orderByElements);
 		for (final Iterator<?> iter = orderByElements.iterator(); iter
 				.hasNext();)
@@ -328,7 +355,7 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 	public void visit( final PlainSelect plainSelect )
 	{
 		SparqlSelectVisitor.LOG.debug("visit plainSelect: {}", plainSelect);
-		QueryTableInfo.Name lastTableName = null;
+		TableName lastTableName = null;
 		final SparqlExprVisitor expressionVisitor = new SparqlExprVisitor(
 				queryBuilder, SparqlQueryBuilder.OPTIONAL);
 		final SparqlSelectItemVisitor selectItemVisitor = new SparqlSelectItemVisitor(
@@ -343,15 +370,7 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 			lastTableName = fromVisitor.getName();
 		}
 
-		if (plainSelect.getDistinct() != null)
-		{
-			queryBuilder.setDistinct();
-			if (plainSelect.getDistinct().getOnSelectItems() != null)
-			{
-				throw new UnsupportedOperationException(
-						"DISTINCT ON() is not supported");
-			}
-		}
+		deparseDistinct( plainSelect.getDistinct() );
 
 		// process Joins to pick up new tables
 		if (plainSelect.getJoins() != null)
@@ -384,31 +403,25 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 
 		if (plainSelect.getGroupByColumnReferences() != null)
 		{
-			throw new UnsupportedOperationException("GROUP BY is not supported");
-			// buffer.append(" GROUP BY ");
-			// for (Iterator iter =
-			// plainSelect.getGroupByColumnReferences().iterator();
-			// iter.hasNext();) {
-			// Expression columnReference = (Expression) iter.next();
-			// columnReference.accept(expressionVisitor);
-			// if (iter.hasNext()) {
-			// buffer.append(", ");
-			// }
-			// }
+			SparqlExprVisitor visitor = new SparqlExprVisitor(queryBuilder, SparqlQueryBuilder.REQUIRED);
+			for (final Iterator<?> iter = plainSelect.getGroupByColumnReferences().iterator(); iter
+					.hasNext();)
+			{
+				Expression e = (Expression) iter.next();
+				e.accept(visitor);
+				queryBuilder.addGroupBy( visitor.getResult() );
+			}
 		}
 
 		if (plainSelect.getHaving() != null)
 		{
-			throw new UnsupportedOperationException("HAVING is not supported");
-			// buffer.append(" HAVING ");
-			// plainSelect.getHaving().accept(expressionVisitor);
+			SparqlExprVisitor visitor = new SparqlExprVisitor(queryBuilder, SparqlQueryBuilder.REQUIRED);
+			plainSelect.getHaving().accept( visitor );
+			queryBuilder.setHaving( visitor.getResult() );
 		}
-
-		if (plainSelect.getOrderByElements() != null)
-		{
-			deparseOrderBy(plainSelect.getOrderByElements());
-		}
-
+		
+		deparseOrderBy(plainSelect.getOrderByElements());
+		
 		// TOP is implements in SPARQL as LIMIT
 
 		final Top top = plainSelect.getTop();
@@ -429,16 +442,30 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 			limit.setRowCount(top.getRowCount());
 		}
 
-		if (limit != null)
-		{
-			deparseLimit(plainSelect.getLimit());
-		}
+		deparseLimit(plainSelect.getLimit());
 
 	}
 
 	@Override
 	public void visit( final Union union )
 	{
+		// TODO implement ALL
+		if (union.isDistinct())
+		{
+			queryBuilder.setDistinct();
+		}
+		List<SparqlQueryBuilder> unionBuilders = new ArrayList<SparqlQueryBuilder>();
+		for( Iterator<?> iter=union.getPlainSelects().iterator(); iter.hasNext();)
+		{
+			PlainSelect ps = (PlainSelect) iter.next();
+			SparqlQueryBuilder sqb = new SparqlQueryBuilder( queryBuilder );
+			ps.accept( new SparqlSelectVisitor( sqb ));
+			unionBuilders.add(sqb);
+
+		}
+		queryBuilder.addUnion(unionBuilders);
+		deparseOrderBy(union.getOrderByElements());
+		deparseLimit( union.getLimit() );
 		throw new UnsupportedOperationException("UNION is not supported");
 	}
 
@@ -448,8 +475,9 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 		}
 		
 		protected abstract Node addAlias( final QueryColumnInfo columnInfo,
-				final QueryColumnInfo.Name alias );
+				final ColumnName alias );
 		
+		@Override
 		public void visit( final ExprFunction2 func )
 		{
 			if (func instanceof E_Equals)
@@ -466,8 +494,8 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 								.getNodeColumn(((ExprVar) eq.getArg2()).getAsNode());
 						if (ci2 != null)
 						{
-							final QueryColumnInfo.Name ci1a = isMapped(ci1);
-							final QueryColumnInfo.Name ci2a = isMapped(ci2);
+							final ColumnName ci1a = isMapped(ci1);
+							final ColumnName ci2a = isMapped(ci2);
 							if (((ci1a != null) && (ci2a == null))
 									|| ((ci1a == null) && (ci2a != null)))
 							{

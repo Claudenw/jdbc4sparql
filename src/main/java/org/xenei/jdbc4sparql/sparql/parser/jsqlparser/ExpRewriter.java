@@ -1,8 +1,6 @@
 package org.xenei.jdbc4sparql.sparql.parser.jsqlparser;
 
 import com.hp.hpl.jena.graph.Node;
-import com.hp.hpl.jena.sparql.expr.E_Bound;
-import com.hp.hpl.jena.sparql.expr.E_Equals;
 import com.hp.hpl.jena.sparql.expr.Expr;
 import com.hp.hpl.jena.sparql.expr.ExprAggregator;
 import com.hp.hpl.jena.sparql.expr.ExprFunction;
@@ -24,15 +22,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
 
+import org.xenei.jdbc4sparql.iface.ColumnName;
+import org.xenei.jdbc4sparql.iface.ItemName;
 import org.xenei.jdbc4sparql.sparql.QueryColumnInfo;
-import org.xenei.jdbc4sparql.sparql.QueryItemName;
-import org.xenei.jdbc4sparql.sparql.QueryTableInfo;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 
 public abstract class ExpRewriter implements ExprVisitor
 {
-	protected final Map<QueryItemName, QueryItemName> aliasMap = new HashMap<QueryItemName, 
-			QueryItemName>();
+	protected final Map<ItemName, ItemName> aliasMap = new HashMap<ItemName, 
+			ItemName>();
 	protected final SparqlQueryBuilder queryBuilder;
 	protected final Stack<Expr> stack = new Stack<Expr>();
 
@@ -43,7 +41,7 @@ public abstract class ExpRewriter implements ExprVisitor
 
 	
 
-	public void addMap( final QueryItemName from, final QueryItemName to )
+	public void addMap( final ItemName from, final ItemName to )
 	{
 		aliasMap.put(from, to);
 	}
@@ -69,14 +67,14 @@ public abstract class ExpRewriter implements ExprVisitor
 		return stack.pop();
 	}
 
-	public QueryColumnInfo.Name isMapped( final QueryColumnInfo ci )
+	public ColumnName isMapped( final QueryColumnInfo ci )
 	{
-		for (final QueryItemName qi : aliasMap.keySet())
+		for (final ItemName qi : aliasMap.keySet())
 		{
-			if (QueryColumnInfo.getNameInstance(qi).matches(ci.getName()))
+			if (ColumnName.getNameInstance(qi).matches(ci.getName()))
 			{
-				final QueryItemName mapTo = aliasMap.get(qi);
-				return QueryColumnInfo.getNameInstance(mapTo.getSchema(),
+				final ItemName mapTo = aliasMap.get(qi);
+				return ColumnName.getNameInstance(mapTo.getSchema(),
 						mapTo.getTable(), ci.getName().getCol());
 			}
 		}
@@ -187,12 +185,12 @@ public abstract class ExpRewriter implements ExprVisitor
 		final QueryColumnInfo ci = queryBuilder.getNodeColumn(n);
 		if (ci != null)
 		{
-			for (final QueryItemName qi : aliasMap.keySet())
+			for (final ItemName qi : aliasMap.keySet())
 			{
-				if (QueryColumnInfo.getNameInstance(qi).matches(ci.getName()))
+				if (ColumnName.getNameInstance(qi).matches(ci.getName()))
 				{
-					QueryItemName mapTo = aliasMap.get(qi);
-					mapTo = QueryColumnInfo.getNameInstance(mapTo.getSchema(),
+					ItemName mapTo = aliasMap.get(qi);
+					mapTo = ColumnName.getNameInstance(mapTo.getSchema(),
 							mapTo.getTable(), ci.getName().getCol());
 					stack.push(new ExprVar(mapTo.getSPARQLName()));
 					return;

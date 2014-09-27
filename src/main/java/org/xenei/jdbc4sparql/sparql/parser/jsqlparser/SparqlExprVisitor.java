@@ -30,7 +30,6 @@ import com.hp.hpl.jena.sparql.expr.E_GreaterThanOrEqual;
 import com.hp.hpl.jena.sparql.expr.E_LessThan;
 import com.hp.hpl.jena.sparql.expr.E_LessThanOrEqual;
 import com.hp.hpl.jena.sparql.expr.E_LogicalAnd;
-import com.hp.hpl.jena.sparql.expr.E_LogicalNot;
 import com.hp.hpl.jena.sparql.expr.E_LogicalOr;
 import com.hp.hpl.jena.sparql.expr.E_Multiply;
 import com.hp.hpl.jena.sparql.expr.E_NotEquals;
@@ -39,7 +38,6 @@ import com.hp.hpl.jena.sparql.expr.E_Regex;
 import com.hp.hpl.jena.sparql.expr.E_Subtract;
 import com.hp.hpl.jena.sparql.expr.Expr;
 import com.hp.hpl.jena.sparql.expr.ExprVar;
-import com.hp.hpl.jena.sparql.expr.aggregate.AggCount;
 import com.hp.hpl.jena.sparql.expr.nodevalue.NodeValueDT;
 import com.hp.hpl.jena.sparql.expr.nodevalue.NodeValueDouble;
 import com.hp.hpl.jena.sparql.expr.nodevalue.NodeValueInteger;
@@ -96,12 +94,13 @@ import net.sf.jsqlparser.statement.select.SubSelect;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xenei.jdbc4sparql.iface.ColumnName;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 
 /**
  * An expression visitor. Merges SQL expressions into the SparqlQueryBuilder.
  */
-class SparqlExprVisitor implements ExpressionVisitor
+public class SparqlExprVisitor implements ExpressionVisitor
 {
 	private class RegexNodeValue extends NodeValueString
 	{
@@ -137,7 +136,7 @@ class SparqlExprVisitor implements ExpressionVisitor
 	 * @param builder
 	 *            The SparqlQueryBuilder to use.
 	 */
-	SparqlExprVisitor( final SparqlQueryBuilder builder,
+	public SparqlExprVisitor( final SparqlQueryBuilder builder,
 			final boolean optionalColumns )
 	{
 		this.builder = builder;
@@ -295,9 +294,12 @@ class SparqlExprVisitor implements ExpressionVisitor
 		SparqlExprVisitor.LOG.debug("visit Column: {}", tableColumn);
 		try
 		{
-			final Node columnVar = builder.addColumn(tableColumn.getTable()
-					.getSchemaName(), tableColumn.getTable().getName(),
-					tableColumn.getColumnName(), optionalColumns);
+			ColumnName cName = ColumnName.getNameInstance(
+					tableColumn.getTable().getSchemaName(),
+					tableColumn.getTable().getName(),
+					tableColumn.getColumnName());
+			
+			final Node columnVar = builder.addColumn(cName, optionalColumns);
 			stack.push(new ExprVar(columnVar));
 		}
 		catch (final SQLException e)
@@ -342,63 +344,6 @@ class SparqlExprVisitor implements ExpressionVisitor
 		SparqlExprVisitor.LOG.debug("visit EqualsTo: {}", equalsTo);
 		process(equalsTo);
 		stack.push(new E_Equals(stack.pop(), stack.pop()));
-//
-//		final Expr left = stack.pop();
-//		final Expr right = stack.pop();
-//		if (((left instanceof NodeValueString) || (right instanceof NodeValueString))
-//				&& !((left instanceof NodeValueString) && (right instanceof NodeValueString)))
-//		{
-//			// one is a string
-//			if (left instanceof NodeValueString)
-//			{
-//				final NodeValueString nvs = (NodeValueString) left;
-//				final String s = nvs.asUnquotedString();
-//				if (s.contains("_") || s.contains("%"))
-//				{
-//					final RegexNodeValue rnv = parseWildCard(s);
-//					if (rnv.isWildcard())
-//					{
-//						stack.push(new E_Regex(right, rnv, new NodeValueString(
-//								"")));
-//					}
-//					else
-//					{
-//						stack.push(new E_Equals(rnv, right));
-//					}
-//				}
-//				else
-//				{
-//					stack.push(new E_Equals(left, right));
-//				}
-//			}
-//			else
-//			{
-//				// right is a string
-//				final NodeValueString nvs = (NodeValueString) right;
-//				final String s = nvs.asUnquotedString();
-//				if (s.contains("_") || s.contains("%"))
-//				{
-//					final RegexNodeValue rnv = parseWildCard(s);
-//					if (rnv.isWildcard())
-//					{
-//						stack.push(new E_Regex(left, rnv, new NodeValueString(
-//								"")));
-//					}
-//					else
-//					{
-//						stack.push(new E_Equals(left, rnv));
-//					}
-//				}
-//				else
-//				{
-//					stack.push(new E_Equals(left, right));
-//				}
-//			}
-//		}
-//		else
-//		{
-//			stack.push(new E_Equals(stack.pop(), stack.pop()));
-//		}
 	}
 
 	@Override
@@ -411,7 +356,13 @@ class SparqlExprVisitor implements ExpressionVisitor
 	public void visit( final Function function )
 	{
 		SparqlExprVisitor.LOG.debug("visit Function: {}", function);
-		throw new UnsupportedOperationException("functions are not supported");
+		StandardFunctionHandler sfh = new StandardFunctionHandler(builder, stack);
+		try {
+			sfh.handle( function );
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	@Override
@@ -537,64 +488,6 @@ class SparqlExprVisitor implements ExpressionVisitor
 		SparqlExprVisitor.LOG.debug("visit not wquals: {}", notEqualsTo);
 		process(notEqualsTo);
 		stack.push(new E_NotEquals(stack.pop(), stack.pop()));
-
-//		final Expr left = stack.pop();
-//		final Expr right = stack.pop();
-//		if (((left instanceof NodeValueString) || (right instanceof NodeValueString))
-//				&& !((left instanceof NodeValueString) && (right instanceof NodeValueString)))
-//		{
-//			// one is a string
-//			if (left instanceof NodeValueString)
-//			{
-//				final NodeValueString nvs = (NodeValueString) left;
-//				final String s = nvs.asUnquotedString();
-//				if (s.contains("_") || s.contains("%"))
-//				{
-//					final RegexNodeValue rnv = parseWildCard(s);
-//					if (rnv.isWildcard())
-//					{
-//
-//						stack.push(new E_LogicalNot(new E_Regex(right, rnv,
-//								new NodeValueString(""))));
-//					}
-//					else
-//					{
-//						stack.push(new E_NotEquals(rnv, right));
-//					}
-//				}
-//				else
-//				{
-//					stack.push(new E_NotEquals(left, right));
-//				}
-//			}
-//			else
-//			{
-//				// right is a string
-//				final NodeValueString nvs = (NodeValueString) right;
-//				final String s = nvs.asUnquotedString();
-//				if (s.contains("_") || s.contains("%"))
-//				{
-//					final RegexNodeValue rnv = parseWildCard(s);
-//					if (rnv.isWildcard())
-//					{
-//						stack.push(new E_LogicalNot(new E_Regex(left, rnv,
-//								new NodeValueString(""))));
-//					}
-//					else
-//					{
-//						stack.push(new E_NotEquals(left, rnv));
-//					}
-//				}
-//				else
-//				{
-//					stack.push(new E_NotEquals(left, right));
-//				}
-//			}
-//		}
-//		else
-//		{
-//			stack.push(new E_NotEquals(left, right));
-//		}
 	}
 
 	@Override

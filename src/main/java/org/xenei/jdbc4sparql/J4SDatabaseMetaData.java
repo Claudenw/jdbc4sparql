@@ -22,9 +22,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.RowIdLifetime;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
-
+import java.util.Iterator;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,17 +47,18 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	private final J4SDriver driver;
 	private final Catalog metaCatalog;
 	private final Schema metaSchema;
-	private final Map<String, Catalog> catalogs;
+	//private final Map<String, Catalog> catalogs;
 	private static Logger LOG = LoggerFactory
 			.getLogger(J4SDatabaseMetaData.class);
+	private final SparqlParser parser = new SparqlParserImpl();
 
 	public J4SDatabaseMetaData( final J4SConnection connection,
 			final J4SDriver driver )
 	{
 		this.connection = connection;
 		this.driver = driver;
-		this.catalogs = new HashMap<String, Catalog>(connection.getCatalogs());
-		metaCatalog = catalogs.get(MetaCatalogBuilder.LOCAL_NAME);
+		//this.catalogs = new HashMap<String, Catalog>(connection.getCatalogs());
+		metaCatalog = connection.getCatalogs().get(MetaCatalogBuilder.LOCAL_NAME);
 		metaSchema =  metaCatalog
 				.getSchema(MetaCatalogBuilder.SCHEMA_NAME);
 		if (metaSchema == null)
@@ -71,7 +70,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	// TODO remvoe this
 	public Catalog getCatalog( String name )
 	{
-		return catalogs.get(name);
+		return connection.getCatalogs().get(name);
 	}
 
 	@Override
@@ -164,7 +163,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 		final RdfTable table = (RdfTable) metaSchema
 				.getTable(MetaCatalogBuilder.CATALOGS_TABLE);
 
-		return table.getResultSet();
+		return table.getResultSet(connection.getCatalogs(), parser);
 	}
 
 	@Override
@@ -271,15 +270,15 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 								escapeString(columnNamePattern)));
 				hasWhere = true;
 			}
-			final SparqlParser parser = new SparqlParserImpl();
+			
 
-			final SparqlQueryBuilder sqb = parser.parse(table.getCatalog(), table.getSchema(),
+			final SparqlQueryBuilder sqb = parser.parse(connection.getCatalogs(), table.getCatalog(), table.getSchema(),
 					query.toString()).setKey(table.getKey());
 			return new SparqlResultSet(table, sqb.build());
 		}
 		else
 		{
-			return table.getResultSet();
+			return table.getResultSet( connection.getCatalogs(), parser );
 		}
 	}
 
@@ -578,11 +577,21 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 		return 0;
 	}
 
+	private String makeString(Iterator<String> strings )
+	{
+		StringBuilder sb = new StringBuilder();
+		while (strings.hasNext()){
+			if (sb.length()>0) {
+				sb.append(",");
+			}
+			sb.append(strings.next());
+		}
+		return sb.toString();
+	}
 	@Override
 	public String getNumericFunctions() throws SQLException
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return makeString( parser.getSupportedNumericFunctions().iterator() );
 	}
 
 	@Override
@@ -593,7 +602,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 		final DataTable table = new DataTable(
 				metaSchema.getTable(MetaCatalogBuilder.PRIMARY_KEY_TABLE));
 		for (final Catalog catalog : new NameFilter<Catalog>(catalogPattern,
-				catalogs.values()))
+				connection.getCatalogs().values()))
 		{
 			for (final Schema schema : new NameFilter<Schema>(schemaPattern,
 					catalog.getSchemas()))
@@ -707,14 +716,13 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 				hasWhere = true;
 			}
 
-			final SparqlParser parser = new SparqlParserImpl();
-			final SparqlQueryBuilder sqb = parser.parse(table.getCatalog(), table.getSchema(),
+			final SparqlQueryBuilder sqb = parser.parse(connection.getCatalogs(), table.getCatalog(), table.getSchema(),
 					query.toString()).setKey(table.getKey());
 			return new SparqlResultSet(table, sqb.build());
 		}
 		else
 		{
-			return table.getResultSet();
+			return table.getResultSet( connection.getCatalogs(), parser );
 		}
 	}
 
@@ -747,7 +755,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	@Override
 	public String getStringFunctions() throws SQLException
 	{
-		return "";
+		return makeString( parser.getSupportedStringFunctions().iterator() );
 	}
 
 	@Override
@@ -781,7 +789,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 				metaSchema.getTable(MetaCatalogBuilder.SUPER_TABLES_TABLE));
 
 		for (final Catalog catalog : new NameFilter<Catalog>(catalogPattern,
-				catalogs.values()))
+				connection.getCatalogs().values()))
 		{
 			for (final Schema schema : new NameFilter<Schema>(schemaPattern,
 					catalog.getSchemas()))
@@ -817,7 +825,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	@Override
 	public String getSystemFunctions() throws SQLException
 	{
-		return "";
+		return makeString( parser.getSupportedSystemFunctions().iterator() );
 	}
 
 	@Override
@@ -828,7 +836,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 		final DataTable table = new DataTable(
 				metaSchema.getTable(MetaCatalogBuilder.TABLE_PRIVILEGES_TABLE));
 		for (final Catalog catalog : new NameFilter<Catalog>(catalogPattern,
-				catalogs.values()))
+				connection.getCatalogs().values()))
 		{
 			for (final Schema schema : new NameFilter<Schema>(schemaPattern,
 					catalog.getSchemas()))
@@ -899,14 +907,13 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 				hasWhere = true;
 			}
 
-			final SparqlParser parser = new SparqlParserImpl();
-			final SparqlQueryBuilder sqb = parser.parse(table.getCatalog(), table.getSchema(),
+			final SparqlQueryBuilder sqb = parser.parse(connection.getCatalogs(), table.getCatalog(), table.getSchema(),
 					query.toString()).setKey(table.getKey());
 			return new SparqlResultSet(table, sqb.build());
 		}
 		else
 		{
-			return table.getResultSet();
+			return table.getResultSet(connection.getCatalogs(), parser);
 		}
 	}
 
@@ -914,7 +921,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	public ResultSet getTableTypes() throws SQLException
 	{
 		return ((RdfTable) metaSchema
-				.getTable(MetaCatalogBuilder.TABLE_TYPES_TABLE)).getResultSet();
+				.getTable(MetaCatalogBuilder.TABLE_TYPES_TABLE)).getResultSet(connection.getCatalogs(), parser);
 	}
 
 	@Override
@@ -928,7 +935,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	public ResultSet getTypeInfo() throws SQLException
 	{
 		return ((RdfTable) metaSchema
-				.getTable(MetaCatalogBuilder.TYPEINFO_TABLE)).getResultSet();
+				.getTable(MetaCatalogBuilder.TYPEINFO_TABLE)).getResultSet(connection.getCatalogs(), parser);
 	}
 
 	@Override

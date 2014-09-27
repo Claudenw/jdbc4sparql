@@ -1,7 +1,5 @@
 import com.hp.hpl.jena.sparql.lang.sparql_11.ParseException;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.net.URL;
 import java.sql.ResultSet;
 import java.util.Properties;

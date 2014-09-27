@@ -13,8 +13,6 @@ import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.util.iterator.WrappedIterator;
 import com.hp.hpl.jena.vocabulary.RDFS;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashSet;
@@ -25,6 +23,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xenei.jdbc4sparql.iface.Catalog;
+import org.xenei.jdbc4sparql.iface.CatalogName;
 import org.xenei.jdbc4sparql.iface.NameFilter;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jena.entities.EntityManager;
@@ -59,7 +58,7 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 		public Builder( final RdfCatalog catalog ) throws MalformedURLException
 		{
 			this();
-			setName(catalog.getName());
+			setName(catalog.getShortName());
 			if (catalog.getSparqlEndpoint() != null)
 			{
 				setSparqlEndpoint(new URL(catalog.getSparqlEndpoint()));
@@ -180,9 +179,9 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 		}
 
 		@Override
-		public String getName()
+		public CatalogName getName()
 		{
-			return name;
+			return new CatalogName( name );
 		}
 
 		@Override
@@ -193,7 +192,7 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 		}
 
 		@Override
-		public Set<RdfSchema> getSchemas()
+		public Set<? extends Schema> getSchemas()
 		{
 			return schemas;
 		}
@@ -364,8 +363,14 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 	}
 
 	@Override
+	public CatalogName getName()
+	{
+		return new CatalogName( getShortName() );
+	}
+	
+
 	@Predicate( impl = true, namespace = "http://www.w3.org/2000/01/rdf-schema#", name = "label" )
-	public String getName()
+	public String getShortName()
 	{
 		throw new EntityManagerRequiredException();
 	}

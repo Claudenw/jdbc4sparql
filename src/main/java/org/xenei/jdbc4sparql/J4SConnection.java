@@ -126,7 +126,7 @@ public class J4SConnection implements Connection
 		{
 			dsProducer.getMetaDataModel(MetaCatalogBuilder.LOCAL_NAME);
 			final Catalog c = MetaCatalogBuilder.getInstance(dsProducer);
-			catalogMap.put(c.getName(), c);
+			catalogMap.put(c.getName().getShortName(), c);
 		}
 		if (StringUtils.isNotEmpty(getCatalog())
 				&& (catalogMap.get(getCatalog()) == null))
@@ -145,22 +145,22 @@ public class J4SConnection implements Connection
 	public RdfCatalog addCatalog( final RdfCatalog.Builder catalogBuilder )
 	{
 		final Model model = dsProducer.getMetaDataModel(catalogBuilder
-				.getName());
+				.getName().getShortName());
 		Model dataModel = catalogBuilder.getLocalModel();
 		if (dataModel != null)
 		{
-			dsProducer.addLocalDataModel(catalogBuilder.getName(), dataModel);
+			dsProducer.addLocalDataModel(catalogBuilder.getName().getShortName(), dataModel);
 		}
 		else
 		{
-			dataModel = dsProducer.getLocalDataModel(catalogBuilder.getName());
+			dataModel = dsProducer.getLocalDataModel(catalogBuilder.getName().getShortName());
 			if (dataModel != null)
 			{
 				catalogBuilder.setLocalModel(dataModel);
 			}
 		}
 		final RdfCatalog cat = catalogBuilder.build(model);
-		catalogMap.put(cat.getName(), cat);
+		catalogMap.put(cat.getName().getShortName(), cat);
 		return cat;
 	}
 
@@ -253,7 +253,7 @@ public class J4SConnection implements Connection
 			final RdfSchema schema = new RdfSchema.Builder()
 					.setCatalog(catalog).setName(schemaName).build(model);
 
-			catalogMap.put(catalog.getName(), catalog);
+			catalogMap.put(catalog.getName().getShortName(), catalog);
 
 			if (builder != null)
 			{
@@ -498,7 +498,7 @@ public class J4SConnection implements Connection
 				}
 				cat = builder.build(metaModel);
 
-				catalogMap.put(cat.getName(), cat);
+				catalogMap.put(cat.getName().getShortName(), cat);
 			}
 		}
 	}

@@ -24,7 +24,6 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.sparql.core.Var;
 import com.hp.hpl.jena.sparql.syntax.Element;
-import com.hp.hpl.jena.sparql.syntax.ElementBind;
 import com.hp.hpl.jena.sparql.syntax.ElementFilter;
 import com.hp.hpl.jena.sparql.syntax.ElementGroup;
 
@@ -32,6 +31,7 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.statement.Statement;
@@ -41,17 +41,21 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.xenei.jdbc4sparql.LoggingConfig;
+import org.xenei.jdbc4sparql.iface.Catalog;
+import org.xenei.jdbc4sparql.iface.ColumnName;
 import org.xenei.jdbc4sparql.impl.NameUtils;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTableDef;
 import org.xenei.jdbc4sparql.meta.MetaCatalogBuilder;
+import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlVisitor;
 
 public class LocalSparqlVisitorTest
 {
-
+	private Map<String,Catalog> catalogs;
+	private SparqlParser parser;
 	private final CCJSqlParserManager parserManager = new CCJSqlParserManager();
 	private SparqlVisitor sv;
 
@@ -118,7 +122,7 @@ public class LocalSparqlVisitorTest
 				"%1$s <http://example.com/three> %2$s . ");
 		bldr.build(model);
 
-		sv = new SparqlVisitor(catalog, schema);
+		sv = new SparqlVisitor(catalogs, parser, catalog, schema);
 
 	}
 
@@ -245,24 +249,24 @@ public class LocalSparqlVisitorTest
 	public void testTwoTableJoin() throws Exception
 	{
 		final String[] columnNames = {
-				"?" + NameUtils.getSPARQLName(null, "foo", "StringCol"),
+				"?" + new ColumnName(null, "foo", "StringCol").getSPARQLName(),
 				"?"
-						+ NameUtils.getSPARQLName(null, "foo",
-								"NullableStringCol"),
-				"?" + NameUtils.getSPARQLName(null, "foo", "IntCol"),
+						+ new ColumnName(null, "foo",
+								"NullableStringCol").getSPARQLName(),
+				"?" + new ColumnName(null, "foo", "IntCol"),
 				"?"
-						+ NameUtils.getSPARQLName(null, "foo",
-								"NullableIntCol"),
+						+ new ColumnName(null, "foo",
+								"NullableIntCol").getSPARQLName(),
 				"?"
-						+ NameUtils.getSPARQLName(null, "bar",
-								"BarStringCol"),
+						+ new ColumnName(null, "bar",
+								"BarStringCol").getSPARQLName(),
 				"?"
-						+ NameUtils.getSPARQLName(null, "bar",
-								"BarNullableStringCol"),
-				"?" + NameUtils.getSPARQLName(null, "bar", "BarIntCol"),
+						+ new ColumnName(null, "bar",
+								"BarNullableStringCol").getSPARQLName(),
+				"?" + new ColumnName(null, "bar", "BarIntCol").getSPARQLName(),
 				"?"
-						+ NameUtils.getSPARQLName(null, "bar",
-								"NullableIntCol") };
+						+ new ColumnName(null, "bar",
+								"NullableIntCol").getSPARQLName() };
 		final String query = "SELECT * FROM foo, bar WHERE foo.IntCol = bar.BarIntCol";
 		final Statement stmt = parserManager.parse(new StringReader(query));
 		stmt.accept(sv);

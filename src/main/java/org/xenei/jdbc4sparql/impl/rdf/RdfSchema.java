@@ -15,6 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.NameFilter;
 import org.xenei.jdbc4sparql.iface.Schema;
+import org.xenei.jdbc4sparql.iface.SchemaName;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jena.entities.EntityManager;
 import org.xenei.jena.entities.EntityManagerFactory;
@@ -129,9 +130,9 @@ public class RdfSchema extends RdfNamespacedObject implements Schema,
 		}
 
 		@Override
-		public String getName()
+		public SchemaName getName()
 		{
-			return name;
+			return new SchemaName( name );
 		}
 
 		@Override
@@ -164,7 +165,6 @@ public class RdfSchema extends RdfNamespacedObject implements Schema,
 	public class ChangeListener extends
 			AbstractChangeListener<Schema, RdfTable>
 	{
-
 		public ChangeListener()
 		{
 			super(RdfSchema.this.getResource(), RdfSchema.class, "tables",
@@ -198,7 +198,8 @@ public class RdfSchema extends RdfNamespacedObject implements Schema,
 	}
 
 	private RdfCatalog catalog;
-
+	private SchemaName schemaName = null;
+	
 	private Set<RdfTable> tableList;
 
 	@Predicate( impl = true )
@@ -251,8 +252,17 @@ public class RdfSchema extends RdfNamespacedObject implements Schema,
 	}
 
 	@Override
+	public SchemaName getName()
+	{
+		if (schemaName == null)
+		{
+			schemaName = new SchemaName( getLocalSchemaName() );
+		}
+		return schemaName;
+	}
+	
 	@Predicate( impl = true, namespace = "http://www.w3.org/2000/01/rdf-schema#", name = "label" )
-	public String getName()
+	public String getLocalSchemaName()
 	{
 		throw new EntityManagerRequiredException();
 	}

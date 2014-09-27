@@ -1,17 +1,20 @@
 package org.xenei.jdbc4sparql.sparql;
 
-import com.hp.hpl.jena.graph.Node;
-import com.hp.hpl.jena.graph.NodeFactory;
+import org.xenei.jdbc4sparql.iface.ItemName;
+
+import com.hp.hpl.jena.sparql.core.Var;
+import com.hp.hpl.jena.sparql.expr.Expr;
 
 /**
  * The base class for the Query items.
  *
  * @param <T> The type of the name for query item.
  */
-public abstract class QueryItemInfo<T extends QueryItemName>
+public abstract class QueryItemInfo<T extends ItemName> 
 {
 	private final T name;
-	private final Node var;
+	private final Var var;
+	private Expr expr;
 	private boolean optional;
 
 	protected QueryItemInfo( final T name, boolean optional )
@@ -21,8 +24,19 @@ public abstract class QueryItemInfo<T extends QueryItemName>
 			throw new IllegalArgumentException( "name may not be null");
 		}
 		this.name = name;
-		this.var = NodeFactory.createVariable(name.getSPARQLName());
+		this.var = Var.alloc(name.getSPARQLName());
 		this.optional = optional;
+		this.expr = null;
+	}
+	
+	public Expr getExpr()
+	{
+		return expr;
+	}
+	
+	public void setExpr( Expr expr )
+	{
+		this.expr=expr;
 	}
 
 	/**
@@ -38,7 +52,7 @@ public abstract class QueryItemInfo<T extends QueryItemName>
 	 * Get the variable for the query item.
 	 * @return The variable node
 	 */
-	public Node getVar()
+	public Var getVar()
 	{
 		return var;
 	}

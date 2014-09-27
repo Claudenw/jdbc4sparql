@@ -22,7 +22,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
+import java.util.Map;
 
+import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
 import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
@@ -32,12 +34,14 @@ public class SparqlStatement implements Statement
 	private final SparqlParser parser;
 	private final RdfCatalog catalog;
 	private final RdfSchema schema;
+	private final Map<String, Catalog> catalogs;
 
-	SparqlStatement( final RdfCatalog catalog, final RdfSchema schema, final SparqlParser parser )
+	SparqlStatement( Map<String, Catalog> catalogs, final RdfCatalog catalog, final RdfSchema schema, final SparqlParser parser )
 	{
 		this.parser = parser;
 		this.catalog = catalog;
 		this.schema = schema;
+		this.catalogs = catalogs;
 	}
 
 	@Override
@@ -123,7 +127,7 @@ public class SparqlStatement implements Statement
 	@Override
 	public ResultSet executeQuery( final String query ) throws SQLException
 	{
-		final SparqlQueryBuilder builder = parser.parse(catalog, schema, query);
+		final SparqlQueryBuilder builder = parser.parse(catalogs, catalog, schema, query);
 		return new SparqlView(builder).getResultSet();
 	}
 

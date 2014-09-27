@@ -19,12 +19,11 @@
  */
 package org.xenei.jdbc4sparql.sparql.parser.jsqlparser;
 
+import com.hp.hpl.jena.sparql.core.Var;
 import com.hp.hpl.jena.sparql.expr.Expr;
+import com.hp.hpl.jena.sparql.expr.ExprAggregator;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.AllTableColumns;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
@@ -32,13 +31,8 @@ import net.sf.jsqlparser.statement.select.SelectItemVisitor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xenei.jdbc4sparql.iface.Column;
-import org.xenei.jdbc4sparql.iface.Schema;
-import org.xenei.jdbc4sparql.iface.Table;
+import org.xenei.jdbc4sparql.iface.TableName;
 import org.xenei.jdbc4sparql.impl.NameUtils;
-import org.xenei.jdbc4sparql.impl.rdf.RdfColumn;
-import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
-import org.xenei.jdbc4sparql.sparql.QueryColumnInfo;
 import org.xenei.jdbc4sparql.sparql.QueryTableInfo;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 
@@ -85,14 +79,14 @@ class SparqlSelectItemVisitor implements SelectItemVisitor
 		SparqlSelectItemVisitor.LOG.debug("visit All Table Columns {}",
 				allTableColumns.toString());
 		
-		QueryTableInfo.Name name = null;
+		TableName name = null;
 		if (allTableColumns.getTable().getAlias() != null)
 		{
-			name = QueryTableInfo.getNameInstance(allTableColumns.getTable().getAlias());
+			name = TableName.getNameInstance(allTableColumns.getTable().getAlias());
 		}
 		else
 		{
-			name =QueryTableInfo.getNameInstance(allTableColumns.getTable().getSchemaName(),
+			name =TableName.getNameInstance(allTableColumns.getTable().getSchemaName(),
 					allTableColumns.getTable().getName());
 		}
 		
@@ -107,7 +101,7 @@ class SparqlSelectItemVisitor implements SelectItemVisitor
 				selectExpressionItem);
 		final SparqlExprVisitor v = new SparqlExprVisitor(queryBuilder, SparqlQueryBuilder.OPTIONAL);
 		selectExpressionItem.getExpression().accept(v);
-		final Expr expr = v.getResult();
+		Expr expr = v.getResult();
 
 		// handle explicit name mapping
 		String exprAlias = null;
@@ -120,6 +114,14 @@ class SparqlSelectItemVisitor implements SelectItemVisitor
 		{
 			exprAlias = NameUtils.convertDB2SPARQL(selectExpressionItem
 					.getExpression().toString());
+		}
+		if (expr instanceof ExprAggregator)
+		{
+			ExprAggregator agg = (ExprAggregator) expr;
+			if (exprAlias == null)
+			{
+				exprAlias = agg.getVar().getName();
+			}
 		}
 
 		queryBuilder.addVar(expr, exprAlias);

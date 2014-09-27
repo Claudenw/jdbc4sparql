@@ -27,9 +27,9 @@ import org.xenei.jdbc4sparql.iface.TypeConverter;
 
 public class J4SResultSetMetaData implements ResultSetMetaData
 {
-	private final Table table;
+	private final Table<?> table;
 
-	public J4SResultSetMetaData( final Table table )
+	public J4SResultSetMetaData( final Table<?> table )
 	{
 		this.table = table;
 	}
@@ -37,7 +37,7 @@ public class J4SResultSetMetaData implements ResultSetMetaData
 	@Override
 	public String getCatalogName( final int columnOrdinal ) throws SQLException
 	{
-		return getColumn(columnOrdinal).getName();
+		return getColumn(columnOrdinal).getName().getShortName();
 	}
 
 	private Column getColumn( final int columnOrdinal )
@@ -74,7 +74,7 @@ public class J4SResultSetMetaData implements ResultSetMetaData
 	@Override
 	public String getColumnName( final int columnOrdinal ) throws SQLException
 	{
-		return getColumn(columnOrdinal).getName();
+		return getColumn(columnOrdinal).getName().getShortName();
 	}
 
 	@Override
@@ -107,13 +107,13 @@ public class J4SResultSetMetaData implements ResultSetMetaData
 	@Override
 	public String getSchemaName( final int columnOrdinal ) throws SQLException
 	{
-		return getColumn(columnOrdinal).getSchema().getName();
+		return getColumn(columnOrdinal).getSchema().getName().getShortName();
 	}
 
 	@Override
 	public String getTableName( final int columnOrdinal ) throws SQLException
 	{
-		return getColumn(columnOrdinal).getTable().getName();
+		return getColumn(columnOrdinal).getTable().getName().getShortName();
 	}
 
 	@Override

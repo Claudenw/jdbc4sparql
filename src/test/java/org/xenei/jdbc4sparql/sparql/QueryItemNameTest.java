@@ -2,28 +2,30 @@ package org.xenei.jdbc4sparql.sparql;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.xenei.jdbc4sparql.sparql.QueryTableInfo.Name;
+import org.xenei.jdbc4sparql.iface.ColumnName;
+import org.xenei.jdbc4sparql.iface.ItemName;
+import org.xenei.jdbc4sparql.iface.TableName;
 
 public class QueryItemNameTest
 {
-	private final QueryTableInfo.Name tableNames[] = {
-			QueryTableInfo.getNameInstance(null, null),
-			QueryTableInfo.getNameInstance(null, "table"),
-			QueryTableInfo.getNameInstance("schema", null),
-			QueryTableInfo.getNameInstance("schema", "table") };
+	private final TableName tableNames[] = {
+			TableName.getNameInstance(null, null),
+			TableName.getNameInstance(null, "table"),
+			TableName.getNameInstance("schema", null),
+			TableName.getNameInstance("schema", "table") };
 
-	private final QueryColumnInfo.Name columnNames[] = {
-			QueryColumnInfo.getNameInstance(null, null, null),
-			QueryColumnInfo.getNameInstance(null, null, "column"),
-			QueryColumnInfo.getNameInstance(null, "table", null),
-			QueryColumnInfo.getNameInstance(null, "table", "column"),
-			QueryColumnInfo.getNameInstance("schema", null, null),
-			QueryColumnInfo.getNameInstance("schema", null, "column"),
-			QueryColumnInfo.getNameInstance("schema", "table", null),
-			QueryColumnInfo.getNameInstance("schema", "table", "column") };
+	private final ColumnName columnNames[] = {
+			ColumnName.getNameInstance(null, null, null),
+			ColumnName.getNameInstance(null, null, "column"),
+			ColumnName.getNameInstance(null, "table", null),
+			ColumnName.getNameInstance(null, "table", "column"),
+			ColumnName.getNameInstance("schema", null, null),
+			ColumnName.getNameInstance("schema", null, "column"),
+			ColumnName.getNameInstance("schema", "table", null),
+			ColumnName.getNameInstance("schema", "table", "column") };
 
-	private void testEquality( final QueryItemName name1,
-			final QueryItemName name2 )
+	private void testEquality( final ItemName name1,
+			final ItemName name2 )
 	{
 		Assert.assertEquals(name1, name2);
 		Assert.assertEquals(name2, name1);
@@ -36,74 +38,74 @@ public class QueryItemNameTest
 
 		// test table name
 
-		for (final Name tableName : tableNames)
+		for (final TableName tableName : tableNames)
 		{
 			testEquality(tableName, tableName);
 		}
 
-		QueryTableInfo.Name tableName1 = QueryTableInfo.getNameInstance(null,
+		TableName tableName1 = TableName.getNameInstance(null,
 				null);
-		QueryTableInfo.Name tableName2 = QueryTableInfo.getNameInstance(null,
+		TableName tableName2 = TableName.getNameInstance(null,
 				null);
 		testEquality(tableName1, tableName2);
 
-		tableName1 = QueryTableInfo.getNameInstance(null, "table");
-		tableName2 = QueryTableInfo.getNameInstance(null, "table");
+		tableName1 = TableName.getNameInstance(null, "table");
+		tableName2 = TableName.getNameInstance(null, "table");
 		testEquality(tableName1, tableName2);
 
-		tableName1 = QueryTableInfo.getNameInstance("schema", null);
-		tableName2 = QueryTableInfo.getNameInstance("schema", null);
+		tableName1 = TableName.getNameInstance("schema", null);
+		tableName2 = TableName.getNameInstance("schema", null);
 		testEquality(tableName1, tableName2);
 
-		tableName1 = QueryTableInfo.getNameInstance("schema", "table");
-		tableName2 = QueryTableInfo.getNameInstance("schema", "table");
+		tableName1 = TableName.getNameInstance("schema", "table");
+		tableName2 = TableName.getNameInstance("schema", "table");
 		testEquality(tableName1, tableName2);
 
 		// -- test column Name
 
-		for (final org.xenei.jdbc4sparql.sparql.QueryColumnInfo.Name columnName : columnNames)
+		for (final org.xenei.jdbc4sparql.iface.ColumnName columnName : columnNames)
 		{
 			testEquality(columnName, columnName);
 		}
 
-		QueryColumnInfo.Name columnName1 = QueryColumnInfo.getNameInstance(
+		ColumnName columnName1 = ColumnName.getNameInstance(
 				null, null, null);
-		QueryColumnInfo.Name columnName2 = QueryColumnInfo.getNameInstance(
+		ColumnName columnName2 = ColumnName.getNameInstance(
 				null, null, null);
 		testEquality(tableName1, tableName2);
 
-		columnName1 = QueryColumnInfo.getNameInstance(null, null, "column");
-		columnName2 = QueryColumnInfo.getNameInstance(null, null, "column");
+		columnName1 = ColumnName.getNameInstance(null, null, "column");
+		columnName2 = ColumnName.getNameInstance(null, null, "column");
 		testEquality(tableName1, tableName2);
 
-		columnName1 = QueryColumnInfo.getNameInstance(null, "table", null);
-		columnName2 = QueryColumnInfo.getNameInstance(null, "table", null);
+		columnName1 = ColumnName.getNameInstance(null, "table", null);
+		columnName2 = ColumnName.getNameInstance(null, "table", null);
 		testEquality(columnName1, columnName2);
 
-		columnName1 = QueryColumnInfo.getNameInstance(null, "table", "column");
-		columnName2 = QueryColumnInfo.getNameInstance(null, "table", "column");
+		columnName1 = ColumnName.getNameInstance(null, "table", "column");
+		columnName2 = ColumnName.getNameInstance(null, "table", "column");
 		testEquality(columnName1, columnName2);
 
-		columnName1 = QueryColumnInfo.getNameInstance("schema", null, null);
-		columnName2 = QueryColumnInfo.getNameInstance("schema", null, null);
+		columnName1 = ColumnName.getNameInstance("schema", null, null);
+		columnName2 = ColumnName.getNameInstance("schema", null, null);
 		testEquality(columnName1, columnName2);
 
-		columnName1 = QueryColumnInfo.getNameInstance("schema", null, "column");
-		columnName2 = QueryColumnInfo.getNameInstance("schema", null, "column");
+		columnName1 = ColumnName.getNameInstance("schema", null, "column");
+		columnName2 = ColumnName.getNameInstance("schema", null, "column");
 		testEquality(columnName1, columnName2);
 
-		columnName1 = QueryColumnInfo.getNameInstance("schema", "table", null);
-		columnName2 = QueryColumnInfo.getNameInstance("schema", "table", null);
+		columnName1 = ColumnName.getNameInstance("schema", "table", null);
+		columnName2 = ColumnName.getNameInstance("schema", "table", null);
 		testEquality(columnName1, columnName2);
 
-		columnName1 = QueryColumnInfo.getNameInstance("schema", "table",
+		columnName1 = ColumnName.getNameInstance("schema", "table",
 				"column");
-		columnName2 = QueryColumnInfo.getNameInstance("schema", "table",
+		columnName2 = ColumnName.getNameInstance("schema", "table",
 				"column");
 		testEquality(columnName1, columnName2);
 	}
 
-	private void testInequality( final QueryItemName[] names )
+	private void testInequality( final ItemName[] names )
 	{
 		for (int i = 0; i < names.length; i++)
 		{
@@ -235,7 +237,7 @@ public class QueryItemNameTest
 		}
 	}
 
-	public void testMatch( final QueryItemName name1, final QueryItemName name2 )
+	public void testMatch( final ItemName name1, final ItemName name2 )
 	{
 		final String s = String.format("%s does not match %s", name1, name2);
 		Assert.assertTrue(s, name1.matches(name2));
@@ -253,8 +255,8 @@ public class QueryItemNameTest
 
 	}
 
-	public void testNotMatch( final QueryItemName name1,
-			final QueryItemName name2 )
+	public void testNotMatch( final ItemName name1,
+			final ItemName name2 )
 	{
 		final String s = String.format("%s does match %s", name1, name2);
 		Assert.assertFalse(s, name1.matches(name2));

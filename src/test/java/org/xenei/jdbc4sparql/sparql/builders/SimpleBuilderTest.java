@@ -33,9 +33,11 @@ import java.util.Set;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
+import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 
 public class SimpleBuilderTest
 {
@@ -47,6 +49,8 @@ public class SimpleBuilderTest
 	// schema model
 	private Model schemaModel;
 	private SchemaBuilder builder;
+	private Map<String,Catalog> catalogs;
+	private SparqlParser parser;
 
 	private void addModelData( final Model model )
 	{
@@ -83,7 +87,7 @@ public class SimpleBuilderTest
 		for (final RdfTable tbl : tables)
 		{
 			// schema.addTables(tbl);
-			final ResultSet rs = tbl.getResultSet();
+			final ResultSet rs = tbl.getResultSet(catalogs, parser);
 			int count = 0;
 			while (rs.next())
 			{
@@ -123,7 +127,7 @@ public class SimpleBuilderTest
 		final Set<RdfTable> tables = builder.getTables(schema);
 		for (final RdfTable tbl : tables)
 		{
-			final ResultSet rs = tbl.getResultSet();
+			final ResultSet rs = tbl.getResultSet( catalogs, parser);
 			boolean foundNull = false;
 			while (rs.next() && !foundNull)
 			{
@@ -170,7 +174,8 @@ public class SimpleBuilderTest
 		addModelData(model);
 		catalog = new RdfCatalog.Builder().setLocalModel(model)
 				.setName("SimpleSparql").build(schemaModel);
-
+		catalogs = new HashMap<String,Catalog>();
+		catalogs.put( catalog.getName().getShortName(), catalog );
 		schema = new RdfSchema.Builder().setCatalog(catalog)
 				.setName("builderTest").build(schemaModel);
 

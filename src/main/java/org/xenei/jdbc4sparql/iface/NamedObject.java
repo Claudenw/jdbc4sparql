@@ -1,6 +1,6 @@
 package org.xenei.jdbc4sparql.iface;
 
-public interface NamedObject
+public interface NamedObject<T extends ItemName> 
 {
-	public String getName();
+	public T getName();
 }

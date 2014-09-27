@@ -28,12 +28,14 @@ import java.io.StringReader;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.discovery.ResourceClassIterator;
 import org.apache.commons.discovery.ResourceNameIterator;
 import org.apache.commons.discovery.resource.ClassLoaders;
 import org.apache.commons.discovery.resource.classes.DiscoverClasses;
 import org.apache.commons.discovery.resource.names.DiscoverServiceNames;
+import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
@@ -245,7 +247,13 @@ public interface SparqlParser
 	 * @return The SparqlQueryBuilder.
 	 * @throws SQLException
 	 */
-	SparqlQueryBuilder parse( RdfCatalog catalog, RdfSchema schema, String sqlQuery )
+	SparqlQueryBuilder parse( Map<String, Catalog> catalogs, RdfCatalog catalog, RdfSchema schema, String sqlQuery )
 			throws SQLException;
+	
+	List<String> getSupportedNumericFunctions();
+	
+	List<String> getSupportedStringFunctions();
+	
+	List<String> getSupportedSystemFunctions();
 
 }

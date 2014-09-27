@@ -12,7 +12,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -25,9 +27,12 @@ import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 import org.xenei.jdbc4sparql.sparql.SparqlResultSet;
+import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 
 public class MetaCatalogValuesTests
 {
+	private Map<String,Catalog> catalogs;
+	private SparqlParser parser;
 	private DatasetProducer dpProducer;
 	private RdfCatalog catalog;
 	private final String queryString = "PREFIX  rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> "
@@ -41,8 +46,10 @@ public class MetaCatalogValuesTests
 	@Before
 	public void setup() throws FileNotFoundException, IOException
 	{
+		catalogs = new HashMap<String,Catalog>();
 		dpProducer = new MemDatasetProducer();
 		catalog = (RdfCatalog) MetaCatalogBuilder.getInstance(dpProducer);
+		catalogs.put( catalog.getName().getShortName(), catalog);
 	}
 
 	@After
@@ -114,7 +121,7 @@ public class MetaCatalogValuesTests
 				.getSchema(MetaCatalogBuilder.SCHEMA_NAME);
 		final RdfTable table = schema
 				.getTable(MetaCatalogBuilder.COLUMNS_TABLE);
-		final SparqlResultSet rs = table.getResultSet();
+		final SparqlResultSet rs = table.getResultSet( catalogs, parser );
 		Assert.assertTrue(rs.first());
 		while (!rs.isAfterLast())
 		{
@@ -253,7 +260,7 @@ public class MetaCatalogValuesTests
 		final RdfSchema schema = catalog
 				.getSchema(MetaCatalogBuilder.SCHEMA_NAME);
 		final RdfTable table = schema.getTable(MetaCatalogBuilder.TABLES_TABLE);
-		final SparqlResultSet rs = table.getResultSet();
+		final SparqlResultSet rs = table.getResultSet( catalogs, parser );
 		Assert.assertTrue(rs.first());
 		while (!rs.isAfterLast())
 		{

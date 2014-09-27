@@ -23,7 +23,7 @@ import com.hp.hpl.jena.query.QuerySolution;
 import java.util.List;
 import java.util.Set;
 
-public interface Catalog extends NamedObject
+public interface Catalog extends NamedObject<CatalogName>
 {
 	/**
 	 * Close release all associated resources.

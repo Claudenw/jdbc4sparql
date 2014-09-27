@@ -6,6 +6,7 @@ import com.hp.hpl.jena.query.QueryException;
 import com.hp.hpl.jena.sparql.core.Var;
 import com.hp.hpl.jena.sparql.expr.Expr;
 import com.hp.hpl.jena.sparql.lang.sparql_11.ParseException;
+import com.hp.hpl.jena.sparql.syntax.Element;
 import com.hp.hpl.jena.sparql.syntax.ElementFilter;
 import com.hp.hpl.jena.sparql.syntax.ElementGroup;
 import com.hp.hpl.jena.sparql.syntax.ElementOptional;
@@ -23,7 +24,10 @@ import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xenei.jdbc4sparql.impl.NameUtils;
+import org.xenei.jdbc4sparql.iface.Column;
+import org.xenei.jdbc4sparql.iface.ColumnName;
+import org.xenei.jdbc4sparql.iface.Table;
+import org.xenei.jdbc4sparql.iface.TableName;
 import org.xenei.jdbc4sparql.impl.rdf.RdfColumn;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
@@ -33,73 +37,13 @@ import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
  * with different aliases there will be multiple QueryTableInfo instances with the same RdfTable but
  * different names.
  */
-public class QueryTableInfo extends QueryItemInfo<QueryTableInfo.Name>
+public class QueryTableInfo extends QueryItemInfo<TableName>
 {
-	/**
-	 * Name implementation.
-	 */
-	public static class Name extends QueryItemName
-	{
-		private Name( final QueryItemName name )
-		{
-			super(name.getSchema(), name.getTable(), null);
-		}
-
-		private Name( final String schema, final String table )
-		{
-			super(schema, table, null);
-		}
-		
-		public QueryColumnInfo.Name getColumnName( String colName )
-		{
-			if (colName == null)
-			{
-				return QueryColumnInfo.getNameInstance(getSchema(), getTable(), null);
-			}
-			else{
-				QueryColumnInfo.Name cName = QueryColumnInfo.getNameInstance(colName);
-				return QueryColumnInfo.getNameInstance(getSchema(), getTable(), cName.getCol());
-			}
-		}
-	}
-
-	public static Name getNameInstance( final QueryItemName name )
-	{
-		return new Name(name);
-	}
-
-	public static Name getNameInstance( final String alias )
-	{
-		if (alias == null)
-		{
-			throw new IllegalArgumentException("Alias must be provided");
-		}
-		final String[] parts = alias.split("\\" + NameUtils.DB_DOT);
-		switch (parts.length)
-		{
-			case 2:
-				return new Name(parts[0], parts[1]);
-			case 1:
-				return new Name(null, parts[0]);
-
-			default:
-				throw new IllegalArgumentException(String.format(
-						"Column name must be 1 or 2 segments not %s as in %s",
-						parts.length, alias));
-
-		}
-	}
-
-	public static Name getNameInstance( final String schema, final String table )
-	{
-		return new Name(schema, table);
-	}
-
 	/**
 	 * 
 	 */
 	private final QueryInfoSet infoSet;
-	private final RdfTable table;
+	private final Table<Column> table;
 	private final ElementGroup eg;
 
 
@@ -109,8 +53,9 @@ public class QueryTableInfo extends QueryItemInfo<QueryTableInfo.Name>
 	private static Logger LOG = LoggerFactory.getLogger(QueryTableInfo.class);
 	
 	public QueryTableInfo( final QueryInfoSet infoSet,
-				final ElementGroup queryElementGroup, final RdfTable table,
-				final QueryTableInfo.Name alias, final boolean optional )	
+				final ElementGroup queryElementGroup, 
+				final Table<Column> table,
+				final TableName alias, final boolean optional )	
 	{
 		super( alias, optional );
 		this.infoSet = infoSet;
@@ -118,6 +63,11 @@ public class QueryTableInfo extends QueryItemInfo<QueryTableInfo.Name>
 		this.eg = new ElementGroup();
 		this.typeFilterList = new HashSet<CheckTypeF>();
 		infoSet.addTable(this);
+		if (queryElementGroup == null)
+		{
+			QueryTableInfo.LOG.debug("marking {} as not in query.", this);
+		}
+		else {
 		if (optional)
 		{
 			QueryTableInfo.LOG.debug("marking {} as optional.", this);
@@ -127,6 +77,7 @@ public class QueryTableInfo extends QueryItemInfo<QueryTableInfo.Name>
 		{
 			QueryTableInfo.LOG.debug("marking {} as required.", this);
 			queryElementGroup.addElement(eg);
+		}
 		}
 	}
 	
@@ -144,24 +95,28 @@ public class QueryTableInfo extends QueryItemInfo<QueryTableInfo.Name>
 				.append(StringUtils.defaultString(table.getQuerySegmentFmt(),
 						""));
 
-		for (final Iterator<RdfColumn> colIter = table.getColumns(); colIter
+		for (final Iterator<Column> colIter = table.getColumns(); colIter
 				.hasNext();)
 		{
-			final RdfColumn column = colIter.next();
+			final Column column = colIter.next();
 			boolean shortName = shortNames && ! longNameColumns.contains( column.getName() );
 			if (!column.isOptional())
 			{
-				QueryColumnInfo.Name name =	shortName?QueryColumnInfo.getNameInstance(column.getName()):getName().getColumnName( column.getName() );
+				ColumnName name = column.getName();
+				if (shortName)
+				{
+					name = new ColumnName(null, null, name.getShortName());
+				}
 				// make sure that it is in the queryInfo and not optional
 				getColumn(name,false);
 			}
 		}
 		
 		// now add all the columns specified in the infoSet that are not optional
-		QueryColumnInfo.Name cName = null;
+		ColumnName cName = null;
 		if (infoSet.getShortNames())
 		{
-			cName = QueryColumnInfo.WILDNAME;
+			cName = ColumnName.WILDNAME;
 		}
 		else
 		{
@@ -187,12 +142,12 @@ public class QueryTableInfo extends QueryItemInfo<QueryTableInfo.Name>
 		}
 		catch (final ParseException e)
 		{
-			throw new IllegalStateException(table.getFQName()
+			throw new IllegalStateException(table.getName()
 					+ " query segment " + queryStr, e);
 		}
 		catch (final QueryException e)
 		{
-			throw new IllegalStateException(table.getFQName()
+			throw new IllegalStateException(table.getName()
 					+ " query segment " + queryStr, e);
 		}
 		QueryTableInfo.LOG.debug("finished adding required columns for {}", getName());
@@ -205,7 +160,7 @@ public class QueryTableInfo extends QueryItemInfo<QueryTableInfo.Name>
 	 */
 	public void addTableColumns( Query query )
 	{
-		final Iterator<RdfColumn> iter = table.getColumns();
+		final Iterator<Column> iter = table.getColumns();
 		while (iter.hasNext())
 		{			
 			Var v = Var.alloc(addColumnToQuery( iter.next(), infoSet.getShortNames() ));
@@ -222,7 +177,7 @@ public class QueryTableInfo extends QueryItemInfo<QueryTableInfo.Name>
 	 * @param cName
 	 * @return
 	 */
-	public Node addColumnToQuery( QueryColumnInfo columnInfo, QueryColumnInfo.Name cName)
+	public Node addColumnToQuery( QueryColumnInfo columnInfo, ColumnName cName)
 	{
 		return addColumnToQuery( columnInfo, cName, columnInfo.isOptional());
 	}
@@ -235,13 +190,12 @@ public class QueryTableInfo extends QueryItemInfo<QueryTableInfo.Name>
 	 * @Throws IllegalStateException if the columninfo is not in this table.
 	 * @return The variable Node for the column.
 	 */
-	public Node addColumnToQuery( QueryColumnInfo columnInfo, QueryColumnInfo.Name cName, boolean optional)
+	public Node addColumnToQuery( QueryColumnInfo columnInfo, ColumnName cName, boolean optional)
 	{
 		if (!infoSet.listColumns(getName().getColumnName(null)).contains( columnInfo ))
 		{
 			throw new IllegalStateException( String.format( SparqlQueryBuilder.NOT_FOUND_IN_, columnInfo.getName(), getName()));
 		}
-		
 		return addColumnToQuery( columnInfo.getColumn(), cName, optional);
 	}
 	
@@ -253,9 +207,14 @@ public class QueryTableInfo extends QueryItemInfo<QueryTableInfo.Name>
 	 * @param shortNames if True the short name is used.
 	 * @return The variable Node for the column.
 	 */
-	public Node addColumnToQuery( RdfColumn column, boolean shortNames )
+	public Node addColumnToQuery( Column column, boolean shortNames )
 	{
-		return addColumnToQuery( column, QueryColumnInfo.getNameInstance(shortNames?column.getName():column.getSQLName()));
+		ColumnName cName = column.getName();
+		if (shortNames)
+		{
+			cName = new ColumnName( null, null, cName.getShortName());
+		}
+		return addColumnToQuery( column, cName);
 	}
 	
 	/**
@@ -265,7 +224,7 @@ public class QueryTableInfo extends QueryItemInfo<QueryTableInfo.Name>
 	 * @param cName The name for the column in the query.
 	 * @return The variable Node for the column.
 	 */
-	public Node addColumnToQuery( RdfColumn column, QueryColumnInfo.Name cName)
+	public Node addColumnToQuery( Column column, ColumnName cName)
 	{
 		return addColumnToQuery( column, cName, column.isOptional());
 	}
@@ -277,7 +236,7 @@ public class QueryTableInfo extends QueryItemInfo<QueryTableInfo.Name>
 	 * @param optional if True the column is optional
 	 * @return The variable Node for the column.
 	 */
-	public Node addColumnToQuery( RdfColumn column, QueryColumnInfo.Name cName, boolean optional)
+	public Node addColumnToQuery( Column column, ColumnName cName, boolean optional)
 	{
 		QueryColumnInfo columnInfo = new QueryColumnInfo( infoSet, this, column,
 				cName, optional );
@@ -285,16 +244,36 @@ public class QueryTableInfo extends QueryItemInfo<QueryTableInfo.Name>
 		QueryTableInfo.LOG.debug("Adding column: {} as {}", columnInfo,
 				columnInfo.isOptional() ? "optional" : "required");
 
-		if (columnInfo.isOptional())
+		if (column.hasQuerySegments() && columnInfo.isOptional())
 		{
-			eg.addElement(new ElementOptional(columnInfo.getColumn()
-					.getQuerySegments(getVar(), columnInfo.getVar())));
+			eg.addElement(new ElementOptional( getQuerySegments(columnInfo.getColumn(), getVar(), columnInfo.getVar())));
 		}
 
-		typeFilterList.add(new CheckTypeF(columnInfo.getColumn(), Var
-				.alloc(columnInfo.getVar())));
+		typeFilterList.add(new CheckTypeF(columnInfo.getColumn(), 
+				Var.alloc(columnInfo.getVar())));
 
 		return columnInfo.getVar();
+	}
+	
+	private Element getQuerySegments( final Column column, final Node tableVar, final Node columnVar )
+	{
+		final String fmt = "{" + column.getQuerySegmentFmt() + "}";
+
+		try
+		{
+			return SparqlParser.Util.parse(String.format(fmt, tableVar,
+					columnVar));
+		}
+		catch (final ParseException e)
+		{
+			throw new IllegalStateException(column.getName() + " query segment "
+					+ fmt, e);
+		}
+		catch (final QueryException e)
+		{
+			throw new IllegalStateException(column.getName() + " query segment "
+					+ fmt, e);
+		}
 	}
 
 	public void addFilter( final Expr expr )
@@ -309,9 +288,18 @@ public class QueryTableInfo extends QueryItemInfo<QueryTableInfo.Name>
 	 * @param tableColumnInfo The column to alias
 	 * @param alias The name of the alias column
 	 */
-	public void setEquals( QueryColumnInfo tableColumnInfo, QueryColumnInfo.Name aliasName)
+	public void setEquals( QueryColumnInfo tableColumnInfo, ColumnName aliasName)
 	{
-		setEquals( tableColumnInfo, infoSet.getColumnByName( aliasName ));
+		QueryColumnInfo ci = infoSet.getColumnByName( aliasName );
+		if (ci != null)
+		{
+			setEquals( tableColumnInfo, ci);
+		}
+		else
+		{
+			throw new IllegalArgumentException( String.format( "%s is not a Query Column", aliasName));
+		}
+		
 	}
 	
 	/**
@@ -328,7 +316,7 @@ public class QueryTableInfo extends QueryItemInfo<QueryTableInfo.Name>
 	/**
 	 * Adds the variable for aliasTableInfo as the value of the tableColumnInfo property.
 	 * @param tableColumnInfo The column to alias
-	 * @param aliasTableInfo The alias column
+	 * @param aliasColumnInfo The alias column
 	 * @param optional determines if the entry should be optional.
 	 */
 	public void setEquals( QueryColumnInfo tableColumnInfo, QueryColumnInfo aliasColumnInfo, boolean optional )
@@ -337,16 +325,19 @@ public class QueryTableInfo extends QueryItemInfo<QueryTableInfo.Name>
 		{
 			throw new IllegalStateException( String.format( SparqlQueryBuilder.NOT_FOUND_IN_, tableColumnInfo.getName(), getName()));
 		}	
-		
+		if ( ! tableColumnInfo.getColumn().hasQuerySegments())
+		{
+			throw new IllegalArgumentException( String.format( "%s may not be aliased", tableColumnInfo.getName()));
+		}
 		if (optional)
 		{
-			eg.addElement(new ElementOptional(tableColumnInfo.getColumn()
-					.getQuerySegments(getVar(), aliasColumnInfo.getVar())));
+			eg.addElement(new ElementOptional(getQuerySegments(tableColumnInfo.getColumn(),
+					getVar(), aliasColumnInfo.getVar())));
 		}
 		else
 		{
-			eg.addElement(new ElementOptional(tableColumnInfo.getColumn()
-					.getQuerySegments(getVar(), aliasColumnInfo.getVar())));
+			eg.addElement(new ElementOptional(getQuerySegments(tableColumnInfo.getColumn(),
+					getVar(), aliasColumnInfo.getVar())));
 		}	
 	}
 
@@ -365,7 +356,7 @@ public class QueryTableInfo extends QueryItemInfo<QueryTableInfo.Name>
 	 *            The name of the column to look for.
 	 * @return QueryColumnInfo for the column
 	 */
-	public QueryColumnInfo getColumn( QueryColumnInfo.Name cName )
+	public QueryColumnInfo getColumn( ColumnName cName )
 	{
 		return getColumn( cName, true );
 	}
@@ -380,9 +371,8 @@ public class QueryTableInfo extends QueryItemInfo<QueryTableInfo.Name>
 	 * @return
 	 * @throws SQLException 
 	 */
-	public QueryColumnInfo getColumn( QueryColumnInfo.Name cName, boolean optional ) 
+	public QueryColumnInfo getColumn( ColumnName cName, boolean optional ) 
 	{
-		//QueryColumnInfo.Name testName = getName().getColumnName(cName.getCol());
 		QueryColumnInfo retval = infoSet.findColumn(cName);
 		if (retval == null)
 		{
@@ -397,20 +387,20 @@ public class QueryTableInfo extends QueryItemInfo<QueryTableInfo.Name>
 		else {
 			if (retval.isOptional() && !optional)
 			{
-				retval.setOptional( optional );
+				((QueryColumnInfo)retval).setOptional( optional );
 			}
 		}
 		return retval;
 	}
 
-	public RdfTable getRdfTable()
+	public Table getTable()
 	{
 		return table;
 	}
 	
 	public Collection<QueryColumnInfo> getColumns()
 	{		
-		return infoSet.listColumns( QueryColumnInfo.getNameInstance( getName()));
+		return infoSet.listColumns( ColumnName.getNameInstance( getName()));
 	}
 
 	public String getSQLName()

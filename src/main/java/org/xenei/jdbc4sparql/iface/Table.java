@@ -18,8 +18,9 @@
 package org.xenei.jdbc4sparql.iface;
 
 import java.util.Iterator;
+import java.util.List;
 
-public interface Table extends NamedObject
+public interface Table<T extends Column> extends NamedObject<TableName>
 {
 	
 	/**
@@ -44,6 +45,8 @@ public interface Table extends NamedObject
 	 */
 	Catalog getCatalog();
 
+	List<T> getColumnList();
+	
 	/**
 	 * Get the column by index.
 	 * 
@@ -81,7 +84,7 @@ public interface Table extends NamedObject
 	 * 
 	 * @return The column iterator.
 	 */
-	Iterator<? extends Column> getColumns();
+	Iterator<T> getColumns();
 
 	String getRemarks();
 
@@ -106,7 +109,7 @@ public interface Table extends NamedObject
 	 * 
 	 * @return The super table or null.
 	 */
-	Table getSuperTable();
+	Table<T> getSuperTable();
 
 	public TableDef getTableDef();
 
@@ -118,5 +121,28 @@ public interface Table extends NamedObject
 	 * @return The table type
 	 */
 	String getType();
+	
+	/**
+	 * A string used to format the column name with respect to the table so that
+	 * the SPARQL query will retrieve the proper data.  For example 
+	 *  "%1$s <http://example.com/jdbc4sparql#NullableIntCol> %2$s"
+	 *  
+	 *  %1$s is the table name
+	 *  %2$s is the column name
+	 * @return Format string for query segments in SPARQL query
+	 */
+	public String getQuerySegmentFmt();
+	
+	/**
+	 * Return true if this column has querySegments.
+	 * Most columns do, however, some function columns do not.
+	 * @return
+	 */
+	public boolean hasQuerySegments();
 
+	/**
+	 * 
+	 * @return
+	 */
+	//public String getFQName();
 }

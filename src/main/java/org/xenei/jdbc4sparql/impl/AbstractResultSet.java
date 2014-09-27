@@ -410,7 +410,7 @@ public abstract class AbstractResultSet implements ResultSet
 		columnNameIdx = new HashMap<String, Integer>();
 		for (int i = 0; i < table.getColumnCount(); i++)
 		{
-			columnNameIdx.put(table.getColumn(i).getName(), i);
+			columnNameIdx.put(table.getColumn(i).getName().getShortName(), i);
 		}
 	}
 

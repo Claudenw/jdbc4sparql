@@ -17,7 +17,7 @@
  */
 package org.xenei.jdbc4sparql.iface;
 
-public interface Column extends NamedObject
+public interface Column extends NamedObject<ColumnName>
 {
 	/**
 	 * @return the Catalog this table is in.
@@ -52,5 +52,30 @@ public interface Column extends NamedObject
 	 * @return The table this column is in.
 	 */
 	public Table getTable();
+	
+	/**
+	 * A string used to format the column name with respect to the table so that
+	 * the SPARQL query will retrieve the proper data.  For example 
+	 *  "%1$s <http://example.com/jdbc4sparql#NullableIntCol> %2$s"
+	 *  
+	 *  %1$s is the table name
+	 *  %2$s is the column name
+	 * @return Format string for query segments in SPARQL query
+	 */
+	public String getQuerySegmentFmt();
+	
+	/**
+	 * Return true if this column has querySegments.
+	 * Most columns do, however, some function columns do not.
+	 * @return
+	 */
+	public boolean hasQuerySegments();
 
+	/**
+	 * True if this column is optional
+	 * @return
+	 */
+	public boolean isOptional();
+	
+	//public String getFQName();
 }
