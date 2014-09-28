@@ -22,11 +22,6 @@ public class TableName extends ItemName
 		return new ColumnName( getSchema(), getTable(), colName );
 	}
 
-	public static TableName getNameInstance( final String schema, final String table )
-	{
-		return new TableName(schema, table);
-	}
-
 	public static TableName getNameInstance( final String alias )
 	{
 		if (alias == null)
@@ -47,10 +42,5 @@ public class TableName extends ItemName
 						parts.length, alias));
 	
 		}
-	}
-
-	public static TableName getNameInstance( final ItemName name )
-	{
-		return new TableName(name);
 	}
 }

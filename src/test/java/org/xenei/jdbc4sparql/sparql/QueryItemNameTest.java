@@ -9,10 +9,10 @@ import org.xenei.jdbc4sparql.iface.TableName;
 public class QueryItemNameTest
 {
 	private final TableName tableNames[] = {
-			TableName.getNameInstance(null, null),
-			TableName.getNameInstance(null, "table"),
-			TableName.getNameInstance("schema", null),
-			TableName.getNameInstance("schema", "table") };
+			new TableName(null, null),
+			new TableName(null, "table"),
+			new TableName("schema", null),
+			new TableName("schema", "table") };
 
 	private final ColumnName columnNames[] = {
 			ColumnName.getNameInstance(null, null, null),
@@ -43,22 +43,22 @@ public class QueryItemNameTest
 			testEquality(tableName, tableName);
 		}
 
-		TableName tableName1 = TableName.getNameInstance(null,
+		TableName tableName1 = new TableName(null,
 				null);
-		TableName tableName2 = TableName.getNameInstance(null,
+		TableName tableName2 = new TableName(null,
 				null);
 		testEquality(tableName1, tableName2);
 
-		tableName1 = TableName.getNameInstance(null, "table");
-		tableName2 = TableName.getNameInstance(null, "table");
+		tableName1 = new TableName(null, "table");
+		tableName2 = new TableName(null, "table");
 		testEquality(tableName1, tableName2);
 
-		tableName1 = TableName.getNameInstance("schema", null);
-		tableName2 = TableName.getNameInstance("schema", null);
+		tableName1 = new TableName("schema", null);
+		tableName2 = new TableName("schema", null);
 		testEquality(tableName1, tableName2);
 
-		tableName1 = TableName.getNameInstance("schema", "table");
-		tableName2 = TableName.getNameInstance("schema", "table");
+		tableName1 = new TableName("schema", "table");
+		tableName2 = new TableName("schema", "table");
 		testEquality(tableName1, tableName2);
 
 		// -- test column Name

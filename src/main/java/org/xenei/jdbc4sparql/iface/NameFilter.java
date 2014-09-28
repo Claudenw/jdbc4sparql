@@ -85,7 +85,7 @@ public class NameFilter<T extends NamedObject> implements Iterator<T>,
 		while ((next == null) && iter.hasNext())
 		{
 			next = iter.next();
-			if (!next.getName().equals(namePattern))
+			if (!next.getName().getShortName().equals(namePattern))
 			{
 				next = null;
 			}

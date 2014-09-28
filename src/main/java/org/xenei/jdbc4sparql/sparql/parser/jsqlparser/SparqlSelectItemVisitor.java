@@ -86,7 +86,7 @@ class SparqlSelectItemVisitor implements SelectItemVisitor
 		}
 		else
 		{
-			name =TableName.getNameInstance(allTableColumns.getTable().getSchemaName(),
+			name = new TableName(allTableColumns.getTable().getSchemaName(),
 					allTableColumns.getTable().getName());
 		}
 		

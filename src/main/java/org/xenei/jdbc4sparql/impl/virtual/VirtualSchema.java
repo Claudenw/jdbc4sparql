@@ -13,12 +13,17 @@ import org.xenei.jdbc4sparql.iface.SchemaName;
 public class VirtualSchema implements Schema {
 	private Catalog catalog;
 	private Map<String, VirtualTable> tables;
-	private static SchemaName schemaName = new SchemaName( "" );
+	private SchemaName schemaName;
 
 	public VirtualSchema(Catalog catalog) {
+		this( catalog, "" );
+	}
+	
+	public VirtualSchema(Catalog catalog, String name ) { 
 		this.catalog = catalog;
+		this.schemaName = new SchemaName( name );
 		tables = new HashMap<String,VirtualTable>();
-		
+		tables.put("", new VirtualTable(this));
 	}
 
 	@Override

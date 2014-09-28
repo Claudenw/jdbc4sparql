@@ -36,10 +36,10 @@ public abstract class AbstractFunctionHandler {
 //		return Var.alloc(builder.addFunction( column ));
 //	}
 	
-	protected Schema getSchema()
-	{
-		Catalog cat = builder.getCatalog( MetaCatalogBuilder.LOCAL_NAME );
-		return cat.getSchema( MetaCatalogBuilder.FUNCTION_SCHEMA );
-	}
+//	protected Schema getSchema()
+//	{
+//		Catalog cat = builder.getCatalog( MetaCatalogBuilder.LOCAL_NAME );
+//		return cat.getSchema( MetaCatalogBuilder.FUNCTION_SCHEMA );
+//	}
 	
 }

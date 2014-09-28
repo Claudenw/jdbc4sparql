@@ -67,7 +67,7 @@ public class QueryInfoSet
 		ColumnName cName = null;
 		// check for short names
 		if (shortNames) {
-			cName = ColumnName.getNameInstance(columnInfo.getName().getCol());
+			cName = new ColumnName( null, null, columnInfo.getName().getCol());
 		}
 		else {
 			cName = tableInfo.getName().getColumnName(columnInfo.getName().getCol());
@@ -141,7 +141,7 @@ public class QueryInfoSet
 		if (retval == null)
 		{		
 			// table name may be wild card
-			TableName tName = TableName.getNameInstance(cName);
+			TableName tName = cName.getTableName();
 			QueryTableInfo tableInfo = null;
 			for (QueryTableInfo testTableInfo : listTables(tName))
 			{

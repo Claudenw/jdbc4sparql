@@ -41,4 +41,9 @@ public class CatalogName extends ItemName
 		return getCatalog();
 	}
 
+	@Override
+	public String toString()
+	{
+		return getShortName();
+	}
 }

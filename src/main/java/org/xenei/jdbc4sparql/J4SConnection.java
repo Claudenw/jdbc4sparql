@@ -64,6 +64,7 @@ import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 import org.xenei.jdbc4sparql.impl.rdf.ResourceBuilder;
+import org.xenei.jdbc4sparql.impl.virtual.VirtualCatalog;
 import org.xenei.jdbc4sparql.meta.MetaCatalogBuilder;
 import org.xenei.jdbc4sparql.sparql.builders.SchemaBuilder;
 import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
@@ -133,6 +134,8 @@ public class J4SConnection implements Connection
 		{
 			throw new IllegalArgumentException(String.format( "Catalog '%s' not found in catalog map", getCatalog()));
 		}
+		
+		catalogMap.put( "",  new VirtualCatalog() );
 
 	}
 

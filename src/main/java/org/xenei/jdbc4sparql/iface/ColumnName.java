@@ -7,6 +7,7 @@ import org.xenei.jdbc4sparql.impl.NameUtils;
  */
 public class ColumnName extends ItemName
 {
+	private TableName tableName = null;
 	
 	/**
 	 * A wild card column name.
@@ -25,7 +26,11 @@ public class ColumnName extends ItemName
 	
 	public TableName getTableName()
 	{
-		return TableName.getNameInstance( this.getSchema(), this.getTable() );
+		if (tableName == null)
+		{
+			tableName = new TableName( this );
+		}
+		return tableName;
 	}
 
 	public static ColumnName getNameInstance( final String schemaName,

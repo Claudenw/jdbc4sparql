@@ -11,18 +11,24 @@ import org.xenei.jdbc4sparql.iface.TableName;
 import org.xenei.jdbc4sparql.impl.AbstractTable;
 
 public class VirtualTable extends AbstractTable<Column> {
-	private VirtualSchema schema;
+	private Schema schema;
+	private TableName tableName;
 	private List<Column> columns;
 	private TableDef tableDef;
 
-	public VirtualTable(VirtualSchema schema) {
+	public VirtualTable(Schema schema) {
+		this(schema,"");
+	}
+	
+	public VirtualTable(Schema schema, String name ) {
+		this.tableName = schema.getName().getTableName(name);
 		this.columns = new ArrayList<Column>();
 		this.schema = schema;
 	}
 
 	@Override
 	public TableName getName() {
-		return schema.getName().getTableName("");
+		return tableName;
 	}
 
 	@Override

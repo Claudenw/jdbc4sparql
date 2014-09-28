@@ -373,27 +373,33 @@ public class QueryTableInfo extends QueryItemInfo<TableName>
 	 */
 	public QueryColumnInfo getColumn( ColumnName cName, boolean optional ) 
 	{
+		if ( ! (cName.getTableName().matches(table.getName())))
+		{
+			return null;
+		}
 		QueryColumnInfo retval = infoSet.findColumn(cName);
 		if (retval == null)
 		{
-			final RdfColumn col = (RdfColumn) table.getColumn(cName.getCol());
+			final Column col = table.getColumn(cName.getCol());
 			if (col != null)
 			{
 				boolean opt = optional?col.isOptional():SparqlQueryBuilder.REQUIRED;
-				addColumnToQuery( col, cName, opt );
+				addColumnToQuery( col, table.getName().getColumnName(cName.getCol()), opt );
 				retval = infoSet.findColumn( cName );
-			}
+			}	
 		}
-		else {
+		if (retval != null && retval.getName().getTableName().matches(table.getName()))
+		{
 			if (retval.isOptional() && !optional)
 			{
-				((QueryColumnInfo)retval).setOptional( optional );
+				((QueryColumnInfo)retval).setOptional( false );
 			}
+			return retval;
 		}
-		return retval;
+		return null;
 	}
 
-	public Table getTable()
+	public Table<Column> getTable()
 	{
 		return table;
 	}

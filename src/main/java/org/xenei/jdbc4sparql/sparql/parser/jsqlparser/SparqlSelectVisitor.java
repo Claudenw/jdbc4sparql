@@ -181,8 +181,7 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 						protected Node addAlias( final QueryColumnInfo columnInfo,
 								final ColumnName alias )
 						{
-							final TableName tName = TableName
-									.getNameInstance(columnInfo.getName());
+							final TableName tName = columnInfo.getName().getTableName();
 							final QueryTableInfo tableInfo = queryBuilder.getTable(tName);
 							tableInfo.setEquals( columnInfo,  alias );
 							return queryBuilder.getColumn( alias ).getVar();
@@ -238,8 +237,7 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor
 						protected Node addAlias( final QueryColumnInfo columnInfo,
 								final ColumnName alias )
 						{
-							final TableName tName = TableName
-									.getNameInstance(columnInfo.getName());
+							final TableName tName = columnInfo.getName().getTableName();
 							final QueryTableInfo tableInfo = queryBuilder.getTable(tName);
 							return tableInfo.addColumnToQuery(columnInfo, alias);
 						}

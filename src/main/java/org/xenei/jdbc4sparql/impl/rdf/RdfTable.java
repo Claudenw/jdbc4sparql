@@ -491,7 +491,7 @@ public class RdfTable extends RdfNamespacedObject implements Table<RdfColumn>,
 	{
 		for (final Column col : getColumnList())
 		{
-			if (col.getName().equals(name))
+			if (col.getName().getShortName().equals(name))
 			{
 				return col;
 			}
@@ -571,7 +571,7 @@ public class RdfTable extends RdfNamespacedObject implements Table<RdfColumn>,
 			final RdfCatalog catalog = getCatalog();
 			queryBuilder = new SparqlQueryBuilder(catalogs, parser, catalog, schema);
 			queryBuilder.setForceShortName(true);
-			Node n = queryBuilder.addTable(this, getName(),  SparqlQueryBuilder.REQUIRED);
+			Node n = queryBuilder.addTable(getName(), getName(),  SparqlQueryBuilder.REQUIRED);
 			queryBuilder.addRequiredColumns();
 			queryBuilder.addTableColumns(queryBuilder.getNodeTable(n));
 			final RdfKey key = getKey();

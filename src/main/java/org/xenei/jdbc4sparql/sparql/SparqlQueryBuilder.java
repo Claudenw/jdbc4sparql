@@ -63,6 +63,8 @@ import org.xenei.jdbc4sparql.impl.rdf.RdfKeySegment;
 import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTableDef;
+import org.xenei.jdbc4sparql.impl.virtual.VirtualSchema;
+import org.xenei.jdbc4sparql.impl.virtual.VirtualTable;
 import org.xenei.jdbc4sparql.meta.MetaCatalogBuilder;
 import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.functions.FunctionColumn;
@@ -187,13 +189,23 @@ public class SparqlQueryBuilder
 		QueryColumnInfo columnInfo = infoSet.findColumn( columnName );
 		if (columnInfo == null)
 		{
+			columnName = new ColumnName( StringUtils.defaultString(columnName.getSchema(), ""), 
+					StringUtils.defaultString(columnName.getTable(), ""), columnName.getShortName());
 			QueryTableInfo tableInfo = infoSet.getTable( columnName.getTableName() );
 			Column column = null;
 			if (tableInfo == null)
 			{
-				Catalog cat = getCatalog( MetaCatalogBuilder.LOCAL_NAME );
-				Schema schema = cat.getSchema( columnName.getSchema() );
-				Table table = schema.getTable( columnName.getTable() );
+				Catalog cat = getCatalog( "" );
+				Schema schema = cat.getSchema( columnName.getSchema());
+				if (schema == null)
+				{
+					schema = new VirtualSchema( cat, columnName.getSchema() );
+				}
+				Table<Column> table = schema.getTable( columnName.getTable() );
+				if (table == null)
+				{
+					table = new VirtualTable( schema, columnName.getTable() );
+				}
 				column = new FunctionColumn( table, columnName.getShortName(), type );
 				// new QueryTableInfo addes table to infoSet
 				tableInfo = new QueryTableInfo( infoSet, null, table, columnName.getTableName(), false );
@@ -287,7 +299,7 @@ public class SparqlQueryBuilder
 		QueryColumnInfo columnInfo = infoSet.scanTablesForColumn(cName);
 		if (columnInfo == null)
 		{
-			TableName tName = TableName.getNameInstance(cName);
+			TableName tName = cName.getTableName();
 			if (tName.isWild())
 			{
 				throw new SQLException(String.format(
@@ -353,6 +365,8 @@ public class SparqlQueryBuilder
 	 * 
 	 * @param name
 	 *            The table name
+	 * @param asName
+	 * 			  The name of the table as referenced in the query.
 	 * @param optional
 	 *            if true table is optional.
 	 * @return The node that represents the table.
@@ -369,7 +383,7 @@ public class SparqlQueryBuilder
 					optional ? "optional" : "required", name, asName));
 		}
 		checkBuilt();
-		final Collection<Table> tables = findTables(name);
+		final Collection<Table<Column>> tables = findTables(name);
 
 		if (tables.size() > 1)
 		{
@@ -384,12 +398,12 @@ public class SparqlQueryBuilder
 		return addTable(tables.iterator().next(), asName, optional);
 	}
 
-	public Node addTable( final Table table, final TableName name,
+	public Node addTable( final Table<Column> table, final TableName name,
 			final boolean optional )
 	{
 		if (SparqlQueryBuilder.LOG.isDebugEnabled())
 		{
-			SparqlQueryBuilder.LOG.debug("Adding Rdftable {} as {}",
+			SparqlQueryBuilder.LOG.debug("Adding table {} as {}",
 					table.getSQLName(), name);
 		}
 
@@ -624,7 +638,7 @@ public class SparqlQueryBuilder
 		}
 	}
 	
-	private Collection<Table> findTables( ItemName name )
+	private Collection<Table<Column>> findTables( ItemName name )
 	{
 
 		if (SparqlQueryBuilder.LOG.isDebugEnabled())
@@ -633,16 +647,16 @@ public class SparqlQueryBuilder
 					"Looking for Table %s.%s in '%s' catalog", name.getSchema(), name.getTable(), catalog.getName()));
 		}
 		
-		final List<Table> tables = new ArrayList<Table>();
+		final List<Table<Column>> tables = new ArrayList<Table<Column>>();
 		
 		for (final Schema schema : catalog.findSchemas(name.getSchema()))
 		{
-			for (final Table table : schema.findTables(name.getTable()))
+			for (final Table<Column> table : schema.findTables(name.getTable()))
 			{
-				if (table instanceof RdfTable)
-				{
+				//if (table instanceof RdfTable)
+				//{
 					tables.add(table);
-				}
+				//}
 			}
 		}
 		return tables;
@@ -709,7 +723,12 @@ public class SparqlQueryBuilder
 	
 	public List<QueryColumnInfo> getResultColumns()
 	{
-		return infoSet.getColumns();
+		List<QueryColumnInfo> retval = new ArrayList<QueryColumnInfo>();
+		for (Var v : query.getProjectVars())
+		{
+			retval.add( infoSet.getColumnByName(v) );
+		}
+		return retval;
 	}
 
 	/**

@@ -294,7 +294,7 @@ public class SparqlExprVisitor implements ExpressionVisitor
 		SparqlExprVisitor.LOG.debug("visit Column: {}", tableColumn);
 		try
 		{
-			ColumnName cName = ColumnName.getNameInstance(
+			ColumnName cName = new ColumnName(
 					tableColumn.getTable().getSchemaName(),
 					tableColumn.getTable().getName(),
 					tableColumn.getColumnName());

@@ -70,13 +70,13 @@ class SparqlFromVisitor implements FromItemVisitor
 	}
 
 	@Override
-	public void visit( final Table tableName )
+	public void visit( final Table table )
 	{
-		SparqlFromVisitor.LOG.debug("visit table: {}", tableName);
+		SparqlFromVisitor.LOG.debug("visit table: {}", table);
 		try
 		{
-			TableName tName = TableName.getNameInstance(tableName.getSchemaName(), tableName.getName());
-			name = (tableName.getAlias() != null)?TableName.getNameInstance(tableName.getAlias()):tName;			
+			TableName tName = new TableName(table.getSchemaName(), table.getName());
+			name = (table.getAlias() != null)?TableName.getNameInstance(table.getAlias()):tName;			
 			builder.addTable(tName, name, optional);
 			
 		}
