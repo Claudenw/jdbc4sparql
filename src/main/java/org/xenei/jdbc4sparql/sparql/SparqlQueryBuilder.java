@@ -172,7 +172,7 @@ public class SparqlQueryBuilder
 
 	/**
 	 * Create a sub query builder
-	 * 
+	 *
 	 * @param parent
 	 *            The QueryBuilder that this is a sub query for.
 	 */
@@ -190,15 +190,15 @@ public class SparqlQueryBuilder
 		{
 			v = ((ExprAggregator) expr).getVar();
 			varName = infoSet.getColumnByName(v.getName());
-			aliasName = columnName.merge( ColumnName.FUNCTION );
+			aliasName = columnName.merge(ColumnName.FUNCTION);
 		}
 		else
 		{
 			v = expr.asVar();
-			varName = infoSet.getColumnByName(v.getName()); 
+			varName = infoSet.getColumnByName(v.getName());
 			aliasName = columnName.merge(varName.getName());
 		}
-		
+
 		varName.addAlias(infoSet, aliasName);
 	}
 

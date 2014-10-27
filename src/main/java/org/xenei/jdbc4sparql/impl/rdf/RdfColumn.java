@@ -16,7 +16,6 @@ import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.ColumnDef;
 import org.xenei.jdbc4sparql.iface.ColumnName;
-import org.xenei.jdbc4sparql.iface.ItemName;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.impl.NameUtils;
@@ -51,7 +50,7 @@ public class RdfColumn extends RdfNamespacedObject implements Column,
 
 		/**
 		 * Add a query segment where %1$s = tableVar, and %2$s=columnVar
-		 * 
+		 *
 		 * @param querySegment
 		 * @return
 		 */
@@ -185,7 +184,7 @@ public class RdfColumn extends RdfNamespacedObject implements Column,
 		@Override
 		public ColumnName getName()
 		{
-			return table.getName().getColumnName( name );
+			return table.getName().getColumnName(name);
 		}
 
 		@Override
@@ -238,6 +237,18 @@ public class RdfColumn extends RdfNamespacedObject implements Column,
 			return table;
 		}
 
+		@Override
+		public boolean hasQuerySegments()
+		{
+			return querySegments.size() > 0;
+		}
+
+		@Override
+		public boolean isOptional()
+		{
+			return getColumnDef().getNullable() != DatabaseMetaData.columnNoNulls;
+		}
+
 		public Builder setColumnDef( final ColumnDef columnDef )
 		{
 			if (columnDef instanceof ResourceWrapper)
@@ -263,17 +274,6 @@ public class RdfColumn extends RdfNamespacedObject implements Column,
 		{
 			this.table = table;
 			return this;
-		}
-		
-		@Override
-		public boolean hasQuerySegments(){
-			return querySegments.size()>0;
-		}
-		
-		@Override
-		public boolean isOptional()
-		{
-			return getColumnDef().getNullable() != DatabaseMetaData.columnNoNulls;
 		}
 	}
 
@@ -314,15 +314,9 @@ public class RdfColumn extends RdfNamespacedObject implements Column,
 	{
 		if (columnName == null)
 		{
-			columnName = getTable().getName().getColumnName( getSimpleName() );
+			columnName = getTable().getName().getColumnName(getSimpleName());
 		}
 		return columnName;
-	}
-	
-	@Predicate( impl = true, namespace = "http://www.w3.org/2000/01/rdf-schema#", name = "label" )
-	public String getSimpleName()
-	{
-		throw new EntityManagerRequiredException();
 	}
 
 	@Override
@@ -330,11 +324,6 @@ public class RdfColumn extends RdfNamespacedObject implements Column,
 	public String getQuerySegmentFmt()
 	{
 		throw new EntityManagerRequiredException();
-	}
-
-	@Override
-	public boolean hasQuerySegments(){
-		return true;
 	}
 
 	@Override
@@ -357,6 +346,12 @@ public class RdfColumn extends RdfNamespacedObject implements Column,
 		return getTable().getSchema();
 	}
 
+	@Predicate( impl = true, namespace = "http://www.w3.org/2000/01/rdf-schema#", name = "label" )
+	public String getSimpleName()
+	{
+		throw new EntityManagerRequiredException();
+	}
+
 	@Override
 	public String getSPARQLName()
 	{
@@ -373,6 +368,12 @@ public class RdfColumn extends RdfNamespacedObject implements Column,
 	public RdfTable getTable()
 	{
 		return table;
+	}
+
+	@Override
+	public boolean hasQuerySegments()
+	{
+		return true;
 	}
 
 	@Override

@@ -44,9 +44,12 @@ public class SparqlVisitor implements StatementVisitor
 	private final SparqlQueryBuilder sparqlQueryBuilder;
 	private static Logger LOG = LoggerFactory.getLogger(SparqlVisitor.class);
 
-	public SparqlVisitor( final Map<String, Catalog> catalogs, final SparqlParser parser, final RdfCatalog catalog, final RdfSchema schema )
+	public SparqlVisitor( final Map<String, Catalog> catalogs,
+			final SparqlParser parser, final RdfCatalog catalog,
+			final RdfSchema schema )
 	{
-		sparqlQueryBuilder = new SparqlQueryBuilder(catalogs, parser, catalog, schema);
+		sparqlQueryBuilder = new SparqlQueryBuilder(catalogs, parser, catalog,
+				schema);
 	}
 
 	public SparqlQueryBuilder getBuilder()

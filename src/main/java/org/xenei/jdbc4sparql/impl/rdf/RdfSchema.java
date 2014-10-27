@@ -11,7 +11,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-import org.apache.commons.lang3.StringUtils;
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.NameFilter;
 import org.xenei.jdbc4sparql.iface.Schema;
@@ -132,7 +131,7 @@ public class RdfSchema extends RdfNamespacedObject implements Schema,
 		@Override
 		public SchemaName getName()
 		{
-			return new SchemaName( name );
+			return new SchemaName(name);
 		}
 
 		@Override
@@ -199,7 +198,7 @@ public class RdfSchema extends RdfNamespacedObject implements Schema,
 
 	private RdfCatalog catalog;
 	private SchemaName schemaName = null;
-	
+
 	private Set<RdfTable> tableList;
 
 	@Predicate( impl = true )
@@ -251,20 +250,20 @@ public class RdfSchema extends RdfNamespacedObject implements Schema,
 		return catalog;
 	}
 
+	@Predicate( impl = true, namespace = "http://www.w3.org/2000/01/rdf-schema#", name = "label" )
+	public String getLocalSchemaName()
+	{
+		throw new EntityManagerRequiredException();
+	}
+
 	@Override
 	public SchemaName getName()
 	{
 		if (schemaName == null)
 		{
-			schemaName = new SchemaName( getLocalSchemaName() );
+			schemaName = new SchemaName(getLocalSchemaName());
 		}
 		return schemaName;
-	}
-	
-	@Predicate( impl = true, namespace = "http://www.w3.org/2000/01/rdf-schema#", name = "label" )
-	public String getLocalSchemaName()
-	{
-		throw new EntityManagerRequiredException();
 	}
 
 	@Override

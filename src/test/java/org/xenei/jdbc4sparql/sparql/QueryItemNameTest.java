@@ -8,10 +8,8 @@ import org.xenei.jdbc4sparql.iface.TableName;
 
 public class QueryItemNameTest
 {
-	private final TableName tableNames[] = {
-			new TableName(null, null),
-			new TableName(null, "table"),
-			new TableName("schema", null),
+	private final TableName tableNames[] = { new TableName(null, null),
+			new TableName(null, "table"), new TableName("schema", null),
 			new TableName("schema", "table") };
 
 	private final ColumnName columnNames[] = {
@@ -24,8 +22,7 @@ public class QueryItemNameTest
 			new ColumnName("schema", "table", null),
 			new ColumnName("schema", "table", "column") };
 
-	private void testEquality( final ItemName name1,
-			final ItemName name2 )
+	private void testEquality( final ItemName name1, final ItemName name2 )
 	{
 		Assert.assertEquals(name1, name2);
 		Assert.assertEquals(name2, name1);
@@ -43,10 +40,8 @@ public class QueryItemNameTest
 			testEquality(tableName, tableName);
 		}
 
-		TableName tableName1 = new TableName(null,
-				null);
-		TableName tableName2 = new TableName(null,
-				null);
+		TableName tableName1 = new TableName(null, null);
+		TableName tableName2 = new TableName(null, null);
 		testEquality(tableName1, tableName2);
 
 		tableName1 = new TableName(null, "table");
@@ -68,10 +63,8 @@ public class QueryItemNameTest
 			testEquality(columnName, columnName);
 		}
 
-		ColumnName columnName1 = new ColumnName(
-				null, null, null);
-		ColumnName columnName2 = new ColumnName(
-				null, null, null);
+		ColumnName columnName1 = new ColumnName(null, null, null);
+		ColumnName columnName2 = new ColumnName(null, null, null);
 		testEquality(tableName1, tableName2);
 
 		columnName1 = new ColumnName(null, null, "column");
@@ -98,10 +91,8 @@ public class QueryItemNameTest
 		columnName2 = new ColumnName("schema", "table", null);
 		testEquality(columnName1, columnName2);
 
-		columnName1 = new ColumnName("schema", "table",
-				"column");
-		columnName2 = new ColumnName("schema", "table",
-				"column");
+		columnName1 = new ColumnName("schema", "table", "column");
+		columnName2 = new ColumnName("schema", "table", "column");
 		testEquality(columnName1, columnName2);
 	}
 
@@ -255,8 +246,7 @@ public class QueryItemNameTest
 
 	}
 
-	public void testNotMatch( final ItemName name1,
-			final ItemName name2 )
+	public void testNotMatch( final ItemName name1, final ItemName name2 )
 	{
 		final String s = String.format("%s does match %s", name1, name2);
 		Assert.assertFalse(s, name1.matches(name2));

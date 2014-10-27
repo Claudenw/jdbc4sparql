@@ -27,11 +27,8 @@ import com.hp.hpl.jena.util.iterator.WrappedIterator;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -260,12 +257,14 @@ public class J4SDatabaseMetaDataTest
 	{
 		final ResultSet rs = metadata.getColumns(MetaCatalogBuilder.LOCAL_NAME,
 				MetaCatalogBuilder.SCHEMA_NAME, tableName, null);
-		try {
+		try
+		{
 			for (int i = 0; i < columnNames.length; i++)
 			{
 				Assert.assertTrue("column " + i + " of table " + tableName
 						+ " missing", rs.next());
-				Assert.assertEquals(MetaCatalogBuilder.LOCAL_NAME, rs.getString(1)); // TABLE_CAT
+				Assert.assertEquals(MetaCatalogBuilder.LOCAL_NAME,
+						rs.getString(1)); // TABLE_CAT
 				Assert.assertEquals(MetaCatalogBuilder.SCHEMA_NAME,
 						rs.getString(2)); // TABLE_SCHEM
 				Assert.assertEquals(tableName, rs.getString(3)); // TABLE_NAME
@@ -277,11 +276,12 @@ public class J4SDatabaseMetaDataTest
 			Assert.assertFalse("Extra column found in table " + tableName,
 					rs.next());
 		}
-		finally {
+		finally
+		{
 			rs.close();
 		}
 	}
-	
+
 	@Before
 	public void setup() throws IOException, InstantiationException,
 			IllegalAccessException, ClassNotFoundException
@@ -333,12 +333,12 @@ public class J4SDatabaseMetaDataTest
 	{
 		final String[] names = { "TABLE_CAT", };
 		columnChecking(MetaCatalogBuilder.CATALOGS_TABLE, names);
-		
-		ResultSet rs = metadata.getCatalogs();
+
+		final ResultSet rs = metadata.getCatalogs();
 		try
 		{
 			Assert.assertTrue(rs.first());
-			Assert.assertEquals( "METADATA", rs.getString("TABLE_CAT"));
+			Assert.assertEquals("METADATA", rs.getString("TABLE_CAT"));
 			Assert.assertFalse(rs.next());
 		}
 		finally
@@ -374,7 +374,7 @@ public class J4SDatabaseMetaDataTest
 				"SQL_DATETIME_SUB", "CHAR_OCTET_LENGTH", "ORDINAL_POSITION",
 				"IS_NULLABLE", "SCOPE_CATLOG", "SCOPE_SCHEMA", "SCOPE_TABLE",
 				"SOURCE_DATA_TYPE", "IS_AUTOINCREMENT", };
-		
+
 		columnChecking(MetaCatalogBuilder.COLUMNS_TABLE, names);
 
 		// read entire column suite
@@ -715,7 +715,7 @@ public class J4SDatabaseMetaDataTest
 	{
 		final String[] names = { "TABLE_SCHEM", "TABLE_CATALOG", };
 		columnChecking(MetaCatalogBuilder.SCHEMAS_TABLE, names);
-		
+
 		ResultSet rs = metadata.getSchemas(null, null);
 		try
 		{
@@ -737,10 +737,11 @@ public class J4SDatabaseMetaDataTest
 					cat = rs.getString("TABLE_CATALOG");
 					schema = rs.getString("TABLE_SCHEM");
 				}
-				else {
-				Assert.assertEquals(cat, rs.getString("TABLE_CATALOG"));
-				Assert.assertTrue("Schema out of sequence",
-						schema.compareTo(rs.getString("TABLE_SCHEM")) < 0);
+				else
+				{
+					Assert.assertEquals(cat, rs.getString("TABLE_CATALOG"));
+					Assert.assertTrue("Schema out of sequence",
+							schema.compareTo(rs.getString("TABLE_SCHEM")) < 0);
 				}
 				rs.next();
 			}
@@ -749,36 +750,36 @@ public class J4SDatabaseMetaDataTest
 		{
 			rs.close();
 		}
-		
+
 		rs = metadata.getSchemas(null, "Schema");
 		try
 		{
 			Assert.assertTrue(rs.first());
-			Assert.assertEquals( "Schema", rs.getString("TABLE_SCHEM"));
+			Assert.assertEquals("Schema", rs.getString("TABLE_SCHEM"));
 			Assert.assertFalse("returned too many schemas", rs.next());
 		}
 		finally
 		{
 			rs.close();
 		}
-		
+
 		rs = metadata.getSchemas(null, "Sch_ma");
 		try
 		{
 			Assert.assertTrue(rs.first());
-			Assert.assertEquals( "Schema", rs.getString("TABLE_SCHEM"));
+			Assert.assertEquals("Schema", rs.getString("TABLE_SCHEM"));
 			Assert.assertFalse("returned too many schemas", rs.next());
 		}
 		finally
 		{
 			rs.close();
 		}
-		
+
 		rs = metadata.getSchemas(null, "Sc%a");
 		try
 		{
 			Assert.assertTrue(rs.first());
-			Assert.assertEquals( "Schema", rs.getString("TABLE_SCHEM"));
+			Assert.assertEquals("Schema", rs.getString("TABLE_SCHEM"));
 			Assert.assertFalse("returned too many schemas", rs.next());
 		}
 		finally
@@ -932,53 +933,53 @@ public class J4SDatabaseMetaDataTest
 		}
 
 		// test the column names wildcard
-				rs = metadata.getTables(MetaCatalogBuilder.LOCAL_NAME,
-						MetaCatalogBuilder.SCHEMA_NAME, "Col_mns",
-						new String[] { MetaCatalogBuilder.TABLE_TYPE });
-				try
-				{
-					Assert.assertTrue(rs.first());
-					while (!rs.isAfterLast())
-					{
-						Assert.assertEquals(MetaCatalogBuilder.TABLE_TYPE,
-								rs.getString("TABLE_TYPE"));
-						Assert.assertEquals(MetaCatalogBuilder.LOCAL_NAME,
-								rs.getString("TABLE_CAT"));
-						Assert.assertEquals(MetaCatalogBuilder.SCHEMA_NAME,
-								rs.getString("TABLE_SCHEM"));
-						Assert.assertEquals("Columns", rs.getString("TABLE_NAME"));
-						rs.next();
-					}
-				}
-				finally
-				{
-					rs.close();
-				}
-		
-				// test the column names wildcard
-				rs = metadata.getTables(MetaCatalogBuilder.LOCAL_NAME,
-						MetaCatalogBuilder.SCHEMA_NAME, "Col%ns",
-						new String[] { MetaCatalogBuilder.TABLE_TYPE });
-				try
-				{
-					Assert.assertTrue(rs.first());
-					while (!rs.isAfterLast())
-					{
-						Assert.assertEquals(MetaCatalogBuilder.TABLE_TYPE,
-								rs.getString("TABLE_TYPE"));
-						Assert.assertEquals(MetaCatalogBuilder.LOCAL_NAME,
-								rs.getString("TABLE_CAT"));
-						Assert.assertEquals(MetaCatalogBuilder.SCHEMA_NAME,
-								rs.getString("TABLE_SCHEM"));
-						Assert.assertEquals("Columns", rs.getString("TABLE_NAME"));
-						rs.next();
-					}
-				}
-				finally
-				{
-					rs.close();
-				}
-		
+		rs = metadata.getTables(MetaCatalogBuilder.LOCAL_NAME,
+				MetaCatalogBuilder.SCHEMA_NAME, "Col_mns",
+				new String[] { MetaCatalogBuilder.TABLE_TYPE });
+		try
+		{
+			Assert.assertTrue(rs.first());
+			while (!rs.isAfterLast())
+			{
+				Assert.assertEquals(MetaCatalogBuilder.TABLE_TYPE,
+						rs.getString("TABLE_TYPE"));
+				Assert.assertEquals(MetaCatalogBuilder.LOCAL_NAME,
+						rs.getString("TABLE_CAT"));
+				Assert.assertEquals(MetaCatalogBuilder.SCHEMA_NAME,
+						rs.getString("TABLE_SCHEM"));
+				Assert.assertEquals("Columns", rs.getString("TABLE_NAME"));
+				rs.next();
+			}
+		}
+		finally
+		{
+			rs.close();
+		}
+
+		// test the column names wildcard
+		rs = metadata.getTables(MetaCatalogBuilder.LOCAL_NAME,
+				MetaCatalogBuilder.SCHEMA_NAME, "Col%ns",
+				new String[] { MetaCatalogBuilder.TABLE_TYPE });
+		try
+		{
+			Assert.assertTrue(rs.first());
+			while (!rs.isAfterLast())
+			{
+				Assert.assertEquals(MetaCatalogBuilder.TABLE_TYPE,
+						rs.getString("TABLE_TYPE"));
+				Assert.assertEquals(MetaCatalogBuilder.LOCAL_NAME,
+						rs.getString("TABLE_CAT"));
+				Assert.assertEquals(MetaCatalogBuilder.SCHEMA_NAME,
+						rs.getString("TABLE_SCHEM"));
+				Assert.assertEquals("Columns", rs.getString("TABLE_NAME"));
+				rs.next();
+			}
+		}
+		finally
+		{
+			rs.close();
+		}
+
 		// test multi table type query
 		rs = metadata.getTables(null, null, null, new String[] {
 				MetaCatalogBuilder.TABLE_TYPE, "TABLE" });

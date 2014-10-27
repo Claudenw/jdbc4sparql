@@ -26,11 +26,11 @@ import org.xenei.jdbc4sparql.utils.NoCloseZipInputStream;
 
 /**
  * Interface that defines the dataset producer.
- * 
+ *
  * The dataset producer produces the local dataset (set of graphs that
  * represent the local data) and the meta dataset (set of graphs that
  * contain the metadata)
- * 
+ *
  * Implementations of this class should construct the dataset when first
  * requested and return the same dataset on all subsequent calls.
  */
@@ -104,7 +104,7 @@ abstract public class AbstractDatasetProducer implements DatasetProducer
 
 	/**
 	 * Get or construct the local dataset.
-	 * 
+	 *
 	 * @return the local dataset
 	 */
 	protected Dataset getLocalDataset()
@@ -120,7 +120,7 @@ abstract public class AbstractDatasetProducer implements DatasetProducer
 
 	/**
 	 * Get or construct the meta dataset.
-	 * 
+	 *
 	 * @return the meta dataset.
 	 */
 	protected Dataset getMetaDataset()
@@ -130,7 +130,7 @@ abstract public class AbstractDatasetProducer implements DatasetProducer
 
 	/**
 	 * Retrieve the model that is the union of all models in the data set.
-	 * 
+	 *
 	 * @return
 	 */
 	@Override
@@ -166,7 +166,7 @@ abstract public class AbstractDatasetProducer implements DatasetProducer
 
 	/**
 	 * Default load implementation
-	 * 
+	 *
 	 * @param zis
 	 * @throws IOException
 	 */

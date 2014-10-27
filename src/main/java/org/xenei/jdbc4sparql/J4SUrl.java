@@ -26,7 +26,6 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang.StringUtils;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFLanguages;
-import org.xenei.jdbc4sparql.meta.MetaCatalogBuilder;
 import org.xenei.jdbc4sparql.sparql.builders.SchemaBuilder;
 import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 import org.xenei.jdbc4sparql.utils.SQLNameUtil;
@@ -54,7 +53,7 @@ public class J4SUrl
 	/**
 	 * Parses are URL of the form
 	 * jdbc:j4s[?ARG=Val[&ARG=VAL...]]:[URI]
-	 * 
+	 *
 	 * @param urlStr
 	 */
 	public J4SUrl( final String urlStr )
@@ -85,17 +84,18 @@ public class J4SUrl
 			throw new IllegalArgumentException(
 					"Not a valid J4S JDBC URL -- missing endpoint");
 		}
-		
+
 		// configure catalog name
-		if (StringUtils.isBlank( getCatalog() ))
+		if (StringUtils.isBlank(getCatalog()))
 		{
 			String catalogName = getEndpoint().getHost();
-			if (!StringUtils.isBlank( catalogName ))
+			if (!StringUtils.isBlank(catalogName))
 			{
-				catalogName = SQLNameUtil.clean(catalogName );
-				properties.setProperty(J4SPropertyNames.CATALOG_PROPERTY, catalogName);
+				catalogName = SQLNameUtil.clean(catalogName);
+				properties.setProperty(J4SPropertyNames.CATALOG_PROPERTY,
+						catalogName);
 			}
-		}	
+		}
 	}
 
 	private boolean doComp( final String target, final int pos,
@@ -109,7 +109,7 @@ public class J4SUrl
 
 	/**
 	 * Get the schema builder for this URL.
-	 * 
+	 *
 	 * @return the SchemaBuilder
 	 */
 	public SchemaBuilder getBuilder()
@@ -119,7 +119,7 @@ public class J4SUrl
 
 	/**
 	 * Get the default catalog for the URL.
-	 * 
+	 *
 	 * @return the default catalog name or build one from URL name
 	 */
 	public String getCatalog()
@@ -129,9 +129,9 @@ public class J4SUrl
 
 	/**
 	 * Get the endpoint for the URL.
-	 * 
+	 *
 	 * The endpoint may be a local file or a sparql endpoint.
-	 * 
+	 *
 	 * @return the URI for the endpoint.
 	 */
 	public URI getEndpoint()
@@ -142,7 +142,7 @@ public class J4SUrl
 	/**
 	 * Get the language for the specified type.
 	 * Will return null for SPARQL and CONFIG
-	 * 
+	 *
 	 * @return
 	 */
 	public Lang getLang()
@@ -152,9 +152,9 @@ public class J4SUrl
 
 	/**
 	 * Get the sparql parser for the URL.
-	 * 
+	 *
 	 * The sparlq parser converts SQL to SPARQL.
-	 * 
+	 *
 	 * @return the sparql parser.
 	 */
 	public SparqlParser getParser()
@@ -164,7 +164,7 @@ public class J4SUrl
 
 	/**
 	 * Get the properties specified in the URL.
-	 * 
+	 *
 	 * @return The properties.
 	 */
 	public Properties getProperties()
@@ -174,11 +174,11 @@ public class J4SUrl
 
 	/**
 	 * Get the type (format) of the endpoint URI.
-	 * 
+	 *
 	 * May be Sparql, Config, or one of the language types supported by Apache
 	 * Jena.
 	 * e.g. TTL, RDF/XML, N3, etc.
-	 * 
+	 *
 	 * @return The type of the endpoint URI.
 	 */
 	public String getType()
@@ -190,9 +190,9 @@ public class J4SUrl
 	// parse the ?catalog=<x>&schema=<y>: as well as the ?catalog=<x>: versions
 	/**
 	 * Parse an argument out of the URL string section.
-	 * 
+	 *
 	 * Should be of the form x=y[:|&]
-	 * 
+	 *
 	 * @param urlStr
 	 * @param startPos
 	 */

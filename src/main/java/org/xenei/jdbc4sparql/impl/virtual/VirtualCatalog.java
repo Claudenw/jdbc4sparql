@@ -1,5 +1,8 @@
 package org.xenei.jdbc4sparql.impl.virtual;
 
+import com.hp.hpl.jena.query.Query;
+import com.hp.hpl.jena.query.QuerySolution;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -11,45 +14,50 @@ import org.xenei.jdbc4sparql.iface.CatalogName;
 import org.xenei.jdbc4sparql.iface.NameFilter;
 import org.xenei.jdbc4sparql.iface.Schema;
 
-import com.hp.hpl.jena.query.Query;
-import com.hp.hpl.jena.query.QuerySolution;
+public class VirtualCatalog implements Catalog
+{
+	private final CatalogName name = new CatalogName("");
+	private Map<String, Schema> schemas;
 
-public class VirtualCatalog implements Catalog {
-	private CatalogName name = new CatalogName( "" );
-	private Map<String,Schema> schemas;
-
-	public VirtualCatalog() {
-		schemas = new HashMap<String,Schema>();
-		schemas.put( "",  new VirtualSchema(this));
+	public VirtualCatalog()
+	{
+		schemas = new HashMap<String, Schema>();
+		schemas.put("", new VirtualSchema(this));
 	}
 
 	@Override
-	public CatalogName getName() {
-		return name;
-	}
-
-	@Override
-	public void close() {
+	public void close()
+	{
 		schemas = null;
 	}
 
 	@Override
-	public List<QuerySolution> executeLocalQuery(Query query) {
+	public List<QuerySolution> executeLocalQuery( final Query query )
+	{
 		return null;
 	}
 
 	@Override
-	public NameFilter<Schema> findSchemas(String schemaNamePattern) {
+	public NameFilter<Schema> findSchemas( final String schemaNamePattern )
+	{
 		return new NameFilter<Schema>(schemaNamePattern, schemas.values());
 	}
 
 	@Override
-	public Schema getSchema(String schemaName) {
+	public CatalogName getName()
+	{
+		return name;
+	}
+
+	@Override
+	public Schema getSchema( final String schemaName )
+	{
 		return schemas.get(schemaName);
 	}
 
 	@Override
-	public Set<Schema> getSchemas() {
+	public Set<Schema> getSchemas()
+	{
 		return new HashSet<Schema>(schemas.values());
 	}
 

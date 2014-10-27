@@ -210,7 +210,7 @@ public class RdfKey implements Key
 
 	/**
 	 * Get the key name (may be null)
-	 * 
+	 *
 	 * @return the key name.
 	 */
 	@Override

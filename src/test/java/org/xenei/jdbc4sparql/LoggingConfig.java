@@ -8,9 +8,6 @@ import org.apache.log4j.PatternLayout;
 
 public class LoggingConfig
 {
-	private static ConsoleAppender console;
-	private static FileAppender log;
-
 	public static ConsoleAppender getConsole()
 	{
 		if (LoggingConfig.console == null)
@@ -68,4 +65,8 @@ public class LoggingConfig
 	{
 		Logger.getRootLogger().setLevel(level);
 	}
+
+	private static ConsoleAppender console;
+
+	private static FileAppender log;
 }

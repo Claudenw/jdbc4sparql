@@ -56,8 +56,8 @@ public class J4SUrlTest
 
 		Assert.assertEquals("example_com", url.getCatalog());
 		Assert.assertEquals(
-				"org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlParserImpl", url
-						.getParser().getClass().getName());
+				"org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlParserImpl",
+				url.getParser().getClass().getName());
 		Assert.assertEquals("http://example.com/test.file", url.getEndpoint()
 				.toString());
 

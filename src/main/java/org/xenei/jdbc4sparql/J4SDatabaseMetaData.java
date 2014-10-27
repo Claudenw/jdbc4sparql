@@ -23,6 +23,7 @@ import java.sql.ResultSet;
 import java.sql.RowIdLifetime;
 import java.sql.SQLException;
 import java.util.Iterator;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +48,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	private final J4SDriver driver;
 	private final Catalog metaCatalog;
 	private final Schema metaSchema;
-	//private final Map<String, Catalog> catalogs;
+	// private final Map<String, Catalog> catalogs;
 	private static Logger LOG = LoggerFactory
 			.getLogger(J4SDatabaseMetaData.class);
 	private final SparqlParser parser = new SparqlParserImpl();
@@ -57,20 +58,17 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	{
 		this.connection = connection;
 		this.driver = driver;
-		//this.catalogs = new HashMap<String, Catalog>(connection.getCatalogs());
-		metaCatalog = connection.getCatalogs().get(MetaCatalogBuilder.LOCAL_NAME);
-		metaSchema =  metaCatalog
-				.getSchema(MetaCatalogBuilder.SCHEMA_NAME);
+		// this.catalogs = new HashMap<String,
+		// Catalog>(connection.getCatalogs());
+		metaCatalog = connection.getCatalogs().get(
+				MetaCatalogBuilder.LOCAL_NAME);
+		metaSchema = metaCatalog.getSchema(MetaCatalogBuilder.SCHEMA_NAME);
 		if (metaSchema == null)
 		{
-			throw new IllegalStateException( String.format( "Metadata schema '%s' not defined", MetaCatalogBuilder.SCHEMA_NAME));
+			throw new IllegalStateException(String.format(
+					"Metadata schema '%s' not defined",
+					MetaCatalogBuilder.SCHEMA_NAME));
 		}
-	}
-	
-	// TODO remvoe this
-	public Catalog getCatalog( String name )
-	{
-		return connection.getCatalogs().get(name);
 	}
 
 	@Override
@@ -156,6 +154,25 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 		return table.getResultSet();
 	}
 
+	// TODO remvoe this
+	public Catalog getCatalog( final String name )
+	{
+		return connection.getCatalogs().get(name);
+	}
+
+	private String getCatalogName( final String pattern )
+	{
+		if (pattern == null)
+		{
+			throw new IllegalArgumentException("Catalog name may not be null");
+		}
+		if (StringUtils.isBlank(pattern))
+		{
+			return escapeString("");
+		}
+		return escapeString(pattern);
+	}
+
 	@Override
 	public ResultSet getCatalogs() throws SQLException
 	{
@@ -197,32 +214,6 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 		return table.getResultSet();
 	}
 
-	private String getCatalogName(String pattern)
-	{
-		if (pattern == null)
-		{
-			throw new IllegalArgumentException( "Catalog name may not be null");
-		}
-		if (StringUtils.isBlank(pattern))
-		{
-			return escapeString("");
-		}
-		return escapeString(pattern);
-	}
-	
-	private String getSchemaName(String pattern)
-	{
-		if (pattern == null)
-		{
-			throw new IllegalArgumentException( "Schema name may not be null");
-		}
-		if (StringUtils.isBlank(pattern))
-		{
-			return escapeString("");
-		}
-		return escapeString(pattern);
-	}
-	
 	@Override
 	public ResultSet getColumns( final String catalogPattern,
 			final String schemaPattern, final String tableNamePattern,
@@ -270,15 +261,15 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 								escapeString(columnNamePattern)));
 				hasWhere = true;
 			}
-			
 
-			final SparqlQueryBuilder sqb = parser.parse(connection.getCatalogs(), table.getCatalog(), table.getSchema(),
-					query.toString()).setKey(table.getKey());
+			final SparqlQueryBuilder sqb = parser.parse(
+					connection.getCatalogs(), table.getCatalog(),
+					table.getSchema(), query.toString()).setKey(table.getKey());
 			return new SparqlResultSet(table, sqb.build());
 		}
 		else
 		{
-			return table.getResultSet( connection.getCatalogs(), parser );
+			return table.getResultSet(connection.getCatalogs(), parser);
 		}
 	}
 
@@ -577,21 +568,10 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 		return 0;
 	}
 
-	private String makeString(Iterator<String> strings )
-	{
-		StringBuilder sb = new StringBuilder();
-		while (strings.hasNext()){
-			if (sb.length()>0) {
-				sb.append(",");
-			}
-			sb.append(strings.next());
-		}
-		return sb.toString();
-	}
 	@Override
 	public String getNumericFunctions() throws SQLException
 	{
-		return makeString( parser.getSupportedNumericFunctions().iterator() );
+		return makeString(parser.getSupportedNumericFunctions().iterator());
 	}
 
 	@Override
@@ -680,6 +660,19 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 		return null;
 	}
 
+	private String getSchemaName( final String pattern )
+	{
+		if (pattern == null)
+		{
+			throw new IllegalArgumentException("Schema name may not be null");
+		}
+		if (StringUtils.isBlank(pattern))
+		{
+			return escapeString("");
+		}
+		return escapeString(pattern);
+	}
+
 	@Override
 	public ResultSet getSchemas() throws SQLException
 	{
@@ -716,13 +709,14 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 				hasWhere = true;
 			}
 
-			final SparqlQueryBuilder sqb = parser.parse(connection.getCatalogs(), table.getCatalog(), table.getSchema(),
-					query.toString()).setKey(table.getKey());
+			final SparqlQueryBuilder sqb = parser.parse(
+					connection.getCatalogs(), table.getCatalog(),
+					table.getSchema(), query.toString()).setKey(table.getKey());
 			return new SparqlResultSet(table, sqb.build());
 		}
 		else
 		{
-			return table.getResultSet( connection.getCatalogs(), parser );
+			return table.getResultSet(connection.getCatalogs(), parser);
 		}
 	}
 
@@ -755,7 +749,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	@Override
 	public String getStringFunctions() throws SQLException
 	{
-		return makeString( parser.getSupportedStringFunctions().iterator() );
+		return makeString(parser.getSupportedStringFunctions().iterator());
 	}
 
 	@Override
@@ -825,7 +819,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	@Override
 	public String getSystemFunctions() throws SQLException
 	{
-		return makeString( parser.getSupportedSystemFunctions().iterator() );
+		return makeString(parser.getSupportedSystemFunctions().iterator());
 	}
 
 	@Override
@@ -907,8 +901,9 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 				hasWhere = true;
 			}
 
-			final SparqlQueryBuilder sqb = parser.parse(connection.getCatalogs(), table.getCatalog(), table.getSchema(),
-					query.toString()).setKey(table.getKey());
+			final SparqlQueryBuilder sqb = parser.parse(
+					connection.getCatalogs(), table.getCatalog(),
+					table.getSchema(), query.toString()).setKey(table.getKey());
 			return new SparqlResultSet(table, sqb.build());
 		}
 		else
@@ -921,7 +916,8 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	public ResultSet getTableTypes() throws SQLException
 	{
 		return ((RdfTable) metaSchema
-				.getTable(MetaCatalogBuilder.TABLE_TYPES_TABLE)).getResultSet(connection.getCatalogs(), parser);
+				.getTable(MetaCatalogBuilder.TABLE_TYPES_TABLE)).getResultSet(
+				connection.getCatalogs(), parser);
 	}
 
 	@Override
@@ -935,7 +931,8 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	public ResultSet getTypeInfo() throws SQLException
 	{
 		return ((RdfTable) metaSchema
-				.getTable(MetaCatalogBuilder.TYPEINFO_TABLE)).getResultSet(connection.getCatalogs(), parser);
+				.getTable(MetaCatalogBuilder.TYPEINFO_TABLE)).getResultSet(
+				connection.getCatalogs(), parser);
 	}
 
 	@Override
@@ -1004,6 +1001,20 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	{
 		// TODO Auto-generated method stub
 		return false;
+	}
+
+	private String makeString( final Iterator<String> strings )
+	{
+		final StringBuilder sb = new StringBuilder();
+		while (strings.hasNext())
+		{
+			if (sb.length() > 0)
+			{
+				sb.append(",");
+			}
+			sb.append(strings.next());
+		}
+		return sb.toString();
 	}
 
 	@Override
@@ -1460,13 +1471,14 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	@Override
 	public boolean supportsResultSetType( final int arg0 ) throws SQLException
 	{
-		switch (arg0) {
+		switch (arg0)
+		{
 			case ResultSet.TYPE_FORWARD_ONLY:
 			case ResultSet.CONCUR_READ_ONLY:
 			case ResultSet.TYPE_SCROLL_INSENSITIVE:
 			case ResultSet.HOLD_CURSORS_OVER_COMMIT:
 				return true;
-			
+
 			case ResultSet.CLOSE_CURSORS_AT_COMMIT:
 			case ResultSet.CONCUR_UPDATABLE:
 			case ResultSet.TYPE_SCROLL_SENSITIVE:
@@ -1485,7 +1497,8 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	@Override
 	public boolean supportsSchemasInDataManipulation() throws SQLException
 	{
-		LOG.debug( "supportsSchemasInDataManipulation: true ");
+		J4SDatabaseMetaData.LOG
+				.debug("supportsSchemasInDataManipulation: true ");
 		return true;
 	}
 
@@ -1513,7 +1526,8 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	@Override
 	public boolean supportsSchemasInTableDefinitions() throws SQLException
 	{
-		LOG.debug( "supportsSchemasInTableDefinitions: true ");
+		J4SDatabaseMetaData.LOG
+				.debug("supportsSchemasInTableDefinitions: true ");
 		return true;
 	}
 

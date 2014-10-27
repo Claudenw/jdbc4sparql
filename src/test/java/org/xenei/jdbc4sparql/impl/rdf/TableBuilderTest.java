@@ -12,7 +12,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import static org.mockito.Mockito.*;
+import org.mockito.Mockito;
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.NameFilter;
 import org.xenei.jdbc4sparql.iface.SchemaName;
@@ -35,10 +35,10 @@ public class TableBuilderTest
 				.addColumnDef(
 						RdfColumnDef.Builder.getIntegerBuilder().build(model));
 		tableDef = builder.build(model);
-		mockSchema = mock(RdfSchema.class);
-		when(mockSchema.getResource()).thenReturn(
+		mockSchema = Mockito.mock(RdfSchema.class);
+		Mockito.when(mockSchema.getResource()).thenReturn(
 				model.createResource("http://example.com/mockSchema"));
-		when(mockSchema.getName()).thenReturn( new SchemaName( "schema"));
+		Mockito.when(mockSchema.getName()).thenReturn(new SchemaName("schema"));
 	}
 
 	@After

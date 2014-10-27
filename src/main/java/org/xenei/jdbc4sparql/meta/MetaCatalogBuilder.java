@@ -42,38 +42,6 @@ import org.xenei.jdbc4sparql.impl.rdf.ResourceBuilder;
 
 public class MetaCatalogBuilder
 {
-	public static final String NS = "http://org.xenei.jdbc4sparql/meta#";
-	public static final String LOCAL_NAME = "METADATA";
-	public static final String SCHEMA_NAME = "Schema";
-	public static final String TABLE_TYPE = "SYSTEM TABLE";
-
-	public static final String CATALOGS_TABLE = "Catalogs";
-	public static final String COLUMNS_TABLE = "Columns";
-	public static final String COLUMN_PRIVILIGES_TABLE = "ColumnPriviliges";
-	public static final String EXPORTED_KEYS_TABLE = "ExportedKeys";
-	public static final String IMPORTED_KEYS_TABLE = "ImportedKeys";
-	public static final String XREF_TABLE = "XrefKeys";
-	public static final String TYPEINFO_TABLE = "TypeInfo";
-	public static final String INDEXINFO_TABLE = "IndexInfo";
-	public static final String UDT_TABLES = "UDTs";
-	public static final String SUPER_TYPES_TABLE = "SuperTypes";
-	public static final String SUPER_TABLES_TABLE = "SuperTables";
-	public static final String ATTRIBUTES_TABLE = "Attributes";
-	public static final String SCHEMAS_TABLE = "Schemas";
-	public static final String CLIENT_INFO_TABLE = "ClientInfo";
-	public static final String FUNCTIONS_TABLE = "Functions";
-	public static final String FUNCTION_COLUMNS_TABLE = "FunctionColumns";
-	public static final String PRIMARY_KEY_TABLE = "PrimaryKeys";
-	public static final String PROCEDURE_COLUMNS_TABLE = "ProcedureColumns";
-	public static final String PROCEDURES_TABLE = "Procedures";
-	public static final String VERSION_COLUMNS_TABLE = "Version";
-	public static final String TABLE_PRIVILEGES_TABLE = "TablePriv";
-	public static final String TABLE_TYPES_TABLE = "TableTypes";
-	public static final String TABLES_TABLE = "Tables";
-	public static final String BEST_ROW_TABLE = "BestRow";
-
-	public static final String REMARK = "Created by MetaCatalogBuilder";
-
 	public static Catalog getInstance( final DatasetProducer dsProducer )
 	{
 		final Model model = dsProducer
@@ -82,13 +50,12 @@ public class MetaCatalogBuilder
 				.setName(MetaCatalogBuilder.LOCAL_NAME)
 				.setLocalModel(dsProducer.getMetaDatasetUnionModel())
 				.build(model);
-	
+
 		final RdfSchema schema = new RdfSchema.Builder().setCatalog(cat)
-				.setName(SCHEMA_NAME).build(model);
+				.setName(MetaCatalogBuilder.SCHEMA_NAME).build(model);
 		// populate the catalog
 		new MetaCatalogBuilder(schema, model).build();
-		
-		
+
 		return cat;
 	}
 
@@ -139,6 +106,46 @@ public class MetaCatalogBuilder
 		return RdfColumnDef.Builder.getStringBuilder().setNullable(
 				DatabaseMetaData.columnNullable);
 	}
+
+	public static final String NS = "http://org.xenei.jdbc4sparql/meta#";
+	public static final String LOCAL_NAME = "METADATA";
+	public static final String SCHEMA_NAME = "Schema";
+	public static final String TABLE_TYPE = "SYSTEM TABLE";
+	public static final String CATALOGS_TABLE = "Catalogs";
+	public static final String COLUMNS_TABLE = "Columns";
+	public static final String COLUMN_PRIVILIGES_TABLE = "ColumnPriviliges";
+	public static final String EXPORTED_KEYS_TABLE = "ExportedKeys";
+	public static final String IMPORTED_KEYS_TABLE = "ImportedKeys";
+	public static final String XREF_TABLE = "XrefKeys";
+	public static final String TYPEINFO_TABLE = "TypeInfo";
+	public static final String INDEXINFO_TABLE = "IndexInfo";
+	public static final String UDT_TABLES = "UDTs";
+	public static final String SUPER_TYPES_TABLE = "SuperTypes";
+	public static final String SUPER_TABLES_TABLE = "SuperTables";
+	public static final String ATTRIBUTES_TABLE = "Attributes";
+	public static final String SCHEMAS_TABLE = "Schemas";
+	public static final String CLIENT_INFO_TABLE = "ClientInfo";
+	public static final String FUNCTIONS_TABLE = "Functions";
+
+	public static final String FUNCTION_COLUMNS_TABLE = "FunctionColumns";
+
+	public static final String PRIMARY_KEY_TABLE = "PrimaryKeys";
+
+	public static final String PROCEDURE_COLUMNS_TABLE = "ProcedureColumns";
+
+	public static final String PROCEDURES_TABLE = "Procedures";
+
+	public static final String VERSION_COLUMNS_TABLE = "Version";
+
+	public static final String TABLE_PRIVILEGES_TABLE = "TablePriv";
+
+	public static final String TABLE_TYPES_TABLE = "TableTypes";
+
+	public static final String TABLES_TABLE = "Tables";
+
+	public static final String BEST_ROW_TABLE = "BestRow";
+
+	public static final String REMARK = "Created by MetaCatalogBuilder";
 
 	private final ColumnDef nonNullString;
 	private final ColumnDef nullableString;

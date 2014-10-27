@@ -34,7 +34,8 @@ public class J4SConnectionTest
 		driver = new J4SDriver();
 		final URL fUrl = J4SConnectionTest.class
 				.getResource("./J4SDriverTest.ttl");
-		url = new J4SUrl("jdbc:j4s?catalog=local&type=turtle:" + fUrl.toExternalForm());
+		url = new J4SUrl("jdbc:j4s?catalog=local&type=turtle:"
+				+ fUrl.toExternalForm());
 		properties = new Properties();
 		properties.setProperty("DatasetProducer",
 				"org.xenei.jdbc4sparql.config.MemDatasetProducer");
@@ -593,7 +594,8 @@ public class J4SConnectionTest
 	{
 		connection = new J4SConnection(driver, url, properties);
 		connection.setCatalog(MetaCatalogBuilder.LOCAL_NAME);
-		Assert.assertEquals(MetaCatalogBuilder.LOCAL_NAME, connection.getCatalog());
+		Assert.assertEquals(MetaCatalogBuilder.LOCAL_NAME,
+				connection.getCatalog());
 		try
 		{
 			connection.setCatalog("foo");
@@ -718,11 +720,14 @@ public class J4SConnectionTest
 		}
 		catch (final SQLException e)
 		{
-			Assert.assertEquals("Schema 'foo' was not found in catalog 'local'", e.getMessage());
+			Assert.assertEquals(
+					"Schema 'foo' was not found in catalog 'local'",
+					e.getMessage());
 		}
 		connection.setCatalog(MetaCatalogBuilder.LOCAL_NAME);
 		connection.setSchema(MetaCatalogBuilder.SCHEMA_NAME);
-		Assert.assertEquals(MetaCatalogBuilder.SCHEMA_NAME, connection.getSchema());
+		Assert.assertEquals(MetaCatalogBuilder.SCHEMA_NAME,
+				connection.getSchema());
 		connection.setSchema(null);
 		Assert.assertNull(connection.getSchema());
 	}

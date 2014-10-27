@@ -54,7 +54,7 @@ import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlVisitor;
 
 public class RemoteSparqlVisitorTest
 {
-	private Map<String,Catalog> catalogs;
+	private Map<String, Catalog> catalogs;
 	private SparqlParser parser;
 	private final CCJSqlParserManager parserManager = new CCJSqlParserManager();
 	private SparqlVisitor sv;

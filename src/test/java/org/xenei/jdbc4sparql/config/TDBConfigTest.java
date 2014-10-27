@@ -1,11 +1,11 @@
-//package org.xenei.jdbc4sparql.config;
+// package org.xenei.jdbc4sparql.config;
 //
-//public class TDBConfigTest extends AbstractConfigTest
-//{
+// public class TDBConfigTest extends AbstractConfigTest
+// {
 //
-//	public TDBConfigTest()
-//	{
-//		super(TDBDatasetProducer.class);
-//	}
+// public TDBConfigTest()
+// {
+// super(TDBDatasetProducer.class);
+// }
 //
-//}
+// }

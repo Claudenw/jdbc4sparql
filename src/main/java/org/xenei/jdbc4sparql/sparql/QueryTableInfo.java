@@ -82,7 +82,7 @@ public class QueryTableInfo extends QueryItemInfo<TableName>
 	 * If shortName is true then only the column name is used as the name,
 	 * otherwise
 	 * the SQL name for the column is used.
-	 * 
+	 *
 	 * @param column
 	 *            The column to add.
 	 * @return The variable Node for the column.
@@ -96,7 +96,7 @@ public class QueryTableInfo extends QueryItemInfo<TableName>
 	/**
 	 * Adds the column to the columns defined in the query.
 	 * Result will be optional if the RdfColumn is optional.
-	 * 
+	 *
 	 * @param column
 	 *            The column to add
 	 * @param cName
@@ -110,7 +110,7 @@ public class QueryTableInfo extends QueryItemInfo<TableName>
 
 	/**
 	 * Adds the column to the columns defined in the query.
-	 * 
+	 *
 	 * @param column
 	 *            The column to add
 	 * @param cName
@@ -142,7 +142,7 @@ public class QueryTableInfo extends QueryItemInfo<TableName>
 
 	/**
 	 * The
-	 * 
+	 *
 	 * @param columnInfo
 	 * @param cName
 	 * @return
@@ -155,7 +155,7 @@ public class QueryTableInfo extends QueryItemInfo<TableName>
 
 	/**
 	 * Adds the column to the columns defined in the query.
-	 * 
+	 *
 	 * @param columnInfo
 	 *            The column to add
 	 * @param cName
@@ -187,7 +187,7 @@ public class QueryTableInfo extends QueryItemInfo<TableName>
 
 	/**
 	 * Adds the required columns to the query. Also adds the table definition.
-	 * 
+	 *
 	 * @param shortNames
 	 *            if true then short names will be used otherwise fully
 	 *            qualified names will be used.
@@ -254,7 +254,7 @@ public class QueryTableInfo extends QueryItemInfo<TableName>
 
 	/**
 	 * Adds all of the table columns to the query.
-	 * 
+	 *
 	 * @param query
 	 *            The query to add the columns to
 	 *
@@ -385,7 +385,7 @@ public class QueryTableInfo extends QueryItemInfo<TableName>
 	 * property.
 	 * Optional state is determined from the optional state of the
 	 * tableColumnInfo.
-	 * 
+	 *
 	 * @param tableColumnInfo
 	 *            The column to alias
 	 * @param alias
@@ -412,7 +412,7 @@ public class QueryTableInfo extends QueryItemInfo<TableName>
 	 * property.
 	 * Optional state is determined from the optional state of the
 	 * tableColumnInfo.
-	 * 
+	 *
 	 * @param tableColumnInfo
 	 *            The column to alias
 	 * @param aliasTableInfo
@@ -427,7 +427,7 @@ public class QueryTableInfo extends QueryItemInfo<TableName>
 	/**
 	 * Adds the variable for aliasTableInfo as the value of the tableColumnInfo
 	 * property.
-	 * 
+	 *
 	 * @param tableColumnInfo
 	 *            The column to alias
 	 * @param aliasColumnInfo

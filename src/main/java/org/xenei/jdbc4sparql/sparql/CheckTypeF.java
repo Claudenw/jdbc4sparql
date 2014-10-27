@@ -15,7 +15,6 @@ import java.sql.SQLException;
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.TypeConverter;
 import org.xenei.jdbc4sparql.impl.AbstractResultSet;
-import org.xenei.jdbc4sparql.impl.rdf.RdfColumn;
 
 /**
  * A local filter that removes any values that are null and not allowed to
@@ -69,7 +68,7 @@ public class CheckTypeF extends ExprFunction1
 		final Node n = binding.get(v);
 		if (n == null)
 		{
-			boolean b = column.getColumnDef().getNullable() == ResultSetMetaData.columnNullable;
+			column.getColumnDef().getNullable();
 			return column.getColumnDef().getNullable() == ResultSetMetaData.columnNullable ? NodeValue.TRUE
 					: NodeValue.FALSE;
 		}

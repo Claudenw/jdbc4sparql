@@ -19,11 +19,11 @@ import org.xenei.jdbc4sparql.J4SPropertyNames;
 
 /**
  * Interface that defines the dataset producer.
- * 
+ *
  * The dataset producer produces the local dataset (set of graphs that
  * represent the local data) and the meta dataset (set of graphs that
  * contain the metadata)
- * 
+ *
  * Implementations of this class should construct the dataset when first
  * requested and return the same dataset on all subsequent calls.
  */
@@ -155,7 +155,7 @@ public interface DatasetProducer
 
 	/**
 	 * Get or construct the local dataset.
-	 * 
+	 *
 	 * @return the local dataset
 	 */
 	// public Dataset getLocalDataset();
@@ -164,7 +164,7 @@ public interface DatasetProducer
 
 	/**
 	 * Retrieve the model that is the union of all models in the data set.
-	 * 
+	 *
 	 * @return
 	 */
 	public Model getMetaDatasetUnionModel();
@@ -175,7 +175,7 @@ public interface DatasetProducer
 
 	/**
 	 * Get or construct the meta dataset.
-	 * 
+	 *
 	 * @return the meta dataset.
 	 */
 	// public Dataset getMetaDataset();

@@ -22,7 +22,7 @@ import java.util.List;
 
 public interface Table<T extends Column> extends NamedObject<TableName>
 {
-	
+
 	/**
 	 * delete the table. Removes the table from the schema.
 	 */
@@ -30,9 +30,9 @@ public interface Table<T extends Column> extends NamedObject<TableName>
 
 	/**
 	 * Find all columns with the columnNamePattern.
-	 * 
+	 *
 	 * If columnNamePattern is null all columns are matched.
-	 * 
+	 *
 	 * @param columnNamePattern
 	 *            The pattern to match or null.
 	 * @return
@@ -40,16 +40,14 @@ public interface Table<T extends Column> extends NamedObject<TableName>
 	NameFilter<Column> findColumns( String columnNamePattern );
 
 	/**
-	 * 
+	 *
 	 * @return Get the catalog this table is in.
 	 */
 	Catalog getCatalog();
 
-	List<T> getColumnList();
-	
 	/**
 	 * Get the column by index.
-	 * 
+	 *
 	 * @param idx
 	 *            The index of the column to retrieve.
 	 * @return the column.
@@ -59,7 +57,7 @@ public interface Table<T extends Column> extends NamedObject<TableName>
 
 	/**
 	 * Get the column by name
-	 * 
+	 *
 	 * @param name
 	 *            the name of the column to retrieve
 	 * @return the column or null if name not found.
@@ -72,19 +70,33 @@ public interface Table<T extends Column> extends NamedObject<TableName>
 
 	/**
 	 * Get the index (zero based) for the column name.
-	 * 
+	 *
 	 * @param columnName
 	 *            The column name to search for
 	 * @return index for column name or -1 if not found.
 	 */
 	public int getColumnIndex( String columnName );
 
+	List<T> getColumnList();
+
 	/**
 	 * Get an iterator over all the columns in order.
-	 * 
+	 *
 	 * @return The column iterator.
 	 */
 	Iterator<T> getColumns();
+
+	/**
+	 * A string used to format the column name with respect to the table so that
+	 * the SPARQL query will retrieve the proper data. For example
+	 * "%1$s <http://example.com/jdbc4sparql#NullableIntCol> %2$s"
+	 * 
+	 * %1$s is the table name
+	 * %2$s is the column name
+	 * 
+	 * @return Format string for query segments in SPARQL query
+	 */
+	public String getQuerySegmentFmt();
 
 	String getRemarks();
 
@@ -94,7 +106,7 @@ public interface Table<T extends Column> extends NamedObject<TableName>
 	Schema getSchema();
 
 	/**
-	 * 
+	 *
 	 * @return the SPARQL formatted table name.
 	 */
 	String getSPARQLName();
@@ -106,7 +118,7 @@ public interface Table<T extends Column> extends NamedObject<TableName>
 
 	/**
 	 * Get the supertable for this table.
-	 * 
+	 *
 	 * @return The super table or null.
 	 */
 	Table<T> getSuperTable();
@@ -117,32 +129,22 @@ public interface Table<T extends Column> extends NamedObject<TableName>
 	 * Get the type of table.
 	 * Typical types are "TABLE", "VIEW", "SYSTEM TABLE", "GLOBAL TEMPORARY",
 	 * "LOCAL TEMPORARY", "ALIAS", "SYNONYM".
-	 * 
+	 *
 	 * @return The table type
 	 */
 	String getType();
-	
-	/**
-	 * A string used to format the column name with respect to the table so that
-	 * the SPARQL query will retrieve the proper data.  For example 
-	 *  "%1$s <http://example.com/jdbc4sparql#NullableIntCol> %2$s"
-	 *  
-	 *  %1$s is the table name
-	 *  %2$s is the column name
-	 * @return Format string for query segments in SPARQL query
-	 */
-	public String getQuerySegmentFmt();
-	
+
 	/**
 	 * Return true if this column has querySegments.
 	 * Most columns do, however, some function columns do not.
+	 * 
 	 * @return
 	 */
 	public boolean hasQuerySegments();
 
 	/**
-	 * 
+	 *
 	 * @return
 	 */
-	//public String getFQName();
+	// public String getFQName();
 }

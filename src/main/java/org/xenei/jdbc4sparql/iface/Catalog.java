@@ -32,9 +32,9 @@ public interface Catalog extends NamedObject<CatalogName>
 
 	/**
 	 * Execute the query against the local Model.
-	 * 
+	 *
 	 * This is used to execute queries built by the query builder.
-	 * 
+	 *
 	 * @param query
 	 * @return The list of QuerySolutions.
 	 */
@@ -45,7 +45,7 @@ public interface Catalog extends NamedObject<CatalogName>
 	 * if name pattern == null return all the schemas
 	 * if name pattern == "" return only unamed schemas.
 	 * if name is anything else match the string.
-	 * 
+	 *
 	 * @param schemaNamePattern
 	 * @return
 	 */
@@ -53,14 +53,14 @@ public interface Catalog extends NamedObject<CatalogName>
 
 	/**
 	 * Get the schema
-	 * 
+	 *
 	 * @param schema
 	 * @return
 	 */
 	Schema getSchema( String schemaName );
 
 	/**
-	 * 
+	 *
 	 * @param schemaPattern
 	 *            a schema name pattern; must match the schema name as it is
 	 *            stored in the database;

@@ -51,12 +51,13 @@ public class SimpleNullableBuilder extends SimpleBuilder
 
 	@Override
 	protected Map<String, String> addColumnDefs( final RdfCatalog catalog,
-			final RdfTableDef.Builder tableDefBuilder, final Resource tName, String tableQuerySegment  )
+			final RdfTableDef.Builder tableDefBuilder, final Resource tName,
+			final String tableQuerySegment )
 	{
 		final Model model = catalog.getResource().getModel();
 		final Map<String, String> colNames = new LinkedHashMap<String, String>();
-		final List<QuerySolution> solns = catalog.executeQuery(
-				String.format(SimpleBuilder.COLUMN_QUERY, tName));
+		final List<QuerySolution> solns = catalog.executeQuery(String.format(
+				SimpleBuilder.COLUMN_QUERY, tName));
 
 		for (final QuerySolution soln : solns)
 		{
@@ -75,12 +76,14 @@ public class SimpleNullableBuilder extends SimpleBuilder
 			{
 				builder.setNullable(DatabaseMetaData.columnNoNulls);
 			}
-			final String columnQuerySegment = String.format(SimpleBuilder.COLUMN_SEGMENT,
-					"%1$s", "%2$s", cName.getURI());
+			final String columnQuerySegment = String.format(
+					SimpleBuilder.COLUMN_SEGMENT, "%1$s", "%2$s",
+					cName.getURI());
 			colNames.put(cName.getLocalName(), columnQuerySegment);
-			int scale = calculateSize( catalog, tableQuerySegment, columnQuerySegment );
-			builder.setType(type).setNullable(DatabaseMetaData.columnNullable).setScale(scale)
-			.setReadOnly(true);
+			final int scale = calculateSize(catalog, tableQuerySegment,
+					columnQuerySegment);
+			builder.setType(type).setNullable(DatabaseMetaData.columnNullable)
+					.setScale(scale).setReadOnly(true);
 			tableDefBuilder.addColumnDef(builder.build(model));
 		}
 		return colNames;

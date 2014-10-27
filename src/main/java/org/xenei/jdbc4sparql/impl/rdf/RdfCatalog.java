@@ -71,7 +71,7 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 
 		public RdfCatalog build( final Model model )
 		{
-			
+
 			if (model == null)
 			{
 				throw new IllegalArgumentException("Model may not be null");
@@ -123,8 +123,8 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 						: ModelFactory.createMemModelMaker().createFreshModel();
 
 				// ensure default schema exists
-				//new RdfSchema.Builder().setName(Catalog.DEFAULT_SCHEMA)
-				//		.setCatalog(retval).build(model);
+				// new RdfSchema.Builder().setName(Catalog.DEFAULT_SCHEMA)
+				// .setCatalog(retval).build(model);
 				return retval;
 			}
 			catch (final MissingAnnotation e)
@@ -181,7 +181,7 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 		@Override
 		public CatalogName getName()
 		{
-			return new CatalogName( name );
+			return new CatalogName(name);
 		}
 
 		@Override
@@ -269,16 +269,16 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 
 	/**
 	 * Execute the query against the local Model.
-	 * 
+	 *
 	 * This is used to execute queries built by the query builder.
-	 * 
+	 *
 	 * @param query
 	 * @return The list of QuerySolutions.
 	 */
 	@Override
 	public List<QuerySolution> executeLocalQuery( final Query query )
 	{
-		
+
 		final QueryExecution qexec = QueryExecutionFactory.create(query,
 				localModel);
 		try
@@ -298,10 +298,10 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 			qexec.close();
 		}
 	}
-	
+
 	/**
 	 * Execute a jena query against the data.
-	 * 
+	 *
 	 * @param query
 	 *            The query to execute.
 	 * @return The list of QuerySolutions.
@@ -330,7 +330,7 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 
 	/**
 	 * Execute a query against the data.
-	 * 
+	 *
 	 * @param queryStr
 	 *            The query as a string.
 	 * @return The list of QuerySolutions.
@@ -365,14 +365,7 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 	@Override
 	public CatalogName getName()
 	{
-		return new CatalogName( getShortName() );
-	}
-	
-
-	@Predicate( impl = true, namespace = "http://www.w3.org/2000/01/rdf-schema#", name = "label" )
-	public String getShortName()
-	{
-		throw new EntityManagerRequiredException();
+		return new CatalogName(getShortName());
 	}
 
 	@Override
@@ -402,6 +395,12 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 		return isService() ? NodeFactory.createURI(getSparqlEndpoint()) : null;
 	}
 
+	@Predicate( impl = true, namespace = "http://www.w3.org/2000/01/rdf-schema#", name = "label" )
+	public String getShortName()
+	{
+		throw new EntityManagerRequiredException();
+	}
+
 	@Predicate( impl = true, emptyIsNull = true )
 	public String getSparqlEndpoint()
 	{
@@ -410,7 +409,7 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 
 	/**
 	 * Create a sparql schema that has an empty namespace.
-	 * 
+	 *
 	 * @return The Schema.
 	 */
 	public RdfSchema getViewSchema()
@@ -418,7 +417,8 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 		RdfSchema retval = getSchema("");
 		if (retval == null)
 		{
-			retval = new RdfSchema.Builder().setName("").setCatalog(this).build(this.getResource().getModel());
+			retval = new RdfSchema.Builder().setName("").setCatalog(this)
+					.build(this.getResource().getModel());
 		}
 		return retval;
 	}

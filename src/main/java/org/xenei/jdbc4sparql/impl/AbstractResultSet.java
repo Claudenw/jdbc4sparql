@@ -56,28 +56,6 @@ import org.xenei.jdbc4sparql.iface.Table;
 
 public abstract class AbstractResultSet implements ResultSet
 {
-	private final Table table;
-	private final Map<String, Integer> columnNameIdx;
-	private int fetchDirection;
-	private final int holdability;
-	protected int concurrency;
-	private final Statement statement;
-	private Boolean lastReadWasNull;
-	private static Map<Class<?>, Object> nullValueMap;
-	private static Logger LOG = LoggerFactory.getLogger(AbstractResultSet.class);
-
-	static
-	{
-		AbstractResultSet.nullValueMap = new HashMap<Class<?>, Object>();
-		AbstractResultSet.nullValueMap.put(Boolean.class, Boolean.FALSE);
-		AbstractResultSet.nullValueMap.put(Byte.class, new Byte((byte) 0));
-		AbstractResultSet.nullValueMap.put(Short.class, new Short((short) 0));
-		AbstractResultSet.nullValueMap.put(Integer.class, new Integer(0));
-		AbstractResultSet.nullValueMap.put(Long.class, new Long(0L));
-		AbstractResultSet.nullValueMap.put(Float.class, new Float(0.0F));
-		AbstractResultSet.nullValueMap.put(Double.class, new Double(0.0));
-	}
-
 	@SuppressWarnings( "unchecked" )
 	public static <T> T extractData( final Object columnObject,
 			final Class<T> resultingClass ) throws SQLException
@@ -139,7 +117,8 @@ public abstract class AbstractResultSet implements ResultSet
 		if (retval == null)
 		{
 			throw new SQLException(String.format(" Can not cast %s (%s) to %s",
-					columnObject.getClass(), columnObject.toString(), resultingClass));
+					columnObject.getClass(), columnObject.toString(),
+					resultingClass));
 		}
 		return retval;
 	}
@@ -147,7 +126,7 @@ public abstract class AbstractResultSet implements ResultSet
 	/**
 	 * Handles things that are or are like byte arrays.
 	 * byte[], Clob, Blob, InputStream
-	 * 
+	 *
 	 * @param columnObject
 	 * @param resultingClass
 	 * @return
@@ -391,6 +370,33 @@ public abstract class AbstractResultSet implements ResultSet
 		return null;
 	}
 
+	private final Table table;
+	private final Map<String, Integer> columnNameIdx;
+	private int fetchDirection;
+	private final int holdability;
+	protected int concurrency;
+
+	private final Statement statement;
+
+	private Boolean lastReadWasNull;
+
+	private static Map<Class<?>, Object> nullValueMap;
+
+	private static Logger LOG = LoggerFactory
+			.getLogger(AbstractResultSet.class);
+
+	static
+	{
+		AbstractResultSet.nullValueMap = new HashMap<Class<?>, Object>();
+		AbstractResultSet.nullValueMap.put(Boolean.class, Boolean.FALSE);
+		AbstractResultSet.nullValueMap.put(Byte.class, new Byte((byte) 0));
+		AbstractResultSet.nullValueMap.put(Short.class, new Short((short) 0));
+		AbstractResultSet.nullValueMap.put(Integer.class, new Integer(0));
+		AbstractResultSet.nullValueMap.put(Long.class, new Long(0L));
+		AbstractResultSet.nullValueMap.put(Float.class, new Float(0.0F));
+		AbstractResultSet.nullValueMap.put(Double.class, new Double(0.0));
+	}
+
 	public AbstractResultSet( final Table table )
 	{
 		this(table, null);
@@ -416,8 +422,8 @@ public abstract class AbstractResultSet implements ResultSet
 
 	protected void checkColumn( final int columnOrdinal ) throws SQLException
 	{
-		LOG.debug( "checkColumn: {} ", columnOrdinal );
-		
+		AbstractResultSet.LOG.debug("checkColumn: {} ", columnOrdinal);
+
 		if (!isValidColumn(columnOrdinal))
 		{
 			throw new SQLException("Invalid column ordinal: " + columnOrdinal);
@@ -450,7 +456,7 @@ public abstract class AbstractResultSet implements ResultSet
 		{
 			throw new SQLException(columnName + " is not a column");
 		}
-		LOG.debug( "{} is at column {}", columnName, idx );
+		AbstractResultSet.LOG.debug("{} is at column {}", columnName, idx);
 		return idx;
 	}
 
@@ -463,7 +469,7 @@ public abstract class AbstractResultSet implements ResultSet
 	@Override
 	public Array getArray( final String columnLabel ) throws SQLException
 	{
-		LOG.debug("getting Array {}", columnLabel);
+		AbstractResultSet.LOG.debug("getting Array {}", columnLabel);
 		throw new SQLFeatureNotSupportedException();
 	}
 
@@ -478,7 +484,7 @@ public abstract class AbstractResultSet implements ResultSet
 	public InputStream getAsciiStream( final String columnLabel )
 			throws SQLException
 	{
-		LOG.debug("getting ASCII stream {}", columnLabel);
+		AbstractResultSet.LOG.debug("getting ASCII stream {}", columnLabel);
 		return extractData(getColumnIndex(columnLabel), InputStream.class);
 	}
 
@@ -500,7 +506,7 @@ public abstract class AbstractResultSet implements ResultSet
 	public BigDecimal getBigDecimal( final String columnLabel )
 			throws SQLException
 	{
-		LOG.debug("getting Big Decimal {}", columnLabel);
+		AbstractResultSet.LOG.debug("getting Big Decimal {}", columnLabel);
 		return extractData(getColumnIndex(columnLabel), BigDecimal.class);
 	}
 
@@ -508,7 +514,8 @@ public abstract class AbstractResultSet implements ResultSet
 	public BigDecimal getBigDecimal( final String columnLabel, final int scale )
 			throws SQLException
 	{
-		LOG.debug("getting Big Decimal {} with scale {}", columnLabel, scale);
+		AbstractResultSet.LOG.debug("getting Big Decimal {} with scale {}",
+				columnLabel, scale);
 		throw new SQLFeatureNotSupportedException();
 	}
 
@@ -523,7 +530,7 @@ public abstract class AbstractResultSet implements ResultSet
 	public InputStream getBinaryStream( final String columnLabel )
 			throws SQLException
 	{
-		LOG.debug("getting binary stream {}", columnLabel);
+		AbstractResultSet.LOG.debug("getting binary stream {}", columnLabel);
 		return extractData(getColumnIndex(columnLabel), InputStream.class);
 	}
 
@@ -536,7 +543,7 @@ public abstract class AbstractResultSet implements ResultSet
 	@Override
 	public Blob getBlob( final String columnLabel ) throws SQLException
 	{
-		LOG.debug("getting BLOB {}", columnLabel);
+		AbstractResultSet.LOG.debug("getting BLOB {}", columnLabel);
 		return extractData(getColumnIndex(columnLabel), Blob.class);
 	}
 
@@ -549,7 +556,7 @@ public abstract class AbstractResultSet implements ResultSet
 	@Override
 	public boolean getBoolean( final String columnLabel ) throws SQLException
 	{
-		LOG.debug("getting Boolean {}", columnLabel);
+		AbstractResultSet.LOG.debug("getting Boolean {}", columnLabel);
 		return extractData(getColumnIndex(columnLabel), Boolean.class);
 	}
 
@@ -562,7 +569,7 @@ public abstract class AbstractResultSet implements ResultSet
 	@Override
 	public byte getByte( final String columnLabel ) throws SQLException
 	{
-		LOG.debug("getting Byte {}", columnLabel);
+		AbstractResultSet.LOG.debug("getting Byte {}", columnLabel);
 		return extractData(getColumnIndex(columnLabel), Byte.class);
 	}
 
@@ -575,7 +582,7 @@ public abstract class AbstractResultSet implements ResultSet
 	@Override
 	public byte[] getBytes( final String columnLabel ) throws SQLException
 	{
-		LOG.debug("getting bytes {}", columnLabel);
+		AbstractResultSet.LOG.debug("getting bytes {}", columnLabel);
 		return extractData(getColumnIndex(columnLabel), byte[].class);
 	}
 
@@ -590,7 +597,7 @@ public abstract class AbstractResultSet implements ResultSet
 	public Reader getCharacterStream( final String columnLabel )
 			throws SQLException
 	{
-		LOG.debug("getting CharacterStream {}", columnLabel);
+		AbstractResultSet.LOG.debug("getting CharacterStream {}", columnLabel);
 		throw new SQLFeatureNotSupportedException();
 	}
 
@@ -603,13 +610,13 @@ public abstract class AbstractResultSet implements ResultSet
 	@Override
 	public Clob getClob( final String columnLabel ) throws SQLException
 	{
-		LOG.debug("getting CLOB {}", columnLabel);
+		AbstractResultSet.LOG.debug("getting CLOB {}", columnLabel);
 		return extractData(getColumnIndex(columnLabel), Clob.class);
 	}
 
 	/**
 	 * Return the column at the ordinal location idx (e.g. 1 based).
-	 * 
+	 *
 	 * @param idx
 	 * @return The column
 	 * @throws SQLException
@@ -623,6 +630,17 @@ public abstract class AbstractResultSet implements ResultSet
 	protected Column getColumn( final String name ) throws SQLException
 	{
 		return table.getColumn(name);
+	}
+
+	private int getColumnIndex( final String columnLabel ) throws SQLException
+	{
+		final int i = columnNameIdx.get(columnLabel);// table.getColumnIndex(columnLabel);
+		if (i < 0)
+		{
+			throw new SQLException(String.format(
+					"%s is not found in result set", columnLabel));
+		}
+		return i;
 	}
 
 	@Override
@@ -653,7 +671,7 @@ public abstract class AbstractResultSet implements ResultSet
 	@Override
 	public Date getDate( final String columnLabel ) throws SQLException
 	{
-		LOG.debug("getting Date {}", columnLabel);
+		AbstractResultSet.LOG.debug("getting Date {}", columnLabel);
 		throw new SQLFeatureNotSupportedException();
 	}
 
@@ -661,7 +679,8 @@ public abstract class AbstractResultSet implements ResultSet
 	public Date getDate( final String columnLabel, final Calendar cal )
 			throws SQLException
 	{
-		LOG.debug("getting Date {} in Calendar {}", columnLabel, cal);
+		AbstractResultSet.LOG.debug("getting Date {} in Calendar {}",
+				columnLabel, cal);
 		throw new SQLFeatureNotSupportedException();
 	}
 
@@ -674,7 +693,7 @@ public abstract class AbstractResultSet implements ResultSet
 	@Override
 	public double getDouble( final String columnLabel ) throws SQLException
 	{
-		LOG.debug("getting Double {}", columnLabel);
+		AbstractResultSet.LOG.debug("getting Double {}", columnLabel);
 		return extractData(getColumnIndex(columnLabel), Double.class);
 	}
 
@@ -699,7 +718,7 @@ public abstract class AbstractResultSet implements ResultSet
 	@Override
 	public float getFloat( final String columnLabel ) throws SQLException
 	{
-		LOG.debug("getting float {}", columnLabel);
+		AbstractResultSet.LOG.debug("getting float {}", columnLabel);
 		return extractData(getColumnIndex(columnLabel), Float.class);
 	}
 
@@ -718,7 +737,7 @@ public abstract class AbstractResultSet implements ResultSet
 	@Override
 	public int getInt( final String columnLabel ) throws SQLException
 	{
-		LOG.debug("getting int {}", columnLabel);
+		AbstractResultSet.LOG.debug("getting int {}", columnLabel);
 		return extractData(getColumnIndex(columnLabel), Integer.class);
 	}
 
@@ -731,7 +750,7 @@ public abstract class AbstractResultSet implements ResultSet
 	@Override
 	public long getLong( final String columnLabel ) throws SQLException
 	{
-		LOG.debug("getting long {}", columnLabel);
+		AbstractResultSet.LOG.debug("getting long {}", columnLabel);
 		return extractData(getColumnIndex(columnLabel), Long.class);
 	}
 
@@ -752,7 +771,8 @@ public abstract class AbstractResultSet implements ResultSet
 	public Reader getNCharacterStream( final String columnLabel )
 			throws SQLException
 	{
-		LOG.debug("getting N Character Stream {}", columnLabel);
+		AbstractResultSet.LOG.debug("getting N Character Stream {}",
+				columnLabel);
 		throw new SQLFeatureNotSupportedException();
 	}
 
@@ -765,7 +785,7 @@ public abstract class AbstractResultSet implements ResultSet
 	@Override
 	public NClob getNClob( final String columnLabel ) throws SQLException
 	{
-		LOG.debug("getting N CLOB {}", columnLabel);
+		AbstractResultSet.LOG.debug("getting N CLOB {}", columnLabel);
 		throw new SQLFeatureNotSupportedException();
 	}
 
@@ -778,7 +798,7 @@ public abstract class AbstractResultSet implements ResultSet
 	@Override
 	public String getNString( final String columnLabel ) throws SQLException
 	{
-		LOG.debug("getting N String {}", columnLabel);
+		AbstractResultSet.LOG.debug("getting N String {}", columnLabel);
 		throw new SQLFeatureNotSupportedException();
 	}
 
@@ -810,7 +830,7 @@ public abstract class AbstractResultSet implements ResultSet
 	@Override
 	public Object getObject( final String columnLabel ) throws SQLException
 	{
-		LOG.debug("getting Object {}", columnLabel);
+		AbstractResultSet.LOG.debug("getting Object {}", columnLabel);
 		return getObject(getColumnIndex(columnLabel) + 1);
 	}
 
@@ -818,7 +838,8 @@ public abstract class AbstractResultSet implements ResultSet
 	public <T> T getObject( final String columnLabel, final Class<T> type )
 			throws SQLException
 	{
-		LOG.debug("getting Object {} of type {}", columnLabel, type);
+		AbstractResultSet.LOG.debug("getting Object {} of type {}",
+				columnLabel, type);
 		return extractData(getColumnIndex(columnLabel), type);
 	}
 
@@ -826,7 +847,8 @@ public abstract class AbstractResultSet implements ResultSet
 	public Object getObject( final String columnLabel,
 			final Map<String, Class<?>> map ) throws SQLException
 	{
-		LOG.debug("getting String {} of types {}", columnLabel, map);
+		AbstractResultSet.LOG.debug("getting String {} of types {}",
+				columnLabel, map);
 		throw new SQLFeatureNotSupportedException();
 	}
 
@@ -839,7 +861,7 @@ public abstract class AbstractResultSet implements ResultSet
 	@Override
 	public Ref getRef( final String columnLabel ) throws SQLException
 	{
-		LOG.debug("getting Ref {}", columnLabel);
+		AbstractResultSet.LOG.debug("getting Ref {}", columnLabel);
 		throw new SQLFeatureNotSupportedException();
 	}
 
@@ -852,7 +874,7 @@ public abstract class AbstractResultSet implements ResultSet
 	@Override
 	public RowId getRowId( final String columnLabel ) throws SQLException
 	{
-		LOG.debug("getting RowId {}", columnLabel);
+		AbstractResultSet.LOG.debug("getting RowId {}", columnLabel);
 		throw new SQLFeatureNotSupportedException();
 	}
 
@@ -865,7 +887,7 @@ public abstract class AbstractResultSet implements ResultSet
 	@Override
 	public short getShort( final String columnLabel ) throws SQLException
 	{
-		LOG.debug("getting short {}", columnLabel);
+		AbstractResultSet.LOG.debug("getting short {}", columnLabel);
 		return extractData(getColumnIndex(columnLabel), Short.class);
 	}
 
@@ -878,7 +900,7 @@ public abstract class AbstractResultSet implements ResultSet
 	@Override
 	public SQLXML getSQLXML( final String columnLabel ) throws SQLException
 	{
-		LOG.debug("getting SQL XML {}", columnLabel);
+		AbstractResultSet.LOG.debug("getting SQL XML {}", columnLabel);
 		throw new SQLFeatureNotSupportedException();
 	}
 
@@ -894,21 +916,10 @@ public abstract class AbstractResultSet implements ResultSet
 		return extractData(columnOrdinal - 1, String.class);
 	}
 
-	private int getColumnIndex( final String columnLabel) throws SQLException
-	{
-		final int i = columnNameIdx.get(columnLabel);//table.getColumnIndex(columnLabel);
-		if (i < 0)
-		{
-			throw new SQLException(String.format(
-					"%s is not found in result set", columnLabel));
-		}
-		return i;
-	}
-	
 	@Override
 	public String getString( final String columnLabel ) throws SQLException
 	{
-		LOG.debug("getting String {}", columnLabel);
+		AbstractResultSet.LOG.debug("getting String {}", columnLabel);
 		return extractData(getColumnIndex(columnLabel), String.class);
 	}
 
@@ -933,7 +944,7 @@ public abstract class AbstractResultSet implements ResultSet
 	@Override
 	public Time getTime( final String columnLabel ) throws SQLException
 	{
-		LOG.debug("getting Time {}", columnLabel);
+		AbstractResultSet.LOG.debug("getting Time {}", columnLabel);
 		return extractData(getColumnIndex(columnLabel), Time.class);
 	}
 
@@ -941,7 +952,8 @@ public abstract class AbstractResultSet implements ResultSet
 	public Time getTime( final String columnLabel, final Calendar cal )
 			throws SQLException
 	{
-		LOG.debug("getting time {} of calendar type {}", columnLabel, cal);
+		AbstractResultSet.LOG.debug("getting time {} of calendar type {}",
+				columnLabel, cal);
 		throw new SQLFeatureNotSupportedException();
 	}
 
@@ -963,7 +975,7 @@ public abstract class AbstractResultSet implements ResultSet
 	public Timestamp getTimestamp( final String columnLabel )
 			throws SQLException
 	{
-		LOG.debug("getting timestamp {}", columnLabel);
+		AbstractResultSet.LOG.debug("getting timestamp {}", columnLabel);
 		throw new SQLFeatureNotSupportedException();
 	}
 
@@ -971,7 +983,8 @@ public abstract class AbstractResultSet implements ResultSet
 	public Timestamp getTimestamp( final String columnLabel, final Calendar cal )
 			throws SQLException
 	{
-		LOG.debug("getting timestamp {} of calendar {}", columnLabel, cal);
+		AbstractResultSet.LOG.debug("getting timestamp {} of calendar {}",
+				columnLabel, cal);
 		throw new SQLFeatureNotSupportedException();
 	}
 
@@ -986,7 +999,7 @@ public abstract class AbstractResultSet implements ResultSet
 	public InputStream getUnicodeStream( final String columnLabel )
 			throws SQLException
 	{
-		LOG.debug("getting unicode stream {}", columnLabel);
+		AbstractResultSet.LOG.debug("getting unicode stream {}", columnLabel);
 		throw new SQLFeatureNotSupportedException();
 	}
 
@@ -999,7 +1012,7 @@ public abstract class AbstractResultSet implements ResultSet
 	@Override
 	public URL getURL( final String columnLabel ) throws SQLException
 	{
-		LOG.debug("getting URL {}", columnLabel);
+		AbstractResultSet.LOG.debug("getting URL {}", columnLabel);
 		throw new SQLFeatureNotSupportedException();
 	}
 

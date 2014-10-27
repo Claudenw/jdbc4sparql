@@ -83,7 +83,7 @@ public interface SparqlParser
 	{
 		/**
 		 * Get the defulat parser.
-		 * 
+		 *
 		 * @return SparqlParser
 		 */
 		public static SparqlParser getDefaultParser()
@@ -106,13 +106,13 @@ public interface SparqlParser
 
 		/**
 		 * Get the parser by parser name.
-		 * 
+		 *
 		 * The name may be a parser name or a fully qualified class name.
-		 * 
+		 *
 		 * If a class name is provided the class must implement SparqlParser.
-		 * 
+		 *
 		 * If the name is null the default parser is returned.
-		 * 
+		 *
 		 * @param parserName
 		 *            The name to find.
 		 * @return SparqlParser
@@ -154,7 +154,7 @@ public interface SparqlParser
 
 		/**
 		 * Get the list of parsers.
-		 * 
+		 *
 		 * @return The list of parsers.
 		 */
 		public static List<Class<? extends SparqlParser>> getParsers()
@@ -201,7 +201,7 @@ public interface SparqlParser
 
 		/**
 		 * Parse a where clause into an element.
-		 * 
+		 *
 		 * @param qry
 		 *            The query.
 		 * @return The element
@@ -224,11 +224,17 @@ public interface SparqlParser
 		}
 	}
 
+	List<String> getSupportedNumericFunctions();
+
+	List<String> getSupportedStringFunctions();
+
+	List<String> getSupportedSystemFunctions();
+
 	/**
 	 * Parse the SQL string and then deparse it back into SQL to provide
 	 * the SQL string native to the parser. This is used in support of
 	 * nativeSQL() in the Driver.
-	 * 
+	 *
 	 * @param sqlQuery
 	 *            the original SQL string
 	 * @return the native SQL string
@@ -239,7 +245,7 @@ public interface SparqlParser
 
 	/**
 	 * Given a catalog and a SQL query create a SparqlQueryBuilder.
-	 * 
+	 *
 	 * @param catalog
 	 *            The catalog to run the query against.
 	 * @param sqlQuery
@@ -247,13 +253,8 @@ public interface SparqlParser
 	 * @return The SparqlQueryBuilder.
 	 * @throws SQLException
 	 */
-	SparqlQueryBuilder parse( Map<String, Catalog> catalogs, RdfCatalog catalog, RdfSchema schema, String sqlQuery )
+	SparqlQueryBuilder parse( Map<String, Catalog> catalogs,
+			RdfCatalog catalog, RdfSchema schema, String sqlQuery )
 			throws SQLException;
-	
-	List<String> getSupportedNumericFunctions();
-	
-	List<String> getSupportedStringFunctions();
-	
-	List<String> getSupportedSystemFunctions();
 
 }

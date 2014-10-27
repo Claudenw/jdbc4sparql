@@ -20,14 +20,11 @@ package org.xenei.jdbc4sparql.impl;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Iterator;
 import java.util.List;
 
-import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.ColumnDef;
 import org.xenei.jdbc4sparql.iface.Key;
-import org.xenei.jdbc4sparql.iface.NameFilter;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.TableDef;
@@ -36,7 +33,8 @@ import org.xenei.jdbc4sparql.iface.TypeConverter;
 /**
  * An abstract table implementation
  */
-public abstract class AbstractWrappedTable<T extends Column> extends AbstractTable<T>
+public abstract class AbstractWrappedTable<T extends Column> extends
+		AbstractTable<T>
 {
 	// the table definition
 	private final Table<T> table;
@@ -45,7 +43,7 @@ public abstract class AbstractWrappedTable<T extends Column> extends AbstractTab
 
 	/**
 	 * Constructor
-	 * 
+	 *
 	 * @param schema
 	 *            The schema that table is in
 	 * @param table
@@ -57,12 +55,6 @@ public abstract class AbstractWrappedTable<T extends Column> extends AbstractTab
 		this.table = table;
 	}
 
-	public List<T> getColumnList()
-	{
-		return table.getColumnList();
-	}
-
-
 	public ColumnDef getColumnDef( final int idx )
 	{
 		return table.getTableDef().getColumnDef(idx);
@@ -71,6 +63,12 @@ public abstract class AbstractWrappedTable<T extends Column> extends AbstractTab
 	public List<ColumnDef> getColumnDefs()
 	{
 		return table.getTableDef().getColumnDefs();
+	}
+
+	@Override
+	public List<T> getColumnList()
+	{
+		return table.getColumnList();
 	}
 
 	public Key getPrimaryKey()

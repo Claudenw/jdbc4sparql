@@ -4,7 +4,8 @@ import java.sql.ResultSetMetaData;
 
 import org.xenei.jdbc4sparql.iface.ColumnDef;
 
-public class FunctionColumnDef implements ColumnDef {
+public class FunctionColumnDef implements ColumnDef
+{
 	private int displaySize = 0;
 	private int nullable = ResultSetMetaData.columnNoNulls;
 	private int precision = 0;
@@ -14,25 +15,40 @@ public class FunctionColumnDef implements ColumnDef {
 	private boolean caseSensitive = false;
 	private boolean currency = false;
 	private boolean signed = false;
-	
-	public FunctionColumnDef(int type) {
+
+	public FunctionColumnDef( final int type )
+	{
 		this.type = type;
 	}
 
-	public void setDisplaySize(int displaySize) {
-		this.displaySize = displaySize;
+	@Override
+	public String getColumnClassName()
+	{
+		return null;
 	}
 
-	public void setNullable(int nullable) {
-		this.nullable = nullable;
+	@Override
+	public int getDisplaySize()
+	{
+		return displaySize;
 	}
 
-	public void setPrecision(int precision) {
-		this.precision = precision;
+	@Override
+	public int getNullable()
+	{
+		return nullable;
 	}
 
-	public void setScale(int scale) {
-		this.scale = scale;
+	@Override
+	public int getPrecision()
+	{
+		return precision;
+	}
+
+	@Override
+	public int getScale()
+	{
+		return scale;
 	}
 
 	@Override
@@ -40,92 +56,100 @@ public class FunctionColumnDef implements ColumnDef {
 	{
 		return type;
 	}
-	
-	public void setAutoIncrement(boolean autoIncrement) {
-		this.autoIncrement = autoIncrement;
-	}
-
-	public void setCaseSensitive(boolean caseSensitive) {
-		this.caseSensitive = caseSensitive;
-	}
-
-	public void setCurrency(boolean currency) {
-		this.currency = currency;
-	}
-
-	public void setSigned(boolean signed) {
-		this.signed = signed;
-	}
 
 	@Override
-	public String getColumnClassName() {
-		return null;
-	}
-
-	@Override
-	public int getDisplaySize() {
-		return displaySize;
-	}
-
-	@Override
-	public int getNullable() {
-		return nullable;
-	}
-
-	@Override
-	public int getPrecision() {
-		return precision;
-	}
-
-	@Override
-	public int getScale() {
-		return scale;
-	}
-
-	@Override
-	public String getTypeName() {
+	public String getTypeName()
+	{
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public boolean isAutoIncrement() {
+	public boolean isAutoIncrement()
+	{
 		return autoIncrement;
 	}
 
 	@Override
-	public boolean isCaseSensitive() {
+	public boolean isCaseSensitive()
+	{
 		return caseSensitive;
 	}
 
 	@Override
-	public boolean isCurrency() {
+	public boolean isCurrency()
+	{
 		return currency;
 	}
 
 	@Override
-	public boolean isDefinitelyWritable() {
+	public boolean isDefinitelyWritable()
+	{
 		return false;
 	}
 
 	@Override
-	public boolean isReadOnly() {
+	public boolean isReadOnly()
+	{
 		return true;
 	}
 
 	@Override
-	public boolean isSearchable() {
+	public boolean isSearchable()
+	{
 		return false;
 	}
 
 	@Override
-	public boolean isSigned() {
+	public boolean isSigned()
+	{
 		return signed;
 	}
 
 	@Override
-	public boolean isWritable() {
+	public boolean isWritable()
+	{
 		return false;
+	}
+
+	public void setAutoIncrement( final boolean autoIncrement )
+	{
+		this.autoIncrement = autoIncrement;
+	}
+
+	public void setCaseSensitive( final boolean caseSensitive )
+	{
+		this.caseSensitive = caseSensitive;
+	}
+
+	public void setCurrency( final boolean currency )
+	{
+		this.currency = currency;
+	}
+
+	public void setDisplaySize( final int displaySize )
+	{
+		this.displaySize = displaySize;
+	}
+
+	public void setNullable( final int nullable )
+	{
+		this.nullable = nullable;
+	}
+
+	public void setPrecision( final int precision )
+	{
+		this.precision = precision;
+	}
+
+	public void setScale( final int scale )
+	{
+		this.scale = scale;
+	}
+
+	public void setSigned( final boolean signed )
+	{
+		this.signed = signed;
 	}
 
 }

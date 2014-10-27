@@ -22,7 +22,8 @@ public class SparqlItemsListVisitor implements ItemsListVisitor
 
 	SparqlItemsListVisitor( final SparqlQueryBuilder builder )
 	{
-		exprVisitor = new SparqlExprVisitor(builder, SparqlQueryBuilder.OPTIONAL);
+		exprVisitor = new SparqlExprVisitor(builder,
+				SparqlQueryBuilder.OPTIONAL);
 	}
 
 	public ExprList getResult()

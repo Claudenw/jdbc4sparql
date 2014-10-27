@@ -29,12 +29,11 @@ import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.Key;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.TableName;
-import org.xenei.jdbc4sparql.sparql.QueryTableInfo;
 
 /**
  * An implementation of AbstractTable that stores the data
  * in a collection of object arrays.
- * 
+ *
  * This table is useful for fixed data sets (e.g. schema tables)
  */
 public class DataTable extends AbstractWrappedTable<Column>
@@ -44,7 +43,7 @@ public class DataTable extends AbstractWrappedTable<Column>
 
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param schema
 	 *            The schema this table is in
 	 * @param tableDef
@@ -76,7 +75,7 @@ public class DataTable extends AbstractWrappedTable<Column>
 
 	/**
 	 * Add an object array as a row in the table.
-	 * 
+	 *
 	 * @throws IllegalArgumentException
 	 *             on data errors.
 	 * @param args
@@ -119,6 +118,12 @@ public class DataTable extends AbstractWrappedTable<Column>
 	}
 
 	@Override
+	public String getQuerySegmentFmt()
+	{
+		return null;
+	}
+
+	@Override
 	public String getRemarks()
 	{
 		return null;
@@ -126,7 +131,7 @@ public class DataTable extends AbstractWrappedTable<Column>
 
 	/**
 	 * Get a result set that iterates over this table.
-	 * 
+	 *
 	 * @return
 	 */
 	@Override
@@ -195,19 +200,15 @@ public class DataTable extends AbstractWrappedTable<Column>
 		return superDataTable;
 	}
 
+	@Override
+	public boolean hasQuerySegments()
+	{
+		return false;
+	}
+
 	public boolean isEmpty()
 	{
 		return data.isEmpty();
-	}
-
-	@Override
-	public String getQuerySegmentFmt() {
-		return null;
-	}
-
-	@Override
-	public boolean hasQuerySegments() {
-		return false;
 	}
 
 }

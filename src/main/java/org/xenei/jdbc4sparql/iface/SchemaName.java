@@ -1,6 +1,5 @@
 package org.xenei.jdbc4sparql.iface;
 
-
 /**
  * Name implementation.
  */

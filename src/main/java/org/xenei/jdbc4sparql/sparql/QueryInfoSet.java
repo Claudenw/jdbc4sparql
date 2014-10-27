@@ -82,7 +82,7 @@ public class QueryInfoSet
 
 	/**
 	 * Returns true if the name matches any of the column names.
-	 * 
+	 *
 	 * @see {QueryItemName.findMatch()}
 	 * @param name
 	 *            The name to match
@@ -95,7 +95,7 @@ public class QueryInfoSet
 
 	/**
 	 * Returns true if the name matches any of the column names.
-	 * 
+	 *
 	 * @see {QueryItemName.findMatch()}
 	 * @param name
 	 *            The name to match
@@ -109,7 +109,7 @@ public class QueryInfoSet
 	/**
 	 * Create a column name with appropriate values set to null based on
 	 * segments settings.
-	 * 
+	 *
 	 * @param itemName
 	 *            The name to copy the column values from.
 	 * @return A new ColumnName
@@ -122,7 +122,7 @@ public class QueryInfoSet
 
 	/**
 	 * Find the column in the query. Returns null if not found.
-	 * 
+	 *
 	 * @param schemaName
 	 * @param tableName
 	 * @param columnName
@@ -144,7 +144,7 @@ public class QueryInfoSet
 
 	/**
 	 * Retrieves the column form the list of query columns
-	 * 
+	 *
 	 * @param name
 	 *            The name to retrieve
 	 * @return The column info for the named column
@@ -164,7 +164,7 @@ public class QueryInfoSet
 
 	/**
 	 * Retrieves the column form the list of query columns
-	 * 
+	 *
 	 * @param name
 	 *            The name to retrieve
 	 * @return The column info for the named column
@@ -178,7 +178,7 @@ public class QueryInfoSet
 
 	/**
 	 * Retrieves the column form the list of query columns
-	 * 
+	 *
 	 * @param name
 	 *            The name to retrieve
 	 * @return The column info for the named column
@@ -193,7 +193,7 @@ public class QueryInfoSet
 
 	/**
 	 * Retrieves the column form the list of query columns
-	 * 
+	 *
 	 * @param node
 	 *            The node to retrieve
 	 * @return The column info for the column with that node
@@ -241,7 +241,7 @@ public class QueryInfoSet
 
 	/**
 	 * Get the table info from the tables in the quer
-	 * 
+	 *
 	 * @param name
 	 *            The table name to find.
 	 * @return The query table info for the name or null if none found
@@ -255,7 +255,7 @@ public class QueryInfoSet
 
 	/**
 	 * Get the table info from the tables in the query
-	 * 
+	 *
 	 * @param name
 	 *            The table name to find.
 	 * @return The query table info for the name or null if none found
@@ -305,7 +305,7 @@ public class QueryInfoSet
 
 	/**
 	 * List the columns that match the name.
-	 * 
+	 *
 	 * @param name
 	 *            The Column name to match
 	 * @return The list o
@@ -330,7 +330,7 @@ public class QueryInfoSet
 	 * tables in the query looking
 	 * for the column. If found add it to the query and return it. otherwise
 	 * return null.
-	 * 
+	 *
 	 * @param name
 	 * @return
 	 */

@@ -11,10 +11,63 @@ import org.xenei.jdbc4sparql.impl.NameUtils;
 
 public abstract class ItemName
 {
-	static final String FOUND_IN_MULTIPLE_ = "%s was found in multiple %s";
+	public static class UsedSegments
+	{
+		private boolean schema;
+		private boolean table;
+		private boolean column;
 
+		public UsedSegments()
+		{
+			schema = true;
+			table = true;
+			column = true;
+		}
+
+		public UsedSegments( final boolean schema, final boolean table,
+				final boolean column )
+		{
+			this.schema = schema;
+			this.table = table;
+			this.column = column;
+		}
+
+		public String getColumn( final ItemName name )
+		{
+			return column ? name.getCol() : null;
+		}
+
+		public String getSchema( final ItemName name )
+		{
+			return schema ? name.getSchema() : null;
+		}
+
+		public String getTable( final ItemName name )
+		{
+			return table ? name.getTable() : null;
+		}
+
+		public void setColumn( final boolean column )
+		{
+			this.column = column;
+		}
+
+		public void setSchema( final boolean schema )
+		{
+			this.schema = schema;
+		}
+
+		public void setTable( final boolean table )
+		{
+			this.table = table;
+		}
+
+	}
+
+	static final String FOUND_IN_MULTIPLE_ = "%s was found in multiple %s";
 	private final String schema;
 	private final String table;
+
 	private final String col;
 
 	protected ItemName( final ItemName name )
@@ -31,11 +84,30 @@ public abstract class ItemName
 		this.table = table;
 		this.col = col;
 	}
-	
-	public String getShortName()
+
+	public String createName( final String separator )
 	{
-		return StringUtils.defaultIfEmpty(getCol(),
-				StringUtils.defaultIfEmpty(getTable(), getSchema()));
+		final StringBuilder sb = new StringBuilder();
+
+		if (StringUtils.isNotEmpty(schema))
+		{
+			sb.append(schema).append(separator);
+		}
+
+		if (StringUtils.isNotEmpty(table) || (sb.length() > 0))
+		{
+			sb.append(table);
+		}
+
+		if (StringUtils.isNotEmpty(col))
+		{
+			if (sb.length() > 0)
+			{
+				sb.append(separator);
+			}
+			sb.append(col);
+		}
+		return sb.toString();
 	}
 
 	@Override
@@ -45,7 +117,7 @@ public abstract class ItemName
 		{
 			return true;
 		}
-		if (this.getClass().equals( o.getClass()))
+		if (this.getClass().equals(o.getClass()))
 		{
 			final ItemName n = (ItemName) o;
 			return new EqualsBuilder().append(this.getClass(), o.getClass())
@@ -60,7 +132,7 @@ public abstract class ItemName
 	/**
 	 * Find the object matching the key in the map.
 	 * Uses matches() method to determine match.
-	 * 
+	 *
 	 * @param map
 	 *            The map to find the object in.
 	 * @return The Object (T) or null if not found
@@ -88,8 +160,8 @@ public abstract class ItemName
 					return retval;
 				}
 				throw new IllegalArgumentException(String.format(
-						FOUND_IN_MULTIPLE_, this, retval
-								.getClass().getSimpleName()));
+						ItemName.FOUND_IN_MULTIPLE_, this, retval.getClass()
+								.getSimpleName()));
 			}
 		}
 		else if (hasWild())
@@ -101,8 +173,8 @@ public abstract class ItemName
 					if (retval != null)
 					{
 						throw new IllegalArgumentException(String.format(
-								FOUND_IN_MULTIPLE_, this,
-								retval.getClass().getSimpleName()));
+								ItemName.FOUND_IN_MULTIPLE_, this, retval
+										.getClass().getSimpleName()));
 					}
 					retval = map.get(n);
 				}
@@ -111,34 +183,9 @@ public abstract class ItemName
 		return retval;
 	}
 
-	
-	/**
-	 * Find the object matching the key in the map.
-	 * Uses matches() method to determine match.
-	 * 
-	 * @param map
-	 *            The map to find the object in.
-	 * @return The Object (T) or null if not found
-	 * @throws IllegalArgumentException
-	 *             if more than one object matches.
-	 */
-	public <T> Set<T> listMatches( final Map<? extends ItemName, T> map )
-	{
-		Set<T> retval = new HashSet<T>();
-		for (final ItemName n : map.keySet())
-		{
-			if (matches(n))
-			{
-				retval.add( map.get(n));
-			}
-		}
-		return retval;
-	}
-
-	
 	/**
 	 * Get the column name string
-	 * 
+	 *
 	 * @return
 	 */
 	public String getCol()
@@ -148,17 +195,17 @@ public abstract class ItemName
 
 	/**
 	 * Get the name in DB format
-	 * 
+	 *
 	 * @return
 	 */
 	public String getDBName()
 	{
-		return createName( NameUtils.DB_DOT );
+		return createName(NameUtils.DB_DOT);
 	}
 
 	/**
 	 * Get the schema segment of the name.
-	 * 
+	 *
 	 * @return
 	 */
 	public String getSchema()
@@ -166,19 +213,25 @@ public abstract class ItemName
 		return schema;
 	}
 
+	public String getShortName()
+	{
+		return StringUtils.defaultIfEmpty(getCol(),
+				StringUtils.defaultIfEmpty(getTable(), getSchema()));
+	}
+
 	/**
 	 * Get the complete name in SPARQL format
-	 * 
+	 *
 	 * @return
 	 */
 	public String getSPARQLName()
 	{
-		return createName( NameUtils.SPARQL_DOT );
+		return createName(NameUtils.SPARQL_DOT);
 	}
 
 	/**
 	 * Get the table portion of the complete name.
-	 * 
+	 *
 	 * @return
 	 */
 	public String getTable()
@@ -194,14 +247,56 @@ public abstract class ItemName
 	}
 
 	/**
+	 * @return true if this has a wildcard (null) segment
+	 */
+	public boolean hasWild()
+	{
+		return (getSchema() == null) || (getTable() == null)
+				|| (getCol() == null);
+	}
+
+	/**
+	 * @return true if this is a complete wildcard name (e.g. all segments are
+	 *         null)
+	 */
+	public boolean isWild()
+	{
+		return (getSchema() == null) && (getTable() == null)
+				&& (getCol() == null);
+	}
+
+	/**
+	 * Find the object matching the key in the map.
+	 * Uses matches() method to determine match.
+	 *
+	 * @param map
+	 *            The map to find the object in.
+	 * @return The Object (T) or null if not found
+	 * @throws IllegalArgumentException
+	 *             if more than one object matches.
+	 */
+	public <T> Set<T> listMatches( final Map<? extends ItemName, T> map )
+	{
+		final Set<T> retval = new HashSet<T>();
+		for (final ItemName n : map.keySet())
+		{
+			if (matches(n))
+			{
+				retval.add(map.get(n));
+			}
+		}
+		return retval;
+	}
+
+	/**
 	 * check if this matches that.
-	 * 
+	 *
 	 * this matches that if this.equals( that ) or
 	 * if this.schema, this.table, this.col == null then that
 	 * segment is not used in the comparison.
-	 * 
+	 *
 	 * Note that this is a.matches(b) does not imply b.matches(a)
-	 * 
+	 *
 	 * @param n
 	 * @return
 	 */
@@ -233,101 +328,8 @@ public abstract class ItemName
 	{
 		if (isWild())
 		{
-			return "Wildcard Name";			
+			return "Wildcard Name";
 		}
-		return StringUtils.defaultIfBlank( getDBName(), "Blank Name");
-	}
-	
-	/**
-	 * @return true if this is a complete wildcard name (e.g. all segments are null)
-	 */
-	public boolean isWild()
-	{
-		return getSchema() == null && getTable()==null && getCol() == null;
-	}
-	
-	/**
-	 * @return true if this has a wildcard (null) segment
-	 */
-	public boolean hasWild()
-	{
-		return getSchema() == null || getTable()==null || getCol() == null;
-	}
-	
-	public String createName( final String separator )
-	{
-		final StringBuilder sb = new StringBuilder();
-
-		if (StringUtils.isNotEmpty(schema))
-		{
-			sb.append(schema).append(separator);
-		}
-
-		if (StringUtils.isNotEmpty(table) || (sb.length() > 0))
-		{
-			sb.append(table);
-		}
-
-		if (StringUtils.isNotEmpty(col))
-		{
-			if (sb.length() > 0)
-			{
-				sb.append(separator);
-			}
-			sb.append(col);
-		}
-		return sb.toString();
-	}
-	
-	public static class UsedSegments
-	{
-		private boolean schema;
-		private boolean table;
-		private boolean column;
-		
-		public UsedSegments()
-		{
-			schema = true;
-			table = true;
-			column = true;
-		}
-		
-		public UsedSegments(boolean schema, boolean table, boolean column)
-		{
-			this.schema = schema;
-			this.table = table;
-			this.column = column;
-		}
-		
-		public String getSchema( ItemName name )
-		{
-			return schema?name.getSchema():null;
-		}
-		
-		public String getTable( ItemName name )
-		{
-			return table?name.getTable():null;
-		}
-		
-		public String getColumn( ItemName name )
-		{
-			return column?name.getCol():null;
-		}
-
-		public void setSchema( boolean schema )
-		{
-			this.schema = schema;
-		}
-
-		public void setTable( boolean table )
-		{
-			this.table = table;
-		}
-
-		public void setColumn( boolean column )
-		{
-			this.column = column;
-		}
-	
+		return StringUtils.defaultIfBlank(getDBName(), "Blank Name");
 	}
 }

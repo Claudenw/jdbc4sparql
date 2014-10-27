@@ -1,20 +1,26 @@
 package org.xenei.jdbc4sparql.sparql.parser.jsqlparser.functions;
 
-import java.util.Stack;
-
-import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
-
 import com.hp.hpl.jena.sparql.expr.Expr;
+
+import java.util.Stack;
 
 import net.sf.jsqlparser.expression.Function;
 
-public class StringFunctionHandler extends AbstractFunctionHandler {
+import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
+
+public class StringFunctionHandler extends AbstractFunctionHandler
+{
 	public static final String[] STRING_FUNCTIONS = {};
-			
-	public StringFunctionHandler(SparqlQueryBuilder builder, Stack<Expr> stack) {
-		super( builder );
+
+	public StringFunctionHandler( final SparqlQueryBuilder builder,
+			final Stack<Expr> stack )
+	{
+		super(builder);
 	}
 
 	@Override
-	public boolean handle(Function func) { return false; }
+	public boolean handle( final Function func )
+	{
+		return false;
+	}
 }

@@ -26,7 +26,7 @@ import java.util.Set;
 
 /**
  * Filters a namespacedObject by name.
- * 
+ *
  * @param <T>
  *            a NamespacedObject
  */
@@ -42,9 +42,9 @@ public class NameFilter<T extends NamedObject> implements Iterator<T>,
 
 	/**
 	 * Construct a NameFilter from a pattern and a collection.
-	 * 
+	 *
 	 * If namePattern is null match all names.
-	 * 
+	 *
 	 * @param namePattern
 	 *            The pattern to match or null.
 	 * @param objs
@@ -58,9 +58,9 @@ public class NameFilter<T extends NamedObject> implements Iterator<T>,
 
 	/**
 	 * Construct a NameFilter from a pattern and an iterator.
-	 * 
+	 *
 	 * If namePattern is null match all names.
-	 * 
+	 *
 	 * @param namePattern
 	 *            The pattern to match or null.
 	 * @param iter
@@ -122,15 +122,17 @@ public class NameFilter<T extends NamedObject> implements Iterator<T>,
 
 	/**
 	 * Return the data as a list.
+	 * 
 	 * @return
 	 */
 	public List<T> toList()
 	{
 		return WrappedIterator.create(this).toList();
 	}
-	
+
 	/**
 	 * Return the data as a list.
+	 * 
 	 * @return
 	 */
 	public Set<T> toSet()

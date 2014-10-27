@@ -50,7 +50,7 @@ public class SimpleBuilderTest
 	// schema model
 	private Model schemaModel;
 	private SchemaBuilder builder;
-	private Map<String,Catalog> catalogs;
+	private Map<String, Catalog> catalogs;
 	private SparqlParser parser;
 
 	private void addModelData( final Model model )
@@ -129,7 +129,7 @@ public class SimpleBuilderTest
 		final Set<RdfTable> tables = builder.getTables(schema);
 		for (final RdfTable tbl : tables)
 		{
-			final ResultSet rs = tbl.getResultSet( catalogs, parser);
+			final ResultSet rs = tbl.getResultSet(catalogs, parser);
 			boolean foundNull = false;
 			while (rs.next() && !foundNull)
 			{
@@ -176,8 +176,8 @@ public class SimpleBuilderTest
 		addModelData(model);
 		catalog = new RdfCatalog.Builder().setLocalModel(model)
 				.setName("SimpleSparql").build(schemaModel);
-		catalogs = new HashMap<String,Catalog>();
-		catalogs.put( catalog.getName().getShortName(), catalog );
+		catalogs = new HashMap<String, Catalog>();
+		catalogs.put(catalog.getName().getShortName(), catalog);
 		schema = new RdfSchema.Builder().setCatalog(catalog)
 				.setName("builderTest").build(schemaModel);
 

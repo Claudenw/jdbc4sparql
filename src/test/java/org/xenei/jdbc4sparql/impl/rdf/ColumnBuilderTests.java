@@ -7,7 +7,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import static org.mockito.Mockito.*;
+import org.mockito.Mockito;
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.ColumnDef;
 import org.xenei.jdbc4sparql.iface.TableName;
@@ -23,10 +23,11 @@ public class ColumnBuilderTests
 	{
 		model = ModelFactory.createDefaultModel();
 		columnDef = RdfColumnDef.Builder.getStringBuilder().build(model);
-		mockTable = mock(RdfTable.class);
-		when(mockTable.getResource()).thenReturn(
+		mockTable = Mockito.mock(RdfTable.class);
+		Mockito.when(mockTable.getResource()).thenReturn(
 				model.createResource("http://example.com/mockTable"));
-		when(mockTable.getName()).thenReturn( new TableName( "schema", "table" ));
+		Mockito.when(mockTable.getName()).thenReturn(
+				new TableName("schema", "table"));
 	}
 
 	@After

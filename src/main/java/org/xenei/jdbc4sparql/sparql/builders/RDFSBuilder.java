@@ -34,7 +34,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfColumnDef;
 import org.xenei.jdbc4sparql.impl.rdf.RdfKey;
@@ -43,7 +42,6 @@ import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTableDef;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTableDef.Builder;
-import org.xenei.jdbc4sparql.meta.MetaCatalogBuilder;
 import org.xenei.jdbc4sparql.utils.SQLNameUtil;
 
 /**
@@ -184,8 +182,8 @@ public class RDFSBuilder implements SchemaBuilder
 			tables.put(idTable, idDef);
 			final RdfColumnDef.Builder bldr = new RdfColumnDef.Builder();
 			bldr // .addQuerySegment("BIND( %2$s, %1$s )")
-					// .setNamespace(r.asNode().getNameSpace())
-					// .setLocalName(idTable)
+			// .setNamespace(r.asNode().getNameSpace())
+			// .setLocalName(idTable)
 			.setType(Types.VARCHAR).setSigned(false)
 					.setNullable(DatabaseMetaData.columnNoNulls);
 			idDef.addColumnDef(bldr.build(model));
@@ -210,7 +208,7 @@ public class RDFSBuilder implements SchemaBuilder
 	@Override
 	public Set<RdfTable> getTables( final RdfSchema schema )
 	{
-		RdfCatalog catalog = schema.getCatalog();
+		final RdfCatalog catalog = schema.getCatalog();
 		final InfModel rdfsOntology = ModelFactory.createRDFSModel(catalog
 				.getLocalModel());
 

@@ -10,70 +10,83 @@ import org.xenei.jdbc4sparql.iface.TableDef;
 import org.xenei.jdbc4sparql.iface.TableName;
 import org.xenei.jdbc4sparql.impl.AbstractTable;
 
-public class VirtualTable extends AbstractTable<Column> {
-	private Schema schema;
-	private TableName tableName;
-	private List<Column> columns;
+public class VirtualTable extends AbstractTable<Column>
+{
+	private final Schema schema;
+	private final TableName tableName;
+	private final List<Column> columns;
 	private TableDef tableDef;
 
-	public VirtualTable(Schema schema) {
-		this(schema,"");
+	public VirtualTable( final Schema schema )
+	{
+		this(schema, "");
 	}
-	
-	public VirtualTable(Schema schema, String name ) {
+
+	public VirtualTable( final Schema schema, final String name )
+	{
 		this.tableName = schema.getName().getTableName(name);
 		this.columns = new ArrayList<Column>();
 		this.schema = schema;
 	}
 
 	@Override
-	public TableName getName() {
-		return tableName;
-	}
-
-	@Override
-	public void delete() {
+	public void delete()
+	{
 		// does nothing
 	}
 
 	@Override
-	public String getRemarks() {
+	public List<Column> getColumnList()
+	{
+		return columns;
+	}
+
+	@Override
+	public TableName getName()
+	{
+		return tableName;
+	}
+
+	@Override
+	public String getQuerySegmentFmt()
+	{
+		return null;
+	}
+
+	@Override
+	public String getRemarks()
+	{
 		return "";
 	}
 
 	@Override
-	public Schema getSchema() {
+	public Schema getSchema()
+	{
 		return schema;
 	}
 
 	@Override
-	public Table<Column> getSuperTable() {
+	public Table<Column> getSuperTable()
+	{
 		return null;
 	}
 
 	@Override
-	public TableDef getTableDef() {
+	public TableDef getTableDef()
+	{
 		return tableDef;
 	}
 
 	@Override
-	public String getType() {
+	public String getType()
+	{
 		return "Virtual";
 	}
 
 	@Override
-	public String getQuerySegmentFmt() {
-		return null;
-	}
-
-	@Override
-	public boolean hasQuerySegments() {
+	public boolean hasQuerySegments()
+	{
 		return false;
-	}
-
-	@Override
-	public List<Column> getColumnList() {
-		return columns;
 	}
 
 }

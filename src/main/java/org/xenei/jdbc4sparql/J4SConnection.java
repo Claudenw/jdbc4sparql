@@ -51,7 +51,6 @@ import java.util.Properties;
 import java.util.concurrent.Executor;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.jena.atlas.logging.Log;
 import org.apache.jena.riot.RDFDataMgr;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -98,7 +97,7 @@ public class J4SConnection implements Connection
 			throw new IllegalArgumentException("Properties may not be null");
 		}
 		this.properties = properties;
-		
+
 		this.catalogMap = new HashMap<String, Catalog>();
 		this.sqlWarnings = null;
 		this.driver = driver;
@@ -120,8 +119,8 @@ public class J4SConnection implements Connection
 			properties.setProperty(J4SPropertyNames.DATASET_PRODUCER,
 					MemDatasetProducer.class.getCanonicalName());
 		}
-		
-		configureCatalogMap( );
+
+		configureCatalogMap();
 
 		if (catalogMap.get(MetaCatalogBuilder.LOCAL_NAME) == null)
 		{
@@ -132,10 +131,11 @@ public class J4SConnection implements Connection
 		if (StringUtils.isNotEmpty(getCatalog())
 				&& (catalogMap.get(getCatalog()) == null))
 		{
-			throw new IllegalArgumentException(String.format( "Catalog '%s' not found in catalog map", getCatalog()));
+			throw new IllegalArgumentException(String.format(
+					"Catalog '%s' not found in catalog map", getCatalog()));
 		}
-		
-		catalogMap.put( "",  new VirtualCatalog() );
+
+		catalogMap.put("", new VirtualCatalog());
 
 	}
 
@@ -152,11 +152,13 @@ public class J4SConnection implements Connection
 		Model dataModel = catalogBuilder.getLocalModel();
 		if (dataModel != null)
 		{
-			dsProducer.addLocalDataModel(catalogBuilder.getName().getShortName(), dataModel);
+			dsProducer.addLocalDataModel(catalogBuilder.getName()
+					.getShortName(), dataModel);
 		}
 		else
 		{
-			dataModel = dsProducer.getLocalDataModel(catalogBuilder.getName().getShortName());
+			dataModel = dsProducer.getLocalDataModel(catalogBuilder.getName()
+					.getShortName());
 			if (dataModel != null)
 			{
 				catalogBuilder.setLocalModel(dataModel);
@@ -216,23 +218,23 @@ public class J4SConnection implements Connection
 			// otherwise we have to read the data and parse the input.
 			dsProducer = DatasetProducer.Loader.load(properties);
 			RdfCatalog catalog = null;
-			
+
 			// if the catalog name is not set the set to "" (empty string)
 			// can not use setCatalog here as the catalog map is not yet set.
-			properties.setProperty(J4SPropertyNames.CATALOG_PROPERTY, StringUtils.defaultString(getCatalog(),""));
-			
+			properties.setProperty(J4SPropertyNames.CATALOG_PROPERTY,
+					StringUtils.defaultString(getCatalog(), ""));
+
 			// the schema name is the produced by the builder name.
 			SchemaBuilder builder = url.getBuilder();
 			if (builder == null)
 			{
 				builder = SchemaBuilder.Util.getBuilder(null);
 			}
-			
-			String schemaName = SchemaBuilder.Util.getName( builder.getClass() );
-			// make schema builder  valid for schema name user
-			schemaName = schemaName.replace( "^[A-Z0-9a-z]", "_");
-			
-						
+
+			String schemaName = SchemaBuilder.Util.getName(builder.getClass());
+			// make schema builder valid for schema name user
+			schemaName = schemaName.replace("^[A-Z0-9a-z]", "_");
+
 			// get the model for the catalog name.
 			final Model model = dsProducer.getMetaDataModel(getCatalog());
 
@@ -252,7 +254,7 @@ public class J4SConnection implements Connection
 				catalog = new RdfCatalog.Builder().setLocalModel(dataModel)
 						.setName(getCatalog()).build(model);
 			}
-			
+
 			final RdfSchema schema = new RdfSchema.Builder()
 					.setCatalog(catalog).setName(schemaName).build(model);
 
@@ -338,21 +340,6 @@ public class J4SConnection implements Connection
 			throws SQLException
 	{
 		throw new SQLFeatureNotSupportedException();
-	}
-
-	/**
-	 * Filter out confidential data from properties. Specifically user ID and
-	 * password
-	 * 
-	 * @return
-	 */
-	private Properties filterProperties(Properties properties)
-	{
-		final Properties props = new Properties();
-		props.putAll(properties);
-		props.remove(J4SPropertyNames.USER_PROPERTY);
-		props.remove(J4SPropertyNames.PASSWORD_PROPERTY);
-		return props;
 	}
 
 	@Override
@@ -508,7 +495,7 @@ public class J4SConnection implements Connection
 
 	/**
 	 * Adds any new properties form the argument into our internal properties.
-	 * 
+	 *
 	 * @param properties
 	 */
 	private void mergeProperties( final Properties properties )
@@ -612,9 +599,9 @@ public class J4SConnection implements Connection
 
 	/**
 	 * Save all the current RdfCatalogs to a configuration file.
-	 * 
+	 *
 	 * Reloading this file may be used in the URL as the configuration location.
-	 * 
+	 *
 	 * @param f
 	 *            The file to write the configuration to
 	 * @throws IOException
@@ -626,9 +613,9 @@ public class J4SConnection implements Connection
 
 	/**
 	 * Save all the current RdfCatalogs to a configuration file.
-	 * 
+	 *
 	 * Reloading this file may be used in the URL as the configuration location.
-	 * 
+	 *
 	 * @param the
 	 *            outputstream to write the configuration to.
 	 * @throws IOException
@@ -647,15 +634,15 @@ public class J4SConnection implements Connection
 	@Override
 	public void setCatalog( final String catalog ) throws SQLException
 	{
-		if (getCatalog() == null || !getCatalog().equals(catalog))
+		if ((getCatalog() == null) || !getCatalog().equals(catalog))
 		{
-			log.debug( "Setting catalog to '{}'", catalog );
+			log.debug("Setting catalog to '{}'", catalog);
 			if (catalogMap.get(catalog) == null)
 			{
 				throw new SQLException("Catalog " + catalog + " was not found");
 			}
 			properties.setProperty(J4SPropertyNames.CATALOG_PROPERTY, catalog);
-			setSchema( null );
+			setSchema(null);
 		}
 	}
 
@@ -727,12 +714,15 @@ public class J4SConnection implements Connection
 			final Catalog cat = catalogMap.get(getCatalog());
 			if (cat == null)
 			{
-				throw new SQLException(String.format("Catalog '%s' was not found", getCatalog()));
+				throw new SQLException(String.format(
+						"Catalog '%s' was not found", getCatalog()));
 			}
 			final Schema schem = cat.getSchema(schema);
 			if (schem == null)
 			{
-				throw new SQLException( String.format( "Schema '%s' was not found in catalog '%s'", schema, getCatalog()));
+				throw new SQLException(String.format(
+						"Schema '%s' was not found in catalog '%s'", schema,
+						getCatalog()));
 			}
 			this.properties.setProperty(J4SPropertyNames.SCHEMA_PROPERTY,
 					schema);

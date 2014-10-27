@@ -23,7 +23,6 @@ import com.hp.hpl.jena.rdf.model.ModelFactory;
 import java.net.URL;
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
@@ -42,7 +41,7 @@ public class RDFSBuilderTest
 	private Model model;
 	// schema model
 	private Model schemaModel;
-	
+
 	private SchemaBuilder builder;
 
 	private final String[] tableNames = { "Project", "Version", "Repository",
@@ -76,8 +75,8 @@ public class RDFSBuilderTest
 		catalog = new RdfCatalog.Builder().setLocalModel(model)
 				.setName("SimpleSparql").build(schemaModel);
 
-		schema = new RdfSchema.Builder().setCatalog(catalog).setName("builderTest")
-				.build(schemaModel);
+		schema = new RdfSchema.Builder().setCatalog(catalog)
+				.setName("builderTest").build(schemaModel);
 
 		builder = new RDFSBuilder();
 

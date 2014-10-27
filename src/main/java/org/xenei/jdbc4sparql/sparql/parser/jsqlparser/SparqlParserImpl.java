@@ -47,9 +47,27 @@ public class SparqlParserImpl implements SparqlParser
 	public static final String DESCRIPTION = "Parser based on JSqlParser (http://jsqlparser.sourceforge.net/). Under LGPL V2 license";
 	private final CCJSqlParserManager parserManager = new CCJSqlParserManager();
 	private static Logger LOG = LoggerFactory.getLogger(SparqlParserImpl.class);
-	
+
 	public SparqlParserImpl()
 	{
+	}
+
+	@Override
+	public List<String> getSupportedNumericFunctions()
+	{
+		return Arrays.asList(NumericFunctionHandler.NUMERIC_FUNCTIONS);
+	}
+
+	@Override
+	public List<String> getSupportedStringFunctions()
+	{
+		return Arrays.asList(StringFunctionHandler.STRING_FUNCTIONS);
+	}
+
+	@Override
+	public List<String> getSupportedSystemFunctions()
+	{
+		return Arrays.asList(SystemFunctionHandler.SYSTEM_FUNCTIONS);
 	}
 
 	@Override
@@ -72,7 +90,8 @@ public class SparqlParserImpl implements SparqlParser
 	}
 
 	@Override
-	public SparqlQueryBuilder parse(final Map<String, Catalog> catalogs, final RdfCatalog catalog, final RdfSchema schema,
+	public SparqlQueryBuilder parse( final Map<String, Catalog> catalogs,
+			final RdfCatalog catalog, final RdfSchema schema,
 			final String sqlQuery ) throws SQLException
 	{
 		SparqlParserImpl.LOG.debug("catalog: '{}' parsing SQL: {}",
@@ -81,7 +100,8 @@ public class SparqlParserImpl implements SparqlParser
 		{
 			final Statement stmt = parserManager.parse(new StringReader(
 					sqlQuery));
-			final SparqlVisitor sv = new SparqlVisitor( catalogs, this, catalog, schema);
+			final SparqlVisitor sv = new SparqlVisitor(catalogs, this, catalog,
+					schema);
 			stmt.accept(sv);
 			if (SparqlParserImpl.LOG.isDebugEnabled())
 			{
@@ -94,20 +114,5 @@ public class SparqlParserImpl implements SparqlParser
 			SparqlParserImpl.LOG.error("Error parsing: " + e.getMessage(), e);
 			throw new SQLException(e);
 		}
-	}
-
-	@Override
-	public List<String> getSupportedNumericFunctions() {
-		return Arrays.asList(NumericFunctionHandler.NUMERIC_FUNCTIONS); 
-	}
-
-	@Override
-	public List<String> getSupportedStringFunctions() {
-		return Arrays.asList(StringFunctionHandler.STRING_FUNCTIONS); 
-	}
-
-	@Override
-	public List<String> getSupportedSystemFunctions() {
-		return Arrays.asList(SystemFunctionHandler.SYSTEM_FUNCTIONS); 
 	}
 }

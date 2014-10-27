@@ -10,7 +10,6 @@ import java.util.List;
 
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,8 +22,9 @@ public abstract class AbstractJ4SStatementTest
 	protected Connection conn;
 
 	protected Statement stmt;
-	
-	static private Logger LOG = LoggerFactory.getLogger(AbstractJ4SStatementTest.class);
+
+	static private Logger LOG = LoggerFactory
+			.getLogger(AbstractJ4SStatementTest.class);
 
 	protected List<String> getColumnNames( final String table )
 			throws SQLException
@@ -34,8 +34,9 @@ public abstract class AbstractJ4SStatementTest
 		final List<String> colNames = new ArrayList<String>();
 		while (rs.next())
 		{
-			LOG.debug(String.format("%s %s %s %s", rs.getString(1),
-					rs.getString(2), rs.getString(3), rs.getString(4)));
+			AbstractJ4SStatementTest.LOG.debug(String.format("%s %s %s %s",
+					rs.getString(1), rs.getString(2), rs.getString(3),
+					rs.getString(4)));
 			colNames.add(rs.getString(4));
 		}
 		return colNames;
@@ -65,7 +66,6 @@ public abstract class AbstractJ4SStatementTest
 		{
 		}
 	}
-
 
 	@Test
 	public void testBadValueInEqualsConst() throws ClassNotFoundException,
@@ -159,9 +159,23 @@ public abstract class AbstractJ4SStatementTest
 	}
 
 	@Test
+	public void testJoinSelect() throws SQLException
+	{
+		final ResultSet rset = stmt
+				.executeQuery("select fooTable.IntCol, barTable.IntCol from fooTable join barTable ON fooTable.StringCol=barTable.StringCol");
+
+		while (rset.next())
+		{
+			Assert.assertEquals(5, rset.getInt(1));
+			Assert.assertEquals(15, rset.getInt(2));
+		}
+		rset.close();
+	}
+
+	@Test
 	public void testMetadataQuery() throws Exception
 	{
-		conn.setCatalog( MetaCatalogBuilder.LOCAL_NAME );
+		conn.setCatalog(MetaCatalogBuilder.LOCAL_NAME);
 		stmt.close();
 		stmt = conn.createStatement();
 		final ResultSet rset = stmt
@@ -173,17 +187,37 @@ public abstract class AbstractJ4SStatementTest
 		rset.close();
 	}
 
+	/*
+	 * SELECT tbl.* FROM Online_Account AS tbl
+	 */
 	@Test
-	public void testJoinSelect() throws SQLException
+	public void testSelectAllTableAlias() throws Exception
 	{
-		final ResultSet rset = stmt
-				.executeQuery("select fooTable.IntCol, barTable.IntCol from fooTable join barTable ON fooTable.StringCol=barTable.StringCol");
+		final String[][] results = {
+				{ "[StringCol]=FooString",
+						"[NullableStringCol]=FooNullableFooString",
+						"[NullableIntCol]=6", "[IntCol]=5",
+						"[type]=http://example.com/jdbc4sparql#fooTable" },
+				{ "[StringCol]=Foo2String", "[NullableStringCol]=null",
+						"[NullableIntCol]=null", "[IntCol]=5",
+						"[type]=http://example.com/jdbc4sparql#fooTable" } };
 
+		// get the column names.
+		final List<String> colNames = getColumnNames("fooTable");
+		final ResultSet rset = stmt
+				.executeQuery("select tbl.* from fooTable tbl");
+		int i = 0;
 		while (rset.next())
 		{
-			Assert.assertEquals(5, rset.getInt(1));
-			Assert.assertEquals(15, rset.getInt(2));
+			final List<String> lst = Arrays.asList(results[i]);
+			for (final String colName : colNames)
+			{
+				lst.contains(String.format("[%s]=%s", colName,
+						rset.getString(colName)));
+			}
+			i++;
 		}
+		Assert.assertEquals(2, i);
 		rset.close();
 	}
 
@@ -202,39 +236,6 @@ public abstract class AbstractJ4SStatementTest
 		Assert.assertEquals(1, i);
 		rset.close();
 		stmt.close();
-	}
-
-	/*
-	 *  SELECT tbl.* FROM Online_Account AS tbl
-	 */
-	@Test
-	public void testSelectAllTableAlias() throws Exception
-	{
-		final String[][] results = {
-				{ "[StringCol]=FooString",
-						"[NullableStringCol]=FooNullableFooString",
-						"[NullableIntCol]=6", "[IntCol]=5",
-						"[type]=http://example.com/jdbc4sparql#fooTable" },
-				{ "[StringCol]=Foo2String", "[NullableStringCol]=null",
-						"[NullableIntCol]=null", "[IntCol]=5",
-						"[type]=http://example.com/jdbc4sparql#fooTable" } };
-
-		// get the column names.
-		final List<String> colNames = getColumnNames("fooTable");
-		final ResultSet rset = stmt.executeQuery("select tbl.* from fooTable tbl");
-		int i = 0;
-		while (rset.next())
-		{
-			final List<String> lst = Arrays.asList(results[i]);
-			for (final String colName : colNames)
-			{
-				lst.contains(String.format("[%s]=%s", colName,
-						rset.getString(colName)));
-			}
-			i++;
-		}
-		Assert.assertEquals(2, i);
-		rset.close();
 	}
 
 	@Test

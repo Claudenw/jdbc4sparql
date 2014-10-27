@@ -51,7 +51,7 @@ public class ResourceBuilder
 
 	/**
 	 * Get the resource from the model or create if if it does not exist.
-	 * 
+	 *
 	 * @return
 	 */
 	public Resource getResource( final String fqName, final Class<?> typeClass )
@@ -80,7 +80,7 @@ public class ResourceBuilder
 
 	/**
 	 * Determine if the resource is in the model.
-	 * 
+	 *
 	 * @param obj
 	 * @return
 	 */

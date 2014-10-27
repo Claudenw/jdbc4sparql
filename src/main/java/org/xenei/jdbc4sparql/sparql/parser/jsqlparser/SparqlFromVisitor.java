@@ -75,10 +75,12 @@ class SparqlFromVisitor implements FromItemVisitor
 		SparqlFromVisitor.LOG.debug("visit table: {}", table);
 		try
 		{
-			TableName tName = new TableName(table.getSchemaName(), table.getName());
-			name = (table.getAlias() != null)?TableName.getNameInstance(table.getAlias()):tName;			
+			final TableName tName = new TableName(table.getSchemaName(),
+					table.getName());
+			name = (table.getAlias() != null) ? TableName.getNameInstance(table
+					.getAlias()) : tName;
 			builder.addTable(tName, name, optional);
-			
+
 		}
 		catch (final SQLException e)
 		{

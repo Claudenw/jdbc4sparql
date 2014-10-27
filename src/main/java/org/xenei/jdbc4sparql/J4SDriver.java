@@ -36,18 +36,6 @@ import org.xenei.jena.entities.MissingAnnotation;
 public class J4SDriver implements Driver
 {
 
-	static
-	{
-		try
-		{
-			java.sql.DriverManager.registerDriver(new J4SDriver());
-		}
-		catch (final SQLException e)
-		{
-			throw new RuntimeException(e);
-		}
-	}
-
 	public static void main( final String[] args )
 	{
 
@@ -90,6 +78,18 @@ public class J4SDriver implements Driver
 		System.out.println();
 		System.out.println("Default SPARQL parser: "
 				+ SparqlParser.Util.getDefaultParser().getClass());
+	}
+
+	static
+	{
+		try
+		{
+			java.sql.DriverManager.registerDriver(new J4SDriver());
+		}
+		catch (final SQLException e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
 
 	public J4SDriver()

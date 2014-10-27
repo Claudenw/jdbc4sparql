@@ -6,18 +6,16 @@ import java.util.List;
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.NameFilter;
-import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
-import org.xenei.jdbc4sparql.iface.TableDef;
-import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 
-public abstract class AbstractTable<T extends Column> implements Table<T> {
+public abstract class AbstractTable<T extends Column> implements Table<T>
+{
 
-	
-	public AbstractTable() {
-		
+	public AbstractTable()
+	{
+
 	}
-	
+
 	@Override
 	public NameFilter<Column> findColumns( final String columnNamePattern )
 	{
@@ -28,18 +26,6 @@ public abstract class AbstractTable<T extends Column> implements Table<T> {
 	public Catalog getCatalog()
 	{
 		return getSchema().getCatalog();
-	}
-	
-	@Override
-	public String getSPARQLName()
-	{
-		return NameUtils.getSPARQLName(this);
-	}
-	
-	@Override
-	public String getSQLName()
-	{
-		return NameUtils.getDBName(this);
 	}
 
 	@Override
@@ -75,7 +61,7 @@ public abstract class AbstractTable<T extends Column> implements Table<T> {
 
 	/**
 	 * Returns the column index for hte name or -1 if not found
-	 * 
+	 *
 	 * @param columnName
 	 *            The name to search for
 	 * @return the column index (0 based) or -1 if not found.
@@ -98,6 +84,18 @@ public abstract class AbstractTable<T extends Column> implements Table<T> {
 	public Iterator<T> getColumns()
 	{
 		return getColumnList().iterator();
+	}
+
+	@Override
+	public String getSPARQLName()
+	{
+		return NameUtils.getSPARQLName(this);
+	}
+
+	@Override
+	public String getSQLName()
+	{
+		return NameUtils.getDBName(this);
 	}
 
 	@Override

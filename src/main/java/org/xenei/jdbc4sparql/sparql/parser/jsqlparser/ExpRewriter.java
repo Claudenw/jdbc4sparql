@@ -29,8 +29,7 @@ import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 
 public abstract class ExpRewriter implements ExprVisitor
 {
-	protected final Map<ItemName, ItemName> aliasMap = new HashMap<ItemName, 
-			ItemName>();
+	protected final Map<ItemName, ItemName> aliasMap = new HashMap<ItemName, ItemName>();
 	protected final SparqlQueryBuilder queryBuilder;
 	protected final Stack<Expr> stack = new Stack<Expr>();
 
@@ -38,8 +37,6 @@ public abstract class ExpRewriter implements ExprVisitor
 	{
 		this.queryBuilder = queryBuilder;
 	}
-
-	
 
 	public void addMap( final ItemName from, final ItemName to )
 	{
@@ -74,8 +71,8 @@ public abstract class ExpRewriter implements ExprVisitor
 			if (new ColumnName(qi).matches(ci.getName()))
 			{
 				final ItemName mapTo = aliasMap.get(qi);
-				return new ColumnName(mapTo.getSchema(),
-						mapTo.getTable(), ci.getName().getCol());
+				return new ColumnName(mapTo.getSchema(), mapTo.getTable(), ci
+						.getName().getCol());
 			}
 		}
 		return null;
@@ -190,8 +187,8 @@ public abstract class ExpRewriter implements ExprVisitor
 				if (new ColumnName(qi).matches(ci.getName()))
 				{
 					ItemName mapTo = aliasMap.get(qi);
-					mapTo = new ColumnName(mapTo.getSchema(),
-							mapTo.getTable(), ci.getName().getCol());
+					mapTo = new ColumnName(mapTo.getSchema(), mapTo.getTable(),
+							ci.getName().getCol());
 					stack.push(new ExprVar(mapTo.getSPARQLName()));
 					return;
 				}

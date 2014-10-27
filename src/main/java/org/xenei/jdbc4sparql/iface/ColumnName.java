@@ -8,9 +8,6 @@ import org.xenei.jdbc4sparql.impl.NameUtils;
  */
 public class ColumnName extends ItemName
 {
-	public static final ColumnName WILD = new ColumnName( null, null, null );
-	public static final ColumnName FUNCTION = new ColumnName( "", "", null );
-	
 	public static ColumnName getNameInstance( final String alias )
 	{
 		if (alias == null)
@@ -36,6 +33,10 @@ public class ColumnName extends ItemName
 		}
 	}
 
+	public static final ColumnName WILD = new ColumnName(null, null, null);
+
+	public static final ColumnName FUNCTION = new ColumnName("", "", null);
+
 	private TableName tableName = null;
 
 	public ColumnName( final ItemName name )
@@ -57,16 +58,17 @@ public class ColumnName extends ItemName
 		return tableName;
 	}
 
+	public ColumnName merge( final ColumnName other )
+	{
+		return new ColumnName(StringUtils.defaultIfEmpty(this.getSchema(),
+				other.getSchema()), StringUtils.defaultIfEmpty(this.getTable(),
+				other.getTable()), StringUtils.defaultIfEmpty(this.getCol(),
+				other.getCol()));
+	}
+
 	public ColumnName withSegments( final UsedSegments segments )
 	{
 		return new ColumnName(segments.getSchema(this),
 				segments.getTable(this), segments.getColumn(this));
-	}
-	
-	public ColumnName merge( final ColumnName other )
-	{
-		return new ColumnName( StringUtils.defaultIfEmpty( this.getSchema(), other.getSchema()),
-				StringUtils.defaultIfEmpty( this.getTable(), other.getTable()),
-				StringUtils.defaultIfEmpty( this.getCol(), other.getCol()));
 	}
 }

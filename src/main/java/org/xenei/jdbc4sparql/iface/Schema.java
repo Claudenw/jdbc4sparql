@@ -26,7 +26,7 @@ public interface Schema extends NamedObject<SchemaName>
 
 	/**
 	 * The catalog this schema is in.
-	 * 
+	 *
 	 * @return Catalog
 	 */
 

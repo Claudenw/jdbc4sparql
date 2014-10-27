@@ -17,10 +17,10 @@ public class ConfigSave
 	 * arg[0] is the j4s URL. If not provided defaults to
 	 * jdbc:j4s?builder=org.xenei.jdbc4sparql.sparql.builders.
 	 * SimpleNullableBuilder&type=turtle:file:./J4SStatementTest.ttl
-	 * 
+	 *
 	 * arg[1] is the output file name. If not provided defaults to
 	 * config.zip in the system temp directory.
-	 * 
+	 *
 	 * @param args
 	 * @throws ParseException
 	 */

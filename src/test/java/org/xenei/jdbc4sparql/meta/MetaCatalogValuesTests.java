@@ -32,7 +32,7 @@ import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlParserImpl;
 
 public class MetaCatalogValuesTests
 {
-	private Map<String,Catalog> catalogs;
+	private Map<String, Catalog> catalogs;
 	private SparqlParser parser;
 	private DatasetProducer dpProducer;
 	private RdfCatalog catalog;
@@ -47,10 +47,10 @@ public class MetaCatalogValuesTests
 	@Before
 	public void setup() throws FileNotFoundException, IOException
 	{
-		catalogs = new HashMap<String,Catalog>();
+		catalogs = new HashMap<String, Catalog>();
 		dpProducer = new MemDatasetProducer();
 		catalog = (RdfCatalog) MetaCatalogBuilder.getInstance(dpProducer);
-		catalogs.put( catalog.getName().getShortName(), catalog);
+		catalogs.put(catalog.getName().getShortName(), catalog);
 		parser = new SparqlParserImpl();
 	}
 
@@ -123,7 +123,7 @@ public class MetaCatalogValuesTests
 				.getSchema(MetaCatalogBuilder.SCHEMA_NAME);
 		final RdfTable table = schema
 				.getTable(MetaCatalogBuilder.COLUMNS_TABLE);
-		final SparqlResultSet rs = table.getResultSet( catalogs, parser );
+		final SparqlResultSet rs = table.getResultSet(catalogs, parser);
 		Assert.assertTrue(rs.first());
 		while (!rs.isAfterLast())
 		{
@@ -262,7 +262,7 @@ public class MetaCatalogValuesTests
 		final RdfSchema schema = catalog
 				.getSchema(MetaCatalogBuilder.SCHEMA_NAME);
 		final RdfTable table = schema.getTable(MetaCatalogBuilder.TABLES_TABLE);
-		final SparqlResultSet rs = table.getResultSet( catalogs, parser );
+		final SparqlResultSet rs = table.getResultSet(catalogs, parser);
 		Assert.assertTrue(rs.first());
 		while (!rs.isAfterLast())
 		{

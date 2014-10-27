@@ -284,7 +284,7 @@ public class RdfTableDef extends RdfNamespacedObject implements TableDef,
 
 	/**
 	 * get the primary key for the table
-	 * 
+	 *
 	 * @return
 	 */
 	@Override
@@ -304,7 +304,7 @@ public class RdfTableDef extends RdfNamespacedObject implements TableDef,
 	/**
 	 * Get the table sort order key.
 	 * returns null if the table is not sorted.
-	 * 
+	 *
 	 * @return
 	 */
 	@Override

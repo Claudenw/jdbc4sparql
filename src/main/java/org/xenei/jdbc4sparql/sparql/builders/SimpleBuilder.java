@@ -17,10 +17,6 @@
  */
 package org.xenei.jdbc4sparql.sparql.builders;
 
-import com.hp.hpl.jena.query.Query;
-import com.hp.hpl.jena.query.QueryExecution;
-import com.hp.hpl.jena.query.QueryExecutionFactory;
-import com.hp.hpl.jena.query.QueryFactory;
 import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.RDFNode;
@@ -37,15 +33,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.xenei.jdbc4sparql.iface.Catalog;
-import org.xenei.jdbc4sparql.iface.ColumnDef;
 import org.xenei.jdbc4sparql.iface.TypeConverter;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfColumnDef;
 import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTableDef;
-import org.xenei.jdbc4sparql.meta.MetaCatalogBuilder;
 
 /**
  * A simple builder that builds tables for all subjects of [?x a rdfs:Class]
@@ -58,8 +51,6 @@ public class SimpleBuilder implements SchemaBuilder
 	public static final String BUILDER_NAME = "Simple_Builder";
 	public static final String DESCRIPTION = "A simple schema builder that builds tables based on RDFS Class names";
 
-	private static final int DEFAULT_SCALE=80;
-	
 	// Params: namespace.
 	protected static final String TABLE_QUERY = " prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>"
 			+ " SELECT ?tName WHERE { ?tName a rdfs:Class . }";
@@ -76,7 +67,8 @@ public class SimpleBuilder implements SchemaBuilder
 	}
 
 	protected Map<String, String> addColumnDefs( final RdfCatalog catalog,
-			final RdfTableDef.Builder tableDefBuilder, final Resource tName, String tableQuerySegment )
+			final RdfTableDef.Builder tableDefBuilder, final Resource tName,
+			final String tableQuerySegment )
 	{
 		final Model model = catalog.getResource().getModel();
 		final Map<String, String> colNames = new LinkedHashMap<String, String>();
@@ -87,72 +79,79 @@ public class SimpleBuilder implements SchemaBuilder
 		{
 			final RdfColumnDef.Builder builder = new RdfColumnDef.Builder();
 			final Resource cName = soln.getResource("cName");
-			final String columnQuerySegment = String.format(SimpleBuilder.COLUMN_SEGMENT,
-					"%1$s", "%2$s", cName.getURI());
-						
+			final String columnQuerySegment = String.format(
+					SimpleBuilder.COLUMN_SEGMENT, "%1$s", "%2$s",
+					cName.getURI());
+
 			// might be a duplicate name
 			if (colNames.containsKey(cName.getLocalName()))
 			{
-				int i=2;
-				while (colNames.containsKey(cName.getLocalName()+i))
+				int i = 2;
+				while (colNames.containsKey(cName.getLocalName() + i))
 				{
 					i++;
 				}
-				colNames.put(cName.getLocalName()+i, columnQuerySegment);
+				colNames.put(cName.getLocalName() + i, columnQuerySegment);
 			}
 			else
 			{
 				colNames.put(cName.getLocalName(), columnQuerySegment);
 			}
-			int scale = calculateSize( catalog, tableQuerySegment, columnQuerySegment );
-			builder.setType(Types.VARCHAR).setNullable(
-					DatabaseMetaData.columnNullable).setScale(scale)
-					.setReadOnly(true);
+			final int scale = calculateSize(catalog, tableQuerySegment,
+					columnQuerySegment);
+			builder.setType(Types.VARCHAR)
+					.setNullable(DatabaseMetaData.columnNullable)
+					.setScale(scale).setReadOnly(true);
 			tableDefBuilder.addColumnDef(builder.build(model));
 		}
 		return colNames;
 	}
-	
-	protected int calculateSize( RdfCatalog catalog, String tableQS, String columnQS )
+
+	protected int calculateSize( final RdfCatalog catalog,
+			final String tableQS, final String columnQS )
 	{
-		String queryStr = String.format( "SELECT distinct ?col WHERE { %s %s }",
-				String.format( tableQS, "?tbl" ),
-				String.format( columnQS, "?tbl", "?col" ));
-		List<QuerySolution> results = catalog.executeQuery(queryStr);		
-			
-		 Iterator<Integer> iter = WrappedIterator.create(results.iterator()).mapWith(new Map1<QuerySolution, Integer>(){
+		final String queryStr = String.format(
+				"SELECT distinct ?col WHERE { %s %s }",
+				String.format(tableQS, "?tbl"),
+				String.format(columnQS, "?tbl", "?col"));
+		final List<QuerySolution> results = catalog.executeQuery(queryStr);
+
+		final Iterator<Integer> iter = WrappedIterator.create(
+				results.iterator()).mapWith(new Map1<QuerySolution, Integer>() {
 
 			@Override
-			public Integer map1( QuerySolution o )
+			public Integer map1( final QuerySolution o )
 			{
-				RDFNode node = o.get("col");
+				final RDFNode node = o.get("col");
 				if (node == null)
 				{
 					return 0;
 				}
 				if (node.isLiteral())
 				{
-					return TypeConverter.getJavaValue(node.asLiteral()).toString().length();
+					return TypeConverter.getJavaValue(node.asLiteral())
+							.toString().length();
 				}
 				return node.toString().length();
-			}});
-		 int retval = 0;
-		 while (iter.hasNext())
-		 {
-			 Integer i = iter.next();
-			 if (retval < i)
-			 {
-				 retval = i;
-			 }
-		 }
-		 return retval;
-	
+			}
+		});
+		int retval = 0;
+		while (iter.hasNext())
+		{
+			final Integer i = iter.next();
+			if (retval < i)
+			{
+				retval = i;
+			}
+		}
+		return retval;
+
 	}
 
 	@Override
 	public Set<RdfTable> getTables( final RdfSchema schema )
 	{
-		RdfCatalog catalog = schema.getCatalog();
+		final RdfCatalog catalog = schema.getCatalog();
 		final Model model = schema.getResource().getModel();
 		final HashSet<RdfTable> retval = new HashSet<RdfTable>();
 		final List<QuerySolution> solns = catalog
@@ -161,33 +160,39 @@ public class SimpleBuilder implements SchemaBuilder
 		{
 			final Resource tName = soln.getResource("tName");
 			final RdfTableDef.Builder builder = new RdfTableDef.Builder();
-			final String tableQuerySegment = String.format(SimpleBuilder.TABLE_SEGMENT, "%1$s",
-					tName.getURI());
+			final String tableQuerySegment = String.format(
+					SimpleBuilder.TABLE_SEGMENT, "%1$s", tName.getURI());
 			final Map<String, String> colNames = addColumnDefs(catalog,
 					builder, tName, tableQuerySegment);
 			if (colNames.size() > 0)
 			{
 				final RdfTableDef tableDef = builder.build(model);
 				final RdfTable.Builder tblBuilder = new RdfTable.Builder()
-						.setTableDef(tableDef).addQuerySegment(tableQuerySegment)
+						.setTableDef(tableDef)
+						.addQuerySegment(tableQuerySegment)
 						.setName(tName.getLocalName()).setSchema(schema)
 						.setRemarks("created by " + SimpleBuilder.BUILDER_NAME);
-	
+
 				if (colNames.keySet().size() != tableDef.getColumnCount())
 				{
-					throw new IllegalArgumentException(String.format(
-							"There must be %s column names, %s provided",
-							tableDef.getColumnCount(), colNames.keySet().size()));
+					throw new IllegalArgumentException(
+							String.format(
+									"There must be %s column names, %s provided",
+									tableDef.getColumnCount(), colNames
+											.keySet().size()));
 				}
 				final Iterator<String> iter = colNames.keySet().iterator();
 				int i = 0;
 				while (iter.hasNext())
 				{
-	
+
 					final String cName = iter.next();
-					tblBuilder.setColumn(i, cName).getColumn(i)
+					tblBuilder
+							.setColumn(i, cName)
+							.getColumn(i)
 							.addQuerySegment(colNames.get(cName))
-							.setRemarks("created by " + SimpleBuilder.BUILDER_NAME);
+							.setRemarks(
+									"created by " + SimpleBuilder.BUILDER_NAME);
 					i++;
 				}
 				retval.add(tblBuilder.build(model));

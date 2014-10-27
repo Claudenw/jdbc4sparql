@@ -202,17 +202,16 @@ public class CatalogTest
 	{
 		Assert.assertNull(catalog.getSchema(null));
 		Assert.assertNull(catalog.getSchema(""));
-		
+
 		Assert.assertNull(catalog.getSchema("testSchema1"));
 		Assert.assertNull(catalog.getSchema("testSchema2"));
 
 		new RdfSchema.Builder().setName("testSchema1").setCatalog(catalog)
 				.build(model);
 
-
 		Assert.assertNull(catalog.getSchema(null));
 		Assert.assertNull(catalog.getSchema(""));
-		
+
 		RdfSchema schema = catalog.getSchema("testSchema1");
 		Assert.assertNotNull(schema);
 		Assert.assertEquals("testSchema1", schema.getName().getShortName());

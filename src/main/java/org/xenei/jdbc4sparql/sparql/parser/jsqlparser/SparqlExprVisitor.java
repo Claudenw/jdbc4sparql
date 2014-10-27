@@ -132,7 +132,7 @@ public class SparqlExprVisitor implements ExpressionVisitor
 
 	/**
 	 * Constructor
-	 * 
+	 *
 	 * @param builder
 	 *            The SparqlQueryBuilder to use.
 	 */
@@ -146,7 +146,7 @@ public class SparqlExprVisitor implements ExpressionVisitor
 
 	/**
 	 * Get the final result of the process.
-	 * 
+	 *
 	 * @return
 	 */
 	public Expr getResult()
@@ -155,7 +155,7 @@ public class SparqlExprVisitor implements ExpressionVisitor
 	}
 
 	/**
-	 * 
+	 *
 	 * @return True if the stack is empty (no result).
 	 */
 	public boolean isEmpty()
@@ -294,11 +294,10 @@ public class SparqlExprVisitor implements ExpressionVisitor
 		SparqlExprVisitor.LOG.debug("visit Column: {}", tableColumn);
 		try
 		{
-			ColumnName cName = new ColumnName(
-					tableColumn.getTable().getSchemaName(),
-					tableColumn.getTable().getName(),
+			final ColumnName cName = new ColumnName(tableColumn.getTable()
+					.getSchemaName(), tableColumn.getTable().getName(),
 					tableColumn.getColumnName());
-			
+
 			final Node columnVar = builder.addColumn(cName, optionalColumns);
 			stack.push(new ExprVar(columnVar));
 		}
@@ -356,12 +355,16 @@ public class SparqlExprVisitor implements ExpressionVisitor
 	public void visit( final Function function )
 	{
 		SparqlExprVisitor.LOG.debug("visit Function: {}", function);
-		StandardFunctionHandler sfh = new StandardFunctionHandler(builder, stack);
-		try {
-			sfh.handle( function );
-		} catch (SQLException e) {
-			throw new UnsupportedOperationException(
-					String.format( "function %s is not supported", function.getName()));
+		final StandardFunctionHandler sfh = new StandardFunctionHandler(
+				builder, stack);
+		try
+		{
+			sfh.handle(function);
+		}
+		catch (final SQLException e)
+		{
+			throw new UnsupportedOperationException(String.format(
+					"function %s is not supported", function.getName()));
 		}
 	}
 
@@ -426,7 +429,7 @@ public class SparqlExprVisitor implements ExpressionVisitor
 		final Expr right = stack.pop();
 		if (right instanceof NodeValueString)
 		{
-			RegexNodeValue rnv = parseWildCard(((NodeValueString) right)
+			final RegexNodeValue rnv = parseWildCard(((NodeValueString) right)
 					.getString());
 			if (rnv.isWildcard())
 			{

@@ -31,7 +31,7 @@ public interface Key extends Comparator<Object[]>, ResourceWrapper
 
 	/**
 	 * Get the key name (may be null)
-	 * 
+	 *
 	 * @return the key name.
 	 */
 	public String getKeyName();

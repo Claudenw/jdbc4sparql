@@ -36,7 +36,9 @@ public class SparqlStatement implements Statement
 	private final RdfSchema schema;
 	private final Map<String, Catalog> catalogs;
 
-	SparqlStatement( Map<String, Catalog> catalogs, final RdfCatalog catalog, final RdfSchema schema, final SparqlParser parser )
+	SparqlStatement( final Map<String, Catalog> catalogs,
+			final RdfCatalog catalog, final RdfSchema schema,
+			final SparqlParser parser )
 	{
 		this.parser = parser;
 		this.catalog = catalog;
@@ -127,7 +129,8 @@ public class SparqlStatement implements Statement
 	@Override
 	public ResultSet executeQuery( final String query ) throws SQLException
 	{
-		final SparqlQueryBuilder builder = parser.parse(catalogs, catalog, schema, query);
+		final SparqlQueryBuilder builder = parser.parse(catalogs, catalog,
+				schema, query);
 		return new SparqlView(builder).getResultSet();
 	}
 

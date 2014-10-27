@@ -26,7 +26,7 @@ public interface ColumnDef
 	{
 		/**
 		 * Create a unique ID for a column def.
-		 * 
+		 *
 		 * @param def
 		 *            The column def to create the ID for.
 		 * @return a type 3 UUID for the column.
@@ -56,7 +56,7 @@ public interface ColumnDef
 	 * Indicates the nullability of values in the designated column.
 	 * Possible return values are ResultSetMetaData.columnNullable,
 	 * ResultSetMetaData.columnNoNulls, ResultSetMetaData.columnNullableUnknown
-	 * 
+	 *
 	 * @return the nullability status of the given column.
 	 */
 	int getNullable();

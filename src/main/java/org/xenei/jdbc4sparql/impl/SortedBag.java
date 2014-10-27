@@ -29,7 +29,7 @@ import java.util.TreeMap;
 
 /**
  * A bag that is sorted by key.
- * 
+ *
  * @param <T>
  */
 public class SortedBag<T> implements Collection<T>

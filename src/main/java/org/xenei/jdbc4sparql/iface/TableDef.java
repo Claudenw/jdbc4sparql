@@ -28,7 +28,7 @@ public interface TableDef
 
 	/**
 	 * Get the list of columns in the table
-	 * 
+	 *
 	 * @return
 	 */
 	public List<ColumnDef> getColumnDefs();
@@ -37,7 +37,7 @@ public interface TableDef
 
 	/**
 	 * get the primary key for the table
-	 * 
+	 *
 	 * @return
 	 */
 
@@ -46,7 +46,7 @@ public interface TableDef
 	/**
 	 * Get the table sort order key.
 	 * returns null if the table is not sorted.
-	 * 
+	 *
 	 * @return
 	 */
 
