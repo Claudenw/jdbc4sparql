@@ -30,7 +30,7 @@ import java.util.Set;
  * @param <T>
  *            a NamespacedObject
  */
-public class NameFilter<T extends NamedObject> implements Iterator<T>,
+public class NameFilter<T extends NamedObject<?>> implements Iterator<T>,
 Iterable<T>
 {
 	// the name pattern to match

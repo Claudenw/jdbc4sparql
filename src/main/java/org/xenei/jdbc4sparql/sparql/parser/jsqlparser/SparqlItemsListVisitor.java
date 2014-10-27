@@ -36,6 +36,7 @@ public class SparqlItemsListVisitor implements ItemsListVisitor
 	{
 		SparqlItemsListVisitor.LOG.debug("visit ExpressionList: {}",
 				expressionList);
+		@SuppressWarnings( "unchecked" )
 		final List<Expression> l = expressionList.getExpressions();
 		result = new ExprList();
 		// accept them in reverse order
