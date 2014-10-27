@@ -71,10 +71,10 @@ public abstract class ExpRewriter implements ExprVisitor
 	{
 		for (final ItemName qi : aliasMap.keySet())
 		{
-			if (ColumnName.getNameInstance(qi).matches(ci.getName()))
+			if (new ColumnName(qi).matches(ci.getName()))
 			{
 				final ItemName mapTo = aliasMap.get(qi);
-				return ColumnName.getNameInstance(mapTo.getSchema(),
+				return new ColumnName(mapTo.getSchema(),
 						mapTo.getTable(), ci.getName().getCol());
 			}
 		}
@@ -187,10 +187,10 @@ public abstract class ExpRewriter implements ExprVisitor
 		{
 			for (final ItemName qi : aliasMap.keySet())
 			{
-				if (ColumnName.getNameInstance(qi).matches(ci.getName()))
+				if (new ColumnName(qi).matches(ci.getName()))
 				{
 					ItemName mapTo = aliasMap.get(qi);
-					mapTo = ColumnName.getNameInstance(mapTo.getSchema(),
+					mapTo = new ColumnName(mapTo.getSchema(),
 							mapTo.getTable(), ci.getName().getCol());
 					stack.push(new ExprVar(mapTo.getSPARQLName()));
 					return;

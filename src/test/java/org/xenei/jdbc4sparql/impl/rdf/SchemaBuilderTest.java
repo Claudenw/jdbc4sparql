@@ -52,7 +52,7 @@ public class SchemaBuilderTest
 
 		schema.getTables();
 
-		Assert.assertEquals("schema", schema.getName());
+		Assert.assertEquals("schema", schema.getName().getShortName());
 		Assert.assertNotNull(schema.getTables());
 		Assert.assertEquals(1, schema.getTables().size());
 	}
@@ -68,7 +68,7 @@ public class SchemaBuilderTest
 
 		tableBldr.setSchema(schema).setType("Test table").build(model);
 
-		Assert.assertEquals("schema", schema.getName());
+		Assert.assertEquals("schema", schema.getName().getShortName());
 		Assert.assertNotNull(schema.getTables());
 		Assert.assertEquals(1, schema.getTables().size());
 	}
@@ -81,7 +81,7 @@ public class SchemaBuilderTest
 
 		final Schema schema = builder.build(model);
 		schema.getTables();
-		Assert.assertEquals("schema", schema.getName());
+		Assert.assertEquals("schema", schema.getName().getShortName());
 		Assert.assertNotNull(schema.getTables());
 		Assert.assertEquals(0, schema.getTables().size());
 	}

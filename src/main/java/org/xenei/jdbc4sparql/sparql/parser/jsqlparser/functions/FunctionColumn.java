@@ -45,7 +45,7 @@ public class FunctionColumn implements Column
 
 	@Override
 	public String getRemarks() {
-		return "";
+		return "Function Column";
 	}
 
 	@Override

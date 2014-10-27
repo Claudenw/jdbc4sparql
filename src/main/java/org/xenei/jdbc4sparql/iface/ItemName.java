@@ -32,10 +32,11 @@ public abstract class ItemName
 		this.col = col;
 	}
 	
-	public String getShortName() {
-		return StringUtils.defaultIfEmpty(getCol(), StringUtils.defaultIfEmpty(getTable(), getSchema()));
+	public String getShortName()
+	{
+		return StringUtils.defaultIfEmpty(getCol(),
+				StringUtils.defaultIfEmpty(getTable(), getSchema()));
 	}
-
 
 	@Override
 	public boolean equals( final Object o )
@@ -230,7 +231,11 @@ public abstract class ItemName
 	@Override
 	public String toString()
 	{
-		return getDBName();
+		if (isWild())
+		{
+			return "Wildcard Name";			
+		}
+		return StringUtils.defaultIfBlank( getDBName(), "Blank Name");
 	}
 	
 	/**
@@ -271,7 +276,58 @@ public abstract class ItemName
 			}
 			sb.append(col);
 		}
-
 		return sb.toString();
+	}
+	
+	public static class UsedSegments
+	{
+		private boolean schema;
+		private boolean table;
+		private boolean column;
+		
+		public UsedSegments()
+		{
+			schema = true;
+			table = true;
+			column = true;
+		}
+		
+		public UsedSegments(boolean schema, boolean table, boolean column)
+		{
+			this.schema = schema;
+			this.table = table;
+			this.column = column;
+		}
+		
+		public String getSchema( ItemName name )
+		{
+			return schema?name.getSchema():null;
+		}
+		
+		public String getTable( ItemName name )
+		{
+			return table?name.getTable():null;
+		}
+		
+		public String getColumn( ItemName name )
+		{
+			return column?name.getCol():null;
+		}
+
+		public void setSchema( boolean schema )
+		{
+			this.schema = schema;
+		}
+
+		public void setTable( boolean table )
+		{
+			this.table = table;
+		}
+
+		public void setColumn( boolean column )
+		{
+			this.column = column;
+		}
+	
 	}
 }

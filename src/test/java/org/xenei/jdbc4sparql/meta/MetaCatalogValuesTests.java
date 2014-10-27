@@ -28,6 +28,7 @@ import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 import org.xenei.jdbc4sparql.sparql.SparqlResultSet;
 import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
+import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlParserImpl;
 
 public class MetaCatalogValuesTests
 {
@@ -50,6 +51,7 @@ public class MetaCatalogValuesTests
 		dpProducer = new MemDatasetProducer();
 		catalog = (RdfCatalog) MetaCatalogBuilder.getInstance(dpProducer);
 		catalogs.put( catalog.getName().getShortName(), catalog);
+		parser = new SparqlParserImpl();
 	}
 
 	@After

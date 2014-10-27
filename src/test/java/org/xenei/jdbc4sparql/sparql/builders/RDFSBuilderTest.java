@@ -53,12 +53,11 @@ public class RDFSBuilderTest
 	public void buildRdfTableTest() throws SQLException
 	{
 		final Set<RdfTable> tables = builder.getTables(schema);
-		new HashMap<String, Integer>();
 		final List<String> tblNames = Arrays.asList(tableNames);
 		for (final RdfTable tbl : tables)
 		{
 			Assert.assertTrue(tbl.getName() + " missing from table list",
-					tblNames.contains(tbl.getName()));
+					tblNames.contains(tbl.getName().getShortName()));
 		}
 	}
 

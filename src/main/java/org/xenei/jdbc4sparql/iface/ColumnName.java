@@ -1,5 +1,6 @@
 package org.xenei.jdbc4sparql.iface;
 
+import org.apache.commons.lang.StringUtils;
 import org.xenei.jdbc4sparql.impl.NameUtils;
 
 /**
@@ -7,38 +8,9 @@ import org.xenei.jdbc4sparql.impl.NameUtils;
  */
 public class ColumnName extends ItemName
 {
-	private TableName tableName = null;
+	public static final ColumnName WILD = new ColumnName( null, null, null );
+	public static final ColumnName FUNCTION = new ColumnName( "", "", null );
 	
-	/**
-	 * A wild card column name.
-	 */
-	public static ColumnName WILDNAME = new ColumnName(null, null, null);
-
-	public ColumnName( final ItemName name )
-	{
-		super(name);
-	}
-
-	public ColumnName( final String schema, final String table, final String col )
-	{
-		super(schema, table, col);
-	}
-	
-	public TableName getTableName()
-	{
-		if (tableName == null)
-		{
-			tableName = new TableName( this );
-		}
-		return tableName;
-	}
-
-	public static ColumnName getNameInstance( final String schemaName,
-			final String tableName, final String columnName )
-	{
-		return new ColumnName(schemaName, tableName, columnName);
-	}
-
 	public static ColumnName getNameInstance( final String alias )
 	{
 		if (alias == null)
@@ -50,13 +22,13 @@ public class ColumnName extends ItemName
 		{
 			case 3:
 				return new ColumnName(parts[0], parts[1], parts[2]);
-	
+
 			case 2:
 				return new ColumnName(null, parts[0], parts[1]);
-	
+
 			case 1:
 				return new ColumnName(null, null, parts[0]);
-	
+
 			default:
 				throw new IllegalArgumentException(String.format(
 						"Column name must be 1 to 3 segments not %s as in %s",
@@ -64,9 +36,37 @@ public class ColumnName extends ItemName
 		}
 	}
 
-	public static ColumnName getNameInstance( final ItemName name )
+	private TableName tableName = null;
+
+	public ColumnName( final ItemName name )
 	{
-		return new ColumnName(name);
+		super(name);
 	}
 
+	public ColumnName( final String schema, final String table, final String col )
+	{
+		super(schema, table, col);
+	}
+
+	public TableName getTableName()
+	{
+		if (tableName == null)
+		{
+			tableName = new TableName(this);
+		}
+		return tableName;
+	}
+
+	public ColumnName withSegments( final UsedSegments segments )
+	{
+		return new ColumnName(segments.getSchema(this),
+				segments.getTable(this), segments.getColumn(this));
+	}
+	
+	public ColumnName merge( final ColumnName other )
+	{
+		return new ColumnName( StringUtils.defaultIfEmpty( this.getSchema(), other.getSchema()),
+				StringUtils.defaultIfEmpty( this.getTable(), other.getTable()),
+				StringUtils.defaultIfEmpty( this.getCol(), other.getCol()));
+	}
 }

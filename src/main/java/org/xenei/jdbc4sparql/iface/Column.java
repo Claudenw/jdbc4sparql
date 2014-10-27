@@ -20,38 +20,47 @@ package org.xenei.jdbc4sparql.iface;
 public interface Column extends NamedObject<ColumnName>
 {
 	/**
+	 * Get teh catalog this table is in.
 	 * @return the Catalog this table is in.
 	 */
 	public Catalog getCatalog();
 
+	/**
+	 * Get the column definition for this column.
+	 * @return the ColumnDef
+	 */
 	public ColumnDef getColumnDef();
 
 	/**
-	 * Get the remarks for the column
+	 * Get the remarks for the column.
 	 * 
-	 * @return
+	 * @return the remarks
 	 */
 	public String getRemarks();
 
 	/**
+	 * Get the Schema for this column.
 	 * @return The schema this table is in
 	 */
 	public Schema getSchema();
 
 	/**
+	 * Get the SPARQL name for this column.
 	 * @return The name formatted for SPARQL
 	 */
 	public String getSPARQLName();
 
 	/**
+	 * get the SQL name for this column.
 	 * @return the name formatted for SQL
 	 */
 	public String getSQLName();
 
 	/**
+	 * Get the table this column is in.
 	 * @return The table this column is in.
 	 */
-	public Table getTable();
+	public <T extends Column> Table<T> getTable();
 	
 	/**
 	 * A string used to format the column name with respect to the table so that
@@ -76,6 +85,5 @@ public interface Column extends NamedObject<ColumnName>
 	 * @return
 	 */
 	public boolean isOptional();
-	
-	//public String getFQName();
+
 }

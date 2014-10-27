@@ -15,14 +15,14 @@ public class QueryItemNameTest
 			new TableName("schema", "table") };
 
 	private final ColumnName columnNames[] = {
-			ColumnName.getNameInstance(null, null, null),
-			ColumnName.getNameInstance(null, null, "column"),
-			ColumnName.getNameInstance(null, "table", null),
-			ColumnName.getNameInstance(null, "table", "column"),
-			ColumnName.getNameInstance("schema", null, null),
-			ColumnName.getNameInstance("schema", null, "column"),
-			ColumnName.getNameInstance("schema", "table", null),
-			ColumnName.getNameInstance("schema", "table", "column") };
+			new ColumnName(null, null, null),
+			new ColumnName(null, null, "column"),
+			new ColumnName(null, "table", null),
+			new ColumnName(null, "table", "column"),
+			new ColumnName("schema", null, null),
+			new ColumnName("schema", null, "column"),
+			new ColumnName("schema", "table", null),
+			new ColumnName("schema", "table", "column") };
 
 	private void testEquality( final ItemName name1,
 			final ItemName name2 )
@@ -68,39 +68,39 @@ public class QueryItemNameTest
 			testEquality(columnName, columnName);
 		}
 
-		ColumnName columnName1 = ColumnName.getNameInstance(
+		ColumnName columnName1 = new ColumnName(
 				null, null, null);
-		ColumnName columnName2 = ColumnName.getNameInstance(
+		ColumnName columnName2 = new ColumnName(
 				null, null, null);
 		testEquality(tableName1, tableName2);
 
-		columnName1 = ColumnName.getNameInstance(null, null, "column");
-		columnName2 = ColumnName.getNameInstance(null, null, "column");
+		columnName1 = new ColumnName(null, null, "column");
+		columnName2 = new ColumnName(null, null, "column");
 		testEquality(tableName1, tableName2);
 
-		columnName1 = ColumnName.getNameInstance(null, "table", null);
-		columnName2 = ColumnName.getNameInstance(null, "table", null);
+		columnName1 = new ColumnName(null, "table", null);
+		columnName2 = new ColumnName(null, "table", null);
 		testEquality(columnName1, columnName2);
 
-		columnName1 = ColumnName.getNameInstance(null, "table", "column");
-		columnName2 = ColumnName.getNameInstance(null, "table", "column");
+		columnName1 = new ColumnName(null, "table", "column");
+		columnName2 = new ColumnName(null, "table", "column");
 		testEquality(columnName1, columnName2);
 
-		columnName1 = ColumnName.getNameInstance("schema", null, null);
-		columnName2 = ColumnName.getNameInstance("schema", null, null);
+		columnName1 = new ColumnName("schema", null, null);
+		columnName2 = new ColumnName("schema", null, null);
 		testEquality(columnName1, columnName2);
 
-		columnName1 = ColumnName.getNameInstance("schema", null, "column");
-		columnName2 = ColumnName.getNameInstance("schema", null, "column");
+		columnName1 = new ColumnName("schema", null, "column");
+		columnName2 = new ColumnName("schema", null, "column");
 		testEquality(columnName1, columnName2);
 
-		columnName1 = ColumnName.getNameInstance("schema", "table", null);
-		columnName2 = ColumnName.getNameInstance("schema", "table", null);
+		columnName1 = new ColumnName("schema", "table", null);
+		columnName2 = new ColumnName("schema", "table", null);
 		testEquality(columnName1, columnName2);
 
-		columnName1 = ColumnName.getNameInstance("schema", "table",
+		columnName1 = new ColumnName("schema", "table",
 				"column");
-		columnName2 = ColumnName.getNameInstance("schema", "table",
+		columnName2 = new ColumnName("schema", "table",
 				"column");
 		testEquality(columnName1, columnName2);
 	}

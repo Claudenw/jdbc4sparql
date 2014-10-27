@@ -38,6 +38,7 @@ import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
+import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlParserImpl;
 
 public class SimpleBuilderTest
 {
@@ -75,6 +76,7 @@ public class SimpleBuilderTest
 
 		model.add(foo2, stringCol, "Foo2String");
 		model.add(foo2, intCol, "5");
+
 	}
 
 	@Test
@@ -180,7 +182,7 @@ public class SimpleBuilderTest
 				.setName("builderTest").build(schemaModel);
 
 		builder = new SimpleBuilder();
-
+		parser = new SparqlParserImpl();
 	}
 
 }

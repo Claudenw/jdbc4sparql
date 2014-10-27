@@ -49,6 +49,7 @@ import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTableDef;
 import org.xenei.jdbc4sparql.meta.MetaCatalogBuilder;
 import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
+import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlParserImpl;
 import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlVisitor;
 
 public class RemoteSparqlVisitorTest
@@ -120,6 +121,7 @@ public class RemoteSparqlVisitorTest
 				"%1$s <http://example.com/three> %2$s .");
 		bldr.build(model);
 
+		parser = new SparqlParserImpl();
 		sv = new SparqlVisitor(catalogs, parser, catalog, schema);
 
 	}

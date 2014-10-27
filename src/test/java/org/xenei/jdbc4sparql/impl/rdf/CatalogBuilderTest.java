@@ -40,7 +40,7 @@ public class CatalogBuilderTest
 				.setName("catalog");
 
 		final RdfCatalog catalog = builder.build(model);
-		Assert.assertEquals("catalog", catalog.getName());
+		Assert.assertEquals("catalog", catalog.getName().getShortName());
 		Assert.assertNotNull(catalog.getSchemas());
 		Assert.assertEquals(0, catalog.getSchemas().size());
 		schemaBldr.setCatalog(catalog);
@@ -59,7 +59,7 @@ public class CatalogBuilderTest
 
 		final Catalog catalog = builder.build(model);
 
-		Assert.assertEquals("catalog", catalog.getName());
+		Assert.assertEquals("catalog", catalog.getName().getShortName());
 		Assert.assertNotNull(catalog.getSchemas());
 		Assert.assertEquals(0, catalog.getSchemas().size());
 		Assert.assertNull(catalog.getSchema(MetaCatalogBuilder.SCHEMA_NAME));

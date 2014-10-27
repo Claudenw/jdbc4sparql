@@ -64,11 +64,11 @@ public class NumericFunctionHandler extends AbstractFunctionHandler {
 		ExpressionList l = func.getParameters();
 		if (l == null)
 		{
-			throw new IllegalArgumentException( "No arguments provided to MAX function, one expected");
+			throw getNoArgumentEx(func);
 		}
 		if (l.getExpressions().size()>1)
 		{
-			throw new IllegalArgumentException( "To many arguments provided to MAX function, one expected");
+			throw getToManyArgumentEx(func);
 		}
 		Expression expression = (Expression) l.getExpressions().get(0);
 		expression.accept( exprVisitor );
@@ -82,11 +82,11 @@ public class NumericFunctionHandler extends AbstractFunctionHandler {
 		ExpressionList l = func.getParameters();
 		if (l == null)
 		{
-			throw new IllegalArgumentException( "No arguments provided to MIN function, one expected");
+			throw getNoArgumentEx(func);
 		}
 		if (l.getExpressions().size()>1)
 		{
-			throw new IllegalArgumentException( "To many arguments provided to MIN function, one expected");
+			throw getToManyArgumentEx(func);
 		}
 		Expression expression = (Expression) l.getExpressions().get(0);
 		expression.accept( exprVisitor );
@@ -94,6 +94,16 @@ public class NumericFunctionHandler extends AbstractFunctionHandler {
 //		stack.push( new ExprAggregator( getVar( func, java.sql.Types.NUMERIC ), agg ) );		
 	}
 
+	private IllegalArgumentException getNoArgumentEx(Function func)
+	{
+		return new IllegalArgumentException( String.format( "No arguments provided to %s function, one expected", func.getName().toUpperCase()));
+	}
+	
+	private IllegalArgumentException getToManyArgumentEx(Function func)
+	{
+		return new IllegalArgumentException( String.format( "To many arguments provided to %s function, one expected", func.getName().toUpperCase()));
+	}
+	
 	private void handleCount(Function func) throws SQLException
 	{
 		Aggregator agg = null;
@@ -106,12 +116,12 @@ public class NumericFunctionHandler extends AbstractFunctionHandler {
 			}
 			else
 			{
-				throw new IllegalArgumentException( "No arguments provided to MIN function, one expected");
+				throw getNoArgumentEx(func);
 			}
 		} else
 		if (l.getExpressions().size()>1)
 		{
-			throw new IllegalArgumentException( "To many arguments provided to MIN function, one expected");
+			throw getToManyArgumentEx(func);
 		} else
 		{
 			Expression expression = (Expression) l.getExpressions().get(0);
@@ -126,11 +136,11 @@ public class NumericFunctionHandler extends AbstractFunctionHandler {
 		ExpressionList l = func.getParameters();
 		if (l == null)
 		{
-			throw new IllegalArgumentException( "No arguments provided to MIN function, one expected");
+			throw getNoArgumentEx(func);
 		}
 		if (l.getExpressions().size()>1)
 		{
-			throw new IllegalArgumentException( "To many arguments provided to MIN function, one expected");
+			throw getToManyArgumentEx(func);
 		}
 		Expression expression = (Expression) l.getExpressions().get(0);
 		expression.accept( exprVisitor );

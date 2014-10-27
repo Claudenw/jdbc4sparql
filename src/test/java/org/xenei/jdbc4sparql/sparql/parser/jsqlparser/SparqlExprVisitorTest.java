@@ -1,3 +1,4 @@
+// FIXME reimplement
 //package org.xenei.jdbc4sparql.sparql.parser.jsqlparser;
 //
 //import com.hp.hpl.jena.graph.NodeFactory;

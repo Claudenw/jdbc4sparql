@@ -1,6 +1,8 @@
 package org.xenei.jdbc4sparql;
 
-import static org.junit.Assert.*;
+import com.hp.hpl.jena.query.Query;
+import com.hp.hpl.jena.query.QueryFactory;
+import com.hp.hpl.jena.query.QuerySolution;
 
 import java.net.URL;
 import java.sql.DriverManager;
@@ -12,12 +14,7 @@ import java.util.Properties;
 import org.apache.log4j.Level;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
-
-import com.hp.hpl.jena.query.Query;
-import com.hp.hpl.jena.query.QueryFactory;
-import com.hp.hpl.jena.query.QuerySolution;
 
 public class J4SStatementMemTest extends AbstractJ4SStatementTest
 {
@@ -53,41 +50,60 @@ public class J4SStatementMemTest extends AbstractJ4SStatementTest
 	}
 
 	@Test
-	public void testFunction() throws Exception
+	public void testCountFromTable() throws Exception
 	{
-		
-		String queryString = "SELECT (count(*) as ?x) where { ?fooTable <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.com/jdbc4sparql#fooTable> }"; 
-		Query query = QueryFactory.create(queryString);
-		
-		List<QuerySolution> qs = ((J4SConnection)conn).getCatalogs().get( conn.getCatalog() ).executeLocalQuery(query);
-		
 
 		// count all the rows
-		ResultSet rset = stmt
-				.executeQuery("select count(*) from fooTable" ); 
-		ResultSetMetaData rsm = rset.getMetaData();
-		assertEquals( 1, rsm.getColumnCount());
+		final ResultSet rset = stmt
+				.executeQuery("select count(*) from fooTable");
+		final ResultSetMetaData rsm = rset.getMetaData();
+		Assert.assertEquals(1, rsm.getColumnCount());
 		rset.next();
-		assertEquals( 3L, rset.getLong(1));
+		Assert.assertEquals(3L, rset.getLong(1));
 		rset.close();
-		
+
+	}
+
+	@Test
+	public void testCountFromTableWithEqn() throws Exception
+	{
+
 		// count one row
-		rset = stmt
+		final ResultSet rset = stmt
 				.executeQuery("select count(*) from fooTable where StringCol='Foo2String'");
-		rsm = rset.getMetaData();
-		assertEquals( 1, rsm.getColumnCount());
+		final ResultSetMetaData rsm = rset.getMetaData();
+		Assert.assertEquals(1, rsm.getColumnCount());
 		rset.next();
-		assertEquals( 1L, rset.getLong(1));
+		Assert.assertEquals(1L, rset.getLong(1));
 		rset.close();
-		
+
+	}
+
+	@Test
+	public void testCountFunction() throws Exception
+	{
+
+		final String queryString = "SELECT (count(*) as ?x) where { ?fooTable <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.com/jdbc4sparql#fooTable> }";
+		final Query query = QueryFactory.create(queryString);
+
+		final List<QuerySolution> lqs = ((J4SConnection) conn).getCatalogs()
+				.get(conn.getCatalog()).executeLocalQuery(query);
+		Assert.assertEquals(1, lqs.size());
+		final QuerySolution qs = lqs.get(0);
+		Assert.assertEquals(3, qs.get("x").asLiteral().getValue());
+	}
+
+	@Test
+	public void testCountWithAliasFromTable() throws Exception
+	{
 		// count all the rows
-		rset = stmt
-				.executeQuery("select count(*) as junk from fooTable" ); 
-		rsm = rset.getMetaData();
-		assertEquals( 1, rsm.getColumnCount());
+		final ResultSet rset = stmt
+				.executeQuery("select count(*) as junk from fooTable");
+		final ResultSetMetaData rsm = rset.getMetaData();
+		Assert.assertEquals(1, rsm.getColumnCount());
 		rset.next();
-		assertEquals( 3L, rset.getLong(1));
-		assertEquals( 3L, rset.getLong( "junk"));
+		Assert.assertEquals(3L, rset.getLong(1));
+		Assert.assertEquals(3L, rset.getLong("junk"));
 		rset.close();
 
 		stmt.close();

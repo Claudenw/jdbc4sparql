@@ -360,8 +360,8 @@ public class SparqlExprVisitor implements ExpressionVisitor
 		try {
 			sfh.handle( function );
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new UnsupportedOperationException(
+					String.format( "function %s is not supported", function.getName()));
 		}
 	}
 

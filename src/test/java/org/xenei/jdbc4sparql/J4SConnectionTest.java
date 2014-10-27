@@ -61,12 +61,12 @@ public class J4SConnectionTest
 		final RdfCatalog.Builder builder = new RdfCatalog.Builder();
 		builder.setName("testCatalog");
 		connection = new J4SConnection(driver, url, properties);
-		Assert.assertEquals(2, connection.getCatalogs().keySet().size());
+		Assert.assertEquals(3, connection.getCatalogs().keySet().size());
 
 		final RdfCatalog cat = connection.addCatalog(builder);
 		Assert.assertNotNull(cat);
 		Assert.assertFalse(connection.getCatalogs().isEmpty());
-		Assert.assertEquals(3, connection.getCatalogs().keySet().size());
+		Assert.assertEquals(4, connection.getCatalogs().keySet().size());
 	}
 
 	@Test
@@ -253,7 +253,7 @@ public class J4SConnectionTest
 	{
 		connection = new J4SConnection(driver, url, properties);
 		final Map<String, Catalog> map = connection.getCatalogs();
-		Assert.assertEquals(2, map.size());
+		Assert.assertEquals(3, map.size());
 	}
 
 	@Test
@@ -384,8 +384,9 @@ public class J4SConnectionTest
 		url = new J4SUrl("jdbc:j4s:" + fUrl.toExternalForm());
 		connection = new J4SConnection(driver, url, properties);
 		final Map<String, Catalog> map = connection.getCatalogs();
-		Assert.assertEquals(2, map.keySet().size());
+		Assert.assertEquals(3, map.keySet().size());
 		Assert.assertTrue(map.containsKey("test"));
+		Assert.assertTrue(map.containsKey(""));
 		Assert.assertTrue(map.containsKey(MetaCatalogBuilder.LOCAL_NAME));
 	}
 

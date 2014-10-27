@@ -1,6 +1,5 @@
 package org.xenei.jdbc4sparql.iface;
 
-import org.xenei.jdbc4sparql.impl.NameUtils;
 
 /**
  * Name implementation.
@@ -16,10 +15,15 @@ public class SchemaName extends ItemName
 	{
 		super(schema, null, null);
 	}
-	
-	public TableName getTableName( String tblName )
+
+	public TableName getTableName( final String tblName )
 	{
-		return new TableName( getSchema(), tblName );
+		return new TableName(getSchema(), tblName);
+	}
+
+	public SchemaName withSegments( final UsedSegments segments )
+	{
+		return new SchemaName(segments.getSchema(this));
 	}
 
 }

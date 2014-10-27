@@ -186,7 +186,7 @@ public class CatalogTest
 	@Test
 	public void testGetName()
 	{
-		Assert.assertEquals("testCatalog", catalog.getName());
+		Assert.assertEquals("testCatalog", catalog.getName().getShortName());
 	}
 
 	@Test
@@ -215,7 +215,7 @@ public class CatalogTest
 		
 		RdfSchema schema = catalog.getSchema("testSchema1");
 		Assert.assertNotNull(schema);
-		Assert.assertEquals("testSchema1", schema.getName());
+		Assert.assertEquals("testSchema1", schema.getName().getShortName());
 
 		Assert.assertNull(catalog.getSchema("testSchema2"));
 
@@ -227,11 +227,11 @@ public class CatalogTest
 
 		schema = catalog.getSchema("testSchema1");
 		Assert.assertNotNull(schema);
-		Assert.assertEquals("testSchema1", schema.getName());
+		Assert.assertEquals("testSchema1", schema.getName().getShortName());
 
 		schema = catalog.getSchema("testSchema2");
 		Assert.assertNotNull(schema);
-		Assert.assertEquals("testSchema2", schema.getName());
+		Assert.assertEquals("testSchema2", schema.getName().getShortName());
 
 		entityManager.read(catalog.getResource(), RdfCatalog.class);
 
@@ -240,11 +240,11 @@ public class CatalogTest
 
 		schema = catalog.getSchema("testSchema1");
 		Assert.assertNotNull(schema);
-		Assert.assertEquals("testSchema1", schema.getName());
+		Assert.assertEquals("testSchema1", schema.getName().getShortName());
 
 		schema = catalog.getSchema("testSchema2");
 		Assert.assertNotNull(schema);
-		Assert.assertEquals("testSchema2", schema.getName());
+		Assert.assertEquals("testSchema2", schema.getName().getShortName());
 	}
 
 	@Test
@@ -263,7 +263,7 @@ public class CatalogTest
 		Assert.assertEquals(1, schemas.size());
 		for (final RdfSchema schema : schemas)
 		{
-			Assert.assertTrue(names.contains(schema.getName()));
+			Assert.assertTrue(names.contains(schema.getName().getShortName()));
 			Assert.assertEquals(catalog, schema.getCatalog());
 		}
 
@@ -274,7 +274,7 @@ public class CatalogTest
 		Assert.assertEquals(2, schemas.size());
 		for (final RdfSchema schema : schemas)
 		{
-			Assert.assertTrue(names.contains(schema.getName()));
+			Assert.assertTrue(names.contains(schema.getName().getShortName()));
 		}
 
 		// test reading from model
@@ -285,7 +285,7 @@ public class CatalogTest
 		Assert.assertEquals(2, schemas.size());
 		for (final RdfSchema schema : schemas)
 		{
-			Assert.assertTrue(names.contains(schema.getName()));
+			Assert.assertTrue(names.contains(schema.getName().getShortName()));
 		}
 	}
 
@@ -316,14 +316,14 @@ public class CatalogTest
 	{
 		RdfSchema schema = catalog.getViewSchema();
 		Assert.assertNotNull(schema);
-		Assert.assertEquals("", schema.getName());
+		Assert.assertEquals("", schema.getName().getShortName());
 
 		// check reading from model
 		final RdfCatalog cat2 = entityManager.read(catalog.getResource(),
 				RdfCatalog.class);
 		schema = cat2.getViewSchema();
 		Assert.assertNotNull(schema);
-		Assert.assertEquals("", schema.getName());
+		Assert.assertEquals("", schema.getName().getShortName());
 	}
 
 	@Test

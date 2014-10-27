@@ -43,18 +43,18 @@ import org.junit.Test;
 import org.xenei.jdbc4sparql.LoggingConfig;
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.ColumnName;
-import org.xenei.jdbc4sparql.impl.NameUtils;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTableDef;
 import org.xenei.jdbc4sparql.meta.MetaCatalogBuilder;
 import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
+import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlParserImpl;
 import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlVisitor;
 
 public class LocalSparqlVisitorTest
 {
-	private Map<String,Catalog> catalogs;
+	private Map<String, Catalog> catalogs;
 	private SparqlParser parser;
 	private final CCJSqlParserManager parserManager = new CCJSqlParserManager();
 	private SparqlVisitor sv;
@@ -122,6 +122,7 @@ public class LocalSparqlVisitorTest
 				"%1$s <http://example.com/three> %2$s . ");
 		bldr.build(model);
 
+		parser = new SparqlParserImpl();
 		sv = new SparqlVisitor(catalogs, parser, catalog, schema);
 
 	}
@@ -148,7 +149,8 @@ public class LocalSparqlVisitorTest
 	@Test
 	public void testNoColParse() throws Exception
 	{
-		String[] colNames = {"StringCol","NullableStringCol","IntCol","NullableIntCol"};
+		final String[] colNames = { "StringCol", "NullableStringCol", "IntCol",
+				"NullableIntCol" };
 		final String query = "SELECT * FROM foo";
 		final Statement stmt = parserManager.parse(new StringReader(query));
 		stmt.accept(sv);
@@ -156,9 +158,10 @@ public class LocalSparqlVisitorTest
 
 		final List<Var> vLst = q.getProjectVars();
 		Assert.assertEquals(4, vLst.size());
-		for (int i=0;i<colNames.length;i++)
+		for (final String colName : colNames)
 		{
-			Assert.assertTrue( String.format("missing var %s", colNames[i]), vLst.contains( Var.alloc(colNames[i])));
+			Assert.assertTrue(String.format("missing var %s", colName),
+					vLst.contains(Var.alloc(colName)));
 		}
 		Assert.assertTrue(q.getQueryPattern() instanceof ElementGroup);
 		final ElementGroup eg = (ElementGroup) q.getQueryPattern();
@@ -177,6 +180,20 @@ public class LocalSparqlVisitorTest
 		final List<Var> vLst = q.getProjectVars();
 		Assert.assertEquals(1, vLst.size());
 		Assert.assertEquals(Var.alloc("StringCol"), vLst.get(0));
+
+	}
+
+	@Test
+	public void testSpecColWithAliasParse() throws Exception
+	{
+		final String query = "SELECT StringCol AS bar FROM foo";
+		final Statement stmt = parserManager.parse(new StringReader(query));
+		stmt.accept(sv);
+		final Query q = sv.getBuilder().build();
+
+		final List<Var> vLst = q.getProjectVars();
+		Assert.assertEquals(1, vLst.size());
+		Assert.assertEquals(Var.alloc("bar"), vLst.get(0));
 
 	}
 
@@ -249,24 +266,25 @@ public class LocalSparqlVisitorTest
 	public void testTwoTableJoin() throws Exception
 	{
 		final String[] columnNames = {
+				"?" + new ColumnName(null, "foo", "IntCol").getSPARQLName(),
 				"?" + new ColumnName(null, "foo", "StringCol").getSPARQLName(),
 				"?"
-						+ new ColumnName(null, "foo",
-								"NullableStringCol").getSPARQLName(),
+						+ new ColumnName(null, "foo", "NullableStringCol")
+								.getSPARQLName(),
 				"?" + new ColumnName(null, "foo", "IntCol"),
 				"?"
-						+ new ColumnName(null, "foo",
-								"NullableIntCol").getSPARQLName(),
+						+ new ColumnName(null, "foo", "NullableIntCol")
+								.getSPARQLName(),
 				"?"
-						+ new ColumnName(null, "bar",
-								"BarStringCol").getSPARQLName(),
+						+ new ColumnName(null, "bar", "BarStringCol")
+								.getSPARQLName(),
 				"?"
-						+ new ColumnName(null, "bar",
-								"BarNullableStringCol").getSPARQLName(),
+						+ new ColumnName(null, "bar", "BarNullableStringCol")
+								.getSPARQLName(),
 				"?" + new ColumnName(null, "bar", "BarIntCol").getSPARQLName(),
 				"?"
-						+ new ColumnName(null, "bar",
-								"NullableIntCol").getSPARQLName() };
+						+ new ColumnName(null, "bar", "NullableIntCol")
+								.getSPARQLName() };
 		final String query = "SELECT * FROM foo, bar WHERE foo.IntCol = bar.BarIntCol";
 		final Statement stmt = parserManager.parse(new StringReader(query));
 		stmt.accept(sv);

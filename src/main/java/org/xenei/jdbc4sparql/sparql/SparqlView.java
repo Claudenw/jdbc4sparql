@@ -62,7 +62,7 @@ public class SparqlView extends AbstractTable<Column>
 				@Override
 				public Column map1( QueryColumnInfo o )
 				{
-					return o.getColumn();
+					return new RenamedColumn(o);
 				}}).toList();
 		}
 		return columns;
@@ -74,24 +74,6 @@ public class SparqlView extends AbstractTable<Column>
 		// TODO Auto-generated method stub
 
 	}
-	
-//	private ExtendedIterator<QueryColumnInfo> getRealColumns()
-//	{
-//		return WrappedIterator.create(builder.getResultColumns().iterator())
-//				.filterKeep(new Filter<QueryColumnInfo>(){
-//
-//					@Override
-//					public boolean accept(QueryColumnInfo o) {
-//						return o.isColumn();
-//					}})
-//				.mapWith( new Map1<QueryColumnInfo,QueryColumnInfo>(){
-//
-//			@Override
-//			public QueryColumnInfo map1( QueryColumnInfo o )
-//			{
-//				return ((QueryColumnInfo)o);
-//			}});
-//	}
 
 	@Override
 	public NameFilter<Column> findColumns( final String columnNamePattern )
@@ -122,7 +104,7 @@ public class SparqlView extends AbstractTable<Column>
 	@Override
 	public String getRemarks()
 	{
-		return "";
+		return "SPARQL View";
 	}
 
 	public SparqlResultSet getResultSet() throws SQLException

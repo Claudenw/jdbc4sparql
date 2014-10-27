@@ -7,9 +7,10 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
+import static org.mockito.Mockito.*;
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.ColumnDef;
+import org.xenei.jdbc4sparql.iface.TableName;
 
 public class ColumnBuilderTests
 {
@@ -22,9 +23,10 @@ public class ColumnBuilderTests
 	{
 		model = ModelFactory.createDefaultModel();
 		columnDef = RdfColumnDef.Builder.getStringBuilder().build(model);
-		mockTable = Mockito.mock(RdfTable.class);
-		Mockito.when(mockTable.getResource()).thenReturn(
+		mockTable = mock(RdfTable.class);
+		when(mockTable.getResource()).thenReturn(
 				model.createResource("http://example.com/mockTable"));
+		when(mockTable.getName()).thenReturn( new TableName( "schema", "table" ));
 	}
 
 	@After
@@ -39,7 +41,7 @@ public class ColumnBuilderTests
 		final RdfColumn.Builder builder = new RdfColumn.Builder()
 				.setColumnDef(columnDef).setName("test").setTable(mockTable);
 		final Column cd = builder.build(model);
-		Assert.assertEquals("test", cd.getName());
+		Assert.assertEquals("test", cd.getName().getShortName());
 		Assert.assertEquals(false, cd.getColumnDef().isAutoIncrement());
 		Assert.assertEquals(false, cd.getColumnDef().isCaseSensitive());
 		Assert.assertEquals("", cd.getColumnDef().getColumnClassName());
