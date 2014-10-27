@@ -137,9 +137,9 @@ public class ConfigBuilder
 	 * @throws ParseException
 	 */
 	public static void main( final String[] args ) throws URISyntaxException,
-			IOException, SQLException, ClassNotFoundException,
-			InstantiationException, IllegalAccessException, MissingAnnotation,
-			ParseException
+	IOException, SQLException, ClassNotFoundException,
+	InstantiationException, IllegalAccessException, MissingAnnotation,
+	ParseException
 	{
 		final Options options = ConfigBuilder.getOptions();
 		final CommandLineParser parser = new BasicParser();
@@ -179,7 +179,7 @@ public class ConfigBuilder
 		final FileOutputStream fos2 = new FileOutputStream(outfile);
 		System.out.println("Writing metadata to " + outfile.getCanonicalPath());
 		connection.getDatasetProducer().getMetaDatasetUnionModel()
-				.write(fos2, "N-TRIPLE");
+		.write(fos2, "N-TRIPLE");
 
 		metaData.getColumns(null, null, null, null);
 		System.out.println("Writing configuration to "

@@ -11,7 +11,7 @@ public class SQLDisplay
 {
 
 	public static void listFunctions() throws ClassNotFoundException,
-			SQLException
+	SQLException
 	{
 
 		Class.forName(SQLDisplay.DRIVER);
@@ -24,7 +24,7 @@ public class SQLDisplay
 	}
 
 	public static void listNumericFunctions() throws ClassNotFoundException,
-			SQLException
+	SQLException
 	{
 
 		Class.forName(SQLDisplay.DRIVER);
@@ -42,7 +42,7 @@ public class SQLDisplay
 	}
 
 	public static void listSQLKeywords() throws ClassNotFoundException,
-			SQLException
+	SQLException
 	{
 
 		Class.forName(SQLDisplay.DRIVER);
@@ -59,7 +59,7 @@ public class SQLDisplay
 	}
 
 	public static void listStringFunctions() throws ClassNotFoundException,
-			SQLException
+	SQLException
 	{
 
 		Class.forName(SQLDisplay.DRIVER);
@@ -76,7 +76,7 @@ public class SQLDisplay
 	}
 
 	public static void listSystemFunctions() throws ClassNotFoundException,
-			SQLException
+	SQLException
 	{
 
 		Class.forName(SQLDisplay.DRIVER);

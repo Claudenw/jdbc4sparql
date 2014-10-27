@@ -62,8 +62,8 @@ public class ColumnName extends ItemName
 	{
 		return new ColumnName(StringUtils.defaultIfEmpty(this.getSchema(),
 				other.getSchema()), StringUtils.defaultIfEmpty(this.getTable(),
-				other.getTable()), StringUtils.defaultIfEmpty(this.getCol(),
-				other.getCol()));
+						other.getTable()), StringUtils.defaultIfEmpty(this.getCol(),
+								other.getCol()));
 	}
 
 	public ColumnName withSegments( final UsedSegments segments )

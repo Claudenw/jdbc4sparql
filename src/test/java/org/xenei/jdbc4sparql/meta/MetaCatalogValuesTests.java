@@ -23,8 +23,9 @@ import org.junit.Test;
 import org.xenei.jdbc4sparql.config.MemDatasetProducer;
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.DatasetProducer;
+import org.xenei.jdbc4sparql.iface.Schema;
+import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
-import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 import org.xenei.jdbc4sparql.sparql.SparqlResultSet;
 import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
@@ -69,7 +70,7 @@ public class MetaCatalogValuesTests
 				"ATTR_DEF", "SQL_DATA_TYPE", "SQL_DATETIME_SUB",
 				"CHAR_OCTET_LENGTH", "ORDINAL_POSITION", "IS_NULLABLE",
 				"SCOPE_CATALOG", "SCOPE_SCHEMA", "SCOPE_TABLE",
-				"SOURCE_DATA_TYPE" };
+		"SOURCE_DATA_TYPE" };
 		verifyNames(MetaCatalogBuilder.ATTRIBUTES_TABLE, names);
 
 	}
@@ -79,7 +80,7 @@ public class MetaCatalogValuesTests
 	{
 		final String[] names = { "SCOPE", "COLUMN_NAME", "DATA_TYPE",
 				"TYPE_NAME", "COLUMN_SIZE", "BUFFER_LENGTH", "DECIMAL_DIGITS",
-				"PSEUDO_COLUMN" };
+		"PSEUDO_COLUMN" };
 		verifyNames(MetaCatalogBuilder.BEST_ROW_TABLE, names);
 	}
 
@@ -94,7 +95,7 @@ public class MetaCatalogValuesTests
 	public void testClientInfoTable()
 	{
 		final String[] names = { "NAME", "MAX_LEN", "DEFAULT_VALUE",
-				"DESCRIPTION" };
+		"DESCRIPTION" };
 		verifyNames(MetaCatalogBuilder.CLIENT_INFO_TABLE, names);
 	}
 
@@ -103,7 +104,7 @@ public class MetaCatalogValuesTests
 	{
 		final String[] names = { "TABLE_CAT", "TABLE_SCHEM", "TABLE_NAME",
 				"COLUMN_NAME", "GRANTOR", "GRANTEE", "PRIVILEGE",
-				"IS_GRANTABLE" };
+		"IS_GRANTABLE" };
 		verifyNames(MetaCatalogBuilder.COLUMN_PRIVILIGES_TABLE, names);
 	}
 
@@ -119,22 +120,22 @@ public class MetaCatalogValuesTests
 				"SOURCE_DATA_TYPE", "IS_AUTOINCREMENT" };
 		verifyNames(MetaCatalogBuilder.COLUMNS_TABLE, names);
 
-		final RdfSchema schema = catalog
-				.getSchema(MetaCatalogBuilder.SCHEMA_NAME);
-		final RdfTable table = schema
+		final Schema schema = catalog.getSchema(MetaCatalogBuilder.SCHEMA_NAME);
+		final Table table = schema
 				.getTable(MetaCatalogBuilder.COLUMNS_TABLE);
-		final SparqlResultSet rs = table.getResultSet(catalogs, parser);
+		final SparqlResultSet rs = ((RdfTable) table).getResultSet(catalogs,
+				parser);
 		Assert.assertTrue(rs.first());
 		while (!rs.isAfterLast())
 		{
 			System.out
-					.println(String.format("%s : %s : %s : %s : %d : %s",
-							rs.getString("TABLE_CAT"),
-							rs.getString("TABLE_SCHEM"),
-							rs.getString("TABLE_NAME"),
-							rs.getString("COLUMN_NAME"),
-							rs.getInt("ORDINAL_POSITION"),
-							rs.getString("IS_NULLABLE")));
+			.println(String.format("%s : %s : %s : %s : %d : %s",
+					rs.getString("TABLE_CAT"),
+					rs.getString("TABLE_SCHEM"),
+					rs.getString("TABLE_NAME"),
+					rs.getString("COLUMN_NAME"),
+					rs.getInt("ORDINAL_POSITION"),
+					rs.getString("IS_NULLABLE")));
 			rs.next();
 		}
 	}
@@ -146,7 +147,7 @@ public class MetaCatalogValuesTests
 				"PKTABLE_NAME", "PKCOLUMN_NAME", "FKTABLE_CAT",
 				"FKTABLE_SCHEM", "FKTABLE_NAME", "FKCOLUMN_NAME", "KEY_SEQ",
 				"UPDATE_RULE", "DELETE_RULE", "FK_NAME", "PK_NAME",
-				"DEFERRABILITY" };
+		"DEFERRABILITY" };
 		verifyNames(MetaCatalogBuilder.EXPORTED_KEYS_TABLE, names);
 	}
 
@@ -176,7 +177,7 @@ public class MetaCatalogValuesTests
 				"PKTABLE_NAME", "PKCOLUMN_NAME", "FKTABLE_CAT",
 				"FKTABLE_SCHEM", "FKTABLE_NAME", "FKCOLUMN_NAME", "KEY_SEQ",
 				"UPDATE_RULE", "DELETE_RULE", "FK_NAME", "PK_NAME",
-				"DEFERRABILITY" };
+		"DEFERRABILITY" };
 		verifyNames(MetaCatalogBuilder.IMPORTED_KEYS_TABLE, names);
 	}
 
@@ -231,7 +232,7 @@ public class MetaCatalogValuesTests
 	public void testSuperTablesTable()
 	{
 		final String[] names = { "TABLE_CAT", "TABLE_SCHEM", "TABLE_NAME",
-				"SUPERTABLE_NAME" };
+		"SUPERTABLE_NAME" };
 		verifyNames(MetaCatalogBuilder.SUPER_TABLES_TABLE, names);
 	}
 
@@ -259,10 +260,10 @@ public class MetaCatalogValuesTests
 				"SELF_REFERENCING_COL_NAME", "REF_GENERATION" };
 		verifyNames(MetaCatalogBuilder.TABLES_TABLE, names);
 
-		final RdfSchema schema = catalog
-				.getSchema(MetaCatalogBuilder.SCHEMA_NAME);
-		final RdfTable table = schema.getTable(MetaCatalogBuilder.TABLES_TABLE);
-		final SparqlResultSet rs = table.getResultSet(catalogs, parser);
+		final Schema schema = catalog.getSchema(MetaCatalogBuilder.SCHEMA_NAME);
+		final Table table = schema.getTable(MetaCatalogBuilder.TABLES_TABLE);
+		final SparqlResultSet rs = ((RdfTable) table).getResultSet(catalogs,
+				parser);
 		Assert.assertTrue(rs.first());
 		while (!rs.isAfterLast())
 		{
@@ -306,7 +307,7 @@ public class MetaCatalogValuesTests
 	{
 		final String[] names = { "SCOPE", "COLUMN_NAME", "DATA_TYPE",
 				"TYPE_NAME", "COLUMN_SIZE", "BUFFER_LENGTH", "DECIMAL_DIGITS",
-				"PSEUDO_COLUMN" };
+		"PSEUDO_COLUMN" };
 		verifyNames(MetaCatalogBuilder.VERSION_COLUMNS_TABLE, names);
 	}
 
@@ -317,7 +318,7 @@ public class MetaCatalogValuesTests
 				"PKTABLE_NAME", "PKCOLUMN_NAME", "FKTABLE_CAT",
 				"FKTABLE_SCHEM", "FKTABLE_NAME", "FKCOLUMN_NAME", "KEY_SEQ",
 				"UPDATE_RULE", "DELETE_RULE", "FK_NAME", "PK_NAME",
-				"DEFERRABILITY" };
+		"DEFERRABILITY" };
 		verifyNames(MetaCatalogBuilder.XREF_TABLE, names);
 	}
 

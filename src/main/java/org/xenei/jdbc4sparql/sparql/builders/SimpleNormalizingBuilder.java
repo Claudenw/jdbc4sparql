@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License. You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -76,7 +76,7 @@ public class SimpleNormalizingBuilder extends SimpleBuilder
 			final RdfCatalog catalog, final RdfSchema schema,
 			final RdfTableDef.Builder tableDefBuilder, final Resource tName,
 			final String tableQuerySegment )
-	{
+			{
 		final Model model = catalog.getResource().getModel();
 		final Map<String, String> colNames = new LinkedHashMap<String, String>();
 		final List<QuerySolution> solns = catalog.executeQuery(String.format(
@@ -119,13 +119,13 @@ public class SimpleNormalizingBuilder extends SimpleBuilder
 				final int scale = calculateSize(catalog, tableQuerySegment,
 						columnQuerySegment);
 				builder.setType(Types.VARCHAR)
-						.setNullable(DatabaseMetaData.columnNullable)
-						.setScale(scale).setReadOnly(true);
+				.setNullable(DatabaseMetaData.columnNullable)
+				.setScale(scale).setReadOnly(true);
 				tableDefBuilder.addColumnDef(builder.build(model));
 			}
 		}
 		return colNames;
-	}
+			}
 
 	private void buildTable( final Set<RdfTable> tableSet,
 			final RdfCatalog catalog, final RdfSchema schema,
@@ -156,13 +156,13 @@ public class SimpleNormalizingBuilder extends SimpleBuilder
 
 			// build the table
 			final RdfTable.Builder tblBuilder = new RdfTable.Builder()
-					.setTableDef(tableDef)
-					.addQuerySegment(tableQuerySegment)
-					.setName(tName.getLocalName())
-					.setSchema(schema)
-					.setRemarks(
-							"created by "
-									+ SimpleNormalizingBuilder.BUILDER_NAME);
+			.setTableDef(tableDef)
+			.addQuerySegment(tableQuerySegment)
+			.setName(tName.getLocalName())
+			.setSchema(schema)
+			.setRemarks(
+					"created by "
+							+ SimpleNormalizingBuilder.BUILDER_NAME);
 
 			if (colNames.keySet().size() != tableDef.getColumnCount())
 			{
@@ -179,12 +179,12 @@ public class SimpleNormalizingBuilder extends SimpleBuilder
 
 				final String cName = iter.next();
 				tblBuilder
-						.setColumn(i, cName)
-						.getColumn(i)
-						.addQuerySegment(colNames.get(cName))
-						.setRemarks(
-								"created by "
-										+ SimpleNormalizingBuilder.BUILDER_NAME);
+				.setColumn(i, cName)
+				.getColumn(i)
+				.addQuerySegment(colNames.get(cName))
+				.setRemarks(
+						"created by "
+								+ SimpleNormalizingBuilder.BUILDER_NAME);
 				i++;
 			}
 
@@ -206,22 +206,22 @@ public class SimpleNormalizingBuilder extends SimpleBuilder
 		final Iterator<Integer> iter = WrappedIterator.create(
 				results.iterator()).mapWith(new Map1<QuerySolution, Integer>() {
 
-			@Override
-			public Integer map1( final QuerySolution o )
-			{
-				final RDFNode node = o.get("col");
-				if (node == null)
-				{
-					return 0;
-				}
-				if (node.isLiteral())
-				{
-					return TypeConverter.getJavaValue(node.asLiteral())
-							.toString().length();
-				}
-				return node.toString().length();
-			}
-		});
+					@Override
+					public Integer map1( final QuerySolution o )
+					{
+						final RDFNode node = o.get("col");
+						if (node == null)
+						{
+							return 0;
+						}
+						if (node.isLiteral())
+						{
+							return TypeConverter.getJavaValue(node.asLiteral())
+									.toString().length();
+						}
+						return node.toString().length();
+					}
+				});
 		int retval = 0;
 		while (iter.hasNext())
 		{
@@ -242,7 +242,7 @@ public class SimpleNormalizingBuilder extends SimpleBuilder
 		final Model model = schema.getResource().getModel();
 		final RdfColumnDef.Builder colBuilder = new RdfColumnDef.Builder();
 		colBuilder.setType(Types.VARCHAR)
-				.setNullable(DatabaseMetaData.columnNoNulls).setReadOnly(true);
+		.setNullable(DatabaseMetaData.columnNoNulls).setReadOnly(true);
 		// FIXME does this need a scale?
 		idColumnDef = colBuilder.build(model);
 		final HashSet<RdfTable> retval = new HashSet<RdfTable>();
@@ -270,8 +270,8 @@ public class SimpleNormalizingBuilder extends SimpleBuilder
 		final int scale = calculateSize(catalog, tableQuerySegment,
 				columnQuerySegment);
 		builder.setType(Types.VARCHAR)
-				.setNullable(DatabaseMetaData.columnNoNulls).setScale(scale)
-				.setReadOnly(true);
+		.setNullable(DatabaseMetaData.columnNoNulls).setScale(scale)
+		.setReadOnly(true);
 		tblDefBuilder.addColumnDef(builder.build(model));
 
 		// add the key segments
@@ -297,26 +297,26 @@ public class SimpleNormalizingBuilder extends SimpleBuilder
 
 		final RdfTableDef tableDef = tblDefBuilder.build(model);
 		final RdfTable.Builder tblBuilder = new RdfTable.Builder()
-				.setTableDef(tableDef)
-				.addQuerySegment(tableQuerySegment)
-				.setName(tblName)
-				.setSchema(schema)
-				.setRemarks(
-						"created by " + SimpleNormalizingBuilder.BUILDER_NAME);
+		.setTableDef(tableDef)
+		.addQuerySegment(tableQuerySegment)
+		.setName(tblName)
+		.setSchema(schema)
+		.setRemarks(
+				"created by " + SimpleNormalizingBuilder.BUILDER_NAME);
 
 		tblBuilder
-				.setColumn(0, "id")
-				.getColumn(0)
-				.addQuerySegment(SimpleNormalizingBuilder.ID_COLUMN_SEGMENT)
-				.setRemarks(
-						"created by " + SimpleNormalizingBuilder.BUILDER_NAME);
+		.setColumn(0, "id")
+		.getColumn(0)
+		.addQuerySegment(SimpleNormalizingBuilder.ID_COLUMN_SEGMENT)
+		.setRemarks(
+				"created by " + SimpleNormalizingBuilder.BUILDER_NAME);
 
 		tblBuilder
-				.setColumn(1, cName.getLocalName())
-				.getColumn(1)
-				.addQuerySegment(columnQuerySegment)
-				.setRemarks(
-						"created by " + SimpleNormalizingBuilder.BUILDER_NAME);
+		.setColumn(1, cName.getLocalName())
+		.getColumn(1)
+		.addQuerySegment(columnQuerySegment)
+		.setRemarks(
+				"created by " + SimpleNormalizingBuilder.BUILDER_NAME);
 
 		return tblBuilder.build(model);
 	}

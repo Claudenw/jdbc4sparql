@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License. You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -59,7 +59,6 @@ import org.xenei.jdbc4sparql.impl.NameUtils;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfKey;
 import org.xenei.jdbc4sparql.impl.rdf.RdfKeySegment;
-import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTableDef;
 import org.xenei.jdbc4sparql.impl.virtual.VirtualSchema;
 import org.xenei.jdbc4sparql.impl.virtual.VirtualTable;
@@ -124,7 +123,7 @@ public class SparqlQueryBuilder
 	private final RdfCatalog catalog;
 
 	// sparql schema for default tables
-	private final RdfSchema schema;
+	private final Schema schema;
 
 	// the list of columns not to be included in the "all columns" result.
 	// perhaps this should store column so that tables may be checked in case
@@ -149,7 +148,7 @@ public class SparqlQueryBuilder
 	 */
 	public SparqlQueryBuilder( final Map<String, Catalog> catalogs,
 			final SparqlParser parser, final RdfCatalog catalog,
-			final RdfSchema schema )
+			final Schema schema )
 	{
 		if (catalog == null)
 		{
@@ -322,7 +321,7 @@ public class SparqlQueryBuilder
 		infoSet.addRequiredColumns();
 	}
 
-	public Node addTable( final Table<Column> table, final TableName name,
+	public Node addTable( final Table table, final TableName name,
 			final boolean optional )
 	{
 		if (SparqlQueryBuilder.LOG.isDebugEnabled())
@@ -365,7 +364,7 @@ public class SparqlQueryBuilder
 							: "required", name, asName));
 		}
 		checkBuilt();
-		final Collection<Table<Column>> tables = findTables(name);
+		final Collection<Table> tables = findTables(name);
 
 		if (tables.size() > 1)
 		{
@@ -532,7 +531,7 @@ public class SparqlQueryBuilder
 		}
 	}
 
-	private Collection<Table<Column>> findTables( final ItemName name )
+	private Collection<Table> findTables( final ItemName name )
 	{
 
 		if (SparqlQueryBuilder.LOG.isDebugEnabled())
@@ -542,11 +541,11 @@ public class SparqlQueryBuilder
 					name.getSchema(), name.getTable(), catalog.getName()));
 		}
 
-		final List<Table<Column>> tables = new ArrayList<Table<Column>>();
+		final List<Table> tables = new ArrayList<Table>();
 
 		for (final Schema schema : catalog.findSchemas(name.getSchema()))
 		{
-			for (final Table<Column> table : schema.findTables(name.getTable()))
+			for (final Table table : schema.findTables(name.getTable()))
 			{
 				tables.add(table);
 			}
@@ -735,7 +734,7 @@ public class SparqlQueryBuilder
 	{
 		columnName = new ColumnName(StringUtils.defaultString(
 				columnName.getSchema(), ""), StringUtils.defaultString(
-				columnName.getTable(), ""), columnName.getShortName());
+						columnName.getTable(), ""), columnName.getShortName());
 		QueryTableInfo tableInfo = infoSet.getTable(columnName.getTableName());
 		Column column = null;
 		if (tableInfo == null)
@@ -746,7 +745,7 @@ public class SparqlQueryBuilder
 			{
 				schema = new VirtualSchema(cat, columnName.getSchema());
 			}
-			Table<Column> table = schema.getTable(columnName.getTable());
+			Table table = schema.getTable(columnName.getTable());
 			if (table == null)
 			{
 				table = new VirtualTable(schema, columnName.getTable());

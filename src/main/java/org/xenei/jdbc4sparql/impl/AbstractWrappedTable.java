@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License. You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -33,11 +33,10 @@ import org.xenei.jdbc4sparql.iface.TypeConverter;
 /**
  * An abstract table implementation
  */
-public abstract class AbstractWrappedTable<T extends Column> extends
-		AbstractTable<T>
+public abstract class AbstractWrappedTable extends AbstractTable
 {
 	// the table definition
-	private final Table<T> table;
+	private final Table table;
 	// the schema this table is in.
 	private final Schema schema;
 
@@ -49,7 +48,7 @@ public abstract class AbstractWrappedTable<T extends Column> extends
 	 * @param table
 	 *            The definition of the table.
 	 */
-	public AbstractWrappedTable( final Schema schema, final Table<T> table )
+	public AbstractWrappedTable( final Schema schema, final Table table )
 	{
 		this.schema = schema;
 		this.table = table;
@@ -66,7 +65,7 @@ public abstract class AbstractWrappedTable<T extends Column> extends
 	}
 
 	@Override
-	public List<T> getColumnList()
+	public List<Column> getColumnList()
 	{
 		return table.getColumnList();
 	}
@@ -94,7 +93,7 @@ public abstract class AbstractWrappedTable<T extends Column> extends
 		return table.getTableDef().getSuperTableDef();
 	}
 
-	protected Table<T> getTable()
+	protected Table getTable()
 	{
 		return table;
 	}

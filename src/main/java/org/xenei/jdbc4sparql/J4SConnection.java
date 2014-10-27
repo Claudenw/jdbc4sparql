@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License. You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -205,8 +205,8 @@ public class J4SConnection implements Connection
 	}
 
 	private void configureCatalogMap() throws IOException,
-			InstantiationException, IllegalAccessException,
-			ClassNotFoundException, MissingAnnotation, SQLException
+	InstantiationException, IllegalAccessException,
+	ClassNotFoundException, MissingAnnotation, SQLException
 	{
 		// if this is a config file just read the file.
 		if (url.getType().equals(J4SUrl.TYPE_CONFIG))
@@ -242,8 +242,8 @@ public class J4SConnection implements Connection
 			if (url.getType().equals(J4SUrl.TYPE_SPARQL))
 			{
 				catalog = new RdfCatalog.Builder()
-						.setSparqlEndpoint(url.getEndpoint().toURL())
-						.setName(getCatalog()).build(model);
+				.setSparqlEndpoint(url.getEndpoint().toURL())
+				.setName(getCatalog()).build(model);
 			}
 			else
 			{
@@ -256,7 +256,7 @@ public class J4SConnection implements Connection
 			}
 
 			final RdfSchema schema = new RdfSchema.Builder()
-					.setCatalog(catalog).setName(schemaName).build(model);
+			.setCatalog(catalog).setName(schemaName).build(model);
 
 			catalogMap.put(catalog.getName().getShortName(), catalog);
 
@@ -320,7 +320,7 @@ public class J4SConnection implements Connection
 	@Override
 	public Statement createStatement( final int resultSetType,
 			final int resultSetConcurrency, final int resultSetHoldability )
-			throws SQLException
+					throws SQLException
 	{
 		final Catalog catalog = catalogMap.get(getCatalog());
 		if (catalog instanceof RdfCatalog)
@@ -453,7 +453,7 @@ public class J4SConnection implements Connection
 	}
 
 	private void loadConfig( final URL url ) throws IOException,
-			MissingAnnotation
+	MissingAnnotation
 	{
 		// config specifies producer
 		dsProducer = DatasetProducer.Loader.load(properties, url);
@@ -560,7 +560,7 @@ public class J4SConnection implements Connection
 	@Override
 	public PreparedStatement prepareStatement( final String arg0,
 			final int arg1, final int arg2, final int arg3 )
-			throws SQLException
+					throws SQLException
 	{
 		throw new SQLFeatureNotSupportedException();
 	}

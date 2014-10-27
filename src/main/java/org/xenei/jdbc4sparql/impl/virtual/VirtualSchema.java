@@ -9,11 +9,12 @@ import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.NameFilter;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.SchemaName;
+import org.xenei.jdbc4sparql.iface.Table;
 
 public class VirtualSchema implements Schema
 {
 	private final Catalog catalog;
-	private final Map<String, VirtualTable> tables;
+	private final Map<String, Table> tables;
 	private final SchemaName schemaName;
 
 	public VirtualSchema( final Catalog catalog )
@@ -25,14 +26,14 @@ public class VirtualSchema implements Schema
 	{
 		this.catalog = catalog;
 		this.schemaName = new SchemaName(name);
-		tables = new HashMap<String, VirtualTable>();
+		tables = new HashMap<String, Table>();
 		tables.put("", new VirtualTable(this));
 	}
 
 	@Override
-	public NameFilter<VirtualTable> findTables( final String tableNamePattern )
+	public NameFilter<Table> findTables( final String tableNamePattern )
 	{
-		return new NameFilter<VirtualTable>(tableNamePattern, tables.values());
+		return new NameFilter<Table>(tableNamePattern, tables.values());
 	}
 
 	@Override
@@ -48,15 +49,15 @@ public class VirtualSchema implements Schema
 	}
 
 	@Override
-	public VirtualTable getTable( final String tableName )
+	public Table getTable( final String tableName )
 	{
 		return tables.get(tableName);
 	}
 
 	@Override
-	public Set<? extends VirtualTable> getTables()
+	public Set<Table> getTables()
 	{
-		return new HashSet<VirtualTable>(tables.values());
+		return new HashSet<Table>(tables.values());
 	}
 
 }

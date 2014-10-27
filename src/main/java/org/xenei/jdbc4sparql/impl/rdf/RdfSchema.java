@@ -26,7 +26,7 @@ import org.xenei.jena.entities.annotations.Subject;
 
 @Subject( namespace = "http://org.xenei.jdbc4sparql/entity/Schema#" )
 public class RdfSchema extends RdfNamespacedObject implements Schema,
-		ResourceWrapper
+ResourceWrapper
 {
 	public static class Builder implements Schema
 	{
@@ -118,14 +118,14 @@ public class RdfSchema extends RdfNamespacedObject implements Schema,
 		private String getFQName()
 		{
 			final StringBuilder sb = new StringBuilder()
-					.append(catalog.getResource().getURI()).append(" ")
-					.append(name);
+			.append(catalog.getResource().getURI()).append(" ")
+			.append(name);
 
 			return String
 					.format("%s/instance/N%s", ResourceBuilder
 							.getFQName(RdfSchema.class),
 
-					UUID.nameUUIDFromBytes(sb.toString().getBytes()).toString());
+							UUID.nameUUIDFromBytes(sb.toString().getBytes()).toString());
 		}
 
 		@Override
@@ -162,7 +162,7 @@ public class RdfSchema extends RdfNamespacedObject implements Schema,
 	}
 
 	public class ChangeListener extends
-			AbstractChangeListener<Schema, RdfTable>
+	AbstractChangeListener<Schema, RdfTable>
 	{
 		public ChangeListener()
 		{
@@ -199,7 +199,7 @@ public class RdfSchema extends RdfNamespacedObject implements Schema,
 	private RdfCatalog catalog;
 	private SchemaName schemaName = null;
 
-	private Set<RdfTable> tableList;
+	private Set<Table> tableList;
 
 	@Predicate( impl = true )
 	public void addTables( final RdfTable table )
@@ -228,17 +228,17 @@ public class RdfSchema extends RdfNamespacedObject implements Schema,
 	}
 
 	@Override
-	public NameFilter<RdfTable> findTables( final String tableNamePattern )
+	public NameFilter<Table> findTables( final String tableNamePattern )
 	{
-		return new NameFilter<RdfTable>(tableNamePattern, readTables());
+		return new NameFilter<Table>(tableNamePattern, readTables());
 	}
 
-	public Set<RdfTable> fixupTables( final Set<RdfTable> tables )
+	public Set<Table> fixupTables( final Set<Table> tables )
 	{
-		final Set<RdfTable> tableList = new HashSet<RdfTable>();
-		for (final RdfTable table : tables)
+		final Set<Table> tableList = new HashSet<Table>();
+		for (final Table table : tables)
 		{
-			tableList.add(RdfTable.Builder.fixupSchema(this, table));
+			tableList.add(RdfTable.Builder.fixupSchema(this, (RdfTable) table));
 		}
 		this.tableList = tableList;
 		return tableList;
@@ -274,20 +274,20 @@ public class RdfSchema extends RdfNamespacedObject implements Schema,
 	}
 
 	@Override
-	public RdfTable getTable( final String tableName )
+	public Table getTable( final String tableName )
 	{
-		final NameFilter<RdfTable> nf = findTables(tableName);
+		final NameFilter<Table> nf = findTables(tableName);
 		return nf.hasNext() ? nf.next() : null;
 	}
 
 	@Override
 	@Predicate( impl = true, type = RdfTable.class, postExec = "fixupTables" )
-	public Set<RdfTable> getTables()
+	public Set<Table> getTables()
 	{
 		throw new EntityManagerRequiredException();
 	}
 
-	private Set<RdfTable> readTables()
+	private Set<Table> readTables()
 	{
 		if (tableList == null)
 		{

@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License. You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -36,8 +36,7 @@ import org.apache.commons.discovery.resource.ClassLoaders;
 import org.apache.commons.discovery.resource.classes.DiscoverClasses;
 import org.apache.commons.discovery.resource.names.DiscoverServiceNames;
 import org.xenei.jdbc4sparql.iface.Catalog;
-import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
-import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
+import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 
 /**
@@ -209,7 +208,7 @@ public interface SparqlParser
 		 *             on error.
 		 */
 		public static Element parse( final String qstr ) throws ParseException,
-				QueryException
+		QueryException
 		{
 
 			final Query query = new Query();
@@ -253,8 +252,7 @@ public interface SparqlParser
 	 * @return The SparqlQueryBuilder.
 	 * @throws SQLException
 	 */
-	SparqlQueryBuilder parse( Map<String, Catalog> catalogs,
-			RdfCatalog catalog, RdfSchema schema, String sqlQuery )
-			throws SQLException;
+	SparqlQueryBuilder parse( Map<String, Catalog> catalogs, Catalog catalog,
+			Schema schema, String sqlQuery ) throws SQLException;
 
 }

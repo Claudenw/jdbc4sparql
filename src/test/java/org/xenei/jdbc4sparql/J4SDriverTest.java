@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License. You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -46,7 +46,7 @@ public class J4SDriverTest
 
 	private List<String> getColumnNames( final String table )
 			throws SQLException
-	{
+			{
 		final ResultSet rs = conn.getMetaData().getColumns(conn.getCatalog(),
 				conn.getSchema(), table, null);
 		final List<String> colNames = new ArrayList<String>();
@@ -55,7 +55,7 @@ public class J4SDriverTest
 			colNames.add(rs.getString(4));
 		}
 		return colNames;
-	}
+			}
 
 	@Before
 	public void setup() throws Exception
@@ -73,7 +73,7 @@ public class J4SDriverTest
 
 	@Test
 	public void testTestDriverLoadingIdPwd() throws ClassNotFoundException,
-			SQLException
+	SQLException
 	{
 		conn = DriverManager.getConnection(url, "myschema", "mypassw");
 		verifyCorrect();
@@ -92,7 +92,7 @@ public class J4SDriverTest
 
 	@Test
 	public void testTestDriverLoadingNoProps() throws ClassNotFoundException,
-			SQLException
+	SQLException
 	{
 		conn = DriverManager.getConnection(url);
 		verifyCorrect();

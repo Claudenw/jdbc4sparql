@@ -8,7 +8,7 @@ import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.NameFilter;
 import org.xenei.jdbc4sparql.iface.Table;
 
-public abstract class AbstractTable<T extends Column> implements Table<T>
+public abstract class AbstractTable implements Table
 {
 
 	public AbstractTable()
@@ -29,15 +29,15 @@ public abstract class AbstractTable<T extends Column> implements Table<T>
 	}
 
 	@Override
-	public T getColumn( final int idx )
+	public Column getColumn( final int idx )
 	{
 		return getColumnList().get(idx);
 	}
 
 	@Override
-	public T getColumn( final String name )
+	public Column getColumn( final String name )
 	{
-		for (final T col : getColumnList())
+		for (final Column col : getColumnList())
 		{
 			if (col.getName().equals(name))
 			{
@@ -81,7 +81,7 @@ public abstract class AbstractTable<T extends Column> implements Table<T>
 	}
 
 	@Override
-	public Iterator<T> getColumns()
+	public Iterator<Column> getColumns()
 	{
 		return getColumnList().iterator();
 	}

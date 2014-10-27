@@ -86,7 +86,7 @@ public interface DatasetProducer
 			{
 				throw new IllegalStateException(
 						DatasetProducer.PROPERTIES_ENTRY_NAME
-								+ " was not the first entry");
+						+ " was not the first entry");
 			}
 			final Properties props = new Properties();
 			props.load(zis);

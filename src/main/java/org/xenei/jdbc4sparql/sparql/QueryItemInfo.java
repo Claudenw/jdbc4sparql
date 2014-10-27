@@ -37,7 +37,7 @@ public abstract class QueryItemInfo<T extends ItemName>
 
 	/**
 	 * Get the name for the query item.
-	 * 
+	 *
 	 * @return the item name.
 	 */
 	public T getName()
@@ -47,7 +47,7 @@ public abstract class QueryItemInfo<T extends ItemName>
 
 	/**
 	 * Get the variable for the query item.
-	 * 
+	 *
 	 * @return The variable node
 	 */
 	public Var getVar()
@@ -57,7 +57,7 @@ public abstract class QueryItemInfo<T extends ItemName>
 
 	/**
 	 * returns the optional flag.
-	 * 
+	 *
 	 * @return True if this item is optional.
 	 */
 	public boolean isOptional()
@@ -72,7 +72,7 @@ public abstract class QueryItemInfo<T extends ItemName>
 
 	/**
 	 * Set the optional flag
-	 * 
+	 *
 	 * @param optional
 	 *            The value of the optional flag.
 	 */

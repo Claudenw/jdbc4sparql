@@ -22,8 +22,8 @@ public class SchemaBuilderTest
 	{
 		model = ModelFactory.createDefaultModel();
 		final RdfTableDef.Builder builder = new RdfTableDef.Builder()
-				.addColumnDef(
-						RdfColumnDef.Builder.getStringBuilder().build(model))
+		.addColumnDef(
+				RdfColumnDef.Builder.getStringBuilder().build(model))
 				.addColumnDef(
 						RdfColumnDef.Builder.getIntegerBuilder().build(model));
 		tableBldr = new RdfTable.Builder().setName("testTable")

@@ -3,9 +3,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -84,7 +84,7 @@ public class RDFSBuilder implements SchemaBuilder
 		}
 		colNames.add(stmt.getSubject());
 		bldr.setType(Types.VARCHAR).setSigned(false)
-				.setNullable(DatabaseMetaData.columnNullable);
+		.setNullable(DatabaseMetaData.columnNullable);
 		idData.addColumnDef(bldr.build(model));
 	}
 
@@ -185,13 +185,13 @@ public class RDFSBuilder implements SchemaBuilder
 			// .setNamespace(r.asNode().getNameSpace())
 			// .setLocalName(idTable)
 			.setType(Types.VARCHAR).setSigned(false)
-					.setNullable(DatabaseMetaData.columnNoNulls);
+			.setNullable(DatabaseMetaData.columnNoNulls);
 			idDef.addColumnDef(bldr.build(model));
 			idDef.setPrimaryKey(new RdfKey.Builder()
-					.setUnique(true)
-					.addSegment(
-							new RdfKeySegment.Builder().setIdx(0)
-									.setAscending(true).build(model))
+			.setUnique(true)
+			.addSegment(
+					new RdfKeySegment.Builder().setIdx(0)
+					.setAscending(true).build(model))
 					.build(model));
 		}
 
@@ -200,7 +200,7 @@ public class RDFSBuilder implements SchemaBuilder
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * org.xenei.jdbc4sparql.sparql.builders.SchemaBuilder#getTableDefs(org.
 	 * xenei.jdbc4sparql.sparql.SparqlCatalog)
@@ -233,12 +233,12 @@ public class RDFSBuilder implements SchemaBuilder
 		{
 			model.createResource(fqName);
 			final RdfTable.Builder builder = new RdfTable.Builder()
-					.setTableDef(tables.get(fqName).build(model))
-					.setSchema(schema).setColumn(0, "id");
+			.setTableDef(tables.get(fqName).build(model))
+			.setSchema(schema).setColumn(0, "id");
 			builder.getColumn(0).addQuerySegment("BIND( %1$s AS %2$s ) . ");
 			Resource baseR = null
-			// .setRemarks(getComment( tblRes ))
-			;
+					// .setRemarks(getComment( tblRes ))
+					;
 			if (fqName.endsWith("_ID"))
 			{
 				baseR = catalog.getLocalModel().getResource(
@@ -265,17 +265,17 @@ public class RDFSBuilder implements SchemaBuilder
 					final Resource cr = colNames.get(i);
 					builder.setColumn(i + 1, getName(cr));
 					builder.getColumn(i + 1)
-							.setRemarks(getComment(cr))
-							.addQuerySegment(
-									String.format("%s <%s> %s .", "%1$s",
-											colNames.get(i), "%2$s"));
+					.setRemarks(getComment(cr))
+					.addQuerySegment(
+							String.format("%s <%s> %s .", "%1$s",
+									colNames.get(i), "%2$s"));
 				}
 			}
 			builder.addQuerySegment(
 					String.format(
 							"%s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <%s> .",
 							"%1$s", baseR.getURI())).setName(getName(baseR))
-					.setRemarks(getComment(baseR));
+							.setRemarks(getComment(baseR));
 			retval.add(builder.build(model));
 		}
 		return retval;

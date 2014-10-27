@@ -23,7 +23,7 @@ import org.xenei.jena.entities.annotations.Subject;
 
 @Subject( namespace = "http://org.xenei.jdbc4sparql/entity/TableDef#" )
 public class RdfTableDef extends RdfNamespacedObject implements TableDef,
-		ResourceWrapper
+ResourceWrapper
 {
 	public static class Builder implements TableDef
 	{
@@ -161,7 +161,7 @@ public class RdfTableDef extends RdfNamespacedObject implements TableDef,
 			for (final ColumnDef cd : columnDefs)
 			{
 				sb.append(((ResourceWrapper) cd).getResource().getURI())
-						.append(" ");
+				.append(" ");
 			}
 			if (primaryKey != null)
 			{

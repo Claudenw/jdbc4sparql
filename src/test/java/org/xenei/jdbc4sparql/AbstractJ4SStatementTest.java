@@ -28,7 +28,7 @@ public abstract class AbstractJ4SStatementTest
 
 	protected List<String> getColumnNames( final String table )
 			throws SQLException
-	{
+			{
 		final ResultSet rs = conn.getMetaData().getColumns(conn.getCatalog(),
 				conn.getSchema(), table, null);
 		final List<String> colNames = new ArrayList<String>();
@@ -40,7 +40,7 @@ public abstract class AbstractJ4SStatementTest
 			colNames.add(rs.getString(4));
 		}
 		return colNames;
-	}
+			}
 
 	@After
 	public void tearDown()
@@ -69,7 +69,7 @@ public abstract class AbstractJ4SStatementTest
 
 	@Test
 	public void testBadValueInEqualsConst() throws ClassNotFoundException,
-			SQLException
+	SQLException
 	{
 		final ResultSet rset = stmt
 				.executeQuery("select fooTable.IntCol, barTable.IntCol from fooTable inner, barTable where fooTable.StringCol=barTable.StringCol and fooTable.IntCol='Foo3String'");
@@ -85,7 +85,7 @@ public abstract class AbstractJ4SStatementTest
 
 	@Test
 	public void testColumnEqualConst() throws ClassNotFoundException,
-			SQLException
+	SQLException
 	{
 		final List<String> colNames = getColumnNames("fooTable");
 		final ResultSet rset = stmt
@@ -118,12 +118,12 @@ public abstract class AbstractJ4SStatementTest
 	{
 		final String[][] results = {
 				{ "[StringCol]=FooString",
-						"[NullableStringCol]=FooNullableFooString",
-						"[NullableIntCol]=6", "[IntCol]=5",
-						"[type]=http://example.com/jdbc4sparql#fooTable" },
+					"[NullableStringCol]=FooNullableFooString",
+					"[NullableIntCol]=6", "[IntCol]=5",
+				"[type]=http://example.com/jdbc4sparql#fooTable" },
 				{ "[StringCol]=Foo2String", "[NullableStringCol]=null",
-						"[NullableIntCol]=null", "[IntCol]=5",
-						"[type]=http://example.com/jdbc4sparql#fooTable" } };
+					"[NullableIntCol]=null", "[IntCol]=5",
+				"[type]=http://example.com/jdbc4sparql#fooTable" } };
 
 		// get the column names.
 		final List<String> colNames = getColumnNames("fooTable");
@@ -195,12 +195,12 @@ public abstract class AbstractJ4SStatementTest
 	{
 		final String[][] results = {
 				{ "[StringCol]=FooString",
-						"[NullableStringCol]=FooNullableFooString",
-						"[NullableIntCol]=6", "[IntCol]=5",
-						"[type]=http://example.com/jdbc4sparql#fooTable" },
+					"[NullableStringCol]=FooNullableFooString",
+					"[NullableIntCol]=6", "[IntCol]=5",
+				"[type]=http://example.com/jdbc4sparql#fooTable" },
 				{ "[StringCol]=Foo2String", "[NullableStringCol]=null",
-						"[NullableIntCol]=null", "[IntCol]=5",
-						"[type]=http://example.com/jdbc4sparql#fooTable" } };
+					"[NullableIntCol]=null", "[IntCol]=5",
+				"[type]=http://example.com/jdbc4sparql#fooTable" } };
 
 		// get the column names.
 		final List<String> colNames = getColumnNames("fooTable");

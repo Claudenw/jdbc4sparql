@@ -21,7 +21,7 @@ import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 public class NumericFunctionHandler extends AbstractFunctionHandler
 {
 	public static final String[] NUMERIC_FUNCTIONS = { "MAX", "MIN", "COUNT",
-			"SUM" };
+	"SUM" };
 	private static final int MAX = 0;
 	private static final int MIN = 1;
 	private static final int COUNT = 2;
@@ -39,14 +39,14 @@ public class NumericFunctionHandler extends AbstractFunctionHandler
 	{
 		return new IllegalArgumentException(String.format(
 				"No arguments provided to %s function, one expected", func
-						.getName().toUpperCase()));
+				.getName().toUpperCase()));
 	}
 
 	private IllegalArgumentException getToManyArgumentEx( final Function func )
 	{
 		return new IllegalArgumentException(String.format(
 				"To many arguments provided to %s function, one expected", func
-						.getName().toUpperCase()));
+				.getName().toUpperCase()));
 	}
 
 	@Override

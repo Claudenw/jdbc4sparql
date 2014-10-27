@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License. You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -69,7 +69,7 @@ public class SimpleBuilder implements SchemaBuilder
 	protected Map<String, String> addColumnDefs( final RdfCatalog catalog,
 			final RdfTableDef.Builder tableDefBuilder, final Resource tName,
 			final String tableQuerySegment )
-	{
+			{
 		final Model model = catalog.getResource().getModel();
 		final Map<String, String> colNames = new LinkedHashMap<String, String>();
 		final List<QuerySolution> solns = catalog.executeQuery(String.format(
@@ -100,12 +100,12 @@ public class SimpleBuilder implements SchemaBuilder
 			final int scale = calculateSize(catalog, tableQuerySegment,
 					columnQuerySegment);
 			builder.setType(Types.VARCHAR)
-					.setNullable(DatabaseMetaData.columnNullable)
-					.setScale(scale).setReadOnly(true);
+			.setNullable(DatabaseMetaData.columnNullable)
+			.setScale(scale).setReadOnly(true);
 			tableDefBuilder.addColumnDef(builder.build(model));
 		}
 		return colNames;
-	}
+			}
 
 	protected int calculateSize( final RdfCatalog catalog,
 			final String tableQS, final String columnQS )
@@ -119,22 +119,22 @@ public class SimpleBuilder implements SchemaBuilder
 		final Iterator<Integer> iter = WrappedIterator.create(
 				results.iterator()).mapWith(new Map1<QuerySolution, Integer>() {
 
-			@Override
-			public Integer map1( final QuerySolution o )
-			{
-				final RDFNode node = o.get("col");
-				if (node == null)
-				{
-					return 0;
-				}
-				if (node.isLiteral())
-				{
-					return TypeConverter.getJavaValue(node.asLiteral())
-							.toString().length();
-				}
-				return node.toString().length();
-			}
-		});
+					@Override
+					public Integer map1( final QuerySolution o )
+					{
+						final RDFNode node = o.get("col");
+						if (node == null)
+						{
+							return 0;
+						}
+						if (node.isLiteral())
+						{
+							return TypeConverter.getJavaValue(node.asLiteral())
+									.toString().length();
+						}
+						return node.toString().length();
+					}
+				});
 		int retval = 0;
 		while (iter.hasNext())
 		{
@@ -168,10 +168,10 @@ public class SimpleBuilder implements SchemaBuilder
 			{
 				final RdfTableDef tableDef = builder.build(model);
 				final RdfTable.Builder tblBuilder = new RdfTable.Builder()
-						.setTableDef(tableDef)
-						.addQuerySegment(tableQuerySegment)
-						.setName(tName.getLocalName()).setSchema(schema)
-						.setRemarks("created by " + SimpleBuilder.BUILDER_NAME);
+				.setTableDef(tableDef)
+				.addQuerySegment(tableQuerySegment)
+				.setName(tName.getLocalName()).setSchema(schema)
+				.setRemarks("created by " + SimpleBuilder.BUILDER_NAME);
 
 				if (colNames.keySet().size() != tableDef.getColumnCount())
 				{
@@ -179,7 +179,7 @@ public class SimpleBuilder implements SchemaBuilder
 							String.format(
 									"There must be %s column names, %s provided",
 									tableDef.getColumnCount(), colNames
-											.keySet().size()));
+									.keySet().size()));
 				}
 				final Iterator<String> iter = colNames.keySet().iterator();
 				int i = 0;
@@ -188,11 +188,11 @@ public class SimpleBuilder implements SchemaBuilder
 
 					final String cName = iter.next();
 					tblBuilder
-							.setColumn(i, cName)
-							.getColumn(i)
-							.addQuerySegment(colNames.get(cName))
-							.setRemarks(
-									"created by " + SimpleBuilder.BUILDER_NAME);
+					.setColumn(i, cName)
+					.getColumn(i)
+					.addQuerySegment(colNames.get(cName))
+					.setRemarks(
+							"created by " + SimpleBuilder.BUILDER_NAME);
 					i++;
 				}
 				retval.add(tblBuilder.build(model));

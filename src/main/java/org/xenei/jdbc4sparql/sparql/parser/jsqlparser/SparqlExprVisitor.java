@@ -1,18 +1,18 @@
 /*
  * This file is part of jdbc4sparql jsqlparser implementation.
- * 
+ *
  * jdbc4sparql jsqlparser implementation is free software: you can redistribute
  * it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * jdbc4sparql jsqlparser implementation is distributed in the hope that it will
  * be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with jdbc4sparql jsqlparser implementation. If not, see
  * <http://www.gnu.org/licenses/>.
@@ -192,7 +192,7 @@ public class SparqlExprVisitor implements ExpressionVisitor
 					sb.append(
 							workingToken.length() > 0 ? Pattern
 									.quote(workingToken.toString()) : "")
-							.append(conversion.get(candidate));
+									.append(conversion.get(candidate));
 					workingToken.setLength(0);
 					wildcard = true;
 				}

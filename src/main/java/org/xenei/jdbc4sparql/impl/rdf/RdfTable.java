@@ -40,10 +40,9 @@ import org.xenei.jena.entities.annotations.Predicate;
 import org.xenei.jena.entities.annotations.Subject;
 
 @Subject( namespace = "http://org.xenei.jdbc4sparql/entity/Table#" )
-public class RdfTable extends RdfNamespacedObject implements Table<RdfColumn>,
-		ResourceWrapper
+public class RdfTable extends RdfNamespacedObject implements Table, ResourceWrapper
 {
-	public static class Builder implements Table<RdfColumn.Builder>
+	public static class Builder implements Table
 	{
 		public static RdfTable fixupSchema( final RdfSchema schema,
 				final RdfTable table )
@@ -131,7 +130,7 @@ public class RdfTable extends RdfNamespacedObject implements Table<RdfColumn>,
 					final RdfColumn col = bldr.build(model);
 					if (retval.columns == null)
 					{
-						retval.columns = new ArrayList<RdfColumn>();
+						retval.columns = new ArrayList<Column>();
 					}
 					retval.columns.add(col);
 
@@ -260,28 +259,28 @@ public class RdfTable extends RdfNamespacedObject implements Table<RdfColumn>,
 		}
 
 		@Override
-		public List<RdfColumn.Builder> getColumnList()
+		public List<Column> getColumnList()
 		{
-			return Arrays.asList(columns);
+			return new ArrayList<Column>(Arrays.asList(columns));
 		}
 
 		@Override
-		public Iterator<RdfColumn.Builder> getColumns()
+		public Iterator<Column> getColumns()
 		{
-			return Arrays.asList(columns).iterator();
+			return getColumnList().iterator();
 		}
 
 		public String getFQName()
 		{
 			final StringBuilder sb = new StringBuilder()
-					.append(schema.getResource().getURI()).append(" ")
-					.append(name).append(" ").append(getQuerySegmentFmt());
+			.append(schema.getResource().getURI()).append(" ")
+			.append(name).append(" ").append(getQuerySegmentFmt());
 
 			return String
 					.format("%s/instance/N%s", ResourceBuilder
 							.getFQName(RdfTable.class),
 							UUID.nameUUIDFromBytes(sb.toString().getBytes())
-									.toString());
+							.toString());
 		}
 
 		@Override
@@ -337,7 +336,7 @@ public class RdfTable extends RdfNamespacedObject implements Table<RdfColumn>,
 		}
 
 		@Override
-		public Table<RdfColumn.Builder> getSuperTable()
+		public Table getSuperTable()
 		{
 			throw new UnsupportedOperationException();
 		}
@@ -375,8 +374,8 @@ public class RdfTable extends RdfNamespacedObject implements Table<RdfColumn>,
 						columns.length - 1));
 			}
 			final RdfColumn.Builder builder = new RdfColumn.Builder()
-					.setColumnDef(tableDef.getColumnDef(idx)).setName(name)
-					.setTable(this);
+			.setColumnDef(tableDef.getColumnDef(idx)).setName(name)
+			.setTable(this);
 
 			columns[idx] = builder;
 			return this;
@@ -432,7 +431,7 @@ public class RdfTable extends RdfNamespacedObject implements Table<RdfColumn>,
 		}
 	}
 
-	private List<RdfColumn> columns;
+	private List<Column> columns;
 	private RdfTableDef tableDef;
 	private RdfSchema schema;
 	private SparqlQueryBuilder queryBuilder;
@@ -448,12 +447,12 @@ public class RdfTable extends RdfNamespacedObject implements Table<RdfColumn>,
 		try
 		{
 			// preserve the column objects
-			final List<RdfColumn> cols = getColumnList();
+			final List<Column> cols = getColumnList();
 
 			final Property p = model.createProperty(
 					ResourceBuilder.getNamespace(RdfTable.class), "column");
 			tbl.getRequiredProperty(p).getResource().as(RDFList.class)
-					.removeList();
+			.removeList();
 
 			// delete the column objects
 			for (final Column col : cols)
@@ -522,7 +521,7 @@ public class RdfTable extends RdfNamespacedObject implements Table<RdfColumn>,
 	@Override
 	public int getColumnIndex( final String columnName )
 	{
-		final List<RdfColumn> cols = getColumnList();
+		final List<Column> cols = getColumnList();
 		for (int i = 0; i < cols.size(); i++)
 		{
 			if (cols.get(i).getName().equals(columnName))
@@ -534,14 +533,14 @@ public class RdfTable extends RdfNamespacedObject implements Table<RdfColumn>,
 	}
 
 	@Override
-	public synchronized List<RdfColumn> getColumnList()
+	public synchronized List<Column> getColumnList()
 	{
 		if (columns == null)
 		{
 			readTableDef(); // force read of table def.
 			final EntityManager entityManager = EntityManagerFactory
 					.getEntityManager();
-			columns = new ArrayList<RdfColumn>();
+			columns = new ArrayList<Column>();
 			final Resource tbl = this.getResource();
 			final Model model = tbl.getModel();
 
@@ -568,7 +567,7 @@ public class RdfTable extends RdfNamespacedObject implements Table<RdfColumn>,
 	}
 
 	@Override
-	public Iterator<RdfColumn> getColumns()
+	public Iterator<Column> getColumns()
 	{
 		return getColumnList().iterator();
 	}

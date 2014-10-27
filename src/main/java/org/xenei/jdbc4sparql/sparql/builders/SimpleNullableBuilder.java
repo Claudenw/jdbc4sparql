@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License. You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -53,7 +53,7 @@ public class SimpleNullableBuilder extends SimpleBuilder
 	protected Map<String, String> addColumnDefs( final RdfCatalog catalog,
 			final RdfTableDef.Builder tableDefBuilder, final Resource tName,
 			final String tableQuerySegment )
-	{
+			{
 		final Model model = catalog.getResource().getModel();
 		final Map<String, String> colNames = new LinkedHashMap<String, String>();
 		final List<QuerySolution> solns = catalog.executeQuery(String.format(
@@ -83,10 +83,10 @@ public class SimpleNullableBuilder extends SimpleBuilder
 			final int scale = calculateSize(catalog, tableQuerySegment,
 					columnQuerySegment);
 			builder.setType(type).setNullable(DatabaseMetaData.columnNullable)
-					.setScale(scale).setReadOnly(true);
+			.setScale(scale).setReadOnly(true);
 			tableDefBuilder.addColumnDef(builder.build(model));
 		}
 		return colNames;
-	}
+			}
 
 }

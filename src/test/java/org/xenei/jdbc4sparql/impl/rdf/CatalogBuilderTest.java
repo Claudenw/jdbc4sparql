@@ -37,7 +37,7 @@ public class CatalogBuilderTest
 	public void testAddSchema()
 	{
 		final RdfCatalog.Builder builder = new RdfCatalog.Builder()
-				.setName("catalog");
+		.setName("catalog");
 
 		final RdfCatalog catalog = builder.build(model);
 		Assert.assertEquals("catalog", catalog.getName().getShortName());
@@ -55,7 +55,7 @@ public class CatalogBuilderTest
 	public void testDefault()
 	{
 		final RdfCatalog.Builder builder = new RdfCatalog.Builder()
-				.setName("catalog");
+		.setName("catalog");
 
 		final Catalog catalog = builder.build(model);
 
@@ -69,7 +69,7 @@ public class CatalogBuilderTest
 	public void testFindSchema()
 	{
 		final RdfCatalog.Builder builder = new RdfCatalog.Builder()
-				.setName("catalog");
+		.setName("catalog");
 
 		final RdfCatalog catalog = builder.build(model);
 
@@ -84,7 +84,7 @@ public class CatalogBuilderTest
 	public void testGetSchema() throws Exception
 	{
 		final RdfCatalog.Builder builder = new RdfCatalog.Builder()
-				.setName("catalog");
+		.setName("catalog");
 
 		final RdfCatalog catalog = builder.build(model);
 
@@ -98,7 +98,7 @@ public class CatalogBuilderTest
 	public void testGetSchemas()
 	{
 		final RdfCatalog.Builder builder = new RdfCatalog.Builder()
-				.setName("catalog");
+		.setName("catalog");
 
 		final RdfCatalog catalog = builder.build(model);
 

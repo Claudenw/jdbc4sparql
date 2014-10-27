@@ -4,7 +4,7 @@ import org.xenei.jdbc4sparql.iface.NamespacedObject;
 import org.xenei.jena.entities.ResourceWrapper;
 
 public abstract class RdfNamespacedObject implements NamespacedObject,
-		ResourceWrapper
+ResourceWrapper
 {
 
 	@Override

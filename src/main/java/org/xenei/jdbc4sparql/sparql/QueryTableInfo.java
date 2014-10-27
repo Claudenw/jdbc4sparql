@@ -40,7 +40,7 @@ public class QueryTableInfo extends QueryItemInfo<TableName>
 	 *
 	 */
 	private final QueryInfoSet infoSet;
-	private final Table<Column> table;
+	private final Table table;
 	private final ElementGroup eg;
 
 	// list of type filters to add at the end of the query
@@ -49,7 +49,7 @@ public class QueryTableInfo extends QueryItemInfo<TableName>
 	private static Logger LOG = LoggerFactory.getLogger(QueryTableInfo.class);
 
 	public QueryTableInfo( final QueryInfoSet infoSet,
-			final ElementGroup queryElementGroup, final Table<Column> table,
+			final ElementGroup queryElementGroup, final Table table,
 			final TableName alias, final boolean optional )
 	{
 		super(alias, optional);
@@ -200,8 +200,8 @@ public class QueryTableInfo extends QueryItemInfo<TableName>
 		QueryTableInfo.LOG.debug("adding required columns for {}", getName());
 		final String eol = System.getProperty("line.separator");
 		final StringBuilder queryFmt = new StringBuilder("{ ")
-				.append(StringUtils.defaultString(table.getQuerySegmentFmt(),
-						""));
+		.append(StringUtils.defaultString(table.getQuerySegmentFmt(),
+				""));
 
 		for (final Iterator<Column> colIter = table.getColumns(); colIter
 				.hasNext();)
@@ -370,7 +370,7 @@ public class QueryTableInfo extends QueryItemInfo<TableName>
 		return getName().getDBName();
 	}
 
-	public Table<Column> getTable()
+	public Table getTable()
 	{
 		return table;
 	}

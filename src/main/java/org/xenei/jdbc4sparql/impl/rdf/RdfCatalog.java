@@ -49,7 +49,7 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 		private URL sparqlEndpoint;
 		private String name;
 
-		private final Set<RdfSchema> schemas = new HashSet<RdfSchema>();
+		private final Set<Schema> schemas = new HashSet<Schema>();
 
 		public Builder()
 		{
@@ -121,10 +121,6 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 				model.register(retval.new ChangeListener());
 				retval.localModel = localModel != null ? localModel
 						: ModelFactory.createMemModelMaker().createFreshModel();
-
-				// ensure default schema exists
-				// new RdfSchema.Builder().setName(Catalog.DEFAULT_SCHEMA)
-				// .setCatalog(retval).build(model);
 				return retval;
 			}
 			catch (final MissingAnnotation e)
@@ -163,9 +159,9 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 		}
 
 		@Override
-		public NameFilter<RdfSchema> findSchemas( final String schemaNamePattern )
+		public NameFilter<Schema> findSchemas( final String schemaNamePattern )
 		{
-			return new NameFilter<RdfSchema>(schemaNamePattern, schemas);
+			return new NameFilter<Schema>(schemaNamePattern, schemas);
 		}
 
 		private String getFQName()
@@ -185,14 +181,14 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 		}
 
 		@Override
-		public RdfSchema getSchema( final String schemaName )
+		public Schema getSchema( final String schemaName )
 		{
-			final NameFilter<RdfSchema> nf = findSchemas(schemaName);
+			final NameFilter<Schema> nf = findSchemas(schemaName);
 			return nf.hasNext() ? nf.next() : null;
 		}
 
 		@Override
-		public Set<? extends Schema> getSchemas()
+		public Set<Schema> getSchemas()
 		{
 			return schemas;
 		}
@@ -218,7 +214,7 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 	}
 
 	public class ChangeListener extends
-			AbstractChangeListener<Catalog, RdfSchema>
+	AbstractChangeListener<Catalog, RdfSchema>
 	{
 
 		public ChangeListener()
@@ -256,7 +252,7 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 	// the model that contains the sparql data.
 	private Model localModel;
 
-	private Set<RdfSchema> schemaList;
+	private Set<Schema> schemaList;
 
 	private static Logger LOG = LoggerFactory.getLogger(RdfCatalog.class);
 
@@ -341,17 +337,18 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 	}
 
 	@Override
-	public NameFilter<RdfSchema> findSchemas( final String schemaNamePattern )
+	public NameFilter<Schema> findSchemas( final String schemaNamePattern )
 	{
-		return new NameFilter<RdfSchema>(schemaNamePattern, readSchemas());
+		return new NameFilter<Schema>(schemaNamePattern, readSchemas());
 	}
 
-	public Set<RdfSchema> fixupSchemas( final Set<RdfSchema> schemas )
+	public Set<Schema> fixupSchemas( final Set<Schema> schemas )
 	{
-		final Set<RdfSchema> schemaList = new HashSet<RdfSchema>();
-		for (final RdfSchema schema : schemas)
+		final Set<Schema> schemaList = new HashSet<Schema>();
+		for (final Schema schema : schemas)
 		{
-			schemaList.add(RdfSchema.Builder.fixupCatalog(this, schema));
+			schemaList.add(RdfSchema.Builder.fixupCatalog(this,
+					(RdfSchema) schema));
 		}
 		this.schemaList = schemaList;
 		return schemaList;
@@ -376,16 +373,16 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 	}
 
 	@Override
-	public RdfSchema getSchema( final String schemaName )
+	public Schema getSchema( final String schemaName )
 	{
-		final NameFilter<RdfSchema> nf = findSchemas(StringUtils
+		final NameFilter<Schema> nf = findSchemas(StringUtils
 				.defaultString(schemaName));
 		return nf.hasNext() ? nf.next() : null;
 	}
 
 	@Override
 	@Predicate( impl = true, type = RdfSchema.class, postExec = "fixupSchemas" )
-	public Set<RdfSchema> getSchemas()
+	public Set<Schema> getSchemas()
 	{
 		throw new EntityManagerRequiredException();
 	}
@@ -412,9 +409,9 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 	 *
 	 * @return The Schema.
 	 */
-	public RdfSchema getViewSchema()
+	public Schema getViewSchema()
 	{
-		RdfSchema retval = getSchema("");
+		Schema retval = getSchema("");
 		if (retval == null)
 		{
 			retval = new RdfSchema.Builder().setName("").setCatalog(this)
@@ -428,7 +425,7 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 		return getSparqlEndpoint() != null;
 	}
 
-	private Set<RdfSchema> readSchemas()
+	private Set<Schema> readSchemas()
 	{
 		if (schemaList == null)
 		{

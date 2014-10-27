@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License. You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,7 +20,7 @@ package org.xenei.jdbc4sparql.iface;
 import java.util.Iterator;
 import java.util.List;
 
-public interface Table<T extends Column> extends NamedObject<TableName>
+public interface Table extends NamedObject<TableName>
 {
 
 	/**
@@ -77,23 +77,23 @@ public interface Table<T extends Column> extends NamedObject<TableName>
 	 */
 	public int getColumnIndex( String columnName );
 
-	List<T> getColumnList();
+	List<Column> getColumnList();
 
 	/**
 	 * Get an iterator over all the columns in order.
 	 *
 	 * @return The column iterator.
 	 */
-	Iterator<T> getColumns();
+	Iterator<Column> getColumns();
 
 	/**
 	 * A string used to format the column name with respect to the table so that
 	 * the SPARQL query will retrieve the proper data. For example
 	 * "%1$s <http://example.com/jdbc4sparql#NullableIntCol> %2$s"
-	 * 
+	 *
 	 * %1$s is the table name
 	 * %2$s is the column name
-	 * 
+	 *
 	 * @return Format string for query segments in SPARQL query
 	 */
 	public String getQuerySegmentFmt();
@@ -121,7 +121,7 @@ public interface Table<T extends Column> extends NamedObject<TableName>
 	 *
 	 * @return The super table or null.
 	 */
-	Table<T> getSuperTable();
+	Table getSuperTable();
 
 	public TableDef getTableDef();
 
@@ -137,14 +137,9 @@ public interface Table<T extends Column> extends NamedObject<TableName>
 	/**
 	 * Return true if this column has querySegments.
 	 * Most columns do, however, some function columns do not.
-	 * 
+	 *
 	 * @return
 	 */
 	public boolean hasQuerySegments();
 
-	/**
-	 *
-	 * @return
-	 */
-	// public String getFQName();
 }

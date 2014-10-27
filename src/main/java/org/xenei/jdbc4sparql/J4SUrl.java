@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License. You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -42,8 +42,8 @@ public class J4SUrl
 	public static final String TYPE_SPARQL = "sparql";
 	public static final String TYPE_CONFIG = "config";
 	public static final String[] ARGS = { J4SPropertyNames.CATALOG_PROPERTY,
-			J4SPropertyNames.TYPE_PROPERTY, J4SPropertyNames.BUILDER_PROPERTY,
-			J4SPropertyNames.PARSER_PROPERTY };
+		J4SPropertyNames.TYPE_PROPERTY, J4SPropertyNames.BUILDER_PROPERTY,
+		J4SPropertyNames.PARSER_PROPERTY };
 
 	private URI endpoint;
 	private SparqlParser parser;
@@ -217,7 +217,7 @@ public class J4SUrl
 			{
 				throw new IllegalArgumentException(
 						"Not a valid J4S JDBC URL -- '" + arg
-								+ "' is not a recognized argument");
+						+ "' is not a recognized argument");
 			}
 			properties.put(arg,
 					StringUtils.defaultIfBlank(matcher.group(4), ""));
@@ -255,7 +255,7 @@ public class J4SUrl
 				{
 					throw new IllegalArgumentException(
 							"Not a valid J4S JDBC URL -- '" + type
-									+ "' is not a recognized type value");
+							+ "' is not a recognized type value");
 				}
 			}
 		}
@@ -301,7 +301,7 @@ public class J4SUrl
 			for (final Object key : properties.keySet())
 			{
 				sb.append(key.toString()).append("=")
-						.append(properties.getProperty(key.toString()));
+				.append(properties.getProperty(key.toString()));
 				if (++i < limit)
 				{
 					sb.append("&");

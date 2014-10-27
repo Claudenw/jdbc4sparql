@@ -134,7 +134,7 @@ public class J4SStatementOuterJoinTest
 	@Test
 	@Ignore( "Right Outer Join not suported." )
 	public void testRightOuterJoin() throws ClassNotFoundException,
-			SQLException
+	SQLException
 	{
 		final ResultSet rset = stmt
 				.executeQuery("select fooTable.IntCol, barTable.IntCol from fooTable right outer join barTable on fooTable.IntCol=barTable.IntCol");

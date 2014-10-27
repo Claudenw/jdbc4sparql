@@ -25,7 +25,7 @@ public class NameUtils
 		return ("v_" + UUID.randomUUID().toString()).replace("-", "_");
 	}
 
-	public static String getCursorName( final Table<?> t )
+	public static String getCursorName( final Table t )
 	{
 		return NameUtils.getCursorName(t.getName());
 	}

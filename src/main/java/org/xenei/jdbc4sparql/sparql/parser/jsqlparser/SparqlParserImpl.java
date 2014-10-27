@@ -1,18 +1,18 @@
 /*
  * This file is part of jdbc4sparql jsqlparser implementation.
- * 
+ *
  * jdbc4sparql jsqlparser implementation is free software: you can redistribute
  * it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * jdbc4sparql jsqlparser implementation is distributed in the hope that it will
  * be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with jdbc4sparql jsqlparser implementation. If not, see
  * <http://www.gnu.org/licenses/>.
@@ -33,8 +33,8 @@ import net.sf.jsqlparser.util.deparser.StatementDeParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xenei.jdbc4sparql.iface.Catalog;
+import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
-import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.functions.NumericFunctionHandler;
@@ -91,8 +91,8 @@ public class SparqlParserImpl implements SparqlParser
 
 	@Override
 	public SparqlQueryBuilder parse( final Map<String, Catalog> catalogs,
-			final RdfCatalog catalog, final RdfSchema schema,
-			final String sqlQuery ) throws SQLException
+			final Catalog catalog, final Schema schema, final String sqlQuery )
+			throws SQLException
 	{
 		SparqlParserImpl.LOG.debug("catalog: '{}' parsing SQL: {}",
 				catalog.getName(), sqlQuery);
@@ -100,8 +100,8 @@ public class SparqlParserImpl implements SparqlParser
 		{
 			final Statement stmt = parserManager.parse(new StringReader(
 					sqlQuery));
-			final SparqlVisitor sv = new SparqlVisitor(catalogs, this, catalog,
-					schema);
+			final SparqlVisitor sv = new SparqlVisitor(catalogs, this,
+					(RdfCatalog) catalog, schema);
 			stmt.accept(sv);
 			if (SparqlParserImpl.LOG.isDebugEnabled())
 			{

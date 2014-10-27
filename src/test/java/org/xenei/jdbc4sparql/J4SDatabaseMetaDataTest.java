@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License. You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -61,9 +61,9 @@ public class J4SDatabaseMetaDataTest
 	{
 		final String eol = System.getProperty("line.separator");
 		final String queryStr =
-		// "SELECT DISTINCT  ?TABLE_CAT ?TABLE_SCHEM ?TABLE_NAME ?COLUMN_NAME ?DATA_TYPE ?TYPE_NAME ?COLUMN_SIZE ?BUFFER_LENGTH ?DECIMAL_DIGITS ?NUM_PREC_RADIX ?NULLABLE ?REMARKS ?COLUMN_DEF ?SQL_DATA_TYPE ?SQL_DATETIME_SUB ?CHAR_OCTET_LENGTH ?ORDINAL_POSITION ?IS_NULLABLE ?SCOPE_CATLOG ?SCOPE_SCHEMA ?SCOPE_TABLE ?SOURCE_DATA_TYPE ?IS_AUTOINCREMENT"
-		// +eol+
-		"SELECT DISTINCT ?Schema·Columns ?TABLE_CAT ?Schema·Columns·TABLE_CAT"
+				// "SELECT DISTINCT  ?TABLE_CAT ?TABLE_SCHEM ?TABLE_NAME ?COLUMN_NAME ?DATA_TYPE ?TYPE_NAME ?COLUMN_SIZE ?BUFFER_LENGTH ?DECIMAL_DIGITS ?NUM_PREC_RADIX ?NULLABLE ?REMARKS ?COLUMN_DEF ?SQL_DATA_TYPE ?SQL_DATETIME_SUB ?CHAR_OCTET_LENGTH ?ORDINAL_POSITION ?IS_NULLABLE ?SCOPE_CATLOG ?SCOPE_SCHEMA ?SCOPE_TABLE ?SOURCE_DATA_TYPE ?IS_AUTOINCREMENT"
+				// +eol+
+				"SELECT DISTINCT ?Schema·Columns ?TABLE_CAT ?Schema·Columns·TABLE_CAT"
 				+ eol
 				+ "		WHERE"
 				+ eol
@@ -284,7 +284,7 @@ public class J4SDatabaseMetaDataTest
 
 	@Before
 	public void setup() throws IOException, InstantiationException,
-			IllegalAccessException, ClassNotFoundException
+	IllegalAccessException, ClassNotFoundException
 	{
 		LoggingConfig.setConsole(Level.DEBUG);
 		LoggingConfig.setRootLogger(Level.INFO);
@@ -315,7 +315,7 @@ public class J4SDatabaseMetaDataTest
 				"ATTR_DEF", "SQL_DATA_TYPE", "SQL_DATETIME_SUB",
 				"CHAR_OCTET_LENGTH", "ORDINAL_POSITION", "IS_NULLABLE",
 				"SCOPE_CATALOG", "SCOPE_SCHEMA", "SCOPE_TABLE",
-				"SOURCE_DATA_TYPE" };
+		"SOURCE_DATA_TYPE" };
 		columnChecking(MetaCatalogBuilder.ATTRIBUTES_TABLE, names);
 	}
 

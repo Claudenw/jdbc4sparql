@@ -28,8 +28,7 @@ import org.xenei.jena.entities.annotations.Predicate;
 import org.xenei.jena.entities.annotations.Subject;
 
 @Subject( namespace = "http://org.xenei.jdbc4sparql/entity/Column#" )
-public class RdfColumn extends RdfNamespacedObject implements Column,
-		ResourceWrapper
+public class RdfColumn extends RdfNamespacedObject implements Column, ResourceWrapper
 {
 	public static class Builder implements Column
 	{
@@ -41,7 +40,7 @@ public class RdfColumn extends RdfNamespacedObject implements Column,
 		}
 
 		private ColumnDef columnDef;
-		private Table<?> table;
+		private Table table;
 		private String name;
 		private final Class<? extends RdfColumn> typeClass = RdfColumn.class;
 		private String remarks = null;
@@ -174,8 +173,8 @@ public class RdfColumn extends RdfNamespacedObject implements Column,
 		{
 			final ResourceWrapper rw = (ResourceWrapper) getColumnDef();
 			final StringBuilder sb = new StringBuilder()
-					.append(rw.getResource().getURI()).append(" ").append(name)
-					.append(" ").append(getQuerySegmentFmt());
+			.append(rw.getResource().getURI()).append(" ").append(name)
+			.append(" ").append(getQuerySegmentFmt());
 			return String.format("%s/instance/UUID-%s",
 					ResourceBuilder.getFQName(RdfColumn.class),
 					UUID.nameUUIDFromBytes(sb.toString().getBytes()));

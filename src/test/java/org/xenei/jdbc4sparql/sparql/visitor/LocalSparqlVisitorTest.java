@@ -1,18 +1,18 @@
 /*
  * This file is part of jdbc4sparql jsqlparser implementation.
- * 
+ *
  * jdbc4sparql jsqlparser implementation is free software: you can redistribute
  * it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * jdbc4sparql jsqlparser implementation is distributed in the hope that it will
  * be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with jdbc4sparql jsqlparser implementation. If not, see
  * <http://www.gnu.org/licenses/>.
@@ -71,23 +71,23 @@ public class LocalSparqlVisitorTest
 		final Model model = ModelFactory.createDefaultModel();
 		final Model localModel = ModelFactory.createDefaultModel();
 		final RdfCatalog catalog = new RdfCatalog.Builder()
-				.setLocalModel(localModel).setName("testCatalog").build(model);
+		.setLocalModel(localModel).setName("testCatalog").build(model);
 
 		final RdfSchema schema = new RdfSchema.Builder().setCatalog(catalog)
 				.setName("testSchema").build(model);
 
 		// create the foo table
 		final RdfTableDef tableDef = new RdfTableDef.Builder()
-				.addColumnDef(
-						MetaCatalogBuilder.getNonNullStringBuilder().build(
-								model))
-				.addColumnDef(
-						MetaCatalogBuilder.getNullStringBuilder().build(model))
-				.addColumnDef(
-						MetaCatalogBuilder.getNonNullIntBuilder().build(model))
-				.addColumnDef(
-						MetaCatalogBuilder.getNullIntBuilder().build(model))
-				.build(model);
+		.addColumnDef(
+				MetaCatalogBuilder.getNonNullStringBuilder().build(
+						model))
+						.addColumnDef(
+								MetaCatalogBuilder.getNullStringBuilder().build(model))
+								.addColumnDef(
+										MetaCatalogBuilder.getNonNullIntBuilder().build(model))
+										.addColumnDef(
+												MetaCatalogBuilder.getNullIntBuilder().build(model))
+												.build(model);
 
 		RdfTable.Builder bldr = new RdfTable.Builder().setTableDef(tableDef)
 				.setColumn(0, "StringCol").setColumn(1, "NullableStringCol")
@@ -150,7 +150,7 @@ public class LocalSparqlVisitorTest
 	public void testNoColParse() throws Exception
 	{
 		final String[] colNames = { "StringCol", "NullableStringCol", "IntCol",
-				"NullableIntCol" };
+		"NullableIntCol" };
 		final String query = "SELECT * FROM foo";
 		final Statement stmt = parserManager.parse(new StringReader(query));
 		stmt.accept(sv);
@@ -270,21 +270,21 @@ public class LocalSparqlVisitorTest
 				"?" + new ColumnName(null, "foo", "StringCol").getSPARQLName(),
 				"?"
 						+ new ColumnName(null, "foo", "NullableStringCol")
-								.getSPARQLName(),
+				.getSPARQLName(),
 				"?" + new ColumnName(null, "foo", "IntCol"),
 				"?"
 						+ new ColumnName(null, "foo", "NullableIntCol")
-								.getSPARQLName(),
+				.getSPARQLName(),
 				"?"
 						+ new ColumnName(null, "bar", "BarStringCol")
-								.getSPARQLName(),
+				.getSPARQLName(),
 				"?"
 						+ new ColumnName(null, "bar", "BarNullableStringCol")
-								.getSPARQLName(),
+				.getSPARQLName(),
 				"?" + new ColumnName(null, "bar", "BarIntCol").getSPARQLName(),
 				"?"
 						+ new ColumnName(null, "bar", "NullableIntCol")
-								.getSPARQLName() };
+				.getSPARQLName() };
 		final String query = "SELECT * FROM foo, bar WHERE foo.IntCol = bar.BarIntCol";
 		final Statement stmt = parserManager.parse(new StringReader(query));
 		stmt.accept(sv);

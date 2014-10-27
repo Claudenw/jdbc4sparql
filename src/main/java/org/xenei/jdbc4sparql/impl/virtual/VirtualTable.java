@@ -10,7 +10,7 @@ import org.xenei.jdbc4sparql.iface.TableDef;
 import org.xenei.jdbc4sparql.iface.TableName;
 import org.xenei.jdbc4sparql.impl.AbstractTable;
 
-public class VirtualTable extends AbstractTable<Column>
+public class VirtualTable extends AbstractTable
 {
 	private final Schema schema;
 	private final TableName tableName;
@@ -66,7 +66,7 @@ public class VirtualTable extends AbstractTable<Column>
 	}
 
 	@Override
-	public Table<Column> getSuperTable()
+	public Table getSuperTable()
 	{
 		return null;
 	}

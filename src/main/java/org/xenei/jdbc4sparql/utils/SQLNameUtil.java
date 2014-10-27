@@ -5,7 +5,7 @@ public class SQLNameUtil
 
 	/**
 	 * Clean up a name to only include A-Z, a-z, 0-9 and _
-	 * 
+	 *
 	 * @param name
 	 * @return
 	 */

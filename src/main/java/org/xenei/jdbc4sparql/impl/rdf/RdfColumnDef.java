@@ -99,8 +99,8 @@ public class RdfColumnDef implements ColumnDef, ResourceWrapper
 						builder.getProperty(typeClass, "nullable"), nullable);
 				columnDef.addLiteral(
 						builder.getProperty(typeClass, "typeName"), StringUtils
-								.defaultString(typeName, TypeConverter
-										.getJavaType(type).getSimpleName()));
+						.defaultString(typeName, TypeConverter
+								.getJavaType(type).getSimpleName()));
 				columnDef.addLiteral(
 						builder.getProperty(typeClass, "columnClassName"),
 						columnClassName);

@@ -56,13 +56,13 @@ public class ColumnDefBuilderTests
 	{
 		final RdfColumnDef.Builder builder = new RdfColumnDef.Builder();
 		builder.setType(Types.VARCHAR).setAutoIncrement(true)
-				.setCaseSensitive(true).setColumnClassName("foo")
-				.setCurrency(true).setDefinitelyWritable(true)
-				.setDisplaySize(5)
-				.setNullable(DatabaseMetaData.columnNullableUnknown)
-				.setPrecision(3).setReadOnly(true).setScale(10)
-				.setSearchable(true).setSigned(true).setTypeName("bar")
-				.setWritable(true);
+		.setCaseSensitive(true).setColumnClassName("foo")
+		.setCurrency(true).setDefinitelyWritable(true)
+		.setDisplaySize(5)
+		.setNullable(DatabaseMetaData.columnNullableUnknown)
+		.setPrecision(3).setReadOnly(true).setScale(10)
+		.setSearchable(true).setSigned(true).setTypeName("bar")
+		.setWritable(true);
 
 		final ColumnDef cd = builder.build(model);
 

@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License. You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -31,12 +31,12 @@ import java.util.Set;
  *            a NamespacedObject
  */
 public class NameFilter<T extends NamedObject> implements Iterator<T>,
-		Iterable<T>
+Iterable<T>
 {
 	// the name pattern to match
 	private String namePattern;
 	// the iterator of the original collection.
-	private Iterator<? extends T> iter;
+	private Iterator<T> iter;
 	// our next object.
 	private T next;
 
@@ -50,8 +50,7 @@ public class NameFilter<T extends NamedObject> implements Iterator<T>,
 	 * @param objs
 	 *            The collection of objects to filter.
 	 */
-	public NameFilter( final String namePattern,
-			final Collection<? extends T> objs )
+	public NameFilter( final String namePattern, final Collection<T> objs )
 	{
 		this(namePattern, objs.iterator());
 	}
@@ -66,8 +65,7 @@ public class NameFilter<T extends NamedObject> implements Iterator<T>,
 	 * @param iter
 	 *            the iterator of objects to filter.
 	 */
-	public NameFilter( final String namePattern,
-			final Iterator<? extends T> iter )
+	public NameFilter( final String namePattern, final Iterator<T> iter )
 	{
 		this.namePattern = namePattern;
 		this.iter = iter;
@@ -122,7 +120,7 @@ public class NameFilter<T extends NamedObject> implements Iterator<T>,
 
 	/**
 	 * Return the data as a list.
-	 * 
+	 *
 	 * @return
 	 */
 	public List<T> toList()
@@ -132,7 +130,7 @@ public class NameFilter<T extends NamedObject> implements Iterator<T>,
 
 	/**
 	 * Return the data as a list.
-	 * 
+	 *
 	 * @return
 	 */
 	public Set<T> toSet()

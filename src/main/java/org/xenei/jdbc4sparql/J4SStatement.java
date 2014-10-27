@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License. You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -27,8 +27,8 @@ import java.sql.Statement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xenei.jdbc4sparql.iface.Catalog;
+import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
-import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 import org.xenei.jdbc4sparql.sparql.SparqlView;
 import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
@@ -37,7 +37,7 @@ public class J4SStatement implements Statement
 {
 	private final J4SConnection connection;
 	private RdfCatalog catalog;
-	private RdfSchema schema;
+	private Schema schema;
 	private SQLWarning warnings = null;
 	private boolean closed = false;
 	private final SparqlParser parser;
@@ -54,7 +54,7 @@ public class J4SStatement implements Statement
 	public J4SStatement( final J4SConnection connection,
 			final RdfCatalog catalog, final int resultSetType,
 			final int resultSetConcurrency, final int resultSetHoldability )
-			throws SQLException
+					throws SQLException
 	{
 		J4SStatement.LOG.debug("Creating statement");
 		this.connection = connection;

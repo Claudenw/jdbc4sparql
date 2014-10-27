@@ -10,11 +10,11 @@ import org.xenei.jdbc4sparql.impl.NameUtils;
 
 public class FunctionColumn implements Column
 {
-	private final Table<?> table;
+	private final Table table;
 	private final ColumnName name;
 	private final ColumnDef cd;
 
-	public FunctionColumn( final Table<?> table, final String name,
+	public FunctionColumn( final Table table, final String name,
 			final int type )
 	{
 		this.table = table;

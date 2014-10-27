@@ -161,7 +161,7 @@ public abstract class ItemName
 				}
 				throw new IllegalArgumentException(String.format(
 						ItemName.FOUND_IN_MULTIPLE_, this, retval.getClass()
-								.getSimpleName()));
+						.getSimpleName()));
 			}
 		}
 		else if (hasWild())
@@ -174,7 +174,7 @@ public abstract class ItemName
 					{
 						throw new IllegalArgumentException(String.format(
 								ItemName.FOUND_IN_MULTIPLE_, this, retval
-										.getClass().getSimpleName()));
+								.getClass().getSimpleName()));
 					}
 					retval = map.get(n);
 				}

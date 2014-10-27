@@ -21,7 +21,7 @@ public abstract class AbstractFunctionHandler
 
 	/**
 	 * Return true if this Handler handles the function;
-	 * 
+	 *
 	 * @param func
 	 * @return
 	 * @throws SQLException

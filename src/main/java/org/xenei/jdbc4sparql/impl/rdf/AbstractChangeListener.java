@@ -16,7 +16,7 @@ import org.xenei.jena.entities.EntityManagerFactory;
 import org.xenei.jena.entities.MissingAnnotation;
 
 public abstract class AbstractChangeListener<S, T> implements
-		ModelChangedListener
+ModelChangedListener
 {
 
 	private final ResourceBuilder rb;
