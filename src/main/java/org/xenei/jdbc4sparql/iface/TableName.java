@@ -1,5 +1,6 @@
 package org.xenei.jdbc4sparql.iface;
 
+import org.apache.commons.lang.StringUtils;
 import org.xenei.jdbc4sparql.impl.NameUtils;
 
 /**
@@ -39,6 +40,23 @@ public class TableName extends ItemName
 		super(schema, table, null);
 	}
 
+	public String createName( final String separator )
+	{
+		final StringBuilder sb = new StringBuilder();
+
+		if (StringUtils.isNotEmpty(getSchema()))
+		{
+			sb.append(getSchema()).append(separator);
+		}
+
+		if (StringUtils.isNotEmpty(getTable()) || (sb.length() > 0))
+		{
+			sb.append(getTable());
+		}
+
+		return sb.toString();
+	}
+
 	public ColumnName getColumnName( final String colName )
 	{
 		return new ColumnName(getSchema(), getTable(), colName);
@@ -47,5 +65,10 @@ public class TableName extends ItemName
 	public TableName withSegments( final UsedSegments segments )
 	{
 		return new TableName(segments.getSchema(this), segments.getTable(this));
+	}
+	
+	public String getShortName()
+	{
+		return getTable();
 	}
 }

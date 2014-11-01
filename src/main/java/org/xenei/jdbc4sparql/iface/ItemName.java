@@ -3,6 +3,7 @@ package org.xenei.jdbc4sparql.iface;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -61,11 +62,34 @@ public abstract class ItemName
 		{
 			this.table = table;
 		}
+		
+		@Override
+		public String toString()
+		{
+			return String.format( "S:%s T:%s C:%s", schema, table, column);
+		}
 
+	}
+
+	protected static String verifyOK( final String segment, final String value )
+	{
+		if (value != null)
+		{
+			for (final String badChar : NameUtils.DOT_LIST)
+			{
+				if (value.contains(badChar))
+				{
+					throw new IllegalArgumentException(String.format(
+							"%s name may not contain '%s'", segment, badChar));
+				}
+			}
+		}
+		return value;
 	}
 
 	static final String FOUND_IN_MULTIPLE_ = "%s was found in multiple %s";
 	private final String schema;
+
 	private final String table;
 
 	private final String col;
@@ -80,35 +104,17 @@ public abstract class ItemName
 	protected ItemName( final String schema, final String table,
 			final String col )
 	{
-		this.schema = schema;
-		this.table = table;
-		this.col = col;
+		this.schema = verifyOK("Schema", schema);
+		this.table = verifyOK("Table", table );
+		this.col = verifyOK("Column", col );
 	}
 
-	public String createName( final String separator )
-	{
-		final StringBuilder sb = new StringBuilder();
-
-		if (StringUtils.isNotEmpty(schema))
-		{
-			sb.append(schema).append(separator);
-		}
-
-		if (StringUtils.isNotEmpty(table) || (sb.length() > 0))
-		{
-			sb.append(table);
-		}
-
-		if (StringUtils.isNotEmpty(col))
-		{
-			if (sb.length() > 0)
-			{
-				sb.append(separator);
-			}
-			sb.append(col);
-		}
-		return sb.toString();
-	}
+	/**
+	 * create the fully qualified name for this item.
+	 * @param separator The string to use between name segments
+	 * @return The fully qualified name
+	 */
+	abstract protected String createName( final String separator );
 
 	@Override
 	public boolean equals( final Object o )
@@ -161,7 +167,7 @@ public abstract class ItemName
 				}
 				throw new IllegalArgumentException(String.format(
 						ItemName.FOUND_IN_MULTIPLE_, this, retval.getClass()
-						.getSimpleName()));
+								.getSimpleName()));
 			}
 		}
 		else if (hasWild())
@@ -174,7 +180,7 @@ public abstract class ItemName
 					{
 						throw new IllegalArgumentException(String.format(
 								ItemName.FOUND_IN_MULTIPLE_, this, retval
-								.getClass().getSimpleName()));
+										.getClass().getSimpleName()));
 					}
 					retval = map.get(n);
 				}
@@ -213,11 +219,7 @@ public abstract class ItemName
 		return schema;
 	}
 
-	public String getShortName()
-	{
-		return StringUtils.defaultIfEmpty(getCol(),
-				StringUtils.defaultIfEmpty(getTable(), getSchema()));
-	}
+	abstract public String getShortName();
 
 	/**
 	 * Get the complete name in SPARQL format
@@ -227,6 +229,15 @@ public abstract class ItemName
 	public String getSPARQLName()
 	{
 		return createName(NameUtils.SPARQL_DOT);
+	}
+	
+	/**
+	 * Get the name as a UUID based on the real name.
+	 * @return the UUID based name
+	 */
+	public String getAliasName()
+	{
+		return "v_"+(UUID.nameUUIDFromBytes(getSPARQLName().getBytes()).toString().replace("-", "_"));
 	}
 
 	/**

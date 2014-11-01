@@ -1,5 +1,7 @@
 package org.xenei.jdbc4sparql.iface;
 
+import org.apache.commons.lang.StringUtils;
+
 /**
  * Name implementation.
  */
@@ -21,7 +23,13 @@ public class CatalogName extends ItemName
 
 	public CatalogName( final String catalog )
 	{
-		super(catalog, null, null);
+		super(ItemName.verifyOK("Catalog", catalog), null, null);
+	}
+
+	@Override
+	protected String createName( final String separator )
+	{
+		return StringUtils.defaultString(getCatalog());
 	}
 
 	public String getCatalog()

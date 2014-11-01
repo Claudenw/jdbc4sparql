@@ -153,15 +153,18 @@ public class J4SDriver implements Driver
 	@Override
 	public int getMajorVersion()
 	{
-		// TODO Auto-generated method stub
-		return 0;
+		return Integer.parseInt(getVersion().split("\\.")[0]);
 	}
 
 	@Override
 	public int getMinorVersion()
 	{
-		// TODO Auto-generated method stub
-		return 1;
+		return Integer.parseInt(getVersion().split("\\.")[1]);
+	}
+	
+	public static String getVersion()
+	{
+		return "0.1";
 	}
 
 	public String getName()

@@ -15,7 +15,7 @@ public class QueryColumnInfo extends QueryItemInfo<ColumnName>
 	QueryColumnInfo( final QueryInfoSet infoSet,
 			final QueryTableInfo tableInfo, final Column column,
 			final ColumnName alias, final boolean optional )
-			{
+	{
 		super(alias, optional);
 		if (column == null)
 		{
@@ -27,7 +27,7 @@ public class QueryColumnInfo extends QueryItemInfo<ColumnName>
 		}
 		this.column = column;
 		infoSet.addColumn(tableInfo, this);
-			}
+	}
 
 	public void addAlias( final QueryInfoSet infoSet,
 			final ColumnName columnName )

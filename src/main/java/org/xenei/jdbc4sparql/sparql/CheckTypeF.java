@@ -10,11 +10,11 @@ import com.hp.hpl.jena.sparql.expr.NodeValue;
 import com.hp.hpl.jena.sparql.function.FunctionEnv;
 
 import java.sql.ResultSetMetaData;
+import java.sql.SQLDataException;
 import java.sql.SQLException;
 
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.TypeConverter;
-import org.xenei.jdbc4sparql.impl.AbstractResultSet;
 
 /**
  * A local filter that removes any values that are null and not allowed to
@@ -23,22 +23,35 @@ import org.xenei.jdbc4sparql.impl.AbstractResultSet;
  */
 public class CheckTypeF extends ExprFunction1
 {
-	private final Column column;
-
-	public CheckTypeF( final Column column, final Var columnVar )
+	private final QueryColumnInfo columnInfo;
+	private final Class<?> resultingClass;
+	private Object convertedValue;
+	
+	private static QueryColumnInfo checkColumnInfo(QueryColumnInfo columnInfo)
 	{
-		super(new ExprVar(columnVar), "checkTypeF");
-		if (column == null)
+		if (columnInfo == null)
 		{
 			throw new IllegalArgumentException("Column may not be null");
 		}
-		this.column = column;
+		return columnInfo;
+	}
+	
+	public CheckTypeF( final QueryColumnInfo columnInfo ) throws SQLDataException
+	{
+		super(new ExprVar(checkColumnInfo(columnInfo).getAlias()), "checkTypeF");
+		
+		this.columnInfo = columnInfo;
+		resultingClass = TypeConverter.getJavaType(columnInfo.getColumn().getColumnDef().getType());
 	}
 
 	@Override
 	public Expr copy( final Expr expr )
 	{
-		return new CheckTypeF(column, expr.asVar());
+		try {
+			return new CheckTypeF(columnInfo);
+		} catch (SQLDataException e) {
+			throw new IllegalStateException( String.format( "Error while copying: %s", e.getMessage()),e);
+		}
 	}
 
 	@Override
@@ -48,7 +61,7 @@ public class CheckTypeF extends ExprFunction1
 		{
 			final CheckTypeF cf = (CheckTypeF) o;
 
-			return column.equals(cf.column)
+			return columnInfo.equals(cf.columnInfo)
 					&& getArg().asVar().equals(cf.getArg().asVar());
 		}
 		return false;
@@ -68,12 +81,9 @@ public class CheckTypeF extends ExprFunction1
 		final Node n = binding.get(v);
 		if (n == null)
 		{
-			column.getColumnDef().getNullable();
-			return column.getColumnDef().getNullable() == ResultSetMetaData.columnNullable ? NodeValue.TRUE
+			return columnInfo.getColumn().getColumnDef().getNullable() == ResultSetMetaData.columnNullable ? NodeValue.TRUE
 					: NodeValue.FALSE;
 		}
-		final Class<?> resultingClass = TypeConverter.getJavaType(column
-				.getColumnDef().getType());
 		Object columnObject;
 		if (n.isLiteral())
 		{
@@ -95,16 +105,26 @@ public class CheckTypeF extends ExprFunction1
 		{
 			columnObject = n.toString();
 		}
-
-		try
-		{
-			AbstractResultSet.extractData(columnObject, resultingClass);
+		
+		try {
+			convertedValue = TypeConverter.extractData(columnObject, resultingClass);
 			return NodeValue.TRUE;
 		}
-		catch (final SQLException e)
+		catch (SQLException e)
 		{
 			return NodeValue.FALSE;
 		}
-
+		
 	}
+	
+	public Object getValue()
+	{
+		return convertedValue;
+	}
+	
+	public QueryColumnInfo getColumnInfo()
+	{
+		return columnInfo;
+	}
+
 }

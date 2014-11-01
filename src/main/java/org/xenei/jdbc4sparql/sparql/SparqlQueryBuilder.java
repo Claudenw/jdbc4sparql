@@ -36,6 +36,7 @@ import com.hp.hpl.jena.sparql.syntax.ElementSubQuery;
 import com.hp.hpl.jena.sparql.syntax.ElementTriplesBlock;
 import com.hp.hpl.jena.sparql.syntax.ElementUnion;
 
+import java.lang.reflect.Field;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -60,6 +61,7 @@ import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfKey;
 import org.xenei.jdbc4sparql.impl.rdf.RdfKeySegment;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTableDef;
+import org.xenei.jdbc4sparql.impl.virtual.VirtualCatalog;
 import org.xenei.jdbc4sparql.impl.virtual.VirtualSchema;
 import org.xenei.jdbc4sparql.impl.virtual.VirtualTable;
 import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
@@ -180,27 +182,6 @@ public class SparqlQueryBuilder
 		this(parent.catalogs, parent.parser, parent.catalog, parent.schema);
 	}
 
-	public void addAlias( final Expr expr, final ColumnName columnName )
-	{
-		QueryColumnInfo varName = null;
-		Var v = null;
-		ColumnName aliasName = null;
-		if (expr instanceof ExprAggregator)
-		{
-			v = ((ExprAggregator) expr).getVar();
-			varName = infoSet.getColumnByName(v.getName());
-			aliasName = columnName.merge(ColumnName.FUNCTION);
-		}
-		else
-		{
-			v = expr.asVar();
-			varName = infoSet.getColumnByName(v.getName());
-			aliasName = columnName.merge(varName.getName());
-		}
-
-		varName.addAlias(infoSet, aliasName);
-	}
-
 	/**
 	 * Add the triple to the BGP for the query.
 	 * This method handles adding the triple to the proper section of the
@@ -229,14 +210,12 @@ public class SparqlQueryBuilder
 	}
 
 	/**
-	 * Add the column to the query.
+	 * Add the column to the query.  Column must be in a table that has already been added to the query.
 	 *
-	 * @param schemaName
-	 *            The schema name.
-	 * @param tableName
-	 *            The table name.
-	 * @param columnName
+	 * @param cName
 	 *            The column name.
+	 * @param optional
+	 * 			  True if the column is optional.
 	 * @return The node for the column.
 	 * @throws SQLException
 	 */
@@ -445,25 +424,65 @@ public class SparqlQueryBuilder
 		SparqlQueryBuilder.LOG.debug("Adding Var {} as {}", expr, name);
 		checkBuilt();
 		final NodeValue nv = expr.getConstant();
-		if ((name != null) || (nv == null) || !nv.getNode().isVariable())
+		if ((name != null) || (nv == null) || !nv.asNode().isVariable())
 		{
 			final String s = StringUtils.defaultString(expr.getVarName());
-			if (s.equals(StringUtils.defaultIfBlank(name, s)))
+			if (StringUtils.isNotEmpty(s) && s.equals(StringUtils.defaultIfBlank(name, s)))
 			{
 				query.addResultVar(s);
 			}
 			else
 			{
-				query.addResultVar(name, expr);
+				if (name != null)
+				{
+					query.addResultVar(name, expr);
+				} else {
+					query.addResultVar(nv.asNode());
+				}
 			}
 		}
 		else
 		{
-			query.addResultVar(nv.getNode());
+			query.addResultVar(nv.asNode());
 		}
 		query.getResultVars();
 	}
 
+	/**
+	 * Adds the the expression as a variable to the query.
+	 * As a variable the result will be returned from the query.
+	 *
+	 * @param expr
+	 *            The expression that defines the variable
+	 * @param name
+	 *            the alias for the expression, if null no alias is used.
+	 */
+	public void addVar( final Expr expr, final ColumnName name )
+	{
+		SparqlQueryBuilder.LOG.debug("Adding {} as {}", expr, name);
+		checkBuilt();
+		QueryColumnInfo qci = infoSet.getColumnByName(name);
+		query.addResultVar(qci.getVar(), expr);
+		query.getResultVars();
+	}
+	/**
+	 * Adds the the expression as a variable to the query.
+	 * As a variable the result will be returned from the query.
+	 *
+	 * @param columnName
+	 *            The column to add.
+	 * @throws SQLException 
+	 */
+	public void addVar( ColumnName columnName ) throws SQLException
+	{
+		SparqlQueryBuilder.LOG.debug("Adding Var {}", columnName);
+		checkBuilt();
+		
+		Node n = addColumn( columnName, false );
+		query.addResultVar(n);
+		query.getResultVars();
+	}
+	
 	/**
 	 * Get the SPARQL query.
 	 *
@@ -498,10 +517,24 @@ public class SparqlQueryBuilder
 				// create the service call
 				// make sure we project all vars for the filters.
 				final Set<Var> vars = new HashSet<Var>();
-				for (final CheckTypeF f : getTypeFilterList())
+				Collection<CheckTypeF> filterList = getTypeFilterList();
+				for (final CheckTypeF f : filterList)
 				{
 					vars.add(f.getArg().asVar());
 				}
+				
+				try {
+					Field fld = Query.class.getDeclaredField("projectVars");
+					fld.setAccessible(true);
+					fld.set( result, new VarExprList() );
+				} catch (NoSuchFieldException e1) {
+					throw new IllegalStateException( e1.getMessage(), e1 );
+				} catch (SecurityException e1) {
+					throw new IllegalStateException( e1.getMessage(), e1 );
+				} catch (IllegalAccessException e1) {
+					throw new IllegalStateException( e1.getMessage(), e1 );
+				}
+				
 				result.addProjectVars(vars);
 				final ElementService service = new ElementService(
 						catalog.getServiceNode(), new ElementSubQuery(result),
@@ -510,11 +543,19 @@ public class SparqlQueryBuilder
 				result = new Query();
 				result.setQuerySelectType();
 				result.addProjectVars(query.getProjectVars());
-				SparqlQueryBuilder.getElementGroup(result).addElement(service);
-				for (final CheckTypeF f : getTypeFilterList())
+				ElementGroup eg = SparqlQueryBuilder.getElementGroup(result);
+				eg.addElement(service);
+				ElementGroup egWrapper = new ElementGroup();
+				egWrapper.addElement(eg);
+				for (final CheckTypeF f : filterList)
 				{
 					SparqlQueryBuilder.addFilter(result, f);
+					if (result.getProjectVars().contains(f.getColumnInfo().getVar()))
+					{
+						egWrapper.addElement(new ForceTypeF(f).getBinding());
+					}
 				}
+				result.setQueryPattern( egWrapper );
 				query = result;
 			}
 			isBuilt = true;
@@ -589,23 +630,6 @@ public class SparqlQueryBuilder
 		final Var v = query.getProjectVars().get(i);
 		return infoSet.getColumnByName(v);
 	}
-
-	// get the number of columns in the selected tables with the same name
-	// TODO private int getColCount( final Column col )
-	// {
-	// QueryColumnInfo.Name cName =
-	// QueryColumnInfo.getNameInstance(col.getName());
-	//
-	// int retval = 0;
-	// for (final QueryColumnInfo columnInfo : infoSet.getColumns())
-	// {
-	// if (cName.matches( columnInfo.getName()))
-	// {
-	// retval++;
-	// }
-	// }
-	// return retval;
-	// }
 
 	public int getColumnCount()
 	{
@@ -729,17 +753,26 @@ public class SparqlQueryBuilder
 		return expr;
 	}
 
+	public void registerFunction( ColumnName funcName, final int type )
+			throws SQLException
+	{
+		if (infoSet.findColumn(funcName) == null)
+		{
+			registerFunctionColumn(funcName, type);
+		}
+	}
+	
 	public QueryColumnInfo registerFunctionColumn( ColumnName columnName,
 			final int type )
 	{
 		columnName = new ColumnName(StringUtils.defaultString(
-				columnName.getSchema(), ""), StringUtils.defaultString(
-						columnName.getTable(), ""), columnName.getShortName());
+				columnName.getSchema(), VirtualSchema.NAME), StringUtils.defaultString(
+						columnName.getTable(), VirtualTable.NAME), columnName.getShortName());
 		QueryTableInfo tableInfo = infoSet.getTable(columnName.getTableName());
 		Column column = null;
 		if (tableInfo == null)
 		{
-			final Catalog cat = getCatalog(""); // FIXME define this
+			final Catalog cat = getCatalog( VirtualCatalog.NAME ); 
 			Schema schema = cat.getSchema(columnName.getSchema());
 			if (schema == null)
 			{
@@ -879,4 +912,5 @@ public class SparqlQueryBuilder
 		return String.format("QueryBuilder%s[%s]", (isBuilt ? "(builtargs)"
 				: ""), query.toString());
 	}
+	
 }

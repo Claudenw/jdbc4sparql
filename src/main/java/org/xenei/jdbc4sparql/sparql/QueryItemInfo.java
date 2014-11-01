@@ -15,6 +15,7 @@ public abstract class QueryItemInfo<T extends ItemName>
 {
 	private final T name;
 	private final Var var;
+	private final Var alias;
 	private Expr expr;
 	private boolean optional;
 
@@ -26,6 +27,7 @@ public abstract class QueryItemInfo<T extends ItemName>
 		}
 		this.name = name;
 		this.var = Var.alloc(name.getSPARQLName());
+		this.alias = Var.alloc(name.getAliasName());
 		this.optional = optional;
 		this.expr = null;
 	}
@@ -48,11 +50,20 @@ public abstract class QueryItemInfo<T extends ItemName>
 	/**
 	 * Get the variable for the query item.
 	 *
-	 * @return The variable node
+	 * @return The variable based on the column name.
 	 */
 	public Var getVar()
 	{
 		return var;
+	}
+	
+	/**
+	 * Get the alias variable for this column
+	 * @return The variable based on the alias from the columnName
+	 */
+	public Var getAlias()
+	{
+		return alias;
 	}
 
 	/**

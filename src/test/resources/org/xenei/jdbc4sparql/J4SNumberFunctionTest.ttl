@@ -1,0 +1,25 @@
+#
+# The foo table
+#
+
+<http://example.com/jdbc4sparql#fooTable>
+      a       <http://www.w3.org/2000/01/rdf-schema#Class> .
+
+[]    a       <http://example.com/jdbc4sparql#fooTable> ;
+      <http://example.com/jdbc4sparql#IntCol>
+              "5" ;
+      <http://example.com/jdbc4sparql#DoubleCol>
+              "1.5" .
+
+[]    a       <http://example.com/jdbc4sparql#fooTable> ;
+      <http://example.com/jdbc4sparql#IntCol>
+              "3" ;
+      <http://example.com/jdbc4sparql#DoubleCol>
+              "1.3"  .
+ 
+[]    a       <http://example.com/jdbc4sparql#fooTable> ;
+      <http://example.com/jdbc4sparql#IntCol>
+              "7" ;
+      <http://example.com/jdbc4sparql#DoubleCol>
+              "1.7"  .
+         

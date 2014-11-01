@@ -24,8 +24,11 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.sparql.core.Var;
 import com.hp.hpl.jena.sparql.syntax.Element;
+import com.hp.hpl.jena.sparql.syntax.ElementBind;
 import com.hp.hpl.jena.sparql.syntax.ElementFilter;
 import com.hp.hpl.jena.sparql.syntax.ElementGroup;
+import com.hp.hpl.jena.sparql.syntax.ElementService;
+import com.hp.hpl.jena.sparql.syntax.ElementSubQuery;
 
 import java.io.StringReader;
 import java.net.URL;
@@ -58,6 +61,9 @@ public class RemoteSparqlVisitorTest
 	private SparqlParser parser;
 	private final CCJSqlParserManager parserManager = new CCJSqlParserManager();
 	private SparqlVisitor sv;
+	
+	private static final String CATALOG_NAME = "testCatalog";
+	private static final String SCHEMA_NAME = "testSchema";
 
 	@Before
 	public void setUp() throws Exception
@@ -70,10 +76,10 @@ public class RemoteSparqlVisitorTest
 		final Model localModel = ModelFactory.createDefaultModel();
 		final RdfCatalog catalog = new RdfCatalog.Builder()
 		.setSparqlEndpoint(new URL("http://example.com/sparql"))
-		.setLocalModel(localModel).setName("testCatalog").build(model);
+		.setLocalModel(localModel).setName(CATALOG_NAME).build(model);
 
-		final RdfSchema schema = new RdfSchema.Builder().setCatalog(catalog)
-				.setName("testSchema").build(model);
+		RdfSchema schema = new RdfSchema.Builder().setCatalog(catalog)
+				.setName(SCHEMA_NAME).build(model);
 
 		// create the foo table
 		final RdfTableDef tableDef = new RdfTableDef.Builder()
@@ -182,18 +188,25 @@ public class RemoteSparqlVisitorTest
 		Assert.assertTrue(e instanceof ElementGroup);
 		final ElementGroup eg = (ElementGroup) e;
 		final List<Element> eLst = eg.getElements();
-		// service and checkTypeF filter only
-		Assert.assertEquals(3, eLst.size());
-		final List<String> strLst = new ArrayList<String>();
-		for (final Element e2 : eLst)
-		{
-			// there is one mock table entry
-			if (e2 instanceof ElementFilter)
-			{
-				strLst.add(e2.toString());
-			}
-		}
-		Assert.assertTrue(strLst.contains("FILTER checkTypeF(?StringCol)"));
+		// service and Bind only
+		Assert.assertEquals(2, eLst.size());
+		
+		ElementExtractor extractor = new ElementExtractor( ElementBind.class );
+		e.visit(extractor);
+		Assert.assertEquals( 1, extractor.getExtracted().size() );
+		ElementBind bind = (ElementBind) extractor.getExtracted().get(0);
+		Assert.assertEquals( Var.alloc("StringCol"), bind.getVar());
+		
+		e.visit( extractor.reset().setMatchType( ElementFilter.class ) );
+		Assert.assertEquals( 2, extractor.getExtracted().size() );
+		
+		e.visit( extractor.reset().setMatchType( ElementService.class ) );
+		Assert.assertEquals( 1, extractor.getExtracted().size() );
+		ElementService srv = (ElementService) extractor.getExtracted().get(0);
+		ElementSubQuery esq = (ElementSubQuery) srv.getElement();
+		List<Var> vars = esq.getQuery().getProjectVars();
+		Assert.assertEquals( 2, vars.size() );
+		
 		final List<Var> vLst = q.getProjectVars();
 		Assert.assertEquals(1, vLst.size());
 		Assert.assertEquals(Var.alloc("StringCol"), vLst.get(0));

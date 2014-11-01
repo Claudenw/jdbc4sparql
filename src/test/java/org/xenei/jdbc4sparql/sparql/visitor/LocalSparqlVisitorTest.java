@@ -260,9 +260,6 @@ public class LocalSparqlVisitorTest
 	}
 
 	@Test
-	// @Ignore(
-	// "This only remains as a pattern for a complete test -- Mock can not support this test"
-	// )
 	public void testTwoTableJoin() throws Exception
 	{
 		final String[] columnNames = {

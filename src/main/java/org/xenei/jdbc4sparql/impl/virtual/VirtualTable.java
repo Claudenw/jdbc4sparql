@@ -12,6 +12,8 @@ import org.xenei.jdbc4sparql.impl.AbstractTable;
 
 public class VirtualTable extends AbstractTable
 {
+	public static final String SYSTEM_TABLE="system";
+	public static final String NAME="";
 	private final Schema schema;
 	private final TableName tableName;
 	private final List<Column> columns;
@@ -19,7 +21,7 @@ public class VirtualTable extends AbstractTable
 
 	public VirtualTable( final Schema schema )
 	{
-		this(schema, "");
+		this(schema, SYSTEM_TABLE);
 	}
 
 	public VirtualTable( final Schema schema, final String name )

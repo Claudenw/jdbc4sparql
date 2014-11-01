@@ -4,6 +4,7 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 import java.sql.DatabaseMetaData;
+import java.sql.SQLDataException;
 import java.sql.Types;
 
 import org.apache.commons.lang3.StringUtils;
@@ -50,6 +51,7 @@ public class RdfColumnDef implements ColumnDef, ResourceWrapper
 		private String columnClassName = "";
 		private int displaySize = 0;
 		private Integer type = null;
+		private Class<?> javaType = null;
 		private int precision = 0;
 		private int scale = 0;
 		private boolean signed = false;
@@ -99,8 +101,7 @@ public class RdfColumnDef implements ColumnDef, ResourceWrapper
 						builder.getProperty(typeClass, "nullable"), nullable);
 				columnDef.addLiteral(
 						builder.getProperty(typeClass, "typeName"), StringUtils
-						.defaultString(typeName, TypeConverter
-								.getJavaType(type).getSimpleName()));
+						.defaultString(typeName, javaType.getSimpleName()));
 				columnDef.addLiteral(
 						builder.getProperty(typeClass, "columnClassName"),
 						columnClassName);
@@ -310,6 +311,11 @@ public class RdfColumnDef implements ColumnDef, ResourceWrapper
 		public Builder setType( final int type )
 		{
 			this.type = type;
+			try {
+				this.javaType = TypeConverter.getJavaType(type);
+			} catch (SQLDataException e) {
+				throw new IllegalArgumentException( String.format( "SQL type %s is not supported", type ));
+			}
 			return this;
 		}
 

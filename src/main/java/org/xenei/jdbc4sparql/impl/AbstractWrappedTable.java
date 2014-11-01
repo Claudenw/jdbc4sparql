@@ -19,6 +19,7 @@ package org.xenei.jdbc4sparql.impl;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
+import java.sql.SQLDataException;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -137,7 +138,14 @@ public abstract class AbstractWrappedTable extends AbstractTable
 			}
 			else
 			{
-				final Class<?> clazz = TypeConverter.getJavaType(c.getType());
+				Class<?> clazz;
+				try {
+					clazz = TypeConverter.getJavaType(c.getType());
+				} catch (SQLDataException e) {
+					throw new IllegalArgumentException(String.format(
+							"Column %s can not receive values of class %s -- Conversion Error (%s)",
+							getColumn(i).getName(), row[i].getClass(), e.getMessage()), e);
+				}
 				if (!clazz.isAssignableFrom(row[i].getClass()))
 				{
 					throw new IllegalArgumentException(String.format(

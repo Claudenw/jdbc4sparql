@@ -13,13 +13,14 @@ import org.xenei.jdbc4sparql.iface.Table;
 
 public class VirtualSchema implements Schema
 {
+	public static final String NAME="";
 	private final Catalog catalog;
 	private final Map<String, Table> tables;
 	private final SchemaName schemaName;
 
 	public VirtualSchema( final Catalog catalog )
 	{
-		this(catalog, "");
+		this(catalog, NAME);
 	}
 
 	public VirtualSchema( final Catalog catalog, final String name )
@@ -27,7 +28,8 @@ public class VirtualSchema implements Schema
 		this.catalog = catalog;
 		this.schemaName = new SchemaName(name);
 		tables = new HashMap<String, Table>();
-		tables.put("", new VirtualTable(this));
+		tables.put(VirtualTable.NAME, new VirtualTable(this));
+		tables.put(VirtualTable.SYSTEM_TABLE, new VirtualTable(this, VirtualTable.SYSTEM_TABLE));
 	}
 
 	@Override

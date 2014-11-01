@@ -49,6 +49,11 @@ public class ColumnName extends ItemName
 		super(schema, table, col);
 	}
 
+	public String getShortName()
+	{
+		return getCol();
+	}
+	
 	public TableName getTableName()
 	{
 		if (tableName == null)
@@ -70,5 +75,30 @@ public class ColumnName extends ItemName
 	{
 		return new ColumnName(segments.getSchema(this),
 				segments.getTable(this), segments.getColumn(this));
+	}
+	
+	@Override
+	protected String createName( String separator )
+	{
+		
+			final StringBuilder sb = new StringBuilder();
+
+			if (StringUtils.isNotEmpty(getSchema()))
+			{
+				sb.append(getSchema()).append(separator);
+			}
+
+			String tbl = StringUtils.defaultString(getTable());
+			if (tbl.length()>0 || (sb.length() > 0))
+			{
+				sb.append(tbl).append(separator);
+			}
+
+			if (StringUtils.isNotEmpty( getCol()))
+			{
+				sb.append(getCol());
+			}			
+			return sb.toString();
+		
 	}
 }

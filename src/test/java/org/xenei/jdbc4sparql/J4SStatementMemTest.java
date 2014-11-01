@@ -108,4 +108,19 @@ public class J4SStatementMemTest extends AbstractJ4SStatementTest
 
 		stmt.close();
 	}
+	
+	@Test
+	public void testMinFromTable() throws Exception
+	{
+
+		// count all the rows
+		final ResultSet rset = stmt
+				.executeQuery("select min(*) from fooTable");
+		final ResultSetMetaData rsm = rset.getMetaData();
+		Assert.assertEquals(1, rsm.getColumnCount());
+		rset.next();
+		Assert.assertEquals(3L, rset.getLong(1));
+		rset.close();
+
+	}
 }

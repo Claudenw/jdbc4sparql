@@ -16,7 +16,8 @@ import org.xenei.jdbc4sparql.iface.Schema;
 
 public class VirtualCatalog implements Catalog
 {
-	private final CatalogName name = new CatalogName("");
+	public static final String NAME="";
+	private final CatalogName name = new CatalogName(NAME);
 	private Map<String, Schema> schemas;
 
 	public VirtualCatalog()

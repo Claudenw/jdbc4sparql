@@ -11,12 +11,12 @@ import com.hp.hpl.jena.sparql.syntax.ElementFilter;
 import com.hp.hpl.jena.sparql.syntax.ElementGroup;
 import com.hp.hpl.jena.sparql.syntax.ElementOptional;
 
+import java.sql.SQLDataException;
 import java.sql.SQLException;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Set;
-
+import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,9 +42,11 @@ public class QueryTableInfo extends QueryItemInfo<TableName>
 	private final QueryInfoSet infoSet;
 	private final Table table;
 	private final ElementGroup eg;
+	private final ElementGroup egWrapper;
 
 	// list of type filters to add at the end of the query
-	private final Set<CheckTypeF> typeFilterList;
+	private final Map<String,CheckTypeF> typeFilterList;
+	//private final List<ForceTypeF> forceTypeList;
 
 	private static Logger LOG = LoggerFactory.getLogger(QueryTableInfo.class);
 
@@ -55,8 +57,11 @@ public class QueryTableInfo extends QueryItemInfo<TableName>
 		super(alias, optional);
 		this.infoSet = infoSet;
 		this.table = table;
+		this.egWrapper = new ElementGroup();
 		this.eg = new ElementGroup();
-		this.typeFilterList = new HashSet<CheckTypeF>();
+		egWrapper.addElement( eg );
+		this.typeFilterList = new HashMap<String,CheckTypeF>();
+		//this.forceTypeList = new ArrayList<ForceTypeF>();
 		infoSet.addTable(this);
 		if (queryElementGroup == null)
 		{
@@ -67,12 +72,12 @@ public class QueryTableInfo extends QueryItemInfo<TableName>
 			if (optional)
 			{
 				QueryTableInfo.LOG.debug("marking {} as optional.", this);
-				queryElementGroup.addElement(new ElementOptional(eg));
+				queryElementGroup.addElement(new ElementOptional(egWrapper));
 			}
 			else
 			{
 				QueryTableInfo.LOG.debug("marking {} as required.", this);
-				queryElementGroup.addElement(eg);
+				queryElementGroup.addElement(egWrapper);
 			}
 		}
 	}
@@ -131,11 +136,16 @@ public class QueryTableInfo extends QueryItemInfo<TableName>
 		if (column.hasQuerySegments() && columnInfo.isOptional())
 		{
 			eg.addElement(new ElementOptional(getQuerySegments(
-					columnInfo.getColumn(), getVar(), columnInfo.getVar())));
+					columnInfo.getColumn(), getVar(), columnInfo.getAlias())));
 		}
 
-		typeFilterList.add(new CheckTypeF(columnInfo.getColumn(), Var
-				.alloc(columnInfo.getVar())));
+		try {
+			CheckTypeF checkType = new CheckTypeF(columnInfo); 
+			typeFilterList.put(columnInfo.getName().getAliasName(), checkType);
+			//forceTypeList.add( new ForceTypeF( checkType ));
+		} catch (SQLDataException e) {
+			throw new IllegalArgumentException( e.getMessage(), e );
+		}
 
 		return columnInfo.getVar();
 	}
@@ -183,16 +193,13 @@ public class QueryTableInfo extends QueryItemInfo<TableName>
 	{
 		QueryTableInfo.LOG.debug("Adding filter: {}", expr);
 		eg.addElementFilter(new ElementFilter(expr));
+		
 	}
 
 	/**
 	 * Adds the required columns to the query. Also adds the table definition.
 	 *
-	 * @param shortNames
-	 *            if true then short names will be used otherwise fully
-	 *            qualified names will be used.
-	 * @param longNameColumns
-	 *            a list of columns that require long names.
+	 * @param segments The segments that must be used in the column names.
 	 */
 	public void addRequiredColumns( final ItemName.UsedSegments segments )
 	{
@@ -213,6 +220,7 @@ public class QueryTableInfo extends QueryItemInfo<TableName>
 						.getName());
 				// make sure that it is in the queryInfo and not optional
 				getColumn(name, false);
+				
 			}
 		}
 
@@ -227,7 +235,7 @@ public class QueryTableInfo extends QueryItemInfo<TableName>
 				if (StringUtils.isNotBlank(fmt))
 				{
 					queryFmt.append(
-							String.format(fmt, getVar(), columnInfo.getVar()))
+							String.format(fmt, getVar(), columnInfo.getAlias()))
 							.append(eol);
 				}
 			}
@@ -274,9 +282,10 @@ public class QueryTableInfo extends QueryItemInfo<TableName>
 
 	public void addTypeFilters()
 	{
-		for (final CheckTypeF f : typeFilterList)
+		for (final CheckTypeF f : typeFilterList.values())
 		{
 			addFilter(f);
+			egWrapper.addElement(new ForceTypeF(f).getBinding());
 		}
 	}
 
@@ -375,9 +384,9 @@ public class QueryTableInfo extends QueryItemInfo<TableName>
 		return table;
 	}
 
-	public Set<CheckTypeF> getTypeFilterList()
+	public Collection<CheckTypeF> getTypeFilterList()
 	{
-		return typeFilterList;
+		return typeFilterList.values();
 	}
 
 	/**

@@ -17,12 +17,9 @@
  */
 package org.xenei.jdbc4sparql.impl;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.net.URL;
 import java.sql.Array;
 import java.sql.Blob;
@@ -44,332 +41,15 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.sql.rowset.serial.SerialBlob;
-import javax.sql.rowset.serial.SerialClob;
-
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xenei.jdbc4sparql.J4SResultSetMetaData;
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.Table;
+import org.xenei.jdbc4sparql.iface.TypeConverter;
 
 public abstract class AbstractResultSet implements ResultSet
 {
-	@SuppressWarnings( "unchecked" )
-	public static <T> T extractData( final Object columnObject,
-			final Class<T> resultingClass ) throws SQLException
-	{
-		if (columnObject == null)
-		{
-			return (T) AbstractResultSet.nullValueMap.get(resultingClass);
-		}
-
-		T retval = null;
-
-		// try the simple case
-		if (resultingClass.isAssignableFrom(columnObject.getClass()))
-		{
-			retval = resultingClass.cast(columnObject);
-		}
-
-		// see if we can do a simple numeric assignment
-		if ((retval == null) && (columnObject instanceof Number))
-		{
-			retval = AbstractResultSet.fromNumber(columnObject, resultingClass);
-		}
-
-		// see if we can convert from a string
-		if ((retval == null) && (columnObject instanceof String))
-		{
-			retval = AbstractResultSet.fromString(columnObject, resultingClass);
-		}
-
-		if ((retval == null) && (columnObject instanceof Boolean))
-		{
-			final Boolean b = (Boolean) columnObject;
-			retval = AbstractResultSet
-					.fromString(b ? "1" : "0", resultingClass);
-		}
-
-		if ((retval == null) && (columnObject instanceof byte[]))
-		{
-			retval = AbstractResultSet.fromByteArray(columnObject,
-					resultingClass);
-		}
-
-		if ((retval == null) && (columnObject instanceof Blob))
-		{
-			retval = AbstractResultSet.fromByteArray(columnObject,
-					resultingClass);
-		}
-		if ((retval == null) && (columnObject instanceof Clob))
-		{
-			retval = AbstractResultSet.fromByteArray(columnObject,
-					resultingClass);
-		}
-		if ((retval == null) && (columnObject instanceof InputStream))
-		{
-			retval = AbstractResultSet.fromByteArray(columnObject,
-					resultingClass);
-		}
-		// if null result then throw an exception
-		if (retval == null)
-		{
-			throw new SQLException(String.format(" Can not cast %s (%s) to %s",
-					columnObject.getClass(), columnObject.toString(),
-					resultingClass));
-		}
-		return retval;
-	}
-
-	/**
-	 * Handles things that are or are like byte arrays.
-	 * byte[], Clob, Blob, InputStream
-	 *
-	 * @param columnObject
-	 * @param resultingClass
-	 * @return
-	 * @throws SQLException
-	 */
-	private static <T> T fromByteArray( final Object columnObject,
-			final Class<T> resultingClass ) throws SQLException
-	{
-		String s = null;
-
-		try
-		{
-			if (columnObject instanceof InputStream)
-			{
-				final InputStream is = (InputStream) columnObject;
-				if (resultingClass.isAssignableFrom(Clob.class))
-				{
-					return resultingClass.cast(new SerialClob(IOUtils
-							.toCharArray(is)));
-				}
-				if (resultingClass.isAssignableFrom(Blob.class))
-				{
-					return resultingClass.cast(new SerialBlob(IOUtils
-							.toByteArray(is)));
-				}
-				if (resultingClass.isAssignableFrom(byte[].class))
-				{
-					return resultingClass.cast(IOUtils.toByteArray(is));
-				}
-				return AbstractResultSet.fromString(
-						new String(IOUtils.toByteArray(is)), resultingClass);
-			}
-
-			if ((s == null) && (columnObject instanceof byte[]))
-			{
-				if (resultingClass.isAssignableFrom(Clob.class))
-				{
-					return resultingClass.cast(new SerialClob(IOUtils
-							.toCharArray(new ByteArrayInputStream(
-									(byte[]) columnObject))));
-				}
-				if (resultingClass.isAssignableFrom(Blob.class))
-				{
-					return resultingClass.cast(new SerialBlob(
-							(byte[]) columnObject));
-				}
-				if (resultingClass.isAssignableFrom(InputStream.class))
-				{
-					return resultingClass.cast(new ByteArrayInputStream(
-							(byte[]) columnObject));
-				}
-				s = new String((byte[]) columnObject);
-			}
-			if ((s == null) && (columnObject instanceof Clob))
-			{
-				final Clob c = (Clob) columnObject;
-				if (resultingClass.isAssignableFrom(byte[].class))
-				{
-					return resultingClass.cast(IOUtils.toByteArray(c
-							.getAsciiStream()));
-				}
-				if (resultingClass.isAssignableFrom(Blob.class))
-				{
-					return resultingClass.cast(new SerialBlob(IOUtils
-							.toByteArray(c.getAsciiStream())));
-				}
-				if (resultingClass.isAssignableFrom(InputStream.class))
-				{
-					return resultingClass.cast(c.getAsciiStream());
-				}
-				s = String.valueOf(IOUtils.toCharArray(c.getCharacterStream()));
-			}
-			if ((s == null) && (columnObject instanceof Blob))
-			{
-				final Blob b = (Blob) columnObject;
-				if (resultingClass.isAssignableFrom(byte[].class))
-				{
-					return resultingClass.cast(IOUtils.toByteArray(b
-							.getBinaryStream()));
-				}
-				if (resultingClass.isAssignableFrom(Clob.class))
-				{
-					return resultingClass.cast(new SerialClob(IOUtils
-							.toCharArray(b.getBinaryStream())));
-				}
-				if (resultingClass.isAssignableFrom(InputStream.class))
-				{
-					return resultingClass.cast(b.getBinaryStream());
-				}
-				s = new String(IOUtils.toByteArray(((Blob) columnObject)
-						.getBinaryStream()));
-			}
-
-			if (s != null)
-			{
-				return AbstractResultSet.fromString(s, resultingClass);
-			}
-			return null;
-		}
-		catch (final IOException e)
-		{
-			throw new SQLException(e);
-		}
-	}
-
-	private static <T> T fromNumber( final Object columnObject,
-			final Class<T> resultingClass ) throws SQLException
-	{
-		final Number n = Number.class.cast(columnObject);
-		if (resultingClass == BigDecimal.class)
-		{
-			return resultingClass.cast(new BigDecimal(n.toString()));
-		}
-		if (resultingClass == BigInteger.class)
-		{
-			return resultingClass.cast(new BigInteger(n.toString()));
-		}
-		if (resultingClass == Byte.class)
-		{
-			return resultingClass.cast(new Byte(n.byteValue()));
-		}
-		if (resultingClass == Double.class)
-		{
-			return resultingClass.cast(new Double(n.doubleValue()));
-		}
-		if (resultingClass == Float.class)
-		{
-			return resultingClass.cast(new Float(n.floatValue()));
-		}
-		if (resultingClass == Integer.class)
-		{
-			return resultingClass.cast(new Integer(n.intValue()));
-		}
-		if (resultingClass == Long.class)
-		{
-			return resultingClass.cast(new Long(n.longValue()));
-		}
-		if (resultingClass == Short.class)
-		{
-			return resultingClass.cast(new Short(n.shortValue()));
-		}
-		if (resultingClass == String.class)
-		{
-			return resultingClass.cast(n.toString());
-		}
-		if (resultingClass == Boolean.class)
-		{
-			if (n.byteValue() == 0)
-			{
-				return resultingClass.cast(Boolean.FALSE);
-			}
-			if (n.byteValue() == 1)
-			{
-				return resultingClass.cast(Boolean.TRUE);
-			}
-		}
-		if (resultingClass == byte[].class)
-		{
-			return resultingClass.cast(n.toString().getBytes());
-		}
-		if (resultingClass == Blob.class)
-		{
-			return resultingClass.cast(new SerialBlob(n.toString().getBytes()));
-		}
-		if (resultingClass == Clob.class)
-		{
-			return resultingClass.cast(new SerialClob(n.toString()
-					.toCharArray()));
-		}
-		return null;
-	}
-
-	private static <T> T fromString( final Object columnObject,
-			final Class<T> resultingClass ) throws SQLException
-	{
-		final String val = String.class.cast(columnObject);
-		// to numeric casts
-		try
-		{
-			if (resultingClass == BigDecimal.class)
-			{
-				return resultingClass.cast(new BigDecimal(val));
-			}
-			if (resultingClass == BigInteger.class)
-			{
-				return resultingClass.cast(new BigInteger(val));
-			}
-			if (resultingClass == Byte.class)
-			{
-				return resultingClass.cast(new Byte(val));
-			}
-			if (resultingClass == Double.class)
-			{
-				return resultingClass.cast(new Double(val));
-			}
-			if (resultingClass == Float.class)
-			{
-				return resultingClass.cast(new Float(val));
-			}
-			if (resultingClass == Integer.class)
-			{
-				return resultingClass.cast(new Integer(val));
-			}
-			if (resultingClass == Long.class)
-			{
-				return resultingClass.cast(new Long(val));
-			}
-			if (resultingClass == Short.class)
-			{
-				return resultingClass.cast(new Short(val));
-			}
-		}
-		catch (final NumberFormatException e)
-		{
-			return null;
-		}
-
-		if (resultingClass == Boolean.class)
-		{
-			if ("0".equals(val))
-			{
-				return resultingClass.cast(Boolean.FALSE);
-			}
-			if ("1".equals(val))
-			{
-				return resultingClass.cast(Boolean.TRUE);
-			}
-		}
-		if (resultingClass == byte[].class)
-		{
-			return resultingClass.cast(val.getBytes());
-		}
-		if (resultingClass == Blob.class)
-		{
-			return resultingClass.cast(new SerialBlob(val.getBytes()));
-		}
-		if (resultingClass == Clob.class)
-		{
-			return resultingClass.cast(new SerialClob(val.toCharArray()));
-		}
-		return null;
-	}
-
 	private final Table table;
 	private final Map<String, Integer> columnNameIdx;
 	private int fetchDirection;
@@ -380,22 +60,8 @@ public abstract class AbstractResultSet implements ResultSet
 
 	private Boolean lastReadWasNull;
 
-	private static Map<Class<?>, Object> nullValueMap;
-
 	private static Logger LOG = LoggerFactory
 			.getLogger(AbstractResultSet.class);
-
-	static
-	{
-		AbstractResultSet.nullValueMap = new HashMap<Class<?>, Object>();
-		AbstractResultSet.nullValueMap.put(Boolean.class, Boolean.FALSE);
-		AbstractResultSet.nullValueMap.put(Byte.class, new Byte((byte) 0));
-		AbstractResultSet.nullValueMap.put(Short.class, new Short((short) 0));
-		AbstractResultSet.nullValueMap.put(Integer.class, new Integer(0));
-		AbstractResultSet.nullValueMap.put(Long.class, new Long(0L));
-		AbstractResultSet.nullValueMap.put(Float.class, new Float(0.0F));
-		AbstractResultSet.nullValueMap.put(Double.class, new Double(0.0));
-	}
 
 	public AbstractResultSet( final Table table )
 	{
@@ -444,7 +110,7 @@ public abstract class AbstractResultSet implements ResultSet
 	private <T> T extractData( final int columnIdx,
 			final Class<T> resultingClass ) throws SQLException
 	{
-		return AbstractResultSet.extractData(getObject(columnIdx + 1),
+		return TypeConverter.extractData(getObject(columnIdx + 1),
 				resultingClass);
 	}
 
