@@ -15,16 +15,13 @@ import org.xenei.jdbc4sparql.J4SDriver;
 import org.xenei.jdbc4sparql.J4SUrl;
 import org.xenei.jena.entities.MissingAnnotation;
 
-public class SQLClient
-{
+public class SQLClient {
 
-	private static void doIO( final Connection connection, final String queryStr )
-			throws SQLException
-	{
+	private static void doIO(final Connection connection, final String queryStr)
+			throws SQLException {
 		final DatabaseMetaData md = connection.getMetaData();
 		ResultSet rs = md.getTables(null, null, null, null);
-		while (rs.next())
-		{
+		while (rs.next()) {
 			System.out.println(String.format("%s.%s.%s",
 					rs.getString("TABLE_CAT"), rs.getString("TABLE_SCHEM"),
 					rs.getString("TABLE_NAME")));
@@ -34,10 +31,8 @@ public class SQLClient
 		stmt.execute("SELECT * FROM Agent_data");
 		rs = stmt.getResultSet();
 		final ResultSetMetaData rsmd = rs.getMetaData();
-		while (rs.next())
-		{
-			for (int i = 0; i < rsmd.getColumnCount(); i++)
-			{
+		while (rs.next()) {
+			for (int i = 0; i < rsmd.getColumnCount(); i++) {
 				System.out.print(String.format("[%s]%s ",
 						rsmd.getColumnName(i + 1), rs.getString(i + 1)));
 			}
@@ -47,10 +42,9 @@ public class SQLClient
 		stmt.close();
 	}
 
-	public static void main( final String[] args ) throws URISyntaxException,
-	IOException, SQLException, ClassNotFoundException,
-	InstantiationException, IllegalAccessException, MissingAnnotation
-	{
+	public static void main(final String[] args) throws URISyntaxException,
+			IOException, SQLException, ClassNotFoundException,
+			InstantiationException, IllegalAccessException, MissingAnnotation {
 		// final File outFile = ConfigBuilder.gatherSchema(Arrays.asList(args)
 		// .subList(1, args.length));
 

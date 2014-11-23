@@ -14,8 +14,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-public class J4SStatementOuterJoinTest
-{
+public class J4SStatementOuterJoinTest {
 	// file URL
 	private URL fUrl;
 
@@ -28,8 +27,7 @@ public class J4SStatementOuterJoinTest
 	private Statement stmt;
 
 	@Before
-	public void setup() throws Exception
-	{
+	public void setup() throws Exception {
 		LoggingConfig.setConsole(Level.DEBUG);
 		LoggingConfig.setRootLogger(Level.INFO);
 		LoggingConfig.setLogger("com.hp.hpl.jena.", Level.INFO);
@@ -49,107 +47,80 @@ public class J4SStatementOuterJoinTest
 	}
 
 	@After
-	public void tearDown()
-	{
-		try
-		{
+	public void tearDown() {
+		try {
 			stmt.close();
+		} catch (final SQLException ignore) {
 		}
-		catch (final SQLException ignore)
-		{
-		}
-		try
-		{
+		try {
 			conn.close();
-		}
-		catch (final SQLException ignore)
-		{
+		} catch (final SQLException ignore) {
 		}
 	}
 
 	@Test
-	@Ignore( "Full Outer Join not suported." )
-	public void testFullOuterJoin() throws ClassNotFoundException, SQLException
-	{
+	@Ignore("Full Outer Join not suported.")
+	public void testFullOuterJoin() throws ClassNotFoundException, SQLException {
 		final ResultSet rset = stmt
 				.executeQuery("select fooTable.IntCol, barTable.IntCol from fooTable full outer join barTable on fooTable.IntCol=barTable.IntCol");
-		try
-		{
+		try {
 			boolean foundNull = false;
-			while (rset.next())
-			{
+			while (rset.next()) {
 				rset.getString(2);
 				foundNull |= rset.wasNull();
 			}
 			Assert.assertTrue("did not find null", foundNull);
-		}
-		finally
-		{
+		} finally {
 			rset.close();
 		}
 	}
 
 	@Test
-	public void testLeftOuterJoin() throws ClassNotFoundException, SQLException
-	{
+	public void testLeftOuterJoin() throws ClassNotFoundException, SQLException {
 		final ResultSet rset = stmt
 				.executeQuery("select fooTable.IntCol, barTable.IntCol from fooTable left outer join barTable on fooTable.IntCol=barTable.IntCol");
-		try
-		{
+		try {
 			boolean foundNull = false;
-			while (rset.next())
-			{
+			while (rset.next()) {
 				rset.getString(2);
 				foundNull |= rset.wasNull();
 			}
 			Assert.assertTrue("did not find null", foundNull);
-		}
-		finally
-		{
+		} finally {
 			rset.close();
 		}
 	}
 
 	@Test
-	public void testOuterJoin() throws ClassNotFoundException, SQLException
-	{
+	public void testOuterJoin() throws ClassNotFoundException, SQLException {
 		final ResultSet rset = stmt
 				.executeQuery("select fooTable.IntCol, barTable.IntCol from fooTable outer join barTable on fooTable.IntCol=barTable.IntCol");
-		try
-		{
+		try {
 			boolean foundNull = false;
-			while (rset.next())
-			{
+			while (rset.next()) {
 				rset.getString(2);
 				foundNull |= rset.wasNull();
 			}
 			Assert.assertTrue("did not find null", foundNull);
-		}
-		finally
-		{
+		} finally {
 			rset.close();
 		}
 	}
 
 	@Test
-	@Ignore( "Right Outer Join not suported." )
+	@Ignore("Right Outer Join not suported.")
 	public void testRightOuterJoin() throws ClassNotFoundException,
-	SQLException
-	{
+			SQLException {
 		final ResultSet rset = stmt
 				.executeQuery("select fooTable.IntCol, barTable.IntCol from fooTable right outer join barTable on fooTable.IntCol=barTable.IntCol");
-		try
-		{
+		try {
 			boolean foundNull = false;
-			while (rset.next())
-			{
+			while (rset.next()) {
 				rset.getString(2);
 				foundNull |= rset.wasNull();
 			}
 			Assert.assertTrue("did not find null", foundNull);
-		}
-		finally
-		{
+		} finally {
 			rset.close();
 		}
 	}

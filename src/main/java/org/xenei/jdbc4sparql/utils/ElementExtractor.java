@@ -1,4 +1,4 @@
-package org.xenei.jdbc4sparql.sparql.visitor;
+package org.xenei.jdbc4sparql.utils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,30 +28,30 @@ import com.hp.hpl.jena.sparql.syntax.ElementVisitor;
 public class ElementExtractor implements ElementVisitor {
 	private List<Element> extracted = new ArrayList<Element>();
 	private Class<? extends Element> matchType;
-	
+
 	/**
 	 * Set the type to match
-	 * @param clazz The class type to match
+	 * 
+	 * @param clazz
+	 *            The class type to match
 	 * @return this ElementExtractor for chaining
 	 */
-	public ElementExtractor setMatchType(Class<? extends Element> clazz)
-	{
+	public ElementExtractor setMatchType(Class<? extends Element> clazz) {
 		matchType = clazz;
 		return this;
 	}
-	
+
 	/**
 	 * Reset the results.
+	 * 
 	 * @return this ElementExtractor for chaining
 	 */
-	public ElementExtractor reset()
-	{
+	public ElementExtractor reset() {
 		extracted.clear();
 		return this;
 	}
-	
-	public List<Element> getExtracted()
-	{
+
+	public List<Element> getExtracted() {
 		return extracted;
 	}
 
@@ -61,107 +61,93 @@ public class ElementExtractor implements ElementVisitor {
 
 	@Override
 	public void visit(ElementTriplesBlock el) {
-		if (matchType.isAssignableFrom(el.getClass()))
-		{
+		if (matchType.isAssignableFrom(el.getClass())) {
 			extracted.add(el);
 		}
 	}
 
 	@Override
 	public void visit(ElementPathBlock el) {
-		if (matchType.isAssignableFrom(el.getClass()))
-		{
+		if (matchType.isAssignableFrom(el.getClass())) {
 			extracted.add(el);
 		}
 	}
 
 	@Override
 	public void visit(ElementFilter el) {
-		if (matchType.isAssignableFrom(el.getClass()))
-		{
+		if (matchType.isAssignableFrom(el.getClass())) {
 			extracted.add(el);
 		}
 	}
 
 	@Override
 	public void visit(ElementAssign el) {
-		if (matchType.isAssignableFrom(el.getClass()))
-		{
+		if (matchType.isAssignableFrom(el.getClass())) {
 			extracted.add(el);
 		}
 	}
 
 	@Override
 	public void visit(ElementBind el) {
-		if (matchType.isAssignableFrom(el.getClass()))
-		{
+		if (matchType.isAssignableFrom(el.getClass())) {
 			extracted.add(el);
 		}
 	}
 
 	@Override
 	public void visit(ElementData el) {
-		if (matchType.isAssignableFrom(el.getClass()))
-		{
+		if (matchType.isAssignableFrom(el.getClass())) {
 			extracted.add(el);
 		}
 	}
 
 	@Override
 	public void visit(ElementUnion el) {
-		if (matchType.isAssignableFrom(el.getClass()))
-		{
+		if (matchType.isAssignableFrom(el.getClass())) {
 			extracted.add(el);
 		}
-		for (Element e : el.getElements())
-		{
+		for (Element e : el.getElements()) {
 			e.visit(this);
 		}
 	}
 
 	@Override
 	public void visit(ElementOptional el) {
-		if (matchType.isAssignableFrom(el.getClass()))
-		{
+		if (matchType.isAssignableFrom(el.getClass())) {
 			extracted.add(el);
 		}
-		el.getOptionalElement().visit( this );
+		el.getOptionalElement().visit(this);
 	}
 
 	@Override
 	public void visit(ElementGroup el) {
-		if (matchType.isAssignableFrom(el.getClass()))
-		{
+		if (matchType.isAssignableFrom(el.getClass())) {
 			extracted.add(el);
 		}
-		for (Element e : el.getElements())
-		{
+		for (Element e : el.getElements()) {
 			e.visit(this);
 		}
 	}
 
 	@Override
 	public void visit(ElementDataset el) {
-		if (matchType.isAssignableFrom(el.getClass()))
-		{
+		if (matchType.isAssignableFrom(el.getClass())) {
 			extracted.add(el);
 		}
-		el.getPatternElement().visit( this );
+		el.getPatternElement().visit(this);
 	}
 
 	@Override
 	public void visit(ElementNamedGraph el) {
-		if (matchType.isAssignableFrom(el.getClass()))
-		{
+		if (matchType.isAssignableFrom(el.getClass())) {
 			extracted.add(el);
 		}
-		el.getElement().visit( this );
+		el.getElement().visit(this);
 	}
 
 	@Override
 	public void visit(ElementExists el) {
-		if (matchType.isAssignableFrom(el.getClass()))
-		{
+		if (matchType.isAssignableFrom(el.getClass())) {
 			extracted.add(el);
 		}
 		el.getElement().visit(this);
@@ -169,8 +155,7 @@ public class ElementExtractor implements ElementVisitor {
 
 	@Override
 	public void visit(ElementNotExists el) {
-		if (matchType.isAssignableFrom(el.getClass()))
-		{
+		if (matchType.isAssignableFrom(el.getClass())) {
 			extracted.add(el);
 		}
 		el.getElement().visit(this);
@@ -178,8 +163,7 @@ public class ElementExtractor implements ElementVisitor {
 
 	@Override
 	public void visit(ElementMinus el) {
-		if (matchType.isAssignableFrom(el.getClass()))
-		{
+		if (matchType.isAssignableFrom(el.getClass())) {
 			extracted.add(el);
 		}
 		el.getMinusElement().visit(this);
@@ -187,8 +171,7 @@ public class ElementExtractor implements ElementVisitor {
 
 	@Override
 	public void visit(ElementService el) {
-		if (matchType.isAssignableFrom(el.getClass()))
-		{
+		if (matchType.isAssignableFrom(el.getClass())) {
 			extracted.add(el);
 		}
 		el.getElement().visit(this);
@@ -196,8 +179,7 @@ public class ElementExtractor implements ElementVisitor {
 
 	@Override
 	public void visit(ElementSubQuery el) {
-		if (matchType.isAssignableFrom(el.getClass()))
-		{
+		if (matchType.isAssignableFrom(el.getClass())) {
 			extracted.add(el);
 		}
 		el.getQuery().getQueryPattern().visit(this);

@@ -40,8 +40,7 @@ import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlParserImpl;
 
-public class SimpleBuilderTest
-{
+public class SimpleBuilderTest {
 	private static final String NS = "http://example.com/jdbc4sparql#";
 	private RdfCatalog catalog;
 	private RdfSchema schema;
@@ -53,8 +52,7 @@ public class SimpleBuilderTest
 	private Map<String, Catalog> catalogs;
 	private SparqlParser parser;
 
-	private void addModelData( final Model model )
-	{
+	private void addModelData(final Model model) {
 		model.removeAll();
 		final Resource fooType = model.createResource(SimpleBuilderTest.NS
 				+ "fooTable");
@@ -80,31 +78,25 @@ public class SimpleBuilderTest
 	}
 
 	@Test
-	public void buildRdfTableTest() throws SQLException
-	{
+	public void buildRdfTableTest() throws SQLException {
 		final Set<RdfTable> tables = builder.getTables(schema);
 		final Map<String, Integer> counter = new HashMap<String, Integer>();
 		final String[] columnNames = { "StringCol", "NullableStringCol",
 				"IntCol", "NullableIntCol" };
-		for (final RdfTable tbl : tables)
-		{
+		for (final RdfTable tbl : tables) {
 			// schema.addTables(tbl);
 			final ResultSet rs = tbl.getResultSet(catalogs, parser);
 			int count = 0;
-			while (rs.next())
-			{
+			while (rs.next()) {
 				count++;
-				for (int i = 1; i <= tbl.getColumnCount(); i++)
-				{
+				for (int i = 1; i <= tbl.getColumnCount(); i++) {
 					// just verify that no exception is thrown when reading
 					// numeric columns
 					rs.getString(i);
 				}
-				for (final String s : columnNames)
-				{
+				for (final String s : columnNames) {
 					rs.getString(s);
-					if (!rs.wasNull())
-					{
+					if (!rs.wasNull()) {
 						Integer i = counter.get(s);
 						i = i == null ? 1 : i + 1;
 						counter.put(s, i);
@@ -112,8 +104,7 @@ public class SimpleBuilderTest
 				}
 			}
 			Assert.assertEquals(2, count);
-			for (final String s : columnNames)
-			{
+			for (final String s : columnNames) {
 				final Integer i = counter.get(s);
 				Assert.assertNotNull(i);
 				final int b = s.startsWith("Nullable") ? 1 : 2;
@@ -123,19 +114,15 @@ public class SimpleBuilderTest
 	}
 
 	@Test
-	public void checkNullReturnValues() throws SQLException
-	{
+	public void checkNullReturnValues() throws SQLException {
 
 		final Set<RdfTable> tables = builder.getTables(schema);
-		for (final RdfTable tbl : tables)
-		{
+		for (final RdfTable tbl : tables) {
 			final ResultSet rs = tbl.getResultSet(catalogs, parser);
 			boolean foundNull = false;
-			while (rs.next() && !foundNull)
-			{
+			while (rs.next() && !foundNull) {
 				rs.getString("NullableIntCol");
-				if (rs.wasNull())
-				{
+				if (rs.wasNull()) {
 					foundNull = true;
 					Assert.assertNull(rs.getString("NullableIntCol"));
 					Assert.assertFalse(rs.getBoolean("NullableIntCol"));
@@ -169,8 +156,7 @@ public class SimpleBuilderTest
 	}
 
 	@Before
-	public void setup()
-	{
+	public void setup() {
 		model = ModelFactory.createDefaultModel();
 		schemaModel = ModelFactory.createDefaultModel();
 		addModelData(model);

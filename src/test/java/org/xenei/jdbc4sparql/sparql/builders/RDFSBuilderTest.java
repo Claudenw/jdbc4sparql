@@ -33,8 +33,7 @@ import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 
-public class RDFSBuilderTest
-{
+public class RDFSBuilderTest {
 	private RdfCatalog catalog;
 	private RdfSchema schema;
 	// data model
@@ -49,20 +48,17 @@ public class RDFSBuilderTest
 			"Spatial_Thing", "Concept", "Thing" };
 
 	@Test
-	public void buildRdfTableTest() throws SQLException
-	{
+	public void buildRdfTableTest() throws SQLException {
 		final Set<RdfTable> tables = builder.getTables(schema);
 		final List<String> tblNames = Arrays.asList(tableNames);
-		for (final RdfTable tbl : tables)
-		{
+		for (final RdfTable tbl : tables) {
 			Assert.assertTrue(tbl.getName() + " missing from table list",
 					tblNames.contains(tbl.getName().getShortName()));
 		}
 	}
 
 	@Before
-	public void setup()
-	{
+	public void setup() {
 		model = ModelFactory.createDefaultModel();
 		schemaModel = ModelFactory.createDefaultModel();
 		URL url = RDFSBuilderTest.class.getResource("./foaf.rdf");

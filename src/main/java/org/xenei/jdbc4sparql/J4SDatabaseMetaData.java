@@ -42,8 +42,7 @@ import org.xenei.jdbc4sparql.sparql.SparqlResultSet;
 import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlParserImpl;
 
-public class J4SDatabaseMetaData implements DatabaseMetaData
-{
+public class J4SDatabaseMetaData implements DatabaseMetaData {
 	private final J4SConnection connection;
 	private final J4SDriver driver;
 	private final Catalog metaCatalog;
@@ -53,9 +52,8 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 			.getLogger(J4SDatabaseMetaData.class);
 	private final SparqlParser parser = new SparqlParserImpl();
 
-	public J4SDatabaseMetaData( final J4SConnection connection,
-			final J4SDriver driver )
-	{
+	public J4SDatabaseMetaData(final J4SConnection connection,
+			final J4SDriver driver) {
 		this.connection = connection;
 		this.driver = driver;
 		// this.catalogs = new HashMap<String,
@@ -63,8 +61,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 		metaCatalog = connection.getCatalogs().get(
 				MetaCatalogBuilder.LOCAL_NAME);
 		metaSchema = metaCatalog.getSchema(MetaCatalogBuilder.SCHEMA_NAME);
-		if (metaSchema == null)
-		{
+		if (metaSchema == null) {
 			throw new IllegalStateException(String.format(
 					"Metadata schema '%s' not defined",
 					MetaCatalogBuilder.SCHEMA_NAME));
@@ -72,71 +69,61 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	}
 
 	@Override
-	public boolean allProceduresAreCallable() throws SQLException
-	{
+	public boolean allProceduresAreCallable() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean allTablesAreSelectable() throws SQLException
-	{
+	public boolean allTablesAreSelectable() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean autoCommitFailureClosesAllResultSets() throws SQLException
-	{
+	public boolean autoCommitFailureClosesAllResultSets() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean dataDefinitionCausesTransactionCommit() throws SQLException
-	{
+	public boolean dataDefinitionCausesTransactionCommit() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean dataDefinitionIgnoredInTransactions() throws SQLException
-	{
+	public boolean dataDefinitionIgnoredInTransactions() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean deletesAreDetected( final int arg0 ) throws SQLException
-	{
+	public boolean deletesAreDetected(final int arg0) throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean doesMaxRowSizeIncludeBlobs() throws SQLException
-	{
+	public boolean doesMaxRowSizeIncludeBlobs() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
-	private String escapeString( final String s )
-	{
+	private String escapeString(final String s) {
 		return s.replace("\\'", "'").replace("'", "\\'");
 	}
 
 	@Override
-	public boolean generatedKeyAlwaysReturned() throws SQLException
-	{
+	public boolean generatedKeyAlwaysReturned() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public ResultSet getAttributes( final String catalog,
+	public ResultSet getAttributes(final String catalog,
 			final String schemaPattern, final String typePattern,
-			final String attributeNamePattern ) throws SQLException
-	{
+			final String attributeNamePattern) throws SQLException {
 		final DataTable table = new DataTable(
 				metaSchema.getTable(MetaCatalogBuilder.ATTRIBUTES_TABLE));
 		// TODO populate table here.
@@ -144,10 +131,9 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	}
 
 	@Override
-	public ResultSet getBestRowIdentifier( final String arg0,
-			final String arg1, final String arg2, final int arg3,
-			final boolean arg4 ) throws SQLException
-	{
+	public ResultSet getBestRowIdentifier(final String arg0, final String arg1,
+			final String arg2, final int arg3, final boolean arg4)
+			throws SQLException {
 		final DataTable table = new DataTable(
 				metaSchema.getTable(MetaCatalogBuilder.BEST_ROW_TABLE));
 		// TODO populate table here.
@@ -155,27 +141,22 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	}
 
 	// TODO remvoe this
-	public Catalog getCatalog( final String name )
-	{
+	public Catalog getCatalog(final String name) {
 		return connection.getCatalogs().get(name);
 	}
 
-	private String getCatalogName( final String pattern )
-	{
-		if (pattern == null)
-		{
+	private String getCatalogName(final String pattern) {
+		if (pattern == null) {
 			throw new IllegalArgumentException("Catalog name may not be null");
 		}
-		if (StringUtils.isBlank(pattern))
-		{
+		if (StringUtils.isBlank(pattern)) {
 			return escapeString("");
 		}
 		return escapeString(pattern);
 	}
 
 	@Override
-	public ResultSet getCatalogs() throws SQLException
-	{
+	public ResultSet getCatalogs() throws SQLException {
 		J4SDatabaseMetaData.LOG.debug("Getting catalogs");
 		final RdfTable table = (RdfTable) metaSchema
 				.getTable(MetaCatalogBuilder.CATALOGS_TABLE);
@@ -184,20 +165,17 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	}
 
 	@Override
-	public String getCatalogSeparator() throws SQLException
-	{
+	public String getCatalogSeparator() throws SQLException {
 		return ".";
 	}
 
 	@Override
-	public String getCatalogTerm() throws SQLException
-	{
+	public String getCatalogTerm() throws SQLException {
 		return "Catalog";
 	}
 
 	@Override
-	public ResultSet getClientInfoProperties() throws SQLException
-	{
+	public ResultSet getClientInfoProperties() throws SQLException {
 		final DataTable table = new DataTable(
 				metaSchema.getTable(MetaCatalogBuilder.CLIENT_INFO_TABLE));
 		// TODO populate table here.
@@ -205,9 +183,8 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	}
 
 	@Override
-	public ResultSet getColumnPrivileges( final String arg0, final String arg1,
-			final String arg2, final String arg3 ) throws SQLException
-	{
+	public ResultSet getColumnPrivileges(final String arg0, final String arg1,
+			final String arg2, final String arg3) throws SQLException {
 		final DataTable table = new DataTable(
 				metaSchema.getTable(MetaCatalogBuilder.COLUMN_PRIVILIGES_TABLE));
 		// TODO populate table here.
@@ -215,12 +192,10 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	}
 
 	@Override
-	public ResultSet getColumns( final String catalogPattern,
+	public ResultSet getColumns(final String catalogPattern,
 			final String schemaPattern, final String tableNamePattern,
-			final String columnNamePattern ) throws SQLException
-	{
-		if (J4SDatabaseMetaData.LOG.isDebugEnabled())
-		{
+			final String columnNamePattern) throws SQLException {
+		if (J4SDatabaseMetaData.LOG.isDebugEnabled()) {
 			J4SDatabaseMetaData.LOG.debug(String.format(
 					"Getting columns %s.%s.%s.%s", catalogPattern,
 					schemaPattern, tableNamePattern, columnNamePattern));
@@ -228,34 +203,29 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 		final RdfTable table = (RdfTable) metaSchema
 				.getTable(MetaCatalogBuilder.COLUMNS_TABLE);
 		if ((catalogPattern != null) || (schemaPattern != null)
-				|| (tableNamePattern != null) || (columnNamePattern != null))
-		{
+				|| (tableNamePattern != null) || (columnNamePattern != null)) {
 
 			boolean hasWhere = false;
 			final StringBuilder query = new StringBuilder().append(String
 					.format("SELECT * FROM %s WHERE ", table.getSQLName()));
-			if (catalogPattern != null)
-			{
+			if (catalogPattern != null) {
 				query.append(String.format("TABLE_CAT LIKE '%s'",
 						getCatalogName(catalogPattern)));
 				hasWhere = true;
 			}
-			if (schemaPattern != null)
-			{
+			if (schemaPattern != null) {
 				query.append(hasWhere ? " AND " : "").append(
 						String.format("TABLE_SCHEM LIKE '%s'",
 								getSchemaName(schemaPattern)));
 				hasWhere = true;
 			}
-			if (tableNamePattern != null)
-			{
+			if (tableNamePattern != null) {
 				query.append(hasWhere ? " AND " : "").append(
 						String.format("TABLE_NAME LIKE '%s'",
 								escapeString(tableNamePattern)));
 				hasWhere = true;
 			}
-			if (columnNamePattern != null)
-			{
+			if (columnNamePattern != null) {
 				query.append(hasWhere ? " AND " : "").append(
 						String.format("COLUMN_NAME LIKE '%s'",
 								escapeString(columnNamePattern)));
@@ -266,25 +236,21 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 					connection.getCatalogs(), table.getCatalog(),
 					table.getSchema(), query.toString()).setKey(table.getKey());
 			return new SparqlResultSet(table, sqb.build());
-		}
-		else
-		{
+		} else {
 			return table.getResultSet(connection.getCatalogs(), parser);
 		}
 	}
 
 	@Override
-	public Connection getConnection() throws SQLException
-	{
+	public Connection getConnection() throws SQLException {
 		return connection;
 	}
 
 	@Override
-	public ResultSet getCrossReference( final String parentCatalog,
+	public ResultSet getCrossReference(final String parentCatalog,
 			final String parentSchema, final String parentTable,
 			final String foreignCatalog, final String foreignSchema,
-			final String foreignTable ) throws SQLException
-	{
+			final String foreignTable) throws SQLException {
 		final DataTable table = new DataTable(
 				metaSchema.getTable(MetaCatalogBuilder.XREF_TABLE));
 
@@ -294,64 +260,54 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	}
 
 	@Override
-	public int getDatabaseMajorVersion() throws SQLException
-	{
+	public int getDatabaseMajorVersion() throws SQLException {
 		return 1;
 	}
 
 	@Override
-	public int getDatabaseMinorVersion() throws SQLException
-	{
+	public int getDatabaseMinorVersion() throws SQLException {
 		return 0;
 	}
 
 	@Override
-	public String getDatabaseProductName() throws SQLException
-	{
+	public String getDatabaseProductName() throws SQLException {
 		return "JDBC4SPARQL";
 	}
 
 	@Override
-	public String getDatabaseProductVersion() throws SQLException
-	{
+	public String getDatabaseProductVersion() throws SQLException {
 		return "1";
 	}
 
 	@Override
-	public int getDefaultTransactionIsolation() throws SQLException
-	{
+	public int getDefaultTransactionIsolation() throws SQLException {
 		return java.sql.Connection.TRANSACTION_NONE;
 	}
 
 	@Override
-	public int getDriverMajorVersion()
-	{
+	public int getDriverMajorVersion() {
 		return driver.getMajorVersion();
 	}
 
 	@Override
-	public int getDriverMinorVersion()
-	{
+	public int getDriverMinorVersion() {
 		return driver.getMinorVersion();
 	}
 
 	@Override
-	public String getDriverName() throws SQLException
-	{
+	public String getDriverName() throws SQLException {
 		return driver.getName();
 	}
 
 	@Override
-	public String getDriverVersion() throws SQLException
-	{
+	public String getDriverVersion() throws SQLException {
 		return String.format("%s v%s.%s", driver.getName(),
 				driver.getMajorVersion(), driver.getMinorVersion());
 	}
 
 	@Override
-	public ResultSet getExportedKeys( final String arg0, final String arg1,
-			final String arg2 ) throws SQLException
-	{
+	public ResultSet getExportedKeys(final String arg0, final String arg1,
+			final String arg2) throws SQLException {
 		final DataTable table = new DataTable(
 				metaSchema.getTable(MetaCatalogBuilder.EXPORTED_KEYS_TABLE));
 		// TODO populate table here.
@@ -360,15 +316,13 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	}
 
 	@Override
-	public String getExtraNameCharacters() throws SQLException
-	{
+	public String getExtraNameCharacters() throws SQLException {
 		return "";
 	}
 
 	@Override
-	public ResultSet getFunctionColumns( final String arg0, final String arg1,
-			final String arg2, final String arg3 ) throws SQLException
-	{
+	public ResultSet getFunctionColumns(final String arg0, final String arg1,
+			final String arg2, final String arg3) throws SQLException {
 		final DataTable table = new DataTable(
 				metaSchema.getTable(MetaCatalogBuilder.FUNCTION_COLUMNS_TABLE));
 		// TODO populate table here.
@@ -377,9 +331,8 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	}
 
 	@Override
-	public ResultSet getFunctions( final String arg0, final String arg1,
-			final String arg2 ) throws SQLException
-	{
+	public ResultSet getFunctions(final String arg0, final String arg1,
+			final String arg2) throws SQLException {
 		final DataTable table = new DataTable(
 				metaSchema.getTable(MetaCatalogBuilder.FUNCTIONS_TABLE));
 		// TODO populate table here.
@@ -388,15 +341,13 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	}
 
 	@Override
-	public String getIdentifierQuoteString() throws SQLException
-	{
+	public String getIdentifierQuoteString() throws SQLException {
 		return " ";
 	}
 
 	@Override
-	public ResultSet getImportedKeys( final String arg0, final String arg1,
-			final String arg2 ) throws SQLException
-	{
+	public ResultSet getImportedKeys(final String arg0, final String arg1,
+			final String arg2) throws SQLException {
 		final DataTable table = new DataTable(
 				metaSchema.getTable(MetaCatalogBuilder.IMPORTED_KEYS_TABLE));
 		// TODO populate table here.
@@ -404,10 +355,9 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	}
 
 	@Override
-	public ResultSet getIndexInfo( final String arg0, final String arg1,
-			final String arg2, final boolean arg3, final boolean arg4 )
-					throws SQLException
-	{
+	public ResultSet getIndexInfo(final String arg0, final String arg1,
+			final String arg2, final boolean arg3, final boolean arg4)
+			throws SQLException {
 		final DataTable table = new DataTable(
 				metaSchema.getTable(MetaCatalogBuilder.INDEXINFO_TABLE));
 		// TODO populate table here.
@@ -415,187 +365,158 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	}
 
 	@Override
-	public int getJDBCMajorVersion() throws SQLException
-	{
+	public int getJDBCMajorVersion() throws SQLException {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public int getJDBCMinorVersion() throws SQLException
-	{
+	public int getJDBCMinorVersion() throws SQLException {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public int getMaxBinaryLiteralLength() throws SQLException
-	{
+	public int getMaxBinaryLiteralLength() throws SQLException {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public int getMaxCatalogNameLength() throws SQLException
-	{
+	public int getMaxCatalogNameLength() throws SQLException {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public int getMaxCharLiteralLength() throws SQLException
-	{
+	public int getMaxCharLiteralLength() throws SQLException {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public int getMaxColumnNameLength() throws SQLException
-	{
+	public int getMaxColumnNameLength() throws SQLException {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public int getMaxColumnsInGroupBy() throws SQLException
-	{
+	public int getMaxColumnsInGroupBy() throws SQLException {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public int getMaxColumnsInIndex() throws SQLException
-	{
+	public int getMaxColumnsInIndex() throws SQLException {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public int getMaxColumnsInOrderBy() throws SQLException
-	{
+	public int getMaxColumnsInOrderBy() throws SQLException {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public int getMaxColumnsInSelect() throws SQLException
-	{
+	public int getMaxColumnsInSelect() throws SQLException {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public int getMaxColumnsInTable() throws SQLException
-	{
+	public int getMaxColumnsInTable() throws SQLException {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public int getMaxConnections() throws SQLException
-	{
+	public int getMaxConnections() throws SQLException {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public int getMaxCursorNameLength() throws SQLException
-	{
+	public int getMaxCursorNameLength() throws SQLException {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public int getMaxIndexLength() throws SQLException
-	{
+	public int getMaxIndexLength() throws SQLException {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public int getMaxProcedureNameLength() throws SQLException
-	{
+	public int getMaxProcedureNameLength() throws SQLException {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public int getMaxRowSize() throws SQLException
-	{
+	public int getMaxRowSize() throws SQLException {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public int getMaxSchemaNameLength() throws SQLException
-	{
+	public int getMaxSchemaNameLength() throws SQLException {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public int getMaxStatementLength() throws SQLException
-	{
+	public int getMaxStatementLength() throws SQLException {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public int getMaxStatements() throws SQLException
-	{
+	public int getMaxStatements() throws SQLException {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public int getMaxTableNameLength() throws SQLException
-	{
+	public int getMaxTableNameLength() throws SQLException {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public int getMaxTablesInSelect() throws SQLException
-	{
+	public int getMaxTablesInSelect() throws SQLException {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public int getMaxUserNameLength() throws SQLException
-	{
+	public int getMaxUserNameLength() throws SQLException {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public String getNumericFunctions() throws SQLException
-	{
+	public String getNumericFunctions() throws SQLException {
 		return makeString(parser.getSupportedNumericFunctions().iterator());
 	}
 
 	@Override
-	public ResultSet getPrimaryKeys( final String catalogPattern,
-			final String schemaPattern, final String tableNamePattern )
-					throws SQLException
-	{
+	public ResultSet getPrimaryKeys(final String catalogPattern,
+			final String schemaPattern, final String tableNamePattern)
+			throws SQLException {
 		final DataTable table = new DataTable(
 				metaSchema.getTable(MetaCatalogBuilder.PRIMARY_KEY_TABLE));
 		for (final Catalog catalog : new NameFilter<Catalog>(catalogPattern,
-				connection.getCatalogs().values()))
-		{
+				connection.getCatalogs().values())) {
 			for (final Schema schema : new NameFilter<Schema>(schemaPattern,
-					catalog.getSchemas()))
-			{
-				for (final Table tbl : new NameFilter<Table>(
-						tableNamePattern, schema.getTables()))
-				{
+					catalog.getSchemas())) {
+				for (final Table tbl : new NameFilter<Table>(tableNamePattern,
+						schema.getTables())) {
 					final TableDef tableDef = tbl.getTableDef();
-					if (tableDef.getPrimaryKey() != null)
-					{
+					if (tableDef.getPrimaryKey() != null) {
 						final Key pk = tableDef.getPrimaryKey();
-						for (final KeySegment seg : pk.getSegments())
-						{
+						for (final KeySegment seg : pk.getSegments()) {
 							final Object[] data = { catalog.getName(), // TABLE_CAT
 									schema.getName(), // TABLE_SCHEM
 									tbl.getName(), // TABLE_NAME
@@ -613,9 +534,8 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	}
 
 	@Override
-	public ResultSet getProcedureColumns( final String arg0, final String arg1,
-			final String arg2, final String arg3 ) throws SQLException
-	{
+	public ResultSet getProcedureColumns(final String arg0, final String arg1,
+			final String arg2, final String arg3) throws SQLException {
 		final DataTable table = new DataTable(
 				metaSchema.getTable(MetaCatalogBuilder.PROCEDURE_COLUMNS_TABLE));
 		// TODO populate table here.
@@ -623,9 +543,8 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	}
 
 	@Override
-	public ResultSet getProcedures( final String arg0, final String arg1,
-			final String arg2 ) throws SQLException
-	{
+	public ResultSet getProcedures(final String arg0, final String arg1,
+			final String arg2) throws SQLException {
 		final DataTable table = new DataTable(
 				metaSchema.getTable(MetaCatalogBuilder.PROCEDURES_TABLE));
 		// TODO populate table here.
@@ -633,76 +552,63 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	}
 
 	@Override
-	public String getProcedureTerm() throws SQLException
-	{
+	public String getProcedureTerm() throws SQLException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public ResultSet getPseudoColumns( final String arg0, final String arg1,
-			final String arg2, final String arg3 ) throws SQLException
-	{
+	public ResultSet getPseudoColumns(final String arg0, final String arg1,
+			final String arg2, final String arg3) throws SQLException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public int getResultSetHoldability() throws SQLException
-	{
+	public int getResultSetHoldability() throws SQLException {
 		return ResultSet.HOLD_CURSORS_OVER_COMMIT;
 	}
 
 	@Override
-	public RowIdLifetime getRowIdLifetime() throws SQLException
-	{
+	public RowIdLifetime getRowIdLifetime() throws SQLException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	private String getSchemaName( final String pattern )
-	{
-		if (pattern == null)
-		{
+	private String getSchemaName(final String pattern) {
+		if (pattern == null) {
 			throw new IllegalArgumentException("Schema name may not be null");
 		}
-		if (StringUtils.isBlank(pattern))
-		{
+		if (StringUtils.isBlank(pattern)) {
 			return escapeString("");
 		}
 		return escapeString(pattern);
 	}
 
 	@Override
-	public ResultSet getSchemas() throws SQLException
-	{
+	public ResultSet getSchemas() throws SQLException {
 		return getSchemas(null, null);
 	}
 
 	@Override
-	public ResultSet getSchemas( final String catalogPattern,
-			final String schemaPattern ) throws SQLException
-	{
-		if (J4SDatabaseMetaData.LOG.isDebugEnabled())
-		{
+	public ResultSet getSchemas(final String catalogPattern,
+			final String schemaPattern) throws SQLException {
+		if (J4SDatabaseMetaData.LOG.isDebugEnabled()) {
 			J4SDatabaseMetaData.LOG.debug(String.format(
 					"getting schemas %s.%s", catalogPattern, schemaPattern));
 		}
 		final RdfTable table = (RdfTable) metaSchema
 				.getTable(MetaCatalogBuilder.SCHEMAS_TABLE);
-		if ((catalogPattern != null) || (schemaPattern != null))
-		{
+		if ((catalogPattern != null) || (schemaPattern != null)) {
 			boolean hasWhere = false;
 			final StringBuilder query = new StringBuilder().append(String
 					.format("SELECT * FROM %s WHERE ", table.getSQLName()));
-			if (catalogPattern != null)
-			{
+			if (catalogPattern != null) {
 				query.append(String.format("TABLE_CATALOG LIKE '%s'",
 						getCatalogName(catalogPattern)));
 				hasWhere = true;
 			}
-			if (schemaPattern != null)
-			{
+			if (schemaPattern != null) {
 				query.append(hasWhere ? " AND " : "").append(
 						String.format("TABLE_SCHEM LIKE '%s'",
 								getSchemaName(schemaPattern)));
@@ -713,68 +619,56 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 					connection.getCatalogs(), table.getCatalog(),
 					table.getSchema(), query.toString()).setKey(table.getKey());
 			return new SparqlResultSet(table, sqb.build());
-		}
-		else
-		{
+		} else {
 			return table.getResultSet(connection.getCatalogs(), parser);
 		}
 	}
 
 	@Override
-	public String getSchemaTerm() throws SQLException
-	{
+	public String getSchemaTerm() throws SQLException {
 		return "schema";
 	}
 
 	@Override
-	public String getSearchStringEscape() throws SQLException
-	{
+	public String getSearchStringEscape() throws SQLException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public String getSQLKeywords() throws SQLException
-	{
+	public String getSQLKeywords() throws SQLException {
 		return "";
 	}
 
 	@Override
-	public int getSQLStateType() throws SQLException
-	{
+	public int getSQLStateType() throws SQLException {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public String getStringFunctions() throws SQLException
-	{
+	public String getStringFunctions() throws SQLException {
 		return makeString(parser.getSupportedStringFunctions().iterator());
 	}
 
 	@Override
-	public ResultSet getSuperTables( final String catalogP,
-			final String schemaP, final String tableNameP ) throws SQLException
-	{
+	public ResultSet getSuperTables(final String catalogP,
+			final String schemaP, final String tableNameP) throws SQLException {
 		String catalogPattern = catalogP;
 		String schemaPattern = schemaP;
 		String tableNamePattern = tableNameP;
-		if (tableNameP.contains("."))
-		{
+		if (tableNameP.contains(".")) {
 			final String[] parts = tableNameP.split("\\.");
-			if (parts.length > 3)
-			{
+			if (parts.length > 3) {
 				throw new SQLException(String.format("Invalid tableName: %s",
 						tableNameP));
 			}
-			if (parts.length == 3)
-			{
+			if (parts.length == 3) {
 				catalogPattern = parts[0];
 				schemaPattern = parts[1];
 				tableNamePattern = parts[2];
 			}
-			if (parts.length == 2)
-			{
+			if (parts.length == 2) {
 				schemaPattern = parts[0];
 				tableNamePattern = parts[1];
 			}
@@ -783,16 +677,12 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 				metaSchema.getTable(MetaCatalogBuilder.SUPER_TABLES_TABLE));
 
 		for (final Catalog catalog : new NameFilter<Catalog>(catalogPattern,
-				connection.getCatalogs().values()))
-		{
+				connection.getCatalogs().values())) {
 			for (final Schema schema : new NameFilter<Schema>(schemaPattern,
-					catalog.getSchemas()))
-			{
-				for (final Table tbl : new NameFilter<Table>(
-						tableNamePattern, schema.getTables()))
-				{
-					if (tbl.getSuperTable() != null)
-					{
+					catalog.getSchemas())) {
+				for (final Table tbl : new NameFilter<Table>(tableNamePattern,
+						schema.getTables())) {
+					if (tbl.getSuperTable() != null) {
 						final Object[] data = { catalog.getName(), // TABLE_CAT
 								schema.getName(), // TABLE_SCHEM
 								tbl.getName(), // TABLE_NAME
@@ -807,9 +697,8 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	}
 
 	@Override
-	public ResultSet getSuperTypes( final String arg0, final String arg1,
-			final String arg2 ) throws SQLException
-	{
+	public ResultSet getSuperTypes(final String arg0, final String arg1,
+			final String arg2) throws SQLException {
 		final DataTable table = new DataTable(
 				metaSchema.getTable(MetaCatalogBuilder.SUPER_TYPES_TABLE));
 		// TODO populate table here.
@@ -817,27 +706,22 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	}
 
 	@Override
-	public String getSystemFunctions() throws SQLException
-	{
+	public String getSystemFunctions() throws SQLException {
 		return makeString(parser.getSupportedSystemFunctions().iterator());
 	}
 
 	@Override
-	public ResultSet getTablePrivileges( final String catalogPattern,
-			final String schemaPattern, final String tablePattern )
-					throws SQLException
-	{
+	public ResultSet getTablePrivileges(final String catalogPattern,
+			final String schemaPattern, final String tablePattern)
+			throws SQLException {
 		final DataTable table = new DataTable(
 				metaSchema.getTable(MetaCatalogBuilder.TABLE_PRIVILEGES_TABLE));
 		for (final Catalog catalog : new NameFilter<Catalog>(catalogPattern,
-				connection.getCatalogs().values()))
-		{
+				connection.getCatalogs().values())) {
 			for (final Schema schema : new NameFilter<Schema>(schemaPattern,
-					catalog.getSchemas()))
-			{
-				for (final Table tbl : new NameFilter<Table>(
-						tablePattern, schema.getTables()))
-				{
+					catalog.getSchemas())) {
+				for (final Table tbl : new NameFilter<Table>(tablePattern,
+						schema.getTables())) {
 					// TODO populate table here.
 				}
 			}
@@ -847,12 +731,10 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	}
 
 	@Override
-	public ResultSet getTables( final String catalogPattern,
+	public ResultSet getTables(final String catalogPattern,
 			final String schemaPattern, final String tableNamePattern,
-			final String[] types ) throws SQLException
-	{
-		if (J4SDatabaseMetaData.LOG.isDebugEnabled())
-		{
+			final String[] types) throws SQLException {
+		if (J4SDatabaseMetaData.LOG.isDebugEnabled()) {
 			J4SDatabaseMetaData.LOG.debug(String.format(
 					"getting tables %s.%s.%s types %s", catalogPattern,
 					schemaPattern, tableNamePattern, types));
@@ -860,40 +742,34 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 		final RdfTable table = (RdfTable) metaSchema
 				.getTable(MetaCatalogBuilder.TABLES_TABLE);
 		if ((catalogPattern != null) || (schemaPattern != null)
-				|| (tableNamePattern != null) || (types != null))
-		{
+				|| (tableNamePattern != null) || (types != null)) {
 			boolean hasWhere = false;
 			final StringBuilder query = new StringBuilder().append(String
 					.format("SELECT * FROM %s WHERE ", table.getSQLName()));
-			if (catalogPattern != null)
-			{
+			if (catalogPattern != null) {
 				query.append(String.format("TABLE_CAT LIKE '%s'",
 						getCatalogName(catalogPattern)));
 				hasWhere = true;
 			}
-			if (schemaPattern != null)
-			{
+			if (schemaPattern != null) {
 				query.append(hasWhere ? " AND " : "").append(
 						String.format("TABLE_SCHEM LIKE '%s'",
 								getSchemaName(schemaPattern)));
 				hasWhere = true;
 			}
-			if (tableNamePattern != null)
-			{
+			if (tableNamePattern != null) {
 				query.append(hasWhere ? " AND " : "").append(
 						String.format("TABLE_NAME LIKE '%s'",
 								escapeString(tableNamePattern)));
 				hasWhere = true;
 			}
-			if ((types != null) && (types.length > 0))
-			{
+			if ((types != null) && (types.length > 0)) {
 				query.append(hasWhere ? " AND (" : "(");
-				for (int i = 0; i < types.length; i++)
-				{
+				for (int i = 0; i < types.length; i++) {
 					query.append(i > 0 ? " OR " : "")
-					.append(types.length > 1 ? "(" : "")
-					.append(String.format("TABLE_TYPE LIKE '%s'",
-							escapeString(types[i])))
+							.append(types.length > 1 ? "(" : "")
+							.append(String.format("TABLE_TYPE LIKE '%s'",
+									escapeString(types[i])))
 							.append(types.length > 1 ? ")" : "");
 				}
 				query.append(")");
@@ -905,41 +781,35 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 					connection.getCatalogs(), table.getCatalog(),
 					table.getSchema(), query.toString()).setKey(table.getKey());
 			return new SparqlResultSet(table, sqb.build());
-		}
-		else
-		{
+		} else {
 			return table.getResultSet(connection.getCatalogs(), parser);
 		}
 	}
 
 	@Override
-	public ResultSet getTableTypes() throws SQLException
-	{
+	public ResultSet getTableTypes() throws SQLException {
 		return ((RdfTable) metaSchema
 				.getTable(MetaCatalogBuilder.TABLE_TYPES_TABLE)).getResultSet(
-						connection.getCatalogs(), parser);
+				connection.getCatalogs(), parser);
 	}
 
 	@Override
-	public String getTimeDateFunctions() throws SQLException
-	{
+	public String getTimeDateFunctions() throws SQLException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public ResultSet getTypeInfo() throws SQLException
-	{
+	public ResultSet getTypeInfo() throws SQLException {
 		return ((RdfTable) metaSchema
 				.getTable(MetaCatalogBuilder.TYPEINFO_TABLE)).getResultSet(
-						connection.getCatalogs(), parser);
+				connection.getCatalogs(), parser);
 	}
 
 	@Override
-	public ResultSet getUDTs( final String catalog, final String schemaPattern,
-			final String typeNamePattern, final int[] types )
-					throws SQLException
-	{
+	public ResultSet getUDTs(final String catalog, final String schemaPattern,
+			final String typeNamePattern, final int[] types)
+			throws SQLException {
 		final DataTable table = new DataTable(
 				metaSchema.getTable(MetaCatalogBuilder.UDT_TABLES));
 		// TODO populate table here.
@@ -947,23 +817,20 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	}
 
 	@Override
-	public String getURL() throws SQLException
-	{
+	public String getURL() throws SQLException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public String getUserName() throws SQLException
-	{
+	public String getUserName() throws SQLException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public ResultSet getVersionColumns( final String arg0, final String arg1,
-			final String arg2 ) throws SQLException
-	{
+	public ResultSet getVersionColumns(final String arg0, final String arg1,
+			final String arg2) throws SQLException {
 		final DataTable table = new DataTable(
 				metaSchema.getTable(MetaCatalogBuilder.VERSION_COLUMNS_TABLE));
 		// TODO populate table here.
@@ -971,45 +838,37 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	}
 
 	@Override
-	public boolean insertsAreDetected( final int arg0 ) throws SQLException
-	{
+	public boolean insertsAreDetected(final int arg0) throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean isCatalogAtStart() throws SQLException
-	{
+	public boolean isCatalogAtStart() throws SQLException {
 		return true;
 	}
 
 	@Override
-	public boolean isReadOnly() throws SQLException
-	{
+	public boolean isReadOnly() throws SQLException {
 		return true;
 	}
 
 	@Override
-	public boolean isWrapperFor( final Class<?> iface ) throws SQLException
-	{
+	public boolean isWrapperFor(final Class<?> iface) throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean locatorsUpdateCopy() throws SQLException
-	{
+	public boolean locatorsUpdateCopy() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
-	private String makeString( final Iterator<String> strings )
-	{
+	private String makeString(final Iterator<String> strings) {
 		final StringBuilder sb = new StringBuilder();
-		while (strings.hasNext())
-		{
-			if (sb.length() > 0)
-			{
+		while (strings.hasNext()) {
+			if (sb.length() > 0) {
 				sb.append(",");
 			}
 			sb.append(strings.next());
@@ -1018,635 +877,543 @@ public class J4SDatabaseMetaData implements DatabaseMetaData
 	}
 
 	@Override
-	public boolean nullPlusNonNullIsNull() throws SQLException
-	{
+	public boolean nullPlusNonNullIsNull() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean nullsAreSortedAtEnd() throws SQLException
-	{
+	public boolean nullsAreSortedAtEnd() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean nullsAreSortedAtStart() throws SQLException
-	{
+	public boolean nullsAreSortedAtStart() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean nullsAreSortedHigh() throws SQLException
-	{
+	public boolean nullsAreSortedHigh() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean nullsAreSortedLow() throws SQLException
-	{
+	public boolean nullsAreSortedLow() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean othersDeletesAreVisible( final int arg0 )
-			throws SQLException
-	{
+	public boolean othersDeletesAreVisible(final int arg0) throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean othersInsertsAreVisible( final int arg0 )
-			throws SQLException
-	{
+	public boolean othersInsertsAreVisible(final int arg0) throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean othersUpdatesAreVisible( final int arg0 )
-			throws SQLException
-	{
+	public boolean othersUpdatesAreVisible(final int arg0) throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean ownDeletesAreVisible( final int arg0 ) throws SQLException
-	{
+	public boolean ownDeletesAreVisible(final int arg0) throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean ownInsertsAreVisible( final int arg0 ) throws SQLException
-	{
+	public boolean ownInsertsAreVisible(final int arg0) throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean ownUpdatesAreVisible( final int arg0 ) throws SQLException
-	{
+	public boolean ownUpdatesAreVisible(final int arg0) throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean storesLowerCaseIdentifiers() throws SQLException
-	{
+	public boolean storesLowerCaseIdentifiers() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean storesLowerCaseQuotedIdentifiers() throws SQLException
-	{
+	public boolean storesLowerCaseQuotedIdentifiers() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean storesMixedCaseIdentifiers() throws SQLException
-	{
+	public boolean storesMixedCaseIdentifiers() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean storesMixedCaseQuotedIdentifiers() throws SQLException
-	{
+	public boolean storesMixedCaseQuotedIdentifiers() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean storesUpperCaseIdentifiers() throws SQLException
-	{
+	public boolean storesUpperCaseIdentifiers() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean storesUpperCaseQuotedIdentifiers() throws SQLException
-	{
+	public boolean storesUpperCaseQuotedIdentifiers() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsAlterTableWithAddColumn() throws SQLException
-	{
+	public boolean supportsAlterTableWithAddColumn() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsAlterTableWithDropColumn() throws SQLException
-	{
+	public boolean supportsAlterTableWithDropColumn() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsANSI92EntryLevelSQL() throws SQLException
-	{
+	public boolean supportsANSI92EntryLevelSQL() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsANSI92FullSQL() throws SQLException
-	{
+	public boolean supportsANSI92FullSQL() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsANSI92IntermediateSQL() throws SQLException
-	{
+	public boolean supportsANSI92IntermediateSQL() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsBatchUpdates() throws SQLException
-	{
+	public boolean supportsBatchUpdates() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsCatalogsInDataManipulation() throws SQLException
-	{
+	public boolean supportsCatalogsInDataManipulation() throws SQLException {
 		return false;
 	}
 
 	@Override
-	public boolean supportsCatalogsInIndexDefinitions() throws SQLException
-	{
+	public boolean supportsCatalogsInIndexDefinitions() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsCatalogsInPrivilegeDefinitions() throws SQLException
-	{
+	public boolean supportsCatalogsInPrivilegeDefinitions() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsCatalogsInProcedureCalls() throws SQLException
-	{
+	public boolean supportsCatalogsInProcedureCalls() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsCatalogsInTableDefinitions() throws SQLException
-	{
+	public boolean supportsCatalogsInTableDefinitions() throws SQLException {
 		return true;
 	}
 
 	@Override
-	public boolean supportsColumnAliasing() throws SQLException
-	{
+	public boolean supportsColumnAliasing() throws SQLException {
 		return true;
 	}
 
 	@Override
-	public boolean supportsConvert() throws SQLException
-	{
+	public boolean supportsConvert() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsConvert( final int arg0, final int arg1 )
-			throws SQLException
-	{
+	public boolean supportsConvert(final int arg0, final int arg1)
+			throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsCoreSQLGrammar() throws SQLException
-	{
+	public boolean supportsCoreSQLGrammar() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsCorrelatedSubqueries() throws SQLException
-	{
+	public boolean supportsCorrelatedSubqueries() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
 	public boolean supportsDataDefinitionAndDataManipulationTransactions()
-			throws SQLException
-	{
+			throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
 	public boolean supportsDataManipulationTransactionsOnly()
-			throws SQLException
-	{
+			throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsDifferentTableCorrelationNames() throws SQLException
-	{
+	public boolean supportsDifferentTableCorrelationNames() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsExpressionsInOrderBy() throws SQLException
-	{
+	public boolean supportsExpressionsInOrderBy() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsExtendedSQLGrammar() throws SQLException
-	{
+	public boolean supportsExtendedSQLGrammar() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsFullOuterJoins() throws SQLException
-	{
+	public boolean supportsFullOuterJoins() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsGetGeneratedKeys() throws SQLException
-	{
+	public boolean supportsGetGeneratedKeys() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsGroupBy() throws SQLException
-	{
+	public boolean supportsGroupBy() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsGroupByBeyondSelect() throws SQLException
-	{
+	public boolean supportsGroupByBeyondSelect() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsGroupByUnrelated() throws SQLException
-	{
+	public boolean supportsGroupByUnrelated() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsIntegrityEnhancementFacility() throws SQLException
-	{
+	public boolean supportsIntegrityEnhancementFacility() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsLikeEscapeClause() throws SQLException
-	{
+	public boolean supportsLikeEscapeClause() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsLimitedOuterJoins() throws SQLException
-	{
+	public boolean supportsLimitedOuterJoins() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsMinimumSQLGrammar() throws SQLException
-	{
+	public boolean supportsMinimumSQLGrammar() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsMixedCaseIdentifiers() throws SQLException
-	{
+	public boolean supportsMixedCaseIdentifiers() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsMixedCaseQuotedIdentifiers() throws SQLException
-	{
+	public boolean supportsMixedCaseQuotedIdentifiers() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsMultipleOpenResults() throws SQLException
-	{
+	public boolean supportsMultipleOpenResults() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsMultipleResultSets() throws SQLException
-	{
+	public boolean supportsMultipleResultSets() throws SQLException {
 		return true;
 	}
 
 	@Override
-	public boolean supportsMultipleTransactions() throws SQLException
-	{
+	public boolean supportsMultipleTransactions() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsNamedParameters() throws SQLException
-	{
+	public boolean supportsNamedParameters() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsNonNullableColumns() throws SQLException
-	{
+	public boolean supportsNonNullableColumns() throws SQLException {
 		return true;
 	}
 
 	@Override
-	public boolean supportsOpenCursorsAcrossCommit() throws SQLException
-	{
+	public boolean supportsOpenCursorsAcrossCommit() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsOpenCursorsAcrossRollback() throws SQLException
-	{
+	public boolean supportsOpenCursorsAcrossRollback() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsOpenStatementsAcrossCommit() throws SQLException
-	{
+	public boolean supportsOpenStatementsAcrossCommit() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsOpenStatementsAcrossRollback() throws SQLException
-	{
+	public boolean supportsOpenStatementsAcrossRollback() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsOrderByUnrelated() throws SQLException
-	{
+	public boolean supportsOrderByUnrelated() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsOuterJoins() throws SQLException
-	{
+	public boolean supportsOuterJoins() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsPositionedDelete() throws SQLException
-	{
+	public boolean supportsPositionedDelete() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsPositionedUpdate() throws SQLException
-	{
+	public boolean supportsPositionedUpdate() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsResultSetConcurrency( final int arg0, final int arg1 )
-			throws SQLException
-	{
+	public boolean supportsResultSetConcurrency(final int arg0, final int arg1)
+			throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsResultSetHoldability( final int arg0 )
-			throws SQLException
-	{
+	public boolean supportsResultSetHoldability(final int arg0)
+			throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsResultSetType( final int arg0 ) throws SQLException
-	{
-		switch (arg0)
-		{
-			case ResultSet.TYPE_FORWARD_ONLY:
-			case ResultSet.CONCUR_READ_ONLY:
-			case ResultSet.TYPE_SCROLL_INSENSITIVE:
-			case ResultSet.HOLD_CURSORS_OVER_COMMIT:
-				return true;
+	public boolean supportsResultSetType(final int arg0) throws SQLException {
+		switch (arg0) {
+		case ResultSet.TYPE_FORWARD_ONLY:
+		case ResultSet.CONCUR_READ_ONLY:
+		case ResultSet.TYPE_SCROLL_INSENSITIVE:
+		case ResultSet.HOLD_CURSORS_OVER_COMMIT:
+			return true;
 
-			case ResultSet.CLOSE_CURSORS_AT_COMMIT:
-			case ResultSet.CONCUR_UPDATABLE:
-			case ResultSet.TYPE_SCROLL_SENSITIVE:
-			default:
-				return false;
+		case ResultSet.CLOSE_CURSORS_AT_COMMIT:
+		case ResultSet.CONCUR_UPDATABLE:
+		case ResultSet.TYPE_SCROLL_SENSITIVE:
+		default:
+			return false;
 		}
 	}
 
 	@Override
-	public boolean supportsSavepoints() throws SQLException
-	{
+	public boolean supportsSavepoints() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsSchemasInDataManipulation() throws SQLException
-	{
+	public boolean supportsSchemasInDataManipulation() throws SQLException {
 		J4SDatabaseMetaData.LOG
-		.debug("supportsSchemasInDataManipulation: true ");
+				.debug("supportsSchemasInDataManipulation: true ");
 		return true;
 	}
 
 	@Override
-	public boolean supportsSchemasInIndexDefinitions() throws SQLException
-	{
+	public boolean supportsSchemasInIndexDefinitions() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsSchemasInPrivilegeDefinitions() throws SQLException
-	{
+	public boolean supportsSchemasInPrivilegeDefinitions() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsSchemasInProcedureCalls() throws SQLException
-	{
+	public boolean supportsSchemasInProcedureCalls() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsSchemasInTableDefinitions() throws SQLException
-	{
+	public boolean supportsSchemasInTableDefinitions() throws SQLException {
 		J4SDatabaseMetaData.LOG
-		.debug("supportsSchemasInTableDefinitions: true ");
+				.debug("supportsSchemasInTableDefinitions: true ");
 		return true;
 	}
 
 	@Override
-	public boolean supportsSelectForUpdate() throws SQLException
-	{
+	public boolean supportsSelectForUpdate() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsStatementPooling() throws SQLException
-	{
+	public boolean supportsStatementPooling() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsStoredFunctionsUsingCallSyntax() throws SQLException
-	{
+	public boolean supportsStoredFunctionsUsingCallSyntax() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsStoredProcedures() throws SQLException
-	{
+	public boolean supportsStoredProcedures() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsSubqueriesInComparisons() throws SQLException
-	{
+	public boolean supportsSubqueriesInComparisons() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsSubqueriesInExists() throws SQLException
-	{
+	public boolean supportsSubqueriesInExists() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsSubqueriesInIns() throws SQLException
-	{
+	public boolean supportsSubqueriesInIns() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsSubqueriesInQuantifieds() throws SQLException
-	{
+	public boolean supportsSubqueriesInQuantifieds() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsTableCorrelationNames() throws SQLException
-	{
+	public boolean supportsTableCorrelationNames() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsTransactionIsolationLevel( final int arg0 )
-			throws SQLException
-	{
+	public boolean supportsTransactionIsolationLevel(final int arg0)
+			throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsTransactions() throws SQLException
-	{
+	public boolean supportsTransactions() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsUnion() throws SQLException
-	{
+	public boolean supportsUnion() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean supportsUnionAll() throws SQLException
-	{
+	public boolean supportsUnionAll() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public <T> T unwrap( final Class<T> iface ) throws SQLException
-	{
+	public <T> T unwrap(final Class<T> iface) throws SQLException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public boolean updatesAreDetected( final int arg0 ) throws SQLException
-	{
+	public boolean updatesAreDetected(final int arg0) throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean usesLocalFilePerTable() throws SQLException
-	{
+	public boolean usesLocalFilePerTable() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean usesLocalFiles() throws SQLException
-	{
+	public boolean usesLocalFiles() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}

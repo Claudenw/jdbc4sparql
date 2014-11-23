@@ -11,8 +11,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-public class StringFunctionTests extends AbstractJ4SSetup
-{
+public class StringFunctionTests extends AbstractJ4SSetup {
 	// file URL
 	private URL fUrl;
 
@@ -20,8 +19,7 @@ public class StringFunctionTests extends AbstractJ4SSetup
 	private String url;
 
 	@Before
-	public void setup() throws Exception
-	{
+	public void setup() throws Exception {
 		LoggingConfig.setConsole(Level.DEBUG);
 		LoggingConfig.setRootLogger(Level.INFO);
 		LoggingConfig.setLogger("com.hp.hpl.jena.", Level.INFO);
@@ -45,8 +43,7 @@ public class StringFunctionTests extends AbstractJ4SSetup
 	}
 
 	@Test
-	public void testLcaseFunction() throws Exception
-	{
+	public void testLcaseFunction() throws Exception {
 
 		ResultSet rset = stmt
 				.executeQuery("select lcase( 'BAR' ) From fooTable");
@@ -65,8 +62,7 @@ public class StringFunctionTests extends AbstractJ4SSetup
 	}
 
 	@Test
-	public void testLengthFunction() throws Exception
-	{
+	public void testLengthFunction() throws Exception {
 
 		// count all the rows
 		ResultSet rset = stmt
@@ -87,8 +83,7 @@ public class StringFunctionTests extends AbstractJ4SSetup
 	}
 
 	@Test
-	public void testReplaceFunction() throws Exception
-	{
+	public void testReplaceFunction() throws Exception {
 
 		ResultSet rset = stmt
 				.executeQuery("select replace( 'fob', 'o', 'a' ) From fooTable");
@@ -124,8 +119,7 @@ public class StringFunctionTests extends AbstractJ4SSetup
 	}
 
 	@Test
-	public void testSubstringFunction() throws Exception
-	{
+	public void testSubstringFunction() throws Exception {
 
 		final ResultSet rset = stmt
 				.executeQuery("select substring( 'fob', 2, 1 ) From fooTable");
@@ -137,8 +131,7 @@ public class StringFunctionTests extends AbstractJ4SSetup
 	}
 
 	@Test
-	public void testUcaseFunction() throws Exception
-	{
+	public void testUcaseFunction() throws Exception {
 
 		ResultSet rset = stmt
 				.executeQuery("select ucase( 'fob' ) From fooTable");

@@ -21,8 +21,7 @@ import java.util.Comparator;
 
 import org.xenei.jena.entities.ResourceWrapper;
 
-public interface KeySegment extends Comparator<Object[]>, ResourceWrapper
-{
+public interface KeySegment extends Comparator<Object[]>, ResourceWrapper {
 
 	public String getId();
 

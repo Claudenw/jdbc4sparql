@@ -7,6 +7,7 @@ import com.hp.hpl.jena.query.QueryExecution;
 import com.hp.hpl.jena.query.QueryExecutionFactory;
 import com.hp.hpl.jena.query.QueryFactory;
 import com.hp.hpl.jena.query.QuerySolution;
+import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Resource;
@@ -23,9 +24,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xenei.jdbc4sparql.iface.Catalog;
-import org.xenei.jdbc4sparql.iface.CatalogName;
 import org.xenei.jdbc4sparql.iface.NameFilter;
 import org.xenei.jdbc4sparql.iface.Schema;
+import org.xenei.jdbc4sparql.iface.name.CatalogName;
 import org.xenei.jena.entities.EntityManager;
 import org.xenei.jena.entities.EntityManagerFactory;
 import org.xenei.jena.entities.EntityManagerRequiredException;
@@ -34,13 +35,10 @@ import org.xenei.jena.entities.ResourceWrapper;
 import org.xenei.jena.entities.annotations.Predicate;
 import org.xenei.jena.entities.annotations.Subject;
 
-@Subject( namespace = "http://org.xenei.jdbc4sparql/entity/Catalog#" )
-public class RdfCatalog implements Catalog, ResourceWrapper
-{
-	public static class Builder implements Catalog
-	{
-		public static String getFQName( final String shortName )
-		{
+@Subject(namespace = "http://org.xenei.jdbc4sparql/entity/Catalog#")
+public class RdfCatalog implements Catalog, ResourceWrapper {
+	public static class Builder implements Catalog {
+		public static String getFQName(final String shortName) {
 			return String.format("%s/instance/N%s",
 					ResourceBuilder.getFQName(RdfCatalog.class), shortName);
 		}
@@ -51,29 +49,23 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 
 		private final Set<Schema> schemas = new HashSet<Schema>();
 
-		public Builder()
-		{
+		public Builder() {
 		}
 
-		public Builder( final RdfCatalog catalog ) throws MalformedURLException
-		{
+		public Builder(final RdfCatalog catalog) throws MalformedURLException {
 			this();
 			setName(catalog.getShortName());
-			if (catalog.getSparqlEndpoint() != null)
-			{
+			if (catalog.getSparqlEndpoint() != null) {
 				setSparqlEndpoint(new URL(catalog.getSparqlEndpoint()));
 			}
-			if (catalog.localModel != null)
-			{
+			if (catalog.localModel != null) {
 				setLocalModel(catalog.localModel);
 			}
 		}
 
-		public RdfCatalog build( final Model model )
-		{
+		public RdfCatalog build(final Model model) {
 
-			if (model == null)
-			{
+			if (model == null) {
 				throw new IllegalArgumentException("Model may not be null");
 			}
 			checkBuildState();
@@ -86,25 +78,19 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 
 			// create catalog graph resource
 			Resource catalog = null;
-			if (builder.hasResource(fqName))
-			{
+			if (builder.hasResource(fqName)) {
 				catalog = builder.getResource(fqName, typeClass);
-			}
-			else
-			{
+			} else {
 				catalog = builder.getResource(fqName, typeClass);
 				catalog.addLiteral(RDFS.label, name);
-				if (sparqlEndpoint != null)
-				{
+				if (sparqlEndpoint != null) {
 					catalog.addProperty(
 							builder.getProperty(typeClass, "sparqlEndpoint"),
 							sparqlEndpoint.toExternalForm());
 				}
 
-				for (final Schema scm : schemas)
-				{
-					if (scm instanceof ResourceWrapper)
-					{
+				for (final Schema scm : schemas) {
+					if (scm instanceof ResourceWrapper) {
 						catalog.addProperty(
 								builder.getProperty(typeClass, "schema"),
 								((ResourceWrapper) scm).getResource());
@@ -113,8 +99,7 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 			}
 
 			// create RdfCatalog object from graph object
-			try
-			{
+			try {
 				final RdfCatalog retval = entityManager.read(catalog,
 						RdfCatalog.class);
 
@@ -122,9 +107,7 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 				retval.localModel = localModel != null ? localModel
 						: ModelFactory.createMemModelMaker().createFreshModel();
 				return retval;
-			}
-			catch (final MissingAnnotation e)
-			{
+			} catch (final MissingAnnotation e) {
 				RdfCatalog.LOG.error(
 						String.format("Error building %s: %s", name,
 								e.getMessage()), e);
@@ -133,80 +116,66 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 
 		}
 
-		protected void checkBuildState()
-		{
-			if (name == null)
-			{
+		protected void checkBuildState() {
+			if (name == null) {
 				throw new IllegalStateException("Name must be set");
 			}
-			if ((localModel == null) && (sparqlEndpoint == null))
-			{
+			if ((localModel == null) && (sparqlEndpoint == null)) {
 				localModel = ModelFactory.createDefaultModel();
 			}
 
 		}
 
 		@Override
-		public void close()
-		{
+		public void close() {
 			throw new UnsupportedOperationException();
 		}
 
 		@Override
-		public List<QuerySolution> executeLocalQuery( final Query query )
-		{
+		public List<QuerySolution> executeLocalQuery(final Query query) {
 			throw new UnsupportedOperationException();
 		}
 
 		@Override
-		public NameFilter<Schema> findSchemas( final String schemaNamePattern )
-		{
+		public NameFilter<Schema> findSchemas(final String schemaNamePattern) {
 			return new NameFilter<Schema>(schemaNamePattern, schemas);
 		}
 
-		private String getFQName()
-		{
+		private String getFQName() {
 			return Builder.getFQName(name);
 		}
 
-		public Model getLocalModel()
-		{
+		public Model getLocalModel() {
 			return localModel;
 		}
 
 		@Override
-		public CatalogName getName()
-		{
+		public CatalogName getName() {
 			return new CatalogName(name);
 		}
 
 		@Override
-		public Schema getSchema( final String schemaName )
-		{
+		public Schema getSchema(final String schemaName) {
 			final NameFilter<Schema> nf = findSchemas(schemaName);
 			return nf.hasNext() ? nf.next() : null;
 		}
 
 		@Override
-		public Set<Schema> getSchemas()
-		{
+		public Set<Schema> getSchemas() {
 			return schemas;
 		}
 
-		public Builder setLocalModel( final Model localModel )
-		{
+		public Builder setLocalModel(final Model localModel) {
 			this.localModel = localModel;
 			return this;
 		}
 
-		public Builder setName( final String name )
-		{
+		public Builder setName(final String name) {
 			this.name = StringUtils.defaultString(name);
 			return this;
 		}
 
-		public Builder setSparqlEndpoint( final URL sparqlEndpoint )
-		{
+		public Builder setSparqlEndpoint(final URL sparqlEndpoint) {
 			this.sparqlEndpoint = sparqlEndpoint;
 			return this;
 		}
@@ -214,36 +183,30 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 	}
 
 	public class ChangeListener extends
-	AbstractChangeListener<Catalog, RdfSchema>
-	{
+			AbstractChangeListener<Catalog, RdfSchema> {
 
-		public ChangeListener()
-		{
+		public ChangeListener() {
 			super(RdfCatalog.this.getResource(), RdfCatalog.class, "schemas",
 					RdfSchema.class);
 		}
 
 		@Override
-		protected void addObject( final RdfSchema t )
-		{
+		protected void addObject(final RdfSchema t) {
 			schemaList.add(t);
 		}
 
 		@Override
-		protected void clearObjects()
-		{
+		protected void clearObjects() {
 			schemaList = null;
 		}
 
 		@Override
-		protected boolean isListening()
-		{
+		protected boolean isListening() {
 			return schemaList != null;
 		}
 
 		@Override
-		protected void removeObject( final RdfSchema t )
-		{
+		protected void removeObject(final RdfSchema t) {
 			schemaList.remove(t);
 		}
 
@@ -257,8 +220,7 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 	private static Logger LOG = LoggerFactory.getLogger(RdfCatalog.class);
 
 	@Override
-	public void close()
-	{
+	public void close() {
 		localModel = null;
 		schemaList = null;
 	}
@@ -272,25 +234,20 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 	 * @return The list of QuerySolutions.
 	 */
 	@Override
-	public List<QuerySolution> executeLocalQuery( final Query query )
-	{
+	public List<QuerySolution> executeLocalQuery(final Query query) {
 
 		final QueryExecution qexec = QueryExecutionFactory.create(query,
 				localModel);
-		try
-		{
-			final List<QuerySolution> retval = WrappedIterator.create(
-					qexec.execSelect()).toList();
+		try {
+			ResultSet rs = qexec.execSelect();
+			final List<QuerySolution> retval = WrappedIterator.create(rs)
+					.toList();
 			return retval;
-		}
-		catch (final Exception e)
-		{
+		} catch (final Exception e) {
 			RdfCatalog.LOG.error(
 					"Error executing local query: " + e.getMessage(), e);
 			throw e;
-		}
-		finally
-		{
+		} finally {
 			qexec.close();
 		}
 	}
@@ -302,24 +259,17 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 	 *            The query to execute.
 	 * @return The list of QuerySolutions.
 	 */
-	public List<QuerySolution> executeQuery( final Query query )
-	{
+	public List<QuerySolution> executeQuery(final Query query) {
 		QueryExecution qexec = null;
-		if (isService())
-		{
+		if (isService()) {
 			qexec = QueryExecutionFactory.sparqlService(getSparqlEndpoint(),
 					query);
-		}
-		else
-		{
+		} else {
 			qexec = QueryExecutionFactory.create(query, localModel);
 		}
-		try
-		{
+		try {
 			return WrappedIterator.create(qexec.execSelect()).toList();
-		}
-		finally
-		{
+		} finally {
 			qexec.close();
 		}
 	}
@@ -331,22 +281,18 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 	 *            The query as a string.
 	 * @return The list of QuerySolutions.
 	 */
-	public List<QuerySolution> executeQuery( final String queryStr )
-	{
+	public List<QuerySolution> executeQuery(final String queryStr) {
 		return executeQuery(QueryFactory.create(queryStr));
 	}
 
 	@Override
-	public NameFilter<Schema> findSchemas( final String schemaNamePattern )
-	{
+	public NameFilter<Schema> findSchemas(final String schemaNamePattern) {
 		return new NameFilter<Schema>(schemaNamePattern, readSchemas());
 	}
 
-	public Set<Schema> fixupSchemas( final Set<Schema> schemas )
-	{
+	public Set<Schema> fixupSchemas(final Set<Schema> schemas) {
 		final Set<Schema> schemaList = new HashSet<Schema>();
-		for (final Schema schema : schemas)
-		{
+		for (final Schema schema : schemas) {
 			schemaList.add(RdfSchema.Builder.fixupCatalog(this,
 					(RdfSchema) schema));
 		}
@@ -354,81 +300,70 @@ public class RdfCatalog implements Catalog, ResourceWrapper
 		return schemaList;
 	}
 
-	public Model getLocalModel()
-	{
+	public Model getLocalModel() {
 		return localModel;
 	}
 
 	@Override
-	public CatalogName getName()
-	{
+	public CatalogName getName() {
 		return new CatalogName(getShortName());
 	}
 
 	@Override
-	@Predicate( impl = true )
-	public Resource getResource()
-	{
+	@Predicate(impl = true)
+	public Resource getResource() {
 		throw new EntityManagerRequiredException();
 	}
 
 	@Override
-	public Schema getSchema( final String schemaName )
-	{
+	public Schema getSchema(final String schemaName) {
 		final NameFilter<Schema> nf = findSchemas(StringUtils
 				.defaultString(schemaName));
 		return nf.hasNext() ? nf.next() : null;
 	}
 
 	@Override
-	@Predicate( impl = true, type = RdfSchema.class, postExec = "fixupSchemas" )
-	public Set<Schema> getSchemas()
-	{
+	@Predicate(impl = true, type = RdfSchema.class, postExec = "fixupSchemas")
+	public Set<Schema> getSchemas() {
 		throw new EntityManagerRequiredException();
 	}
 
-	public Node getServiceNode()
-	{
+	public Node getServiceNode() {
 		return isService() ? NodeFactory.createURI(getSparqlEndpoint()) : null;
 	}
 
-	@Predicate( impl = true, namespace = "http://www.w3.org/2000/01/rdf-schema#", name = "label" )
-	public String getShortName()
-	{
+	@Predicate(impl = true, namespace = "http://www.w3.org/2000/01/rdf-schema#", name = "label")
+	public String getShortName() {
 		throw new EntityManagerRequiredException();
 	}
 
-	@Predicate( impl = true, emptyIsNull = true )
-	public String getSparqlEndpoint()
-	{
+	@Predicate(impl = true, emptyIsNull = true)
+	public String getSparqlEndpoint() {
 		throw new EntityManagerRequiredException();
 	}
 
-	/**
-	 * Create a sparql schema that has an empty namespace.
-	 *
-	 * @return The Schema.
-	 */
-	public Schema getViewSchema()
-	{
-		Schema retval = getSchema("");
-		if (retval == null)
-		{
-			retval = new RdfSchema.Builder().setName("").setCatalog(this)
-					.build(this.getResource().getModel());
-		}
-		return retval;
-	}
+	// /**
+	// * Create a sparql schema that has an empty namespace.
+	// *
+	// * @return The Schema.
+	// */
+	// public Schema getViewSchema()
+	// {
+	// Schema retval = getSchema("");
+	// if (retval == null)
+	// {
+	// retval = new RdfSchema.Builder().setName("").setCatalog(this)
+	// .build(this.getResource().getModel());
+	// }
+	// return retval;
+	// }
 
-	public boolean isService()
-	{
+	public boolean isService() {
 		return getSparqlEndpoint() != null;
 	}
 
-	private Set<Schema> readSchemas()
-	{
-		if (schemaList == null)
-		{
+	private Set<Schema> readSchemas() {
+		if (schemaList == null) {
 			schemaList = getSchemas();
 		}
 		return schemaList;

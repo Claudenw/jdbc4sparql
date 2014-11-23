@@ -4,8 +4,7 @@ import com.hp.hpl.jena.rdf.model.Model;
 
 import java.util.Properties;
 
-public interface ModelFactory
-{
-	Model createModel( final Properties properties );
+public interface ModelFactory {
+	Model createModel(final Properties properties);
 
 }

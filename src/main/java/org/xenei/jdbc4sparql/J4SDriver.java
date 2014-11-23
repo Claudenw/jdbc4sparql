@@ -33,11 +33,9 @@ import org.xenei.jdbc4sparql.sparql.builders.SchemaBuilder;
 import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 import org.xenei.jena.entities.MissingAnnotation;
 
-public class J4SDriver implements Driver
-{
+public class J4SDriver implements Driver {
 
-	public static void main( final String[] args )
-	{
+	public static void main(final String[] args) {
 
 		final J4SDriver driver = new J4SDriver();
 		System.out.println(String.format("%s Version %s.%s", driver.getName(),
@@ -45,21 +43,18 @@ public class J4SDriver implements Driver
 		System.out.println("URL Format:  jdbc:j4s[?arg=val[&arg=var]]:url");
 		System.out.println();
 		System.out.print("Valid arguments: ");
-		for (final String s : J4SUrl.ARGS)
-		{
+		for (final String s : J4SUrl.ARGS) {
 			System.out.print(s + " ");
 		}
 		System.out.println("Valid Types:");
 		System.out
-		.println("(Default) config - URL is a J4S configuration file");
+				.println("(Default) config - URL is a J4S configuration file");
 		System.out.println("sparql - URL is a sparql endpoint");
-		for (final Lang l : RDFLanguages.getRegisteredLanguages())
-		{
+		for (final Lang l : RDFLanguages.getRegisteredLanguages()) {
 			System.out.println(String.format(
 					"%s - URL is a %s formatted RDF file", l.getName(),
 					l.getContentType()));
-			for (final String alt : l.getAltNames())
-			{
+			for (final String alt : l.getAltNames()) {
 				System.out.println(String.format(
 						"%s - URL is a %s formatted RDF file", alt,
 						l.getContentType()));
@@ -70,8 +65,7 @@ public class J4SDriver implements Driver
 		System.out.print("(Default) ");
 		final List<Class<? extends SchemaBuilder>> builderList = SchemaBuilder.Util
 				.getBuilders();
-		for (final Class<? extends SchemaBuilder> c : builderList)
-		{
+		for (final Class<? extends SchemaBuilder> c : builderList) {
 			System.out.println(SchemaBuilder.Util.getName(c) + ": "
 					+ SchemaBuilder.Util.getDescription(c));
 		}
@@ -80,128 +74,93 @@ public class J4SDriver implements Driver
 				+ SparqlParser.Util.getDefaultParser().getClass());
 	}
 
-	static
-	{
-		try
-		{
+	static {
+		try {
 			java.sql.DriverManager.registerDriver(new J4SDriver());
-		}
-		catch (final SQLException e)
-		{
+		} catch (final SQLException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	public J4SDriver()
-	{
+	public J4SDriver() {
 	}
 
 	@Override
-	public boolean acceptsURL( final String url ) throws SQLException
-	{
-		try
-		{
+	public boolean acceptsURL(final String url) throws SQLException {
+		try {
 			new J4SUrl(url);
 			return true;
-		}
-		catch (final IllegalArgumentException e)
-		{
+		} catch (final IllegalArgumentException e) {
 			return false;
 		}
 	}
 
 	@Override
-	public Connection connect( final String urlStr, final Properties props )
-			throws SQLException
-	{
+	public Connection connect(final String urlStr, final Properties props)
+			throws SQLException {
 		J4SUrl url = null;
 
-		try
-		{
+		try {
 			url = new J4SUrl(urlStr);
-		}
-		catch (final IllegalArgumentException e)
-		{
+		} catch (final IllegalArgumentException e) {
 			return null; // return null if the URL is not valid for us.
 		}
-		try
-		{
+		try {
 			return new J4SConnection(this, url, props);
-		}
-		catch (final IOException e)
-		{
+		} catch (final IOException e) {
 			throw new SQLException(e);
-		}
-		catch (final InstantiationException e)
-		{
+		} catch (final InstantiationException e) {
 			throw new SQLException(e);
-		}
-		catch (final IllegalAccessException e)
-		{
+		} catch (final IllegalAccessException e) {
 			throw new SQLException(e);
-		}
-		catch (final ClassNotFoundException e)
-		{
+		} catch (final ClassNotFoundException e) {
 			throw new SQLException(e);
-		}
-		catch (final MissingAnnotation e)
-		{
+		} catch (final MissingAnnotation e) {
 			throw new SQLException(e);
 		}
 	}
 
 	@Override
-	public int getMajorVersion()
-	{
+	public int getMajorVersion() {
 		return Integer.parseInt(getVersion().split("\\.")[0]);
 	}
 
 	@Override
-	public int getMinorVersion()
-	{
+	public int getMinorVersion() {
 		return Integer.parseInt(getVersion().split("\\.")[1]);
 	}
-	
-	public static String getVersion()
-	{
+
+	public static String getVersion() {
 		return "0.1";
 	}
 
-	public String getName()
-	{
+	public String getName() {
 		return "Jdbc 4 Sparql Driver";
 	}
 
 	@Override
-	public Logger getParentLogger() throws SQLFeatureNotSupportedException
-	{
+	public Logger getParentLogger() throws SQLFeatureNotSupportedException {
 		throw new SQLFeatureNotSupportedException();
 	}
 
 	@Override
-	public DriverPropertyInfo[] getPropertyInfo( final String url,
-			final Properties info ) throws SQLException
-	{
-		try
-		{
+	public DriverPropertyInfo[] getPropertyInfo(final String url,
+			final Properties info) throws SQLException {
+		try {
 			new J4SUrl(url);
 			return new DriverPropertyInfo[0];
-		}
-		catch (final IllegalArgumentException e)
-		{
+		} catch (final IllegalArgumentException e) {
 			throw new SQLException(e);
 		}
 	}
 
 	@Override
-	public boolean jdbcCompliant()
-	{
+	public boolean jdbcCompliant() {
 		return false;
 	}
 
 	@Override
-	public String toString()
-	{
+	public String toString() {
 		return String.format("%s[%s.%s]", getName(), getMajorVersion(),
 				getMinorVersion());
 	}

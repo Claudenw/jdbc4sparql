@@ -17,14 +17,12 @@ import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.functions.NumericFunctionH
 import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.functions.StringFunctionHandler;
 import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.functions.SystemFunctionHandler;
 
-public class StandardFunctionHandler
-{
+public class StandardFunctionHandler {
 
 	/**
 	 * A function definition expressed as a column definition.
 	 */
-	public static class FunctionColumnDef implements ColumnDef
-	{
+	public static class FunctionColumnDef implements ColumnDef {
 		private final String columnClassName = "";
 		private final int displaySize = 0;
 		private final Integer type = null;
@@ -38,92 +36,77 @@ public class StandardFunctionHandler
 		private final boolean currency = false;
 
 		@Override
-		public String getColumnClassName()
-		{
+		public String getColumnClassName() {
 			return columnClassName;
 		}
 
 		@Override
-		public int getDisplaySize()
-		{
+		public int getDisplaySize() {
 			return displaySize;
 		}
 
 		@Override
-		public int getNullable()
-		{
+		public int getNullable() {
 			return nullable;
 		}
 
 		@Override
-		public int getPrecision()
-		{
+		public int getPrecision() {
 			return precision;
 		}
 
 		@Override
-		public int getScale()
-		{
+		public int getScale() {
 			return scale;
 		}
 
 		@Override
-		public int getType()
-		{
+		public int getType() {
 			return type;
 		}
 
 		@Override
-		public String getTypeName()
-		{
+		public String getTypeName() {
 			return typeName;
 		}
 
 		@Override
-		public boolean isAutoIncrement()
-		{
+		public boolean isAutoIncrement() {
 			return autoIncrement;
 		}
 
 		@Override
-		public boolean isCaseSensitive()
-		{
+		public boolean isCaseSensitive() {
 			return caseSensitive;
 		}
 
 		@Override
-		public boolean isCurrency()
-		{
+		public boolean isCurrency() {
 			return currency;
 		}
 
 		@Override
-		public boolean isDefinitelyWritable()
-		{
+		public boolean isDefinitelyWritable() {
 			return false;
 		}
 
 		@Override
-		public boolean isReadOnly()
-		{
+		public boolean isReadOnly() {
 			return true;
 		}
 
 		@Override
-		public boolean isSearchable()
-		{
+		public boolean isSearchable() {
 			return false;
 		}
 
 		@Override
-		public boolean isSigned()
-		{
+		public boolean isSigned() {
 			return signed;
 		}
 
 		@Override
-		public boolean isWritable()
-		{
+		public boolean isWritable() {
 			return false;
 		}
 
@@ -131,22 +114,19 @@ public class StandardFunctionHandler
 
 	private final List<AbstractFunctionHandler> handlers;
 
-	public StandardFunctionHandler( final SparqlQueryBuilder builder,
-			final Stack<Expr> stack )
-	{
+	public StandardFunctionHandler(final SparqlQueryBuilder builder,
+			final Stack<Expr> stack) {
 		handlers = new ArrayList<AbstractFunctionHandler>();
 		handlers.add(new NumericFunctionHandler(builder, stack));
 		handlers.add(new StringFunctionHandler(builder, stack));
 		handlers.add(new SystemFunctionHandler(builder, stack));
 	}
 
-	public void handle( final Function func ) throws SQLException
-	{
-		for (final AbstractFunctionHandler handler : handlers)
-		{
-			if (handler.handle(func))
-			{
-				return;
+	public ColumnDef handle(final Function func) throws SQLException {
+		for (final AbstractFunctionHandler handler : handlers) {
+			ColumnDef colDef = handler.handle(func);
+			if (colDef != null) {
+				return colDef;
 			}
 		}
 		throw new IllegalArgumentException(String.format(

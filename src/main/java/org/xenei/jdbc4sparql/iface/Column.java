@@ -17,8 +17,10 @@
  */
 package org.xenei.jdbc4sparql.iface;
 
-public interface Column extends NamedObject<ColumnName>
-{
+import org.xenei.jdbc4sparql.iface.name.ColumnName;
+import org.xenei.jdbc4sparql.sparql.items.NamedObject;
+
+public interface Column extends NamedObject<ColumnName> {
 	/**
 	 * Get teh catalog this table is in.
 	 *
@@ -38,8 +40,7 @@ public interface Column extends NamedObject<ColumnName>
 	 * the SPARQL query will retrieve the proper data. For example
 	 * "%1$s <http://example.com/jdbc4sparql#NullableIntCol> %2$s"
 	 *
-	 * %1$s is the table name
-	 * %2$s is the column name
+	 * %1$s is the table name %2$s is the column name
 	 *
 	 * @return Format string for query segments in SPARQL query
 	 */
@@ -81,8 +82,8 @@ public interface Column extends NamedObject<ColumnName>
 	public Table getTable();
 
 	/**
-	 * Return true if this column has querySegments.
-	 * Most columns do, however, some function columns do not.
+	 * Return true if this column has querySegments. Most columns do, however,
+	 * some function columns do not.
 	 *
 	 * @return
 	 */

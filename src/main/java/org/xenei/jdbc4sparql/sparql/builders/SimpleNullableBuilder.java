@@ -33,47 +33,39 @@ import org.xenei.jdbc4sparql.impl.rdf.RdfTableDef;
 
 /**
  * A simple example builder that looks for the phrase "nullable" in column name
- * to
- * determine
- * if they are nullable or not. if Nullable is not found columnNoNulls is set.
- * if the name contains int the colum type will be set to "integer"
- * otherwise
- * it is string.
+ * to determine if they are nullable or not. if Nullable is not found
+ * columnNoNulls is set. if the name contains int the colum type will be set to
+ * "integer" otherwise it is string.
  */
-public class SimpleNullableBuilder extends SimpleBuilder
-{
+public class SimpleNullableBuilder extends SimpleBuilder {
 	public static final String BUILDER_NAME = "Simple_nullable_Builder";
 	public static final String DESCRIPTION = "A simple schema builder extends Simple_Builder by addint nullable columns for columns that have 'nullable' in their names";
 
-	public SimpleNullableBuilder()
-	{
+	public SimpleNullableBuilder() {
 	}
 
 	@Override
-	protected Map<String, String> addColumnDefs( final RdfCatalog catalog,
+	protected Map<String, String> addColumnDefs(final RdfCatalog catalog,
 			final RdfTableDef.Builder tableDefBuilder, final Resource tName,
-			final String tableQuerySegment )
-			{
+			final String tableQuerySegment) {
 		final Model model = catalog.getResource().getModel();
 		final Map<String, String> colNames = new LinkedHashMap<String, String>();
 		final List<QuerySolution> solns = catalog.executeQuery(String.format(
 				SimpleBuilder.COLUMN_QUERY, tName));
 
-		for (final QuerySolution soln : solns)
-		{
+		for (final QuerySolution soln : solns) {
 			final RdfColumnDef.Builder builder = new RdfColumnDef.Builder();
 			final Resource cName = soln.getResource("cName");
 			int type = Types.VARCHAR;
-			if (cName.getLocalName().contains("Int"))
-			{
+			if (cName.getLocalName().contains("Int")) {
 				type = Types.INTEGER;
 			}
-			if (cName.getLocalName().toLowerCase().contains("nullable"))
-			{
-				builder.setNullable(DatabaseMetaData.columnNullable);
+			if (cName.getLocalName().contains("Double")) {
+				type = Types.DOUBLE;
 			}
-			else
-			{
+			if (cName.getLocalName().toLowerCase().contains("nullable")) {
+				builder.setNullable(DatabaseMetaData.columnNullable);
+			} else {
 				builder.setNullable(DatabaseMetaData.columnNoNulls);
 			}
 			final String columnQuerySegment = String.format(
@@ -82,11 +74,10 @@ public class SimpleNullableBuilder extends SimpleBuilder
 			colNames.put(cName.getLocalName(), columnQuerySegment);
 			final int scale = calculateSize(catalog, tableQuerySegment,
 					columnQuerySegment);
-			builder.setType(type).setNullable(DatabaseMetaData.columnNullable)
-			.setScale(scale).setReadOnly(true);
+			builder.setType(type).setScale(scale).setReadOnly(true);
 			tableDefBuilder.addColumnDef(builder.build(model));
 		}
 		return colNames;
-			}
+	}
 
 }

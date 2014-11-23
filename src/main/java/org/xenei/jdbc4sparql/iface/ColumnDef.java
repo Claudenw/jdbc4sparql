@@ -20,10 +20,8 @@ package org.xenei.jdbc4sparql.iface;
 import java.security.NoSuchAlgorithmException;
 import java.util.UUID;
 
-public interface ColumnDef
-{
-	static class Util
-	{
+public interface ColumnDef {
+	static class Util {
 		/**
 		 * Create a unique ID for a column def.
 		 *
@@ -32,18 +30,17 @@ public interface ColumnDef
 		 * @return a type 3 UUID for the column.
 		 * @throws NoSuchAlgorithmException
 		 */
-		public static UUID createID( final ColumnDef def )
-		{
+		public static UUID createID(final ColumnDef def) {
 			final StringBuilder sb = new StringBuilder()
-			.append(def.getColumnClassName())
-			.append(def.getDisplaySize()).append(def.getNullable())
-			.append(def.getPrecision()).append(def.getScale())
-			.append(def.getType()).append(def.getTypeName())
-			.append(def.isAutoIncrement())
-			.append(def.isCaseSensitive()).append(def.isCurrency())
-			.append(def.isDefinitelyWritable())
-			.append(def.isReadOnly()).append(def.isSearchable())
-			.append(def.isSigned()).append(def.isWritable());
+					.append(def.getColumnClassName())
+					.append(def.getDisplaySize()).append(def.getNullable())
+					.append(def.getPrecision()).append(def.getScale())
+					.append(def.getType()).append(def.getTypeName())
+					.append(def.isAutoIncrement())
+					.append(def.isCaseSensitive()).append(def.isCurrency())
+					.append(def.isDefinitelyWritable())
+					.append(def.isReadOnly()).append(def.isSearchable())
+					.append(def.isSigned()).append(def.isWritable());
 			return UUID.nameUUIDFromBytes(sb.toString().getBytes());
 		}
 	}
@@ -53,8 +50,8 @@ public interface ColumnDef
 	int getDisplaySize();
 
 	/**
-	 * Indicates the nullability of values in the designated column.
-	 * Possible return values are ResultSetMetaData.columnNullable,
+	 * Indicates the nullability of values in the designated column. Possible
+	 * return values are ResultSetMetaData.columnNullable,
 	 * ResultSetMetaData.columnNoNulls, ResultSetMetaData.columnNullableUnknown
 	 *
 	 * @return the nullability status of the given column.

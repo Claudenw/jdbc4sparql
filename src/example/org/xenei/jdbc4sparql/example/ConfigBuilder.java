@@ -30,31 +30,26 @@ import org.xenei.jdbc4sparql.J4SUrl;
 import org.xenei.jdbc4sparql.config.TDBDatasetProducer;
 import org.xenei.jena.entities.MissingAnnotation;
 
-public class ConfigBuilder
-{
+public class ConfigBuilder {
 
-	private static File gatherSchema( final CommandLine cmd )
-			throws IOException, URISyntaxException
-	{
+	private static File gatherSchema(final CommandLine cmd) throws IOException,
+			URISyntaxException {
 
 		final File dir = File.createTempFile("configBldr", "schema");
 		dir.delete();
 		dir.mkdir();
 		final Dataset ds = TDBFactory.createDataset(dir.getCanonicalPath());
-		try
-		{
+		try {
 			// final Model ontologyModel = ModelFactory.createInfModel(
 			// ReasonerRegistry.(), ds.getDefaultModel());
 			final Model ontologyModel = ModelFactory.createRDFSModel(ds
 					.getDefaultModel());
 
 			URL fUrl = null;
-			for (final String s : cmd.getOptionValues("f"))
-			{
+			for (final String s : cmd.getOptionValues("f")) {
 				fUrl = ConfigBuilder.class.getResource(s);
 				System.out.println("Processing: " + fUrl);
-				if (fUrl == null)
-				{
+				if (fUrl == null) {
 					throw new IllegalArgumentException("Can not locate " + s);
 				}
 				ontologyModel.read(fUrl.toURI().toASCIIString(), RDFLanguages
@@ -64,21 +59,16 @@ public class ConfigBuilder
 			System.out.println("creating output file");
 			final File outfile = File.createTempFile("cfgbld", ".ttl");
 			final FileOutputStream fos = new FileOutputStream(outfile);
-			try
-			{
+			try {
 				ontologyModel.write(fos, "TURTLE");
-			}
-			finally
-			{
+			} finally {
 				fos.close();
 				ontologyModel.close();
 				System.out.println("created output file: "
 						+ outfile.getCanonicalPath());
 			}
 			return outfile;
-		}
-		finally
-		{
+		} finally {
 			System.out.print("Cleaning up.");
 			ds.close();
 			System.out.print(".");
@@ -87,8 +77,7 @@ public class ConfigBuilder
 		}
 	}
 
-	private static Options getOptions()
-	{
+	private static Options getOptions() {
 		final Options retval = new Options();
 
 		Option opt = new Option("c", "catalog", true, "The catalog name");
@@ -119,8 +108,7 @@ public class ConfigBuilder
 		return retval;
 	}
 
-	private static void help()
-	{
+	private static void help() {
 		final HelpFormatter formatter = new HelpFormatter();
 		formatter.printHelp("ConfigBuilder", ConfigBuilder.getOptions());
 	}
@@ -136,17 +124,15 @@ public class ConfigBuilder
 	 * @throws InstantiationException
 	 * @throws ParseException
 	 */
-	public static void main( final String[] args ) throws URISyntaxException,
-	IOException, SQLException, ClassNotFoundException,
-	InstantiationException, IllegalAccessException, MissingAnnotation,
-	ParseException
-	{
+	public static void main(final String[] args) throws URISyntaxException,
+			IOException, SQLException, ClassNotFoundException,
+			InstantiationException, IllegalAccessException, MissingAnnotation,
+			ParseException {
 		final Options options = ConfigBuilder.getOptions();
 		final CommandLineParser parser = new BasicParser();
 		final CommandLine cmd = parser.parse(options, args);
 
-		if (cmd.hasOption("h"))
-		{
+		if (cmd.hasOption("h")) {
 			ConfigBuilder.help();
 		}
 
@@ -179,7 +165,7 @@ public class ConfigBuilder
 		final FileOutputStream fos2 = new FileOutputStream(outfile);
 		System.out.println("Writing metadata to " + outfile.getCanonicalPath());
 		connection.getDatasetProducer().getMetaDatasetUnionModel()
-		.write(fos2, "N-TRIPLE");
+				.write(fos2, "N-TRIPLE");
 
 		metaData.getColumns(null, null, null, null);
 		System.out.println("Writing configuration to "

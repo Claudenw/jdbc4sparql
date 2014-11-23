@@ -20,8 +20,10 @@ package org.xenei.jdbc4sparql.iface;
 import java.util.Iterator;
 import java.util.List;
 
-public interface Table extends NamedObject<TableName>
-{
+import org.xenei.jdbc4sparql.iface.name.TableName;
+import org.xenei.jdbc4sparql.sparql.items.NamedObject;
+
+public interface Table extends NamedObject<TableName> {
 
 	/**
 	 * delete the table. Removes the table from the schema.
@@ -37,7 +39,7 @@ public interface Table extends NamedObject<TableName>
 	 *            The pattern to match or null.
 	 * @return
 	 */
-	NameFilter<Column> findColumns( String columnNamePattern );
+	NameFilter<Column> findColumns(String columnNamePattern);
 
 	/**
 	 *
@@ -53,7 +55,7 @@ public interface Table extends NamedObject<TableName>
 	 * @return the column.
 	 * @thows IndexOutOfBoundsException
 	 */
-	Column getColumn( int idx );
+	Column getColumn(int idx);
 
 	/**
 	 * Get the column by name
@@ -62,11 +64,11 @@ public interface Table extends NamedObject<TableName>
 	 *            the name of the column to retrieve
 	 * @return the column or null if name not found.
 	 */
-	Column getColumn( String name );
+	Column getColumn(String name);
 
 	int getColumnCount();
 
-	public int getColumnIndex( Column column );
+	public int getColumnIndex(Column column);
 
 	/**
 	 * Get the index (zero based) for the column name.
@@ -75,7 +77,7 @@ public interface Table extends NamedObject<TableName>
 	 *            The column name to search for
 	 * @return index for column name or -1 if not found.
 	 */
-	public int getColumnIndex( String columnName );
+	public int getColumnIndex(String columnName);
 
 	List<Column> getColumnList();
 
@@ -91,8 +93,7 @@ public interface Table extends NamedObject<TableName>
 	 * the SPARQL query will retrieve the proper data. For example
 	 * "%1$s <http://example.com/jdbc4sparql#NullableIntCol> %2$s"
 	 *
-	 * %1$s is the table name
-	 * %2$s is the column name
+	 * %1$s is the table name %2$s is the column name
 	 *
 	 * @return Format string for query segments in SPARQL query
 	 */
@@ -126,17 +127,16 @@ public interface Table extends NamedObject<TableName>
 	public TableDef getTableDef();
 
 	/**
-	 * Get the type of table.
-	 * Typical types are "TABLE", "VIEW", "SYSTEM TABLE", "GLOBAL TEMPORARY",
-	 * "LOCAL TEMPORARY", "ALIAS", "SYNONYM".
+	 * Get the type of table. Typical types are "TABLE", "VIEW", "SYSTEM TABLE",
+	 * "GLOBAL TEMPORARY", "LOCAL TEMPORARY", "ALIAS", "SYNONYM".
 	 *
 	 * @return The table type
 	 */
 	String getType();
 
 	/**
-	 * Return true if this column has querySegments.
-	 * Most columns do, however, some function columns do not.
+	 * Return true if this column has querySegments. Most columns do, however,
+	 * some function columns do not.
 	 *
 	 * @return
 	 */

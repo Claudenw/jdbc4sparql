@@ -24,6 +24,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.xenei.jdbc4sparql.sparql.items.NamedObject;
+
 /**
  * Filters a namespacedObject by name.
  *
@@ -31,8 +33,7 @@ import java.util.Set;
  *            a NamespacedObject
  */
 public class NameFilter<T extends NamedObject<?>> implements Iterator<T>,
-Iterable<T>
-{
+		Iterable<T> {
 	// the name pattern to match
 	private String namePattern;
 	// the iterator of the original collection.
@@ -50,8 +51,7 @@ Iterable<T>
 	 * @param objs
 	 *            The collection of objects to filter.
 	 */
-	public NameFilter( final String namePattern, final Collection<T> objs )
-	{
+	public NameFilter(final String namePattern, final Collection<T> objs) {
 		this(namePattern, objs.iterator());
 	}
 
@@ -65,26 +65,21 @@ Iterable<T>
 	 * @param iter
 	 *            the iterator of objects to filter.
 	 */
-	public NameFilter( final String namePattern, final Iterator<T> iter )
-	{
+	public NameFilter(final String namePattern, final Iterator<T> iter) {
 		this.namePattern = namePattern;
 		this.iter = iter;
 		next = null;
 	}
 
 	@Override
-	public boolean hasNext()
-	{
-		if (namePattern == null)
-		{
+	public boolean hasNext() {
+		if (namePattern == null) {
 			return iter.hasNext();
 		}
 
-		while ((next == null) && iter.hasNext())
-		{
+		while ((next == null) && iter.hasNext()) {
 			next = iter.next();
-			if (!next.getName().getShortName().equals(namePattern))
-			{
+			if (!next.getName().getShortName().equals(namePattern)) {
 				next = null;
 			}
 		}
@@ -92,20 +87,15 @@ Iterable<T>
 	}
 
 	@Override
-	public Iterator<T> iterator()
-	{
+	public Iterator<T> iterator() {
 		return this;
 	}
 
 	@Override
-	public T next()
-	{
-		if (namePattern == null)
-		{
+	public T next() {
+		if (namePattern == null) {
 			return iter.next();
-		}
-		else
-		{
+		} else {
 			final T retval = next;
 			next = null;
 			return retval;
@@ -113,8 +103,7 @@ Iterable<T>
 	}
 
 	@Override
-	public void remove()
-	{
+	public void remove() {
 		throw new UnsupportedOperationException();
 	}
 
@@ -123,8 +112,7 @@ Iterable<T>
 	 *
 	 * @return
 	 */
-	public List<T> toList()
-	{
+	public List<T> toList() {
 		return WrappedIterator.create(this).toList();
 	}
 
@@ -133,8 +121,7 @@ Iterable<T>
 	 *
 	 * @return
 	 */
-	public Set<T> toSet()
-	{
+	public Set<T> toSet() {
 		return WrappedIterator.create(this).toSet();
 	}
 }

@@ -60,71 +60,49 @@ import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
  * as a java application (e.g. java -jar J4DDriver.jar J4SDriver)
  * </p>
  */
-public interface SchemaBuilder
-{
-	public static class Util
-	{
+public interface SchemaBuilder {
+	public static class Util {
 
-		public static SchemaBuilder getBuilder( final String name )
-		{
+		public static SchemaBuilder getBuilder(final String name) {
 			final List<Class<? extends SchemaBuilder>> lst = Util.getBuilders();
-			if (StringUtils.isEmpty(name))
-			{
-				try
-				{
+			if (StringUtils.isEmpty(name)) {
+				try {
 					return lst.get(0).newInstance();
-				}
-				catch (InstantiationException | IllegalAccessException e)
-				{
+				} catch (InstantiationException | IllegalAccessException e) {
 					throw new IllegalStateException(lst.get(0)
 							+ " could not be instantiated.", e);
 				}
 			}
 
-			for (final Class<? extends SchemaBuilder> c : lst)
-			{
-				if (Util.getName(c).equals(name))
-				{
-					try
-					{
+			for (final Class<? extends SchemaBuilder> c : lst) {
+				if (Util.getName(c).equals(name)) {
+					try {
 						return c.newInstance();
-					}
-					catch (InstantiationException | IllegalAccessException e)
-					{
+					} catch (InstantiationException | IllegalAccessException e) {
 						throw new IllegalStateException(c
 								+ " could not be instantiated.", e);
 					}
 				}
 			}
-			try
-			{
+			try {
 				final Class<?> clazz = Class.forName(name);
-				if (SchemaBuilder.class.isAssignableFrom(clazz))
-				{
-					try
-					{
+				if (SchemaBuilder.class.isAssignableFrom(clazz)) {
+					try {
 						return (SchemaBuilder) clazz.newInstance();
-					}
-					catch (InstantiationException | IllegalAccessException e)
-					{
+					} catch (InstantiationException | IllegalAccessException e) {
 						throw new IllegalStateException(clazz
 								+ " could not be instantiated.", e);
 					}
-				}
-				else
-				{
+				} else {
 					throw new IllegalArgumentException(clazz
 							+ " does not implement SchemaBuilder.");
 				}
-			}
-			catch (final ClassNotFoundException e)
-			{
+			} catch (final ClassNotFoundException e) {
 				throw new IllegalArgumentException(e.getMessage());
 			}
 		}
 
-		public static List<Class<? extends SchemaBuilder>> getBuilders()
-		{
+		public static List<Class<? extends SchemaBuilder>> getBuilders() {
 			final List<Class<? extends SchemaBuilder>> retval = new ArrayList<Class<? extends SchemaBuilder>>();
 
 			final ClassLoaders loaders = ClassLoaders.getAppLoaders(
@@ -138,25 +116,20 @@ public interface SchemaBuilder
 
 			// we build a list first because the classes can be found by
 			// multiple loaders.
-			while (classIter.hasNext())
-			{
+			while (classIter.hasNext()) {
 				final String className = classIter.nextResourceName();
-				if (!lst.contains(className))
-				{
+				if (!lst.contains(className)) {
 					lst.add(className);
 				}
 			}
 			// now just load the classes once.
-			for (final String className : lst)
-			{
+			for (final String className : lst) {
 				final ResourceClassIterator<SchemaBuilder> iter = dc
 						.findResourceClasses(className);
-				while (iter.hasNext())
-				{
+				while (iter.hasNext()) {
 					final Class<? extends SchemaBuilder> clazz = iter
 							.nextResourceClass().loadClass();
-					if (!retval.contains(clazz))
-					{
+					if (!retval.contains(clazz)) {
 						retval.add(clazz);
 					}
 				}
@@ -167,47 +140,34 @@ public interface SchemaBuilder
 		}
 
 		public static String getDescription(
-				final Class<? extends SchemaBuilder> clazz )
-		{
+				final Class<? extends SchemaBuilder> clazz) {
 			return Util.getField(clazz, "DESCRIPTION", clazz.getName());
 		}
 
 		private static String getField(
 				final Class<? extends SchemaBuilder> clazz,
-				final String fieldName, final String defaultValue )
-		{
-			try
-			{
+				final String fieldName, final String defaultValue) {
+			try {
 				final Field f = clazz.getField(fieldName);
-				if (Modifier.isStatic(f.getModifiers()))
-				{
+				if (Modifier.isStatic(f.getModifiers())) {
 					return f.get(null).toString();
 				}
-			}
-			catch (final NoSuchFieldException e)
-			{
+			} catch (final NoSuchFieldException e) {
 				// do nothing -- acceptable
-			}
-			catch (final SecurityException e)
-			{
+			} catch (final SecurityException e) {
 				// do nothing -- acceptable
-			}
-			catch (final IllegalArgumentException e)
-			{
+			} catch (final IllegalArgumentException e) {
 				// do nothing -- acceptable
-			}
-			catch (final IllegalAccessException e)
-			{
+			} catch (final IllegalAccessException e) {
 				// do nothing -- acceptable
 			}
 			return defaultValue;
 		}
 
-		public static String getName( final Class<? extends SchemaBuilder> clazz )
-		{
+		public static String getName(final Class<? extends SchemaBuilder> clazz) {
 			return Util.getField(clazz, "BUILDER_NAME", clazz.getSimpleName());
 		}
 	}
 
-	Set<RdfTable> getTables( final RdfSchema schema );
+	Set<RdfTable> getTables(final RdfSchema schema);
 }

@@ -9,29 +9,25 @@ import org.junit.Before;
 import org.junit.Test;
 import org.xenei.jdbc4sparql.iface.Key;
 
-public class KeyBuilderTests
-{
+public class KeyBuilderTests {
 	private Model model;
 
 	@Before
-	public void setUp() throws Exception
-	{
+	public void setUp() throws Exception {
 		model = ModelFactory.createDefaultModel();
 	}
 
 	@After
-	public void tearDown() throws Exception
-	{
+	public void tearDown() throws Exception {
 		model.close();
 	}
 
 	@Test
-	public void testDefault()
-	{
+	public void testDefault() {
 		final RdfKeySegment.Builder segBuilder = new RdfKeySegment.Builder();
 
 		final RdfKey.Builder builder = new RdfKey.Builder()
-		.addSegment(segBuilder.build(model));
+				.addSegment(segBuilder.build(model));
 
 		final Key key = builder.build(model);
 
@@ -42,13 +38,12 @@ public class KeyBuilderTests
 	}
 
 	@Test
-	public void testMultipleSegments()
-	{
+	public void testMultipleSegments() {
 		final RdfKeySegment.Builder segBuilder = new RdfKeySegment.Builder();
 
 		final RdfKey.Builder builder = new RdfKey.Builder().addSegment(
 				segBuilder.build(model)).addSegment(
-						segBuilder.setAscending(false).setIdx(1).build(model));
+				segBuilder.setAscending(false).setIdx(1).build(model));
 
 		final Key key = builder.build(model);
 
@@ -58,8 +53,7 @@ public class KeyBuilderTests
 	}
 
 	@Test
-	public void testUnique()
-	{
+	public void testUnique() {
 		final RdfKeySegment.Builder segBuilder = new RdfKeySegment.Builder();
 
 		final RdfKey.Builder builder = new RdfKey.Builder().addSegment(

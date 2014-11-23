@@ -4,6 +4,8 @@ import java.net.URL;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.log4j.Level;
@@ -11,8 +13,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-public class NumberFunctionTests extends AbstractJ4SSetup
-{
+public class NumberFunctionTests extends AbstractJ4SSetup {
 	// file URL
 	private URL fUrl;
 
@@ -20,8 +21,7 @@ public class NumberFunctionTests extends AbstractJ4SSetup
 	private String url;
 
 	@Before
-	public void setup() throws Exception
-	{
+	public void setup() throws Exception {
 		LoggingConfig.setConsole(Level.DEBUG);
 		LoggingConfig.setRootLogger(Level.INFO);
 		LoggingConfig.setLogger("com.hp.hpl.jena.", Level.INFO);
@@ -45,35 +45,68 @@ public class NumberFunctionTests extends AbstractJ4SSetup
 	}
 
 	@Test
-	public void testAbsFunction() throws Exception
-	{
-
+	public void testAbsIntFunction() throws Exception {
+		List<Integer> lst = new ArrayList<Integer>();
 		final ResultSet rset = stmt
 				.executeQuery("select abs( IntCol ) From fooTable");
 		final ResultSetMetaData rsm = rset.getMetaData();
 		Assert.assertEquals(1, rsm.getColumnCount());
-		rset.next();
-		Assert.assertEquals("FOB", rset.getString(1));
+		while (rset.next()) {
+			lst.add(Integer.valueOf(rset.getInt(1)));
+		}
+		Assert.assertTrue(lst.contains(Integer.valueOf(5)));
+		Assert.assertTrue(lst.contains(Integer.valueOf(3)));
+		Assert.assertTrue(lst.contains(Integer.valueOf(7)));
 		rset.close();
 	}
 
 	@Test
-	public void testCeilFunction() throws Exception
-	{
+	public void testAbsDoubleFunction() throws Exception {
+		List<Double> lst = new ArrayList<Double>();
+		final ResultSet rset = stmt
+				.executeQuery("select abs( DoubleCol ) From fooTable");
+		final ResultSetMetaData rsm = rset.getMetaData();
+		Assert.assertEquals(1, rsm.getColumnCount());
+		while (rset.next()) {
+			lst.add(Double.valueOf(rset.getDouble(1)));
+		}
+		Assert.assertTrue(lst.contains(Double.valueOf(1.3)));
+		;
+		Assert.assertTrue(lst.contains(Double.valueOf(1.5)));
+		;
+		Assert.assertTrue(lst.contains(Double.valueOf(1.7)));
+		;
+		rset.close();
+	}
 
+	@Test
+	public void testCeilFunction() throws Exception {
+		List<Integer> lst = new ArrayList<Integer>();
 		final ResultSet rset = stmt
 				.executeQuery("select ceil( DoubleCol ) From fooTable");
 		final ResultSetMetaData rsm = rset.getMetaData();
 		Assert.assertEquals(1, rsm.getColumnCount());
-		rset.next();
-		Assert.assertEquals("FOB", rset.getString(1));
+		while (rset.next()) {
+			lst.add(rset.getInt(1));
+		}
+		Assert.assertTrue(lst.contains(Integer.valueOf(-1)));
+		Assert.assertTrue(lst.contains(Integer.valueOf(2)));
 		rset.close();
 	}
 
 	@Test
-	public void testCountFunction() throws Exception
-	{
+	public void testCountFunction() throws Exception {
+		final ResultSet rset = stmt
+				.executeQuery("select count( * ) From fooTable");
+		final ResultSetMetaData rsm = rset.getMetaData();
+		Assert.assertEquals(1, rsm.getColumnCount());
+		rset.next();
+		Assert.assertEquals(3, rset.getInt(1));
+		rset.close();
+	}
 
+	@Test
+	public void testCountIntFunction() throws Exception {
 		final ResultSet rset = stmt
 				.executeQuery("select count( IntCol ) From fooTable");
 		final ResultSetMetaData rsm = rset.getMetaData();
@@ -81,25 +114,36 @@ public class NumberFunctionTests extends AbstractJ4SSetup
 		rset.next();
 		Assert.assertEquals(3, rset.getInt(1));
 		rset.close();
-
 	}
 
 	@Test
-	public void testFloorFunction() throws Exception
-	{
-
+	public void testCountDoubleFunction() throws Exception {
 		final ResultSet rset = stmt
-				.executeQuery("select floor( DoubleCol ) From fooTable");
+				.executeQuery("select count( DoubleCol ) From fooTable");
 		final ResultSetMetaData rsm = rset.getMetaData();
-		Assert.assertEquals(3, rsm.getColumnCount());
-		rset.next();	
-		Assert.assertEquals("FOB", rset.getString(1));
+		Assert.assertEquals(1, rsm.getColumnCount());
+		rset.next();
+		Assert.assertEquals(3, rset.getInt(1));
 		rset.close();
 	}
 
 	@Test
-	public void testMaxFunction() throws Exception
-	{
+	public void testFloorFunction() throws Exception {
+		List<Integer> lst = new ArrayList<Integer>();
+		final ResultSet rset = stmt
+				.executeQuery("select floor( DoubleCol ) From fooTable");
+		final ResultSetMetaData rsm = rset.getMetaData();
+		Assert.assertEquals(1, rsm.getColumnCount());
+		while (rset.next()) {
+			lst.add(Integer.valueOf(rset.getInt(1)));
+		}
+		Assert.assertTrue(lst.contains(Integer.valueOf(1)));
+		Assert.assertTrue(lst.contains(Integer.valueOf(-2)));
+		rset.close();
+	}
+
+	@Test
+	public void testMaxIntFunction() throws Exception {
 
 		final ResultSet rset = stmt
 				.executeQuery("select max( IntCol ) From fooTable");
@@ -111,51 +155,72 @@ public class NumberFunctionTests extends AbstractJ4SSetup
 	}
 
 	@Test
-	public void testMinFunction() throws Exception
-	{
+	public void testMaxDoubleFunction() throws Exception {
 
-		// count all the rows
+		final ResultSet rset = stmt
+				.executeQuery("select max( DoubleCol ) From fooTable");
+		final ResultSetMetaData rsm = rset.getMetaData();
+		Assert.assertEquals(1, rsm.getColumnCount());
+		rset.next();
+		Assert.assertEquals(Double.valueOf(1.7),
+				Double.valueOf(rset.getDouble(1)));
+		rset.close();
+	}
+
+	@Test
+	public void testMinIntFunction() throws Exception {
 		final ResultSet rset = stmt
 				.executeQuery("select min( IntCol ) from fooTable");
 		final ResultSetMetaData rsm = rset.getMetaData();
 		Assert.assertEquals(1, rsm.getColumnCount());
 		rset.next();
-		Assert.assertEquals(3, rset.getInt(1));
+		Assert.assertEquals(-3, rset.getInt(1));
 		rset.close();
 	}
 
 	@Test
-	public void testRoundFunction() throws Exception
-	{
+	public void testMinDoubleFunction() throws Exception {
+		final ResultSet rset = stmt
+				.executeQuery("select min( DoubleCol ) from fooTable");
+		final ResultSetMetaData rsm = rset.getMetaData();
+		Assert.assertEquals(1, rsm.getColumnCount());
+		rset.next();
+		Assert.assertEquals(Double.valueOf(-1.3),
+				Double.valueOf(rset.getDouble(1)));
+		rset.close();
+	}
 
+	@Test
+	public void testRoundFunction() throws Exception {
+		List<Integer> lst = new ArrayList<Integer>();
 		final ResultSet rset = stmt
 				.executeQuery("select round( DoubleCol ) From fooTable");
 		final ResultSetMetaData rsm = rset.getMetaData();
 		Assert.assertEquals(1, rsm.getColumnCount());
-		rset.next();
-		Assert.assertEquals("FOB", rset.getString(1));
+		while (rset.next()) {
+			lst.add(Integer.valueOf(rset.getInt(1)));
+		}
+		Assert.assertTrue(lst.contains(Integer.valueOf(2)));
+		Assert.assertTrue(lst.contains(Integer.valueOf(-1)));
 		rset.close();
 	}
 
 	@Test
-	public void testSumFunction() throws Exception
-	{
+	public void testSumFunction() throws Exception {
 
 		final ResultSet rset = stmt
 				.executeQuery("select sum( IntCol ) From fooTable");
 		final ResultSetMetaData rsm = rset.getMetaData();
 		Assert.assertEquals(1, rsm.getColumnCount());
 		rset.next();
-		Assert.assertEquals(15, rset.getInt(1));
+		Assert.assertEquals(9, rset.getInt(1));
 		rset.close();
 	}
-	
-	@Test
-	public void testRandFunction() throws Exception
-	{
 
-		final ResultSet rset = stmt
-				.executeQuery("select rand() From fooTable");
+	@Test
+	public void testRandFunction() throws Exception {
+
+		final ResultSet rset = stmt.executeQuery("select rand() From fooTable");
 		final ResultSetMetaData rsm = rset.getMetaData();
 		Assert.assertEquals(1, rsm.getColumnCount());
 		rset.next();

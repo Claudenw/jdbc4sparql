@@ -23,8 +23,10 @@ import com.hp.hpl.jena.query.QuerySolution;
 import java.util.List;
 import java.util.Set;
 
-public interface Catalog extends NamedObject<CatalogName>
-{
+import org.xenei.jdbc4sparql.iface.name.CatalogName;
+import org.xenei.jdbc4sparql.sparql.items.NamedObject;
+
+public interface Catalog extends NamedObject<CatalogName> {
 	/**
 	 * Close release all associated resources.
 	 */
@@ -38,18 +40,17 @@ public interface Catalog extends NamedObject<CatalogName>
 	 * @param query
 	 * @return The list of QuerySolutions.
 	 */
-	public List<QuerySolution> executeLocalQuery( final Query query );
+	public List<QuerySolution> executeLocalQuery(final Query query);
 
 	/**
-	 * Return the list of schemas that have names matching the pattern
-	 * if name pattern == null return all the schemas
-	 * if name pattern == "" return only unamed schemas.
-	 * if name is anything else match the string.
+	 * Return the list of schemas that have names matching the pattern if name
+	 * pattern == null return all the schemas if name pattern == "" return only
+	 * unamed schemas. if name is anything else match the string.
 	 *
 	 * @param schemaNamePattern
 	 * @return
 	 */
-	NameFilter<? extends Schema> findSchemas( String schemaNamePattern );
+	NameFilter<? extends Schema> findSchemas(String schemaNamePattern);
 
 	/**
 	 * Get the schema
@@ -57,15 +58,14 @@ public interface Catalog extends NamedObject<CatalogName>
 	 * @param schema
 	 * @return
 	 */
-	Schema getSchema( String schemaName );
+	Schema getSchema(String schemaName);
 
 	/**
 	 *
 	 * @param schemaPattern
 	 *            a schema name pattern; must match the schema name as it is
-	 *            stored in the database;
-	 *            "" retrieves those without a schema; null means that all
-	 *            schemas should be returned
+	 *            stored in the database; "" retrieves those without a schema;
+	 *            null means that all schemas should be returned
 	 * @return
 	 */
 	Set<Schema> getSchemas();

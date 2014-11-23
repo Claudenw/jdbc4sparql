@@ -7,40 +7,36 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
+import static org.mockito.Mockito.*;
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.ColumnDef;
-import org.xenei.jdbc4sparql.iface.TableName;
+import org.xenei.jdbc4sparql.iface.name.TableName;
 
-public class ColumnBuilderTests
-{
+public class ColumnBuilderTests {
 	private Model model;
 	private ColumnDef columnDef;
 	private RdfTable mockTable;
 
 	@Before
-	public void setUp() throws Exception
-	{
+	public void setUp() throws Exception {
 		model = ModelFactory.createDefaultModel();
 		columnDef = RdfColumnDef.Builder.getStringBuilder().build(model);
-		mockTable = Mockito.mock(RdfTable.class);
-		Mockito.when(mockTable.getResource()).thenReturn(
+		mockTable = mock(RdfTable.class);
+		when(mockTable.getResource()).thenReturn(
 				model.createResource("http://example.com/mockTable"));
-		Mockito.when(mockTable.getName()).thenReturn(
-				new TableName("schema", "table"));
+		when(mockTable.getName()).thenReturn(
+				new TableName("catalog", "schema", "table"));
 	}
 
 	@After
-	public void tearDown() throws Exception
-	{
+	public void tearDown() throws Exception {
 		model.close();
 	}
 
 	@Test
-	public void testStandardCreation()
-	{
+	public void testStandardCreation() {
 		final RdfColumn.Builder builder = new RdfColumn.Builder()
-		.setColumnDef(columnDef).setName("test").setTable(mockTable);
+				.setColumnDef(columnDef).setName("test").setTable(mockTable);
 		final Column cd = builder.build(model);
 		Assert.assertEquals("test", cd.getName().getShortName());
 		Assert.assertEquals(false, cd.getColumnDef().isAutoIncrement());

@@ -71,8 +71,7 @@ import org.xenei.jena.entities.EntityManager;
 import org.xenei.jena.entities.EntityManagerFactory;
 import org.xenei.jena.entities.MissingAnnotation;
 
-public class J4SConnection implements Connection
-{
+public class J4SConnection implements Connection {
 	private Properties clientInfo;
 	private final J4SUrl url;
 	private final Map<String, Catalog> catalogMap;
@@ -87,13 +86,11 @@ public class J4SConnection implements Connection
 	private DatasetProducer dsProducer = null;
 	private final Properties properties;
 
-	public J4SConnection( final J4SDriver driver, final J4SUrl url,
-			final Properties properties ) throws IOException,
+	public J4SConnection(final J4SDriver driver, final J4SUrl url,
+			final Properties properties) throws IOException,
 			InstantiationException, IllegalAccessException,
-			ClassNotFoundException, MissingAnnotation, SQLException
-	{
-		if (properties == null)
-		{
+			ClassNotFoundException, MissingAnnotation, SQLException {
+		if (properties == null) {
 			throw new IllegalArgumentException("Properties may not be null");
 		}
 		this.properties = properties;
@@ -114,53 +111,44 @@ public class J4SConnection implements Connection
 		mergeProperties(url.getProperties());
 
 		// make sure the dataset producer class is set.
-		if (!properties.containsKey(J4SPropertyNames.DATASET_PRODUCER))
-		{
+		if (!properties.containsKey(J4SPropertyNames.DATASET_PRODUCER)) {
 			properties.setProperty(J4SPropertyNames.DATASET_PRODUCER,
 					MemDatasetProducer.class.getCanonicalName());
 		}
 
 		configureCatalogMap();
 
-		if (catalogMap.get(MetaCatalogBuilder.LOCAL_NAME) == null)
-		{
+		if (catalogMap.get(MetaCatalogBuilder.LOCAL_NAME) == null) {
 			dsProducer.getMetaDataModel(MetaCatalogBuilder.LOCAL_NAME);
 			final Catalog c = MetaCatalogBuilder.getInstance(dsProducer);
 			catalogMap.put(c.getName().getShortName(), c);
 		}
 		if (StringUtils.isNotEmpty(getCatalog())
-				&& (catalogMap.get(getCatalog()) == null))
-		{
+				&& (catalogMap.get(getCatalog()) == null)) {
 			throw new IllegalArgumentException(String.format(
 					"Catalog '%s' not found in catalog map", getCatalog()));
 		}
 
-		catalogMap.put("", new VirtualCatalog());
+		catalogMap.put(VirtualCatalog.NAME, new VirtualCatalog());
 
 	}
 
 	@Override
-	public void abort( final Executor arg0 ) throws SQLException
-	{
+	public void abort(final Executor arg0) throws SQLException {
 		close();
 	}
 
-	public RdfCatalog addCatalog( final RdfCatalog.Builder catalogBuilder )
-	{
+	public RdfCatalog addCatalog(final RdfCatalog.Builder catalogBuilder) {
 		final Model model = dsProducer.getMetaDataModel(catalogBuilder
 				.getName().getShortName());
 		Model dataModel = catalogBuilder.getLocalModel();
-		if (dataModel != null)
-		{
+		if (dataModel != null) {
 			dsProducer.addLocalDataModel(catalogBuilder.getName()
 					.getShortName(), dataModel);
-		}
-		else
-		{
+		} else {
 			dataModel = dsProducer.getLocalDataModel(catalogBuilder.getName()
 					.getShortName());
-			if (dataModel != null)
-			{
+			if (dataModel != null) {
 				catalogBuilder.setLocalModel(dataModel);
 			}
 		}
@@ -169,25 +157,20 @@ public class J4SConnection implements Connection
 		return cat;
 	}
 
-	private void checkClosed() throws SQLException
-	{
-		if (closed)
-		{
+	private void checkClosed() throws SQLException {
+		if (closed) {
 			throw new SQLException("Connection closed");
 		}
 	}
 
 	@Override
-	public void clearWarnings() throws SQLException
-	{
+	public void clearWarnings() throws SQLException {
 		sqlWarnings = null;
 	}
 
 	@Override
-	public void close() throws SQLException
-	{
-		for (final Catalog cat : catalogMap.values())
-		{
+	public void close() throws SQLException {
+		for (final Catalog cat : catalogMap.values()) {
 			cat.close();
 		}
 		dsProducer.close();
@@ -195,26 +178,20 @@ public class J4SConnection implements Connection
 	}
 
 	@Override
-	public void commit() throws SQLException
-	{
+	public void commit() throws SQLException {
 		checkClosed();
-		if (autoCommit)
-		{
+		if (autoCommit) {
 			throw new SQLException("commit called on autoCommit connection");
 		}
 	}
 
 	private void configureCatalogMap() throws IOException,
-	InstantiationException, IllegalAccessException,
-	ClassNotFoundException, MissingAnnotation, SQLException
-	{
+			InstantiationException, IllegalAccessException,
+			ClassNotFoundException, MissingAnnotation, SQLException {
 		// if this is a config file just read the file.
-		if (url.getType().equals(J4SUrl.TYPE_CONFIG))
-		{
+		if (url.getType().equals(J4SUrl.TYPE_CONFIG)) {
 			loadConfig(url.getEndpoint().toURL());
-		}
-		else
-		{
+		} else {
 			// otherwise we have to read the data and parse the input.
 			dsProducer = DatasetProducer.Loader.load(properties);
 			RdfCatalog catalog = null;
@@ -226,8 +203,7 @@ public class J4SConnection implements Connection
 
 			// the schema name is the produced by the builder name.
 			SchemaBuilder builder = url.getBuilder();
-			if (builder == null)
-			{
+			if (builder == null) {
 				builder = SchemaBuilder.Util.getBuilder(null);
 			}
 
@@ -239,14 +215,11 @@ public class J4SConnection implements Connection
 			final Model model = dsProducer.getMetaDataModel(getCatalog());
 
 			// if a SPARQL endpoint the driver URL has the endpoint URL.
-			if (url.getType().equals(J4SUrl.TYPE_SPARQL))
-			{
+			if (url.getType().equals(J4SUrl.TYPE_SPARQL)) {
 				catalog = new RdfCatalog.Builder()
-				.setSparqlEndpoint(url.getEndpoint().toURL())
-				.setName(getCatalog()).build(model);
-			}
-			else
-			{
+						.setSparqlEndpoint(url.getEndpoint().toURL())
+						.setName(getCatalog()).build(model);
+			} else {
 				final Model dataModel = dsProducer
 						.getLocalDataModel(getCatalog());
 				RDFDataMgr.read(dataModel, url.getEndpoint().toURL()
@@ -256,14 +229,12 @@ public class J4SConnection implements Connection
 			}
 
 			final RdfSchema schema = new RdfSchema.Builder()
-			.setCatalog(catalog).setName(schemaName).build(model);
+					.setCatalog(catalog).setName(schemaName).build(model);
 
 			catalogMap.put(catalog.getName().getShortName(), catalog);
 
-			if (builder != null)
-			{
-				for (final RdfTable table : builder.getTables(schema))
-				{
+			if (builder != null) {
+				for (final RdfTable table : builder.getTables(schema)) {
 					schema.addTables(table);
 				}
 			}
@@ -272,174 +243,144 @@ public class J4SConnection implements Connection
 	}
 
 	@Override
-	public Array createArrayOf( final String arg0, final Object[] arg1 )
-			throws SQLException
-	{
+	public Array createArrayOf(final String arg0, final Object[] arg1)
+			throws SQLException {
 		throw new SQLFeatureNotSupportedException();
 	}
 
 	@Override
-	public Blob createBlob() throws SQLException
-	{
+	public Blob createBlob() throws SQLException {
 		throw new SQLFeatureNotSupportedException();
 	}
 
 	@Override
-	public Clob createClob() throws SQLException
-	{
+	public Clob createClob() throws SQLException {
 		throw new SQLFeatureNotSupportedException();
 	}
 
 	@Override
-	public NClob createNClob() throws SQLException
-	{
+	public NClob createNClob() throws SQLException {
 		throw new SQLFeatureNotSupportedException();
 	}
 
 	@Override
-	public SQLXML createSQLXML() throws SQLException
-	{
+	public SQLXML createSQLXML() throws SQLException {
 		throw new SQLFeatureNotSupportedException();
 	}
 
 	@Override
-	public Statement createStatement() throws SQLException
-	{
+	public Statement createStatement() throws SQLException {
 		return createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
 				ResultSet.CONCUR_READ_ONLY);
 	}
 
 	@Override
-	public Statement createStatement( final int resultSetType,
-			final int resultSetConcurrency ) throws SQLException
-	{
+	public Statement createStatement(final int resultSetType,
+			final int resultSetConcurrency) throws SQLException {
 		return createStatement(resultSetType, resultSetConcurrency,
 				this.getHoldability());
 	}
 
 	@Override
-	public Statement createStatement( final int resultSetType,
-			final int resultSetConcurrency, final int resultSetHoldability )
-					throws SQLException
-	{
+	public Statement createStatement(final int resultSetType,
+			final int resultSetConcurrency, final int resultSetHoldability)
+			throws SQLException {
 		final Catalog catalog = catalogMap.get(getCatalog());
-		if (catalog instanceof RdfCatalog)
-		{
+		if (catalog instanceof RdfCatalog) {
 			return new J4SStatement(this, (RdfCatalog) catalog, resultSetType,
 					resultSetConcurrency, resultSetHoldability);
-		}
-		else
-		{
+		} else {
 			throw new SQLException("Catalog '" + getCatalog()
 					+ "' does not support statements");
 		}
 	}
 
 	@Override
-	public Struct createStruct( final String arg0, final Object[] arg1 )
-			throws SQLException
-	{
+	public Struct createStruct(final String arg0, final Object[] arg1)
+			throws SQLException {
 		throw new SQLFeatureNotSupportedException();
 	}
 
 	@Override
-	public boolean getAutoCommit() throws SQLException
-	{
+	public boolean getAutoCommit() throws SQLException {
 		return autoCommit;
 	}
 
 	@Override
-	public String getCatalog()
-	{
+	public String getCatalog() {
 		return properties.getProperty(J4SPropertyNames.CATALOG_PROPERTY);
 	}
 
-	public Map<String, Catalog> getCatalogs()
-	{
+	public Map<String, Catalog> getCatalogs() {
 		return catalogMap;
 	}
 
 	@Override
-	public Properties getClientInfo() throws SQLException
-	{
+	public Properties getClientInfo() throws SQLException {
 		return clientInfo;
 	}
 
 	@Override
-	public String getClientInfo( final String key ) throws SQLException
-	{
+	public String getClientInfo(final String key) throws SQLException {
 		return clientInfo.getProperty(key);
 	}
 
-	public DatasetProducer getDatasetProducer()
-	{
+	public DatasetProducer getDatasetProducer() {
 		return dsProducer;
 	}
 
 	@Override
-	public int getHoldability() throws SQLException
-	{
+	public int getHoldability() throws SQLException {
 		return holdability;
 	}
 
 	@Override
-	public DatabaseMetaData getMetaData() throws SQLException
-	{
+	public DatabaseMetaData getMetaData() throws SQLException {
 		return new J4SDatabaseMetaData(this, driver);
 	}
 
 	@Override
-	public int getNetworkTimeout() throws SQLException
-	{
+	public int getNetworkTimeout() throws SQLException {
 		return networkTimeout;
 	}
 
 	@Override
-	public String getSchema()
-	{
+	public String getSchema() {
 		return properties.getProperty(J4SPropertyNames.SCHEMA_PROPERTY);
 	}
 
-	public SparqlParser getSparqlParser()
-	{
+	public SparqlParser getSparqlParser() {
 		return sparqlParser;
 	}
 
 	@Override
-	public int getTransactionIsolation() throws SQLException
-	{
+	public int getTransactionIsolation() throws SQLException {
 		return Connection.TRANSACTION_NONE;
 	}
 
 	@Override
-	public Map<String, Class<?>> getTypeMap() throws SQLException
-	{
+	public Map<String, Class<?>> getTypeMap() throws SQLException {
 		throw new SQLFeatureNotSupportedException();
 	}
 
 	@Override
-	public SQLWarning getWarnings() throws SQLException
-	{
+	public SQLWarning getWarnings() throws SQLException {
 		return sqlWarnings;
 	}
 
 	@Override
-	public boolean isClosed() throws SQLException
-	{
+	public boolean isClosed() throws SQLException {
 		return closed;
 	}
 
 	@Override
-	public boolean isReadOnly() throws SQLException
-	{
+	public boolean isReadOnly() throws SQLException {
 		return true;
 	}
 
 	@Override
-	public boolean isValid( final int timeout ) throws SQLException
-	{
-		if (timeout < 0)
-		{
+	public boolean isValid(final int timeout) throws SQLException {
+		if (timeout < 0) {
 			throw new SQLException("Timeout must not be less than zero");
 		}
 		// TODO figure out how to do this
@@ -447,14 +388,12 @@ public class J4SConnection implements Connection
 	}
 
 	@Override
-	public boolean isWrapperFor( final Class<?> arg0 ) throws SQLException
-	{
+	public boolean isWrapperFor(final Class<?> arg0) throws SQLException {
 		return false;
 	}
 
-	private void loadConfig( final URL url ) throws IOException,
-	MissingAnnotation
-	{
+	private void loadConfig(final URL url) throws IOException,
+			MissingAnnotation {
 		// config specifies producer
 		dsProducer = DatasetProducer.Loader.load(properties, url);
 		mergeProperties(dsProducer.getProperties());
@@ -467,23 +406,18 @@ public class J4SConnection implements Connection
 		final List<String> names = WrappedIterator.create(
 				dsProducer.listMetaDataNames()).toList();
 
-		for (final String name : names)
-		{
+		for (final String name : names) {
 			final Model metaModel = dsProducer.getMetaDataModel(name);
 			final ResIterator ri = metaModel.listSubjectsWithProperty(RDF.type,
 					catType);
-			while (ri.hasNext())
-			{
+			while (ri.hasNext()) {
 				RdfCatalog cat = entityManager
 						.read(ri.next(), RdfCatalog.class);
 				final RdfCatalog.Builder builder = new RdfCatalog.Builder(cat);
 				if (AbstractDatasetProducer.getModelURI(
-						MetaCatalogBuilder.LOCAL_NAME).equals(name))
-				{
+						MetaCatalogBuilder.LOCAL_NAME).equals(name)) {
 					builder.setLocalModel(dsProducer.getMetaDatasetUnionModel());
-				}
-				else
-				{
+				} else {
 					builder.setLocalModel(dsProducer.getLocalDataModel(name));
 				}
 				cat = builder.build(metaModel);
@@ -498,102 +432,84 @@ public class J4SConnection implements Connection
 	 *
 	 * @param properties
 	 */
-	private void mergeProperties( final Properties properties )
-	{
-		for (final String s : properties.stringPropertyNames())
-		{
-			if (!this.properties.containsKey(s))
-			{
+	private void mergeProperties(final Properties properties) {
+		for (final String s : properties.stringPropertyNames()) {
+			if (!this.properties.containsKey(s)) {
 				this.properties.put(s, properties.getProperty(s));
 			}
 		}
 	}
 
 	@Override
-	public String nativeSQL( final String sql ) throws SQLException
-	{
+	public String nativeSQL(final String sql) throws SQLException {
 		return sparqlParser.nativeSQL(sql);
 	}
 
 	@Override
-	public CallableStatement prepareCall( final String arg0 )
-			throws SQLException
-	{
+	public CallableStatement prepareCall(final String arg0) throws SQLException {
 		throw new SQLFeatureNotSupportedException();
 	}
 
 	@Override
-	public CallableStatement prepareCall( final String arg0, final int arg1,
-			final int arg2 ) throws SQLException
-	{
+	public CallableStatement prepareCall(final String arg0, final int arg1,
+			final int arg2) throws SQLException {
 		throw new SQLFeatureNotSupportedException();
 	}
 
 	@Override
-	public CallableStatement prepareCall( final String arg0, final int arg1,
-			final int arg2, final int arg3 ) throws SQLException
-	{
+	public CallableStatement prepareCall(final String arg0, final int arg1,
+			final int arg2, final int arg3) throws SQLException {
 		throw new SQLFeatureNotSupportedException();
 	}
 
 	@Override
-	public PreparedStatement prepareStatement( final String arg0 )
-			throws SQLException
-	{
+	public PreparedStatement prepareStatement(final String arg0)
+			throws SQLException {
 		throw new SQLFeatureNotSupportedException();
 	}
 
 	@Override
-	public PreparedStatement prepareStatement( final String arg0, final int arg1 )
-			throws SQLException
-	{
+	public PreparedStatement prepareStatement(final String arg0, final int arg1)
+			throws SQLException {
 		throw new SQLFeatureNotSupportedException();
 	}
 
 	@Override
-	public PreparedStatement prepareStatement( final String arg0,
-			final int arg1, final int arg2 ) throws SQLException
-	{
+	public PreparedStatement prepareStatement(final String arg0,
+			final int arg1, final int arg2) throws SQLException {
 		throw new SQLFeatureNotSupportedException();
 	}
 
 	@Override
-	public PreparedStatement prepareStatement( final String arg0,
-			final int arg1, final int arg2, final int arg3 )
-					throws SQLException
-	{
+	public PreparedStatement prepareStatement(final String arg0,
+			final int arg1, final int arg2, final int arg3) throws SQLException {
 		throw new SQLFeatureNotSupportedException();
 	}
 
 	@Override
-	public PreparedStatement prepareStatement( final String arg0,
-			final int[] arg1 ) throws SQLException
-	{
+	public PreparedStatement prepareStatement(final String arg0,
+			final int[] arg1) throws SQLException {
 		throw new SQLFeatureNotSupportedException();
 	}
 
 	@Override
-	public PreparedStatement prepareStatement( final String arg0,
-			final String[] arg1 ) throws SQLException
-	{
+	public PreparedStatement prepareStatement(final String arg0,
+			final String[] arg1) throws SQLException {
 		throw new SQLFeatureNotSupportedException();
 	}
 
 	@Override
-	public void releaseSavepoint( final Savepoint arg0 ) throws SQLException
-	{
+	public void releaseSavepoint(final Savepoint arg0) throws SQLException {
 		throw new SQLFeatureNotSupportedException();
 	}
 
 	@Override
-	public void rollback() throws SQLException
-	{
+	public void rollback() throws SQLException {
 		throw new SQLFeatureNotSupportedException();
 	}
 
 	@Override
-	public void rollback( final Savepoint arg0 ) throws SQLException
-	{
+	public void rollback(final Savepoint arg0) throws SQLException {
 		throw new SQLFeatureNotSupportedException();
 	}
 
@@ -606,8 +522,7 @@ public class J4SConnection implements Connection
 	 *            The file to write the configuration to
 	 * @throws IOException
 	 */
-	public void saveConfig( final File f ) throws IOException
-	{
+	public void saveConfig(final File f) throws IOException {
 		dsProducer.save(f);
 	}
 
@@ -620,25 +535,20 @@ public class J4SConnection implements Connection
 	 *            outputstream to write the configuration to.
 	 * @throws IOException
 	 */
-	public void saveConfig( final OutputStream os ) throws IOException
-	{
+	public void saveConfig(final OutputStream os) throws IOException {
 		dsProducer.save(os);
 	}
 
 	@Override
-	public void setAutoCommit( final boolean state ) throws SQLException
-	{
+	public void setAutoCommit(final boolean state) throws SQLException {
 		autoCommit = state;
 	}
 
 	@Override
-	public void setCatalog( final String catalog ) throws SQLException
-	{
-		if ((getCatalog() == null) || !getCatalog().equals(catalog))
-		{
+	public void setCatalog(final String catalog) throws SQLException {
+		if ((getCatalog() == null) || !getCatalog().equals(catalog)) {
 			log.debug("Setting catalog to '{}'", catalog);
-			if (catalogMap.get(catalog) == null)
-			{
+			if (catalogMap.get(catalog) == null) {
 				throw new SQLException("Catalog " + catalog + " was not found");
 			}
 			properties.setProperty(J4SPropertyNames.CATALOG_PROPERTY, catalog);
@@ -647,30 +557,23 @@ public class J4SConnection implements Connection
 	}
 
 	@Override
-	public void setClientInfo( final Properties clientInfo )
-	{
+	public void setClientInfo(final Properties clientInfo) {
 		this.clientInfo = clientInfo;
 	}
 
 	@Override
-	public void setClientInfo( final String param, final String value )
-	{
-		if (value != null)
-		{
+	public void setClientInfo(final String param, final String value) {
+		if (value != null) {
 			this.clientInfo.setProperty(param, value);
-		}
-		else
-		{
+		} else {
 			this.clientInfo.remove(param);
 		}
 	}
 
 	@Override
-	public void setHoldability( final int holdability ) throws SQLException
-	{
+	public void setHoldability(final int holdability) throws SQLException {
 		// don't support ResultSet.CLOSE_CURSORS_AT_COMMIT
-		if (holdability != ResultSet.HOLD_CURSORS_OVER_COMMIT)
-		{
+		if (holdability != ResultSet.HOLD_CURSORS_OVER_COMMIT) {
 			throw new SQLFeatureNotSupportedException(
 					"Invalid holdability value");
 		}
@@ -678,84 +581,69 @@ public class J4SConnection implements Connection
 	}
 
 	@Override
-	public void setNetworkTimeout( final Executor arg0, final int timeout )
-			throws SQLException
-	{
+	public void setNetworkTimeout(final Executor arg0, final int timeout)
+			throws SQLException {
 		this.networkTimeout = timeout;
 	}
 
 	@Override
-	public void setReadOnly( final boolean state ) throws SQLException
-	{
-		if (!state)
-		{
+	public void setReadOnly(final boolean state) throws SQLException {
+		if (!state) {
 			throw new SQLFeatureNotSupportedException(
 					"Can not set ReadOnly=false");
 		}
 	}
 
 	@Override
-	public Savepoint setSavepoint() throws SQLException
-	{
+	public Savepoint setSavepoint() throws SQLException {
 		throw new SQLFeatureNotSupportedException();
 	}
 
 	@Override
-	public Savepoint setSavepoint( final String arg0 ) throws SQLException
-	{
+	public Savepoint setSavepoint(final String arg0) throws SQLException {
 		throw new SQLFeatureNotSupportedException();
 	}
 
 	@Override
-	public void setSchema( final String schema ) throws SQLException
-	{
-		if (schema != null)
-		{
+	public void setSchema(final String schema) throws SQLException {
+		if (schema != null) {
 			final Catalog cat = catalogMap.get(getCatalog());
-			if (cat == null)
-			{
+			if (cat == null) {
 				throw new SQLException(String.format(
 						"Catalog '%s' was not found", getCatalog()));
 			}
 			final Schema schem = cat.getSchema(schema);
-			if (schem == null)
-			{
+			if (schem == null) {
 				throw new SQLException(String.format(
 						"Schema '%s' was not found in catalog '%s'", schema,
 						getCatalog()));
 			}
 			this.properties.setProperty(J4SPropertyNames.SCHEMA_PROPERTY,
 					schema);
-		}
-		else
-		{
+		} else {
 			this.properties.remove(J4SPropertyNames.SCHEMA_PROPERTY);
 		}
 	}
 
 	@Override
-	public void setTransactionIsolation( final int arg0 ) throws SQLException
-	{
+	public void setTransactionIsolation(final int arg0) throws SQLException {
 		throw new SQLFeatureNotSupportedException();
 	}
 
 	@Override
-	public void setTypeMap( final Map<String, Class<?>> arg0 )
-			throws SQLException
-	{
+	public void setTypeMap(final Map<String, Class<?>> arg0)
+			throws SQLException {
 		throw new SQLFeatureNotSupportedException();
 	}
 
 	@Override
-	public String toString()
-	{
+	public String toString() {
 		return new StringBuilder().append("J4SConnection[")
 				.append(url.toString()).append("]").toString();
 	}
 
 	@Override
-	public <T> T unwrap( final Class<T> arg0 ) throws SQLException
-	{
+	public <T> T unwrap(final Class<T> arg0) throws SQLException {
 		throw new SQLFeatureNotSupportedException();
 	}
 }

@@ -21,18 +21,16 @@ import org.apache.jena.riot.RDFLanguages;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class J4SUrlTest
-{
+public class J4SUrlTest {
 	@Test
-	public void testBuilderNoValueURL()
-	{
+	public void testBuilderNoValueURL() {
 		J4SUrl url;
 		url = new J4SUrl("jdbc:j4s?builder:http://example.com/test.file");
 
 		Assert.assertEquals("example_com", url.getCatalog());
 		Assert.assertEquals(
 				"org.xenei.jdbc4sparql.sparql.builders.SimpleBuilder", url
-				.getBuilder().getClass().getName());
+						.getBuilder().getClass().getName());
 		Assert.assertEquals("http://example.com/test.file", url.getEndpoint()
 				.toString());
 
@@ -41,15 +39,14 @@ public class J4SUrlTest
 		Assert.assertEquals("example_com", url.getCatalog());
 		Assert.assertEquals(
 				"org.xenei.jdbc4sparql.sparql.builders.SimpleBuilder", url
-				.getBuilder().getClass().getName());
+						.getBuilder().getClass().getName());
 		Assert.assertEquals("http://example.com/test.file", url.getEndpoint()
 				.toString());
 
 	}
 
 	@Test
-	public void testBuilderURL()
-	{
+	public void testBuilderURL() {
 		J4SUrl url;
 		url = new J4SUrl(
 				"jdbc:j4s?parser=org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlParserImpl:http://example.com/test.file");
@@ -66,15 +63,14 @@ public class J4SUrlTest
 		Assert.assertEquals("example_com", url.getCatalog());
 		Assert.assertEquals(
 				"org.xenei.jdbc4sparql.sparql.builders.SimpleBuilder", url
-				.getBuilder().getClass().getName());
+						.getBuilder().getClass().getName());
 		Assert.assertEquals("http://example.com/test.file", url.getEndpoint()
 				.toString());
 
 	}
 
 	@Test
-	public void testCatalogURL()
-	{
+	public void testCatalogURL() {
 		J4SUrl url;
 		url = new J4SUrl("jdbc:j4s?catalog=foo:http://example.com/test.file");
 		Assert.assertEquals("foo", url.getCatalog());
@@ -95,8 +91,7 @@ public class J4SUrlTest
 	}
 
 	@Test
-	public void testSimpleURL()
-	{
+	public void testSimpleURL() {
 		J4SUrl url;
 		url = new J4SUrl("jdbc:j4s:http://example.com/test.file");
 		Assert.assertEquals("example_com", url.getCatalog());
@@ -117,8 +112,7 @@ public class J4SUrlTest
 	}
 
 	@Test
-	public void testTypeURL()
-	{
+	public void testTypeURL() {
 		J4SUrl url;
 		url = new J4SUrl("jdbc:j4s?type=sparql:http://example.com/test.file");
 		Assert.assertEquals(J4SUrl.TYPE_SPARQL, url.getType());

@@ -19,10 +19,12 @@ package org.xenei.jdbc4sparql.iface;
 
 import java.util.Set;
 
-public interface Schema extends NamedObject<SchemaName>
-{
+import org.xenei.jdbc4sparql.iface.name.SchemaName;
+import org.xenei.jdbc4sparql.sparql.items.NamedObject;
 
-	NameFilter<Table> findTables( String tableNamePattern );
+public interface Schema extends NamedObject<SchemaName> {
+
+	NameFilter<Table> findTables(String tableNamePattern);
 
 	/**
 	 * The catalog this schema is in.
@@ -32,7 +34,7 @@ public interface Schema extends NamedObject<SchemaName>
 
 	Catalog getCatalog();
 
-	Table getTable( String tableName );
+	Table getTable(String tableName);
 
 	Set<Table> getTables();
 

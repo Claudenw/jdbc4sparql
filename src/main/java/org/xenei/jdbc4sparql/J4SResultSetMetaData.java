@@ -25,163 +25,135 @@ import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.TypeConverter;
 
-public class J4SResultSetMetaData implements ResultSetMetaData
-{
+public class J4SResultSetMetaData implements ResultSetMetaData {
 	private final Table table;
 
-	public J4SResultSetMetaData( final Table table )
-	{
+	public J4SResultSetMetaData(final Table table) {
 		this.table = table;
 	}
 
 	@Override
-	public String getCatalogName( final int columnOrdinal ) throws SQLException
-	{
+	public String getCatalogName(final int columnOrdinal) throws SQLException {
 		return getColumn(columnOrdinal).getName().getShortName();
 	}
 
-	private Column getColumn( final int columnOrdinal )
-	{
+	private Column getColumn(final int columnOrdinal) {
 		return table.getColumn(columnOrdinal - 1);
 	}
 
 	@Override
-	public String getColumnClassName( final int columnOrdinal )
-			throws SQLException
-	{
+	public String getColumnClassName(final int columnOrdinal)
+			throws SQLException {
 		return getColumn(columnOrdinal).getColumnDef().getColumnClassName();
 	}
 
 	@Override
-	public int getColumnCount() throws SQLException
-	{
+	public int getColumnCount() throws SQLException {
 		return table.getColumnCount();
 	}
 
 	@Override
-	public int getColumnDisplaySize( final int columnOrdinal )
-			throws SQLException
-	{
+	public int getColumnDisplaySize(final int columnOrdinal)
+			throws SQLException {
 		return getColumn(columnOrdinal).getColumnDef().getDisplaySize();
 	}
 
 	@Override
-	public String getColumnLabel( final int columnOrdinal ) throws SQLException
-	{
+	public String getColumnLabel(final int columnOrdinal) throws SQLException {
 		return getColumnName(columnOrdinal);
 	}
 
 	@Override
-	public String getColumnName( final int columnOrdinal ) throws SQLException
-	{
+	public String getColumnName(final int columnOrdinal) throws SQLException {
 		return getColumn(columnOrdinal).getName().getShortName();
 	}
 
 	@Override
-	public int getColumnType( final int columnOrdinal ) throws SQLException
-	{
+	public int getColumnType(final int columnOrdinal) throws SQLException {
 		return getColumn(columnOrdinal).getColumnDef().getType();
 	}
 
 	@Override
-	public String getColumnTypeName( final int columnOrdinal )
-			throws SQLException
-	{
+	public String getColumnTypeName(final int columnOrdinal)
+			throws SQLException {
 		final Class<?> typeClass = TypeConverter
 				.getJavaType(getColumnType(columnOrdinal));
 		return typeClass == null ? "UNKNOWN" : typeClass.getName();
 	}
 
 	@Override
-	public int getPrecision( final int columnOrdinal ) throws SQLException
-	{
+	public int getPrecision(final int columnOrdinal) throws SQLException {
 		return getColumn(columnOrdinal).getColumnDef().getPrecision();
 	}
 
 	@Override
-	public int getScale( final int columnOrdinal ) throws SQLException
-	{
+	public int getScale(final int columnOrdinal) throws SQLException {
 		return getColumn(columnOrdinal).getColumnDef().getScale();
 	}
 
 	@Override
-	public String getSchemaName( final int columnOrdinal ) throws SQLException
-	{
+	public String getSchemaName(final int columnOrdinal) throws SQLException {
 		return getColumn(columnOrdinal).getSchema().getName().getShortName();
 	}
 
 	@Override
-	public String getTableName( final int columnOrdinal ) throws SQLException
-	{
+	public String getTableName(final int columnOrdinal) throws SQLException {
 		return getColumn(columnOrdinal).getTable().getName().getShortName();
 	}
 
 	@Override
-	public boolean isAutoIncrement( final int columnOrdinal )
-			throws SQLException
-	{
+	public boolean isAutoIncrement(final int columnOrdinal) throws SQLException {
 		return getColumn(columnOrdinal).getColumnDef().isAutoIncrement();
 	}
 
 	@Override
-	public boolean isCaseSensitive( final int columnOrdinal )
-			throws SQLException
-	{
+	public boolean isCaseSensitive(final int columnOrdinal) throws SQLException {
 		return getColumn(columnOrdinal).getColumnDef().isCaseSensitive();
 	}
 
 	@Override
-	public boolean isCurrency( final int columnOrdinal ) throws SQLException
-	{
+	public boolean isCurrency(final int columnOrdinal) throws SQLException {
 		return getColumn(columnOrdinal).getColumnDef().isCurrency();
 	}
 
 	@Override
-	public boolean isDefinitelyWritable( final int columnOrdinal )
-			throws SQLException
-	{
+	public boolean isDefinitelyWritable(final int columnOrdinal)
+			throws SQLException {
 		return getColumn(columnOrdinal).getColumnDef().isDefinitelyWritable();
 	}
 
 	@Override
-	public int isNullable( final int columnOrdinal ) throws SQLException
-	{
+	public int isNullable(final int columnOrdinal) throws SQLException {
 		return getColumn(columnOrdinal).getColumnDef().getNullable();
 	}
 
 	@Override
-	public boolean isReadOnly( final int columnOrdinal ) throws SQLException
-	{
+	public boolean isReadOnly(final int columnOrdinal) throws SQLException {
 		return getColumn(columnOrdinal).getColumnDef().isReadOnly();
 	}
 
 	@Override
-	public boolean isSearchable( final int columnOrdinal ) throws SQLException
-	{
+	public boolean isSearchable(final int columnOrdinal) throws SQLException {
 		return getColumn(columnOrdinal).getColumnDef().isSearchable();
 	}
 
 	@Override
-	public boolean isSigned( final int columnOrdinal ) throws SQLException
-	{
+	public boolean isSigned(final int columnOrdinal) throws SQLException {
 		return getColumn(columnOrdinal).getColumnDef().isSigned();
 	}
 
 	@Override
-	public boolean isWrapperFor( final Class<?> iface ) throws SQLException
-	{
+	public boolean isWrapperFor(final Class<?> iface) throws SQLException {
 		return false;
 	}
 
 	@Override
-	public boolean isWritable( final int columnOrdinal ) throws SQLException
-	{
+	public boolean isWritable(final int columnOrdinal) throws SQLException {
 		return getColumn(columnOrdinal).getColumnDef().isWritable();
 	}
 
 	@Override
-	public <T> T unwrap( final Class<T> iface ) throws SQLException
-	{
+	public <T> T unwrap(final Class<T> iface) throws SQLException {
 		throw new SQLFeatureNotSupportedException();
 	}
 

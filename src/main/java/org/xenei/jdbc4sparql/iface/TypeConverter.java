@@ -61,6 +61,9 @@ public final class TypeConverter {
 	public static NodeValue getNodeValue(Object value) {
 		// add NodeValue types to SPARQLToJava class
 		// so building a node value is easier.
+		if (value == null) {
+			return null;
+		}
 		SPARQLToJava stj = getSPARQLType(value.getClass());
 		RDFDatatype dt = TypeMapper.getInstance().getTypeByName(stj.sparqlType);
 		LiteralLabel lit = null;

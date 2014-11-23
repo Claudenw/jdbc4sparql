@@ -19,50 +19,42 @@ package org.xenei.jdbc4sparql.impl;
 
 import org.xenei.jdbc4sparql.iface.NamespacedObject;
 
-public class NamespaceImpl implements NamespacedObject
-{
+public class NamespaceImpl implements NamespacedObject {
 	private final String namespace;
 	private final String localName;
 	private final int hashCode;
 
-	protected NamespaceImpl( String namespace, final String localName )
-	{
+	protected NamespaceImpl(String namespace, final String localName) {
 		this.namespace = namespace;
 		this.localName = localName;
-		if (!(namespace.endsWith("#") || namespace.endsWith("/")))
-		{
+		if (!(namespace.endsWith("#") || namespace.endsWith("/"))) {
 			namespace += namespace.contains("#") ? "/" : "#";
 		}
 		hashCode = NamespacedObject.Utils.hashCode(this);
 	}
 
 	@Override
-	public boolean equals( final Object o )
-	{
+	public boolean equals(final Object o) {
 		return NamespacedObject.Utils.equals(this, o);
 	}
 
 	@Override
-	public String getFQName()
-	{
+	public String getFQName() {
 		return namespace + localName;
 	}
 
 	@Override
-	public String getLocalName()
-	{
+	public String getLocalName() {
 		return localName;
 	}
 
 	@Override
-	public String getNamespace()
-	{
+	public String getNamespace() {
 		return namespace;
 	}
 
 	@Override
-	public int hashCode()
-	{
+	public int hashCode() {
 		return hashCode;
 	}
 

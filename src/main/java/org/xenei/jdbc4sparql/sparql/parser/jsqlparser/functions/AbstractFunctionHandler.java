@@ -13,51 +13,49 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 
-import org.xenei.jdbc4sparql.iface.ColumnName;
-import org.xenei.jdbc4sparql.iface.TableName;
+import org.xenei.jdbc4sparql.iface.ColumnDef;
+import org.xenei.jdbc4sparql.iface.name.ColumnName;
+import org.xenei.jdbc4sparql.iface.name.TableName;
+import org.xenei.jdbc4sparql.impl.virtual.VirtualCatalog;
 import org.xenei.jdbc4sparql.impl.virtual.VirtualSchema;
 import org.xenei.jdbc4sparql.impl.virtual.VirtualTable;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
+import org.xenei.jdbc4sparql.sparql.items.QueryColumnInfo;
 import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlExprVisitor;
 
-public abstract class AbstractFunctionHandler
-{
+public abstract class AbstractFunctionHandler {
 	protected SparqlQueryBuilder builder;
 	protected final SparqlExprVisitor exprVisitor;
 	protected final Stack<Expr> stack;
 	protected final TableName tblName;
 
-	public AbstractFunctionHandler( final SparqlQueryBuilder builder,
-			final Stack<Expr> stack )
-	{
+	public AbstractFunctionHandler(final SparqlQueryBuilder builder,
+			final Stack<Expr> stack) {
 		this.builder = builder;
 		this.stack = stack;
 		this.exprVisitor = new SparqlExprVisitor(builder,
 				SparqlQueryBuilder.REQUIRED);
-		tblName = new TableName(VirtualSchema.NAME, VirtualTable.NAME);
+		tblName = new TableName(VirtualCatalog.NAME, VirtualSchema.NAME,
+				VirtualTable.NAME);
 		builder.getTable(tblName);
-		;
 	}
 
-	protected IllegalArgumentException getNoArgumentEx( final Function func,
-			final String count )
-	{
+	protected IllegalArgumentException getNoArgumentEx(final Function func,
+			final String count) {
 		return new IllegalArgumentException(String.format(
 				"No arguments provided to %s function, %s expected", func
 						.getName().toUpperCase(), count));
 	}
 
-	protected IllegalArgumentException getToManyArgumentEx(
-			final Function func, final String count )
-	{
+	protected IllegalArgumentException getToManyArgumentEx(final Function func,
+			final String count) {
 		return new IllegalArgumentException(String.format(
 				"To many arguments provided to %s function, %s expected", func
 						.getName().toUpperCase(), count));
 	}
 
 	protected IllegalArgumentException getWrongArgumentCountEx(
-			final Function func, final String expected, final int count )
-	{
+			final Function func, final String expected, final int count) {
 		return new IllegalArgumentException(
 				String.format(
 						"Wrong number of arguments provided (%s) to %s function, %s expected",
@@ -71,48 +69,39 @@ public abstract class AbstractFunctionHandler
 	 * @return
 	 * @throws SQLException
 	 */
-	abstract public boolean handle( Function func ) throws SQLException;
+	abstract public ColumnDef handle(Function func) throws SQLException;
 
-	protected void handleExpr0( final Class<? extends ExprFunction0> clazz,
-			final Function func, final int type ) throws SQLException
-	{
+	protected ColumnDef handleExpr0(final Class<? extends ExprFunction0> clazz,
+			final Function func, final int type) throws SQLException {
 		final ExpressionList l = func.getParameters();
-		if (l != null)
-		{
+		if (l != null) {
 			throw getToManyArgumentEx(func, "zero");
 		}
-		try
-		{
+		try {
 			final ExprFunction0 expr = clazz.newInstance();
 			stack.push(expr);
 			final ColumnName colName = tblName.getColumnName(func.getName());
 			builder.registerFunction(colName, type);
 			builder.addVar(expr, colName);
-		}
-		catch (final InstantiationException e)
-		{
+			QueryColumnInfo qci = builder.getColumn(colName);
+			return qci.getColumn().getColumnDef();
+		} catch (final InstantiationException e) {
 			throw new IllegalStateException(e.getMessage(), e);
-		}
-		catch (final IllegalAccessException e)
-		{
+		} catch (final IllegalAccessException e) {
 			throw new IllegalStateException(e.getMessage(), e);
 		}
 	}
 
-	protected void handleExpr1( final Class<? extends ExprFunction1> clazz,
-			final Function func, final int type ) throws SQLException
-	{
+	protected ColumnDef handleExpr1(final Class<? extends ExprFunction1> clazz,
+			final Function func, final int type) throws SQLException {
 		final ExpressionList l = func.getParameters();
-		if (l == null)
-		{
+		if (l == null) {
 			throw getNoArgumentEx(func, "one");
 		}
-		if (l.getExpressions().size() > 1)
-		{
+		if (l.getExpressions().size() > 1) {
 			throw getToManyArgumentEx(func, "one");
 		}
-		try
-		{
+		try {
 			final Constructor<? extends ExprFunction1> c = clazz
 					.getConstructor(Expr.class);
 			final Expression expression = (Expression) l.getExpressions()
@@ -123,21 +112,15 @@ public abstract class AbstractFunctionHandler
 			final ColumnName colName = tblName.getColumnName(func.getName());
 			builder.registerFunction(colName, type);
 			builder.addVar(expr, colName);
-		}
-		catch (final NoSuchMethodException e)
-		{
+			QueryColumnInfo qci = builder.getColumn(colName);
+			return qci.getColumn().getColumnDef();
+		} catch (final NoSuchMethodException e) {
 			throw new IllegalArgumentException(e.getMessage(), e);
-		}
-		catch (final InstantiationException e)
-		{
+		} catch (final InstantiationException e) {
 			throw new IllegalStateException(e.getMessage(), e);
-		}
-		catch (final IllegalAccessException e)
-		{
+		} catch (final IllegalAccessException e) {
 			throw new IllegalStateException(e.getMessage(), e);
-		}
-		catch (final InvocationTargetException e)
-		{
+		} catch (final InvocationTargetException e) {
 			throw new IllegalStateException(e.getMessage(), e);
 		}
 	}

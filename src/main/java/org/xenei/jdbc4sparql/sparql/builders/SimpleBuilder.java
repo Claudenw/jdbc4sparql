@@ -42,12 +42,10 @@ import org.xenei.jdbc4sparql.impl.rdf.RdfTableDef;
 
 /**
  * A simple builder that builds tables for all subjects of [?x a rdfs:Class]
- * triples.
- * Columns for the tables are created from all predicates of all instances of
- * the class.
+ * triples. Columns for the tables are created from all predicates of all
+ * instances of the class.
  */
-public class SimpleBuilder implements SchemaBuilder
-{
+public class SimpleBuilder implements SchemaBuilder {
 	public static final String BUILDER_NAME = "Simple_Builder";
 	public static final String DESCRIPTION = "A simple schema builder that builds tables based on RDFS Class names";
 
@@ -62,21 +60,18 @@ public class SimpleBuilder implements SchemaBuilder
 	private static final String TABLE_SEGMENT = "%1$s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <%2$s> .";
 	protected static final String COLUMN_SEGMENT = "%1$s <%3$s> %2$s .";
 
-	public SimpleBuilder()
-	{
+	public SimpleBuilder() {
 	}
 
-	protected Map<String, String> addColumnDefs( final RdfCatalog catalog,
+	protected Map<String, String> addColumnDefs(final RdfCatalog catalog,
 			final RdfTableDef.Builder tableDefBuilder, final Resource tName,
-			final String tableQuerySegment )
-			{
+			final String tableQuerySegment) {
 		final Model model = catalog.getResource().getModel();
 		final Map<String, String> colNames = new LinkedHashMap<String, String>();
 		final List<QuerySolution> solns = catalog.executeQuery(String.format(
 				SimpleBuilder.COLUMN_QUERY, tName));
 
-		for (final QuerySolution soln : solns)
-		{
+		for (final QuerySolution soln : solns) {
 			final RdfColumnDef.Builder builder = new RdfColumnDef.Builder();
 			final Resource cName = soln.getResource("cName");
 			final String columnQuerySegment = String.format(
@@ -84,32 +79,27 @@ public class SimpleBuilder implements SchemaBuilder
 					cName.getURI());
 
 			// might be a duplicate name
-			if (colNames.containsKey(cName.getLocalName()))
-			{
+			if (colNames.containsKey(cName.getLocalName())) {
 				int i = 2;
-				while (colNames.containsKey(cName.getLocalName() + i))
-				{
+				while (colNames.containsKey(cName.getLocalName() + i)) {
 					i++;
 				}
 				colNames.put(cName.getLocalName() + i, columnQuerySegment);
-			}
-			else
-			{
+			} else {
 				colNames.put(cName.getLocalName(), columnQuerySegment);
 			}
 			final int scale = calculateSize(catalog, tableQuerySegment,
 					columnQuerySegment);
 			builder.setType(Types.VARCHAR)
-			.setNullable(DatabaseMetaData.columnNullable)
-			.setScale(scale).setReadOnly(true);
+					.setNullable(DatabaseMetaData.columnNullable)
+					.setScale(scale).setReadOnly(true);
 			tableDefBuilder.addColumnDef(builder.build(model));
 		}
 		return colNames;
-			}
+	}
 
-	protected int calculateSize( final RdfCatalog catalog,
-			final String tableQS, final String columnQS )
-	{
+	protected int calculateSize(final RdfCatalog catalog, final String tableQS,
+			final String columnQS) {
 		final String queryStr = String.format(
 				"SELECT distinct ?col WHERE { %s %s }",
 				String.format(tableQS, "?tbl"),
@@ -119,28 +109,23 @@ public class SimpleBuilder implements SchemaBuilder
 		final Iterator<Integer> iter = WrappedIterator.create(
 				results.iterator()).mapWith(new Map1<QuerySolution, Integer>() {
 
-					@Override
-					public Integer map1( final QuerySolution o )
-					{
-						final RDFNode node = o.get("col");
-						if (node == null)
-						{
-							return 0;
-						}
-						if (node.isLiteral())
-						{
-							return TypeConverter.getJavaValue(node.asLiteral())
-									.toString().length();
-						}
-						return node.toString().length();
-					}
-				});
+			@Override
+			public Integer map1(final QuerySolution o) {
+				final RDFNode node = o.get("col");
+				if (node == null) {
+					return 0;
+				}
+				if (node.isLiteral()) {
+					return TypeConverter.getJavaValue(node.asLiteral())
+							.toString().length();
+				}
+				return node.toString().length();
+			}
+		});
 		int retval = 0;
-		while (iter.hasNext())
-		{
+		while (iter.hasNext()) {
 			final Integer i = iter.next();
-			if (retval < i)
-			{
+			if (retval < i) {
 				retval = i;
 			}
 		}
@@ -149,50 +134,45 @@ public class SimpleBuilder implements SchemaBuilder
 	}
 
 	@Override
-	public Set<RdfTable> getTables( final RdfSchema schema )
-	{
+	public Set<RdfTable> getTables(final RdfSchema schema) {
 		final RdfCatalog catalog = schema.getCatalog();
 		final Model model = schema.getResource().getModel();
 		final HashSet<RdfTable> retval = new HashSet<RdfTable>();
 		final List<QuerySolution> solns = catalog
 				.executeQuery(SimpleBuilder.TABLE_QUERY);
-		for (final QuerySolution soln : solns)
-		{
+		for (final QuerySolution soln : solns) {
 			final Resource tName = soln.getResource("tName");
 			final RdfTableDef.Builder builder = new RdfTableDef.Builder();
 			final String tableQuerySegment = String.format(
 					SimpleBuilder.TABLE_SEGMENT, "%1$s", tName.getURI());
 			final Map<String, String> colNames = addColumnDefs(catalog,
 					builder, tName, tableQuerySegment);
-			if (colNames.size() > 0)
-			{
+			if (colNames.size() > 0) {
 				final RdfTableDef tableDef = builder.build(model);
 				final RdfTable.Builder tblBuilder = new RdfTable.Builder()
-				.setTableDef(tableDef)
-				.addQuerySegment(tableQuerySegment)
-				.setName(tName.getLocalName()).setSchema(schema)
-				.setRemarks("created by " + SimpleBuilder.BUILDER_NAME);
+						.setTableDef(tableDef)
+						.addQuerySegment(tableQuerySegment)
+						.setName(tName.getLocalName()).setSchema(schema)
+						.setRemarks("created by " + SimpleBuilder.BUILDER_NAME);
 
-				if (colNames.keySet().size() != tableDef.getColumnCount())
-				{
+				if (colNames.keySet().size() != tableDef.getColumnCount()) {
 					throw new IllegalArgumentException(
 							String.format(
 									"There must be %s column names, %s provided",
 									tableDef.getColumnCount(), colNames
-									.keySet().size()));
+											.keySet().size()));
 				}
 				final Iterator<String> iter = colNames.keySet().iterator();
 				int i = 0;
-				while (iter.hasNext())
-				{
+				while (iter.hasNext()) {
 
 					final String cName = iter.next();
 					tblBuilder
-					.setColumn(i, cName)
-					.getColumn(i)
-					.addQuerySegment(colNames.get(cName))
-					.setRemarks(
-							"created by " + SimpleBuilder.BUILDER_NAME);
+							.setColumn(i, cName)
+							.getColumn(i)
+							.addQuerySegment(colNames.get(cName))
+							.setRemarks(
+									"created by " + SimpleBuilder.BUILDER_NAME);
 					i++;
 				}
 				retval.add(tblBuilder.build(model));

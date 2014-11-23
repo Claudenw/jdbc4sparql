@@ -28,96 +28,86 @@ import org.slf4j.LoggerFactory;
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.ColumnDef;
-import org.xenei.jdbc4sparql.iface.ColumnName;
 import org.xenei.jdbc4sparql.iface.NameFilter;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.TableDef;
-import org.xenei.jdbc4sparql.iface.TableName;
+import org.xenei.jdbc4sparql.iface.name.ColumnName;
+import org.xenei.jdbc4sparql.iface.name.TableName;
 import org.xenei.jdbc4sparql.impl.AbstractTable;
 import org.xenei.jdbc4sparql.impl.NameUtils;
+import org.xenei.jdbc4sparql.impl.virtual.VirtualCatalog;
+import org.xenei.jdbc4sparql.impl.virtual.VirtualSchema;
+import org.xenei.jdbc4sparql.sparql.items.QueryColumnInfo;
 
-public class SparqlView extends AbstractTable
-{
-	class RenamedColumn implements Column
-	{
+public class SparqlView extends AbstractTable {
+	class RenamedColumn implements Column {
 
 		QueryColumnInfo columnInfo;
 
-		RenamedColumn( final QueryColumnInfo columnInfo )
-		{
+		RenamedColumn(final QueryColumnInfo columnInfo) {
 			this.columnInfo = columnInfo;
 		}
 
 		@Override
-		public Catalog getCatalog()
-		{
+		public Catalog getCatalog() {
 			return getTable().getCatalog();
 		}
 
 		@Override
-		public ColumnDef getColumnDef()
-		{
+		public ColumnDef getColumnDef() {
 			return columnInfo.getColumn().getColumnDef();
 		}
 
 		@Override
-		public ColumnName getName()
-		{
+		public ColumnName getName() {
 			return columnInfo.getName();
 		}
 
 		@Override
-		public String getQuerySegmentFmt()
-		{
+		public String getQuerySegmentFmt() {
 			return columnInfo.getColumn().getQuerySegmentFmt();
 		}
 
 		@Override
-		public String getRemarks()
-		{
+		public String getRemarks() {
 			return columnInfo.getColumn().getRemarks();
 		}
 
 		@Override
-		public Schema getSchema()
-		{
+		public Schema getSchema() {
 			return getTable().getSchema();
 		}
 
 		@Override
-		public String getSPARQLName()
-		{
+		public String getSPARQLName() {
 			return columnInfo.getName().getSPARQLName();
 		}
 
 		@Override
-		public String getSQLName()
-		{
+		public String getSQLName() {
 			return columnInfo.getName().getDBName();
 		}
 
 		@Override
-		public Table getTable()
-		{
+		public Table getTable() {
 			return SparqlView.this;
 		}
 
 		@Override
-		public boolean hasQuerySegments()
-		{
+		public boolean hasQuerySegments() {
 			return columnInfo.getColumn().hasQuerySegments();
 		}
 
 		@Override
-		public boolean isOptional()
-		{
+		public boolean isOptional() {
 			return columnInfo.isOptional();
 		}
 
 	}
 
 	private final static Logger LOG = LoggerFactory.getLogger(SparqlView.class);
+	private final Schema schema;
 	private final TableName name;
 	private final SparqlQueryBuilder builder;
 
@@ -125,54 +115,47 @@ public class SparqlView extends AbstractTable
 
 	public static final String NAME_SPACE = "http://org.xenei.jdbc4sparql/vocab#View";
 
-	public SparqlView( final SparqlQueryBuilder builder )
-	{
+	public SparqlView(final SparqlQueryBuilder builder) {
 		SparqlView.LOG.debug(builder.toString());
 		this.builder = builder;
-		this.name = builder.getCatalog().getViewSchema().getName()
-				.getTableName(NameUtils.createUUIDName());
+		Catalog catalog = builder.getCatalog(VirtualCatalog.NAME);
+		this.schema = catalog.getSchema(VirtualSchema.NAME);
+		this.name = schema.getName().getTableName(NameUtils.createUUIDName());
 	}
 
 	@Override
-	public void delete()
-	{
+	public void delete() {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public NameFilter<Column> findColumns( final String columnNamePattern )
-	{
+	public NameFilter<Column> findColumns(final String columnNamePattern) {
 		return new NameFilter<Column>(columnNamePattern, WrappedIterator
 				.create(builder.getResultColumns().iterator()).mapWith(
 						new Map1<QueryColumnInfo, Column>() {
 
 							@Override
-							public Column map1( final QueryColumnInfo o )
-							{
+							public Column map1(final QueryColumnInfo o) {
 								return new RenamedColumn(o);
 							}
 						}));
 	}
 
 	@Override
-	public Catalog getCatalog()
-	{
+	public Catalog getCatalog() {
 		return builder.getCatalog();
 	}
 
 	@Override
-	public List<Column> getColumnList()
-	{
-		if (columns == null)
-		{
+	public List<Column> getColumnList() {
+		if (columns == null) {
 			columns = WrappedIterator
 					.create(builder.getResultColumns().iterator())
 					.mapWith(new Map1<QueryColumnInfo, Column>() {
 
 						@Override
-						public Column map1( final QueryColumnInfo o )
-						{
+						public Column map1(final QueryColumnInfo o) {
 							return new RenamedColumn(o);
 						}
 					}).toList();
@@ -181,68 +164,57 @@ public class SparqlView extends AbstractTable
 	}
 
 	@Override
-	public TableName getName()
-	{
+	public TableName getName() {
 		return name;
 	}
 
 	@Override
-	public String getQuerySegmentFmt()
-	{
+	public String getQuerySegmentFmt() {
 		return null;
 	}
 
 	@Override
-	public String getRemarks()
-	{
+	public String getRemarks() {
 		return "SPARQL View";
 	}
 
-	public SparqlResultSet getResultSet() throws SQLException
-	{
+	public SparqlResultSet getResultSet() throws SQLException {
 		return new SparqlResultSet(this, builder.build());
 	}
 
 	@Override
-	public Schema getSchema()
-	{
-		return builder.getCatalog().getViewSchema();
+	public Schema getSchema() {
+		return schema;
 	}
 
 	@Override
-	public String getSPARQLName()
-	{
+	public String getSPARQLName() {
 		return NameUtils.getSPARQLName(this);
 	}
 
 	@Override
-	public String getSQLName()
-	{
+	public String getSQLName() {
 		return NameUtils.getDBName(this);
 	}
 
 	@Override
-	public Table getSuperTable()
-	{
+	public Table getSuperTable() {
 		return null;
 	}
 
 	@Override
-	public TableDef getTableDef()
-	{
+	public TableDef getTableDef() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public String getType()
-	{
+	public String getType() {
 		return "VIEW";
 	}
 
 	@Override
-	public boolean hasQuerySegments()
-	{
+	public boolean hasQuerySegments() {
 		return false;
 	}
 

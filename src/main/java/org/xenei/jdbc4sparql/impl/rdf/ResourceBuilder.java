@@ -10,21 +10,17 @@ import org.xenei.jena.entities.EntityManager;
 import org.xenei.jena.entities.EntityManagerFactory;
 import org.xenei.jena.entities.annotations.Subject;
 
-public class ResourceBuilder
-{
-	public static String getFQName( final Class<?> nsClass )
-	{
+public class ResourceBuilder {
+	public static String getFQName(final Class<?> nsClass) {
 		final String s = ResourceBuilder.getNamespace(nsClass);
 
 		return s.substring(0, s.length() - 1);
 	}
 
-	public static String getNamespace( final Class<?> nsClass )
-	{
+	public static String getNamespace(final Class<?> nsClass) {
 		final EntityManager em = EntityManagerFactory.getEntityManager();
 		final Subject subject = em.getSubject(nsClass);
-		if (subject == null)
-		{
+		if (subject == null) {
 			throw new IllegalArgumentException(String.format(
 					"%s is does not have a subject annotation", nsClass));
 		}
@@ -33,18 +29,14 @@ public class ResourceBuilder
 
 	private final Model model;
 
-	public ResourceBuilder( final Model model )
-	{
-		if (model == null)
-		{
+	public ResourceBuilder(final Model model) {
+		if (model == null) {
 			throw new IllegalArgumentException("Model may not be null");
 		}
 		this.model = model;
 	}
 
-	public Property getProperty( final Class<?> typeClass,
-			final String localName )
-	{
+	public Property getProperty(final Class<?> typeClass, final String localName) {
 		return model.createProperty(ResourceBuilder.getNamespace(typeClass),
 				localName);
 	}
@@ -54,25 +46,20 @@ public class ResourceBuilder
 	 *
 	 * @return
 	 */
-	public Resource getResource( final String fqName, final Class<?> typeClass )
-	{
+	public Resource getResource(final String fqName, final Class<?> typeClass) {
 		final Resource type = model.createResource(ResourceBuilder
 				.getFQName(typeClass));
 
 		Resource retval;
-		if (hasResource(fqName))
-		{
+		if (hasResource(fqName)) {
 			retval = model.getResource(fqName);
-			if (!retval.hasProperty(RDF.type, type))
-			{
+			if (!retval.hasProperty(RDF.type, type)) {
 				throw new IllegalStateException(String.format(
 						"Object %s is of type %s not %s", retval.getURI(),
 						retval.getRequiredProperty(RDF.type).getResource()
-						.getURI(), type.getURI()));
+								.getURI(), type.getURI()));
 			}
-		}
-		else
-		{
+		} else {
 			retval = model.createResource(fqName, type);
 		}
 		return retval;
@@ -84,13 +71,11 @@ public class ResourceBuilder
 	 * @param obj
 	 * @return
 	 */
-	public boolean hasResource( final NamespacedObject obj )
-	{
+	public boolean hasResource(final NamespacedObject obj) {
 		return hasResource(obj.getFQName());
 	}
 
-	public boolean hasResource( final String fqName )
-	{
+	public boolean hasResource(final String fqName) {
 		return model.contains(model.createResource(fqName), null);
 	}
 }

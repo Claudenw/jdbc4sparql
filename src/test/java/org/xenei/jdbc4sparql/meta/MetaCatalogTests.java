@@ -18,8 +18,7 @@ import org.junit.Test;
 import org.xenei.jdbc4sparql.config.MemDatasetProducer;
 import org.xenei.jdbc4sparql.iface.DatasetProducer;
 
-public class MetaCatalogTests
-{
+public class MetaCatalogTests {
 	private DatasetProducer dpProducer;
 	private final String queryString = "PREFIX  rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> "
 			+ "SELECT ?tbl ?colName  WHERE { ?tbl a <http://org.xenei.jdbc4sparql/entity/Table> ;"
@@ -30,67 +29,59 @@ public class MetaCatalogTests
 			+ " }";
 
 	@Before
-	public void setup()
-	{
+	public void setup() {
 		dpProducer = new MemDatasetProducer();
 		MetaCatalogBuilder.getInstance(dpProducer);
 	}
 
 	@After
-	public void tearDown() throws Exception
-	{
+	public void tearDown() throws Exception {
 		dpProducer.close();
 	}
 
 	@Test
-	public void testAttributesTable()
-	{
+	public void testAttributesTable() {
 		final String[] names = { "TYPE_CAT", "TYPE_SCHEM", "TYPE_NAME",
 				"ATTR_NAME", "DATA_TYPE", "ATTR_TYPE_NAME", "ATTR_SIZE",
 				"DECIMAL_DIGITS", "NUM_PREC_RADIX", "NULLABLE", "REMARKS",
 				"ATTR_DEF", "SQL_DATA_TYPE", "SQL_DATETIME_SUB",
 				"CHAR_OCTET_LENGTH", "ORDINAL_POSITION", "IS_NULLABLE",
 				"SCOPE_CATALOG", "SCOPE_SCHEMA", "SCOPE_TABLE",
-		"SOURCE_DATA_TYPE" };
+				"SOURCE_DATA_TYPE" };
 		verifyNames(MetaCatalogBuilder.ATTRIBUTES_TABLE, names);
 	}
 
 	@Test
-	public void testBestRowTable()
-	{
+	public void testBestRowTable() {
 		final String[] names = { "SCOPE", "COLUMN_NAME", "DATA_TYPE",
 				"TYPE_NAME", "COLUMN_SIZE", "BUFFER_LENGTH", "DECIMAL_DIGITS",
-		"PSEUDO_COLUMN" };
+				"PSEUDO_COLUMN" };
 		verifyNames(MetaCatalogBuilder.BEST_ROW_TABLE, names);
 	}
 
 	@Test
-	public void testCatalogsTable()
-	{
+	public void testCatalogsTable() {
 		final String[] names = { "TABLE_CAT" };
 		verifyNames(MetaCatalogBuilder.CATALOGS_TABLE, names);
 	}
 
 	@Test
-	public void testClientInfoTable()
-	{
+	public void testClientInfoTable() {
 		final String[] names = { "NAME", "MAX_LEN", "DEFAULT_VALUE",
-		"DESCRIPTION" };
+				"DESCRIPTION" };
 		verifyNames(MetaCatalogBuilder.CLIENT_INFO_TABLE, names);
 	}
 
 	@Test
-	public void testColumnPriviligesTable()
-	{
+	public void testColumnPriviligesTable() {
 		final String[] names = { "TABLE_CAT", "TABLE_SCHEM", "TABLE_NAME",
 				"COLUMN_NAME", "GRANTOR", "GRANTEE", "PRIVILEGE",
-		"IS_GRANTABLE" };
+				"IS_GRANTABLE" };
 		verifyNames(MetaCatalogBuilder.COLUMN_PRIVILIGES_TABLE, names);
 	}
 
 	@Test
-	public void testColumnsTable()
-	{
+	public void testColumnsTable() {
 		final String[] names = { "TABLE_CAT", "TABLE_SCHEM", "TABLE_NAME",
 				"COLUMN_NAME", "DATA_TYPE", "TYPE_NAME", "COLUMN_SIZE",
 				"BUFFER_LENGTH", "DECIMAL_DIGITS", "NUM_PREC_RADIX",
@@ -102,19 +93,17 @@ public class MetaCatalogTests
 	}
 
 	@Test
-	public void testExportedKeysTable()
-	{
+	public void testExportedKeysTable() {
 		final String[] names = { "PKTABLE_CAT", "PKTABLE_SCHEM",
 				"PKTABLE_NAME", "PKCOLUMN_NAME", "FKTABLE_CAT",
 				"FKTABLE_SCHEM", "FKTABLE_NAME", "FKCOLUMN_NAME", "KEY_SEQ",
 				"UPDATE_RULE", "DELETE_RULE", "FK_NAME", "PK_NAME",
-		"DEFERRABILITY" };
+				"DEFERRABILITY" };
 		verifyNames(MetaCatalogBuilder.EXPORTED_KEYS_TABLE, names);
 	}
 
 	@Test
-	public void testFunctionColumnsTable()
-	{
+	public void testFunctionColumnsTable() {
 		final String[] names = { "FUNCTION_CAT", "FUNCTION_SCHEM",
 				"FUNCTION_NAME", "COLUMN_NAME", "COLUMN_TYPE", "DATA_TYPE",
 				"TYPE_NAME", "PRECISION", "LENGTH", "SCALE", "RADIX",
@@ -124,27 +113,24 @@ public class MetaCatalogTests
 	}
 
 	@Test
-	public void testFunctionsTable()
-	{
+	public void testFunctionsTable() {
 		final String[] names = { "FUNCTION_CAT", "FUNCTION_SCHEM",
 				"FUNCTION_NAME", "REMARKS", "FUNCTION_TYPE", "SPECIFIC_NAME" };
 		verifyNames(MetaCatalogBuilder.FUNCTIONS_TABLE, names);
 	}
 
 	@Test
-	public void testImportedKeysTable()
-	{
+	public void testImportedKeysTable() {
 		final String[] names = { "PKTABLE_CAT", "PKTABLE_SCHEM",
 				"PKTABLE_NAME", "PKCOLUMN_NAME", "FKTABLE_CAT",
 				"FKTABLE_SCHEM", "FKTABLE_NAME", "FKCOLUMN_NAME", "KEY_SEQ",
 				"UPDATE_RULE", "DELETE_RULE", "FK_NAME", "PK_NAME",
-		"DEFERRABILITY" };
+				"DEFERRABILITY" };
 		verifyNames(MetaCatalogBuilder.IMPORTED_KEYS_TABLE, names);
 	}
 
 	@Test
-	public void testIndexInfoTable()
-	{
+	public void testIndexInfoTable() {
 		final String[] names = { "TABLE_CAT", "TABLE_SCHEM", "TABLE_NAME",
 				"NON_UNIQUE", "INDEX_QUALIFIER", "INDEX_NAME", "TYPE",
 				"ORDINAL_POSITION", "COLUMN_NAME", "ASC_OR_DESC",
@@ -153,16 +139,14 @@ public class MetaCatalogTests
 	}
 
 	@Test
-	public void testPrimaryKeyTable()
-	{
+	public void testPrimaryKeyTable() {
 		final String[] names = { "TABLE_CAT", "TABLE_SCHEM", "TABLE_NAME",
 				"COLUMN_NAME", "KEY_SEQ", "PK_NAME" };
 		verifyNames(MetaCatalogBuilder.PRIMARY_KEY_TABLE, names);
 	}
 
 	@Test
-	public void testProcedureColumnsTable()
-	{
+	public void testProcedureColumnsTable() {
 		final String[] names = { "PROCEDURE_CAT", "PROCEDURE_SCHEM",
 				"PROCEDURE_NAME", "COLUMN_NAME", "COLUMN_TYPE", "DATA_TYPE",
 				"TYPE_NAME", "PRECISION", "LENGTH", "SCALE", "RADIX",
@@ -173,8 +157,7 @@ public class MetaCatalogTests
 	}
 
 	@Test
-	public void testProceduresTable()
-	{
+	public void testProceduresTable() {
 
 		final String[] names = { "PROCEDURE_CAT", "PROCEDURE_SCHEM",
 				"PROCEDURE_NAME", "FUTURE1", "FUTURE2", "FUTURE3", "REMARKS",
@@ -183,39 +166,34 @@ public class MetaCatalogTests
 	}
 
 	@Test
-	public void testSchemasTable()
-	{
+	public void testSchemasTable() {
 		final String[] names = { "TABLE_SCHEM", "TABLE_CATALOG" };
 		verifyNames(MetaCatalogBuilder.SCHEMAS_TABLE, names);
 	}
 
 	@Test
-	public void testSuperTablesTable()
-	{
+	public void testSuperTablesTable() {
 		final String[] names = { "TABLE_CAT", "TABLE_SCHEM", "TABLE_NAME",
-		"SUPERTABLE_NAME" };
+				"SUPERTABLE_NAME" };
 		verifyNames(MetaCatalogBuilder.SUPER_TABLES_TABLE, names);
 	}
 
 	@Test
-	public void testSuperTypesTable()
-	{
+	public void testSuperTypesTable() {
 		final String[] names = { "TYPE_CAT", "TYPE_SCHEM", "TYPE_NAME",
 				"SUPERTYPE_CAT", "SUPERTYPE_SCHEM", "SUPERTYPE_NAME" };
 		verifyNames(MetaCatalogBuilder.SUPER_TYPES_TABLE, names);
 	}
 
 	@Test
-	public void testTablePrivilegesTable()
-	{
+	public void testTablePrivilegesTable() {
 		final String[] names = { "TABLE_CAT", "TABLE_SCHEM", "TABLE_NAME",
 				"GRANTOR", "GRANTEE", "PRIVILEGE", "IS_GRANTABLE" };
 		verifyNames(MetaCatalogBuilder.TABLE_PRIVILEGES_TABLE, names);
 	}
 
 	@Test
-	public void testTablesTable()
-	{
+	public void testTablesTable() {
 		final String[] names = { "TABLE_CAT", "TABLE_SCHEM", "TABLE_NAME",
 				"TABLE_TYPE", "REMARKS", "TYPE_CAT", "TYPE_SCHEM", "TYPE_NAME",
 				"SELF_REFERENCING_COL_NAME", "REF_GENERATION" };
@@ -223,15 +201,13 @@ public class MetaCatalogTests
 	}
 
 	@Test
-	public void testTableTypesTable()
-	{
+	public void testTableTypesTable() {
 		final String[] names = { "TABLE_TYPE" };
 		verifyNames(MetaCatalogBuilder.TABLE_TYPES_TABLE, names);
 	}
 
 	@Test
-	public void testTypeInfoTableTable()
-	{
+	public void testTypeInfoTableTable() {
 		final String[] names = { "TYPE_NAME", "DATA_TYPE", "PRECISION",
 				"LITERAL_PREFIX", "LITERAL_SUFFIX", "CREATE_PARAMS",
 				"NULLABLE", "CASE_SENSITIVE", "SEARCHABLE",
@@ -242,35 +218,31 @@ public class MetaCatalogTests
 	}
 
 	@Test
-	public void testUDTTable()
-	{
+	public void testUDTTable() {
 		final String[] names = { "TYPE_CAT", "TYPE_SCHEM", "TYPE_NAME",
 				"CLASS_NAME", "DATA_TYPE", "REMARKS", "BASE_TYPE" };
 		verifyNames(MetaCatalogBuilder.UDT_TABLES, names);
 	}
 
 	@Test
-	public void testVersionColumnsTable()
-	{
+	public void testVersionColumnsTable() {
 		final String[] names = { "SCOPE", "COLUMN_NAME", "DATA_TYPE",
 				"TYPE_NAME", "COLUMN_SIZE", "BUFFER_LENGTH", "DECIMAL_DIGITS",
-		"PSEUDO_COLUMN" };
+				"PSEUDO_COLUMN" };
 		verifyNames(MetaCatalogBuilder.VERSION_COLUMNS_TABLE, names);
 	}
 
 	@Test
-	public void testXrefTable()
-	{
+	public void testXrefTable() {
 		final String[] names = { "PKTABLE_CAT", "PKTABLE_SCHEM",
 				"PKTABLE_NAME", "PKCOLUMN_NAME", "FKTABLE_CAT",
 				"FKTABLE_SCHEM", "FKTABLE_NAME", "FKCOLUMN_NAME", "KEY_SEQ",
 				"UPDATE_RULE", "DELETE_RULE", "FK_NAME", "PK_NAME",
-		"DEFERRABILITY" };
+				"DEFERRABILITY" };
 		verifyNames(MetaCatalogBuilder.XREF_TABLE, names);
 	}
 
-	private void verifyNames( final String tblName, final String[] colNames )
-	{
+	private void verifyNames(final String tblName, final String[] colNames) {
 		final List<String> names = Arrays.asList(colNames);
 		int count = 0;
 		final Query query = QueryFactory.create(String.format(queryString,
@@ -278,12 +250,10 @@ public class MetaCatalogTests
 
 		final QueryExecution qexec = QueryExecutionFactory.create(query,
 				dpProducer.getMetaDatasetUnionModel());
-		try
-		{
+		try {
 			final ResultSet results = qexec.execSelect();
 
-			for (; results.hasNext();)
-			{
+			for (; results.hasNext();) {
 				count++;
 				final QuerySolution soln = results.nextSolution();
 				final Literal l = soln.getLiteral("colName");
@@ -292,9 +262,7 @@ public class MetaCatalogTests
 			}
 			Assert.assertEquals(names.size(), count);
 
-		}
-		finally
-		{
+		} finally {
 			qexec.close();
 		}
 	}

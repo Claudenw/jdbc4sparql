@@ -23,9 +23,8 @@ import java.util.List;
 import org.xenei.jena.entities.ResourceWrapper;
 import org.xenei.jena.entities.annotations.Subject;
 
-@Subject( namespace = "http://org.xenei.jdbc4sparql/entity/Key#" )
-public interface Key extends Comparator<Object[]>, ResourceWrapper
-{
+@Subject(namespace = "http://org.xenei.jdbc4sparql/entity/Key#")
+public interface Key extends Comparator<Object[]>, ResourceWrapper {
 
 	public String getId();
 

@@ -15,45 +15,42 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.NameFilter;
-import org.xenei.jdbc4sparql.iface.SchemaName;
+import org.xenei.jdbc4sparql.iface.name.SchemaName;
 import org.xenei.jena.entities.EntityManagerFactory;
 
-public class TableBuilderTest
-{
+public class TableBuilderTest {
 
 	private Model model;
 	private RdfTableDef tableDef;
 	private RdfSchema mockSchema;
 
 	@Before
-	public void setUp() throws Exception
-	{
+	public void setUp() throws Exception {
 		model = ModelFactory.createDefaultModel();
 		final RdfTableDef.Builder builder = new RdfTableDef.Builder()
-		.addColumnDef(
-				RdfColumnDef.Builder.getStringBuilder().build(model))
+				.addColumnDef(
+						RdfColumnDef.Builder.getStringBuilder().build(model))
 				.addColumnDef(
 						RdfColumnDef.Builder.getIntegerBuilder().build(model));
 		tableDef = builder.build(model);
 		mockSchema = Mockito.mock(RdfSchema.class);
 		Mockito.when(mockSchema.getResource()).thenReturn(
 				model.createResource("http://example.com/mockSchema"));
-		Mockito.when(mockSchema.getName()).thenReturn(new SchemaName("schema"));
+		Mockito.when(mockSchema.getName()).thenReturn(
+				new SchemaName("catalog", "schema"));
 	}
 
 	@After
-	public void tearDown() throws Exception
-	{
+	public void tearDown() throws Exception {
 		model.close();
 	}
 
 	@Test
-	public void testDefaultBuilder() throws Exception
-	{
+	public void testDefaultBuilder() throws Exception {
 		final RdfTable.Builder builder = new RdfTable.Builder()
-		.setTableDef(tableDef).setName("table")
-		.setColumn(0, "StringCol").setColumn(1, "IntCol")
-		.setSchema(mockSchema).setType("testing Table");
+				.setTableDef(tableDef).setName("table")
+				.setColumn(0, "StringCol").setColumn(1, "IntCol")
+				.setSchema(mockSchema).setType("testing Table");
 		final RdfTable table = builder.build(model);
 
 		Assert.assertEquals(2, table.getColumnCount());

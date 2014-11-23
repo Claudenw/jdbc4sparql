@@ -49,8 +49,7 @@ import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.DatasetProducer;
 import org.xenei.jdbc4sparql.meta.MetaCatalogBuilder;
 
-public class J4SDatabaseMetaDataQueryTests
-{
+public class J4SDatabaseMetaDataQueryTests {
 	private J4SConnection connection;
 	private J4SDatabaseMetaData metadata;
 	private DatasetProducer dp;
@@ -58,14 +57,13 @@ public class J4SDatabaseMetaDataQueryTests
 			.getLogger(J4SDatabaseMetaDataQueryTests.class);
 
 	@Test
-	@Ignore( "used for debelopment analysis only" )
-	public void arbitraryQuery() throws Exception
-	{
+	@Ignore("used for debelopment analysis only")
+	public void arbitraryQuery() throws Exception {
 		final String eol = System.getProperty("line.separator");
 		final String queryStr =
-				// "SELECT DISTINCT  ?TABLE_CAT ?TABLE_SCHEM ?TABLE_NAME ?COLUMN_NAME ?DATA_TYPE ?TYPE_NAME ?COLUMN_SIZE ?BUFFER_LENGTH ?DECIMAL_DIGITS ?NUM_PREC_RADIX ?NULLABLE ?REMARKS ?COLUMN_DEF ?SQL_DATA_TYPE ?SQL_DATETIME_SUB ?CHAR_OCTET_LENGTH ?ORDINAL_POSITION ?IS_NULLABLE ?SCOPE_CATLOG ?SCOPE_SCHEMA ?SCOPE_TABLE ?SOURCE_DATA_TYPE ?IS_AUTOINCREMENT"
-				// +eol+
-				"SELECT DISTINCT ?Schema·Columns ?TABLE_CAT ?Schema·Columns·TABLE_CAT"
+		// "SELECT DISTINCT  ?TABLE_CAT ?TABLE_SCHEM ?TABLE_NAME ?COLUMN_NAME ?DATA_TYPE ?TYPE_NAME ?COLUMN_SIZE ?BUFFER_LENGTH ?DECIMAL_DIGITS ?NUM_PREC_RADIX ?NULLABLE ?REMARKS ?COLUMN_DEF ?SQL_DATA_TYPE ?SQL_DATETIME_SUB ?CHAR_OCTET_LENGTH ?ORDINAL_POSITION ?IS_NULLABLE ?SCOPE_CATLOG ?SCOPE_SCHEMA ?SCOPE_TABLE ?SOURCE_DATA_TYPE ?IS_AUTOINCREMENT"
+		// +eol+
+		"SELECT DISTINCT ?Schema·Columns ?TABLE_CAT ?Schema·Columns·TABLE_CAT"
 				+ eol
 				+ "		WHERE"
 				+ eol
@@ -224,16 +222,13 @@ public class J4SDatabaseMetaDataQueryTests
 		final Query q = QueryFactory.create(queryStr);
 		final Model model = dp.getMetaDatasetUnionModel();
 		final QueryExecution qexec = QueryExecutionFactory.create(q, model);
-		try
-		{
+		try {
 			final List<QuerySolution> retval = WrappedIterator.create(
 					qexec.execSelect()).toList();
 			Assert.assertTrue(retval.size() > 0);
-			for (final QuerySolution qs : retval)
-			{
+			for (final QuerySolution qs : retval) {
 				final Iterator<String> iter = qs.varNames();
-				while (iter.hasNext())
-				{
+				while (iter.hasNext()) {
 					final String field = iter.next();
 					System.out.print(String.format("%s[%s] ", field,
 							qs.get(field)));
@@ -241,28 +236,21 @@ public class J4SDatabaseMetaDataQueryTests
 				System.out.println();
 			}
 
-		}
-		catch (final Exception e)
-		{
+		} catch (final Exception e) {
 			J4SDatabaseMetaDataQueryTests.LOG.error(
 					"Error executing local query: " + e.getMessage(), e);
 			throw e;
-		}
-		finally
-		{
+		} finally {
 			qexec.close();
 		}
 	}
 
-	private void columnChecking( final String tableName,
-			final String[] columnNames ) throws SQLException
-	{
+	private void columnChecking(final String tableName,
+			final String[] columnNames) throws SQLException {
 		final ResultSet rs = metadata.getColumns(MetaCatalogBuilder.LOCAL_NAME,
 				MetaCatalogBuilder.SCHEMA_NAME, tableName, null);
-		try
-		{
-			for (int i = 0; i < columnNames.length; i++)
-			{
+		try {
+			for (int i = 0; i < columnNames.length; i++) {
 				Assert.assertTrue("column " + i + " of table " + tableName
 						+ " missing", rs.next());
 				Assert.assertEquals(MetaCatalogBuilder.LOCAL_NAME,
@@ -270,23 +258,19 @@ public class J4SDatabaseMetaDataQueryTests
 				Assert.assertEquals(MetaCatalogBuilder.SCHEMA_NAME,
 						rs.getString(2)); // TABLE_SCHEM
 				Assert.assertEquals(tableName, rs.getString(3)); // TABLE_NAME
-				if (!columnNames[i].equals("reserved"))
-				{
+				if (!columnNames[i].equals("reserved")) {
 					Assert.assertEquals(columnNames[i], rs.getString(4)); // COLUMN_NAME
 				}
 			}
 			Assert.assertFalse("Extra column found in table " + tableName,
 					rs.next());
-		}
-		finally
-		{
+		} finally {
 			rs.close();
 		}
 	}
 
 	@Before
-	public void setup() throws Exception
-	{
+	public void setup() throws Exception {
 		LoggingConfig.setConsole(Level.DEBUG);
 		LoggingConfig.setRootLogger(Level.INFO);
 		LoggingConfig.setLogger("com.hp.hpl.jena.", Level.INFO);
@@ -302,8 +286,7 @@ public class J4SDatabaseMetaDataQueryTests
 		dp = new MemDatasetProducer();
 		final Catalog cat = MetaCatalogBuilder.getInstance(dp);
 
-		if (J4SDatabaseMetaDataQueryTests.LOG.isDebugEnabled())
-		{
+		if (J4SDatabaseMetaDataQueryTests.LOG.isDebugEnabled()) {
 			dp.getMetaDatasetUnionModel().write(
 					new FileOutputStream("/tmp/cat.ttl"), "TURTLE");
 		}
@@ -312,21 +295,19 @@ public class J4SDatabaseMetaDataQueryTests
 	}
 
 	@Test
-	public void testAttributesDef() throws SQLException
-	{
+	public void testAttributesDef() throws SQLException {
 		final String[] names = { "TYPE_CAT", "TYPE_SCHEM", "TYPE_NAME",
 				"ATTR_NAME", "DATA_TYPE", "ATTR_TYPE_NAME", "ATTR_SIZE",
 				"DECIMAL_DIGITS", "NUM_PREC_RADIX", "NULLABLE", "REMARKS",
 				"ATTR_DEF", "SQL_DATA_TYPE", "SQL_DATETIME_SUB",
 				"CHAR_OCTET_LENGTH", "ORDINAL_POSITION", "IS_NULLABLE",
 				"SCOPE_CATALOG", "SCOPE_SCHEMA", "SCOPE_TABLE",
-		"SOURCE_DATA_TYPE" };
+				"SOURCE_DATA_TYPE" };
 		columnChecking(MetaCatalogBuilder.ATTRIBUTES_TABLE, names);
 	}
 
 	@Test
-	public void testBestRowIdentifierDef() throws SQLException
-	{
+	public void testBestRowIdentifierDef() throws SQLException {
 		final String[] names = { "SCOPE", "COLUMN_NAME", "DATA_TYPE",
 				"TYPE_NAME", "COLUMN_SIZE", "BUFFER_LENGTH", "DECIMAL_DIGITS",
 				"PSEUDO_COLUMN", };
@@ -334,37 +315,31 @@ public class J4SDatabaseMetaDataQueryTests
 	}
 
 	@Test
-	public void testCatalogsDef() throws SQLException
-	{
+	public void testCatalogsDef() throws SQLException {
 		final String[] names = { "TABLE_CAT", };
 		columnChecking(MetaCatalogBuilder.CATALOGS_TABLE, names);
 
 		final ResultSet rs = metadata.getCatalogs();
-		try
-		{
+		try {
 			Assert.assertTrue(rs.first());
 			Assert.assertEquals("METADATA", rs.getString("TABLE_CAT"));
 			Assert.assertTrue(rs.next());
 			Assert.assertEquals("test", rs.getString("TABLE_CAT"));
 			Assert.assertFalse(rs.next());
-		}
-		finally
-		{
+		} finally {
 			rs.close();
 		}
 	}
 
 	@Test
-	public void testClientInfoPropertiesDef() throws SQLException
-	{
+	public void testClientInfoPropertiesDef() throws SQLException {
 		final String[] names = { "NAME", "MAX_LEN", "DEFAULT_VALUE",
 				"DESCRIPTION", };
 		columnChecking(MetaCatalogBuilder.CLIENT_INFO_TABLE, names);
 	}
 
 	@Test
-	public void testColumnPrivilegesDef() throws SQLException
-	{
+	public void testColumnPrivilegesDef() throws SQLException {
 		final String[] names = { "TABLE_CAT", "TABLE_SCHEM", "TABLE_NAME",
 				"COLUMN_NAME", "GRANTOR", "GRANTEE", "PRIVILEGE",
 				"IS_GRANTABLE", };
@@ -372,8 +347,7 @@ public class J4SDatabaseMetaDataQueryTests
 	}
 
 	@Test
-	public void testColumnsDef() throws SQLException
-	{
+	public void testColumnsDef() throws SQLException {
 		final String[] names = { "TABLE_CAT", "TABLE_SCHEM", "TABLE_NAME",
 				"COLUMN_NAME", "DATA_TYPE", "TYPE_NAME", "COLUMN_SIZE",
 				"BUFFER_LENGTH", "DECIMAL_DIGITS", "NUM_PREC_RADIX",
@@ -384,30 +358,23 @@ public class J4SDatabaseMetaDataQueryTests
 
 		connection.setCatalog(MetaCatalogBuilder.LOCAL_NAME);
 		final Statement stmt = connection.createStatement();
-		try
-		{
+		try {
 			Assert.assertTrue(stmt
 					.execute("select tbl.* from Schema.Columns tbl"));
 			final ResultSet rs = stmt.getResultSet();
-			try
-			{
+			try {
 				verifyNames(rs, names);
-			}
-			finally
-			{
+			} finally {
 				rs.close();
 			}
-		}
-		finally
-		{
+		} finally {
 			stmt.close();
 		}
 
 	}
 
 	@Test
-	public void testCrossReferenceDef() throws SQLException
-	{
+	public void testCrossReferenceDef() throws SQLException {
 		final String[] names = { "PKTABLE_CAT", "PKTABLE_SCHEM",
 				"PKTABLE_NAME", "PKCOLUMN_NAME", "FKTABLE_CAT",
 				"FKTABLE_SCHEM", "FKTABLE_NAME", "FKCOLUMN_NAME", "KEY_SEQ",
@@ -417,8 +384,7 @@ public class J4SDatabaseMetaDataQueryTests
 	}
 
 	@Test
-	public void testExportedKeysDef() throws SQLException
-	{
+	public void testExportedKeysDef() throws SQLException {
 		final String[] names = { "PKTABLE_CAT", "PKTABLE_SCHEM",
 				"PKTABLE_NAME", "PKCOLUMN_NAME", "FKTABLE_CAT",
 				"FKTABLE_SCHEM", "FKTABLE_NAME", "FKCOLUMN_NAME", "KEY_SEQ",
@@ -428,8 +394,7 @@ public class J4SDatabaseMetaDataQueryTests
 	}
 
 	@Test
-	public void testFunctionColumnsDef() throws SQLException
-	{
+	public void testFunctionColumnsDef() throws SQLException {
 		final String[] names = { "FUNCTION_CAT", "FUNCTION_SCHEM",
 				"FUNCTION_NAME", "COLUMN_NAME", "COLUMN_TYPE", "DATA_TYPE",
 				"TYPE_NAME", "PRECISION", "LENGTH", "SCALE", "RADIX",
@@ -439,8 +404,7 @@ public class J4SDatabaseMetaDataQueryTests
 	}
 
 	@Test
-	public void testFunctionsDef() throws SQLException
-	{
+	public void testFunctionsDef() throws SQLException {
 		final String[] names = { "FUNCTION_CAT", "FUNCTION_SCHEM",
 				"FUNCTION_NAME", "REMARKS", "FUNCTION_TYPE", "SPECIFIC_NAME",
 
@@ -449,8 +413,7 @@ public class J4SDatabaseMetaDataQueryTests
 	}
 
 	@Test
-	public void testImportedKeysDef() throws SQLException
-	{
+	public void testImportedKeysDef() throws SQLException {
 		final String[] names = { "PKTABLE_CAT", "PKTABLE_SCHEM",
 				"PKTABLE_NAME", "PKCOLUMN_NAME", "FKTABLE_CAT",
 				"FKTABLE_SCHEM", "FKTABLE_NAME", "FKCOLUMN_NAME", "KEY_SEQ",
@@ -460,8 +423,7 @@ public class J4SDatabaseMetaDataQueryTests
 	}
 
 	@Test
-	public void testIndexInfoDef() throws SQLException
-	{
+	public void testIndexInfoDef() throws SQLException {
 		final String[] names = { "TABLE_CAT", "TABLE_SCHEM", "TABLE_NAME",
 				"NON_UNIQUE", "INDEX_QUALIFIER", "INDEX_NAME", "TYPE",
 				"ORDINAL_POSITION", "COLUMN_NAME", "ASC_OR_DESC",
@@ -470,8 +432,7 @@ public class J4SDatabaseMetaDataQueryTests
 	}
 
 	@Test
-	public void testProcedureColumnsDef() throws SQLException
-	{
+	public void testProcedureColumnsDef() throws SQLException {
 		final String[] names = { "PROCEDURE_CAT", "PROCEDURE_SCHEM",
 				"PROCEDURE_NAME", "COLUMN_NAME", "COLUMN_TYPE", "DATA_TYPE",
 				"TYPE_NAME", "PRECISION", "LENGTH", "SCALE", "RADIX",
@@ -519,8 +480,7 @@ public class J4SDatabaseMetaDataQueryTests
 	// }
 
 	@Test
-	public void testProceduresDef() throws SQLException
-	{
+	public void testProceduresDef() throws SQLException {
 		final String[] names = { "PROCEDURE_CAT", "PROCEDURE_SCHEM",
 				"PROCEDURE_NAME", "reserved", "reserved", "reserved",
 				"REMARKS", "PROCEDURE_TYPE", "SPECIFIC_NAME", };
@@ -528,79 +488,60 @@ public class J4SDatabaseMetaDataQueryTests
 	}
 
 	@Test
-	public void testSchemasDef() throws SQLException
-	{
+	public void testSchemasDef() throws SQLException {
 		final String[] names = { "TABLE_SCHEM", "TABLE_CATALOG", };
 		columnChecking(MetaCatalogBuilder.SCHEMAS_TABLE, names);
 
 		ResultSet rs = metadata.getSchemas(null, null);
-		try
-		{
+		try {
 			Assert.assertTrue(rs.first());
 			String cat = null;
 			String schema = null;
-			while (!rs.isAfterLast())
-			{
-				if (cat == null)
-				{
+			while (!rs.isAfterLast()) {
+				if (cat == null) {
 					cat = rs.getString("TABLE_CATALOG");
 					schema = rs.getString("TABLE_SCHEM");
-				}
-				else if (!cat.equals(rs.getString("TABLE_CATALOG")))
-				{
+				} else if (!cat.equals(rs.getString("TABLE_CATALOG"))) {
 					// catalog changed
 					Assert.assertTrue("Catalog out of sequence",
 							cat.compareTo(rs.getString("TABLE_CATALOG")) < 0);
 					cat = rs.getString("TABLE_CATALOG");
 					schema = rs.getString("TABLE_SCHEM");
-				}
-				else
-				{
+				} else {
 					Assert.assertEquals(cat, rs.getString("TABLE_CATALOG"));
 					Assert.assertTrue("Schema out of sequence",
 							schema.compareTo(rs.getString("TABLE_SCHEM")) < 0);
 				}
 				rs.next();
 			}
-		}
-		finally
-		{
+		} finally {
 			rs.close();
 		}
 
 		rs = metadata.getSchemas(null, "Schema");
-		try
-		{
+		try {
 			Assert.assertTrue(rs.first());
 			Assert.assertEquals("Schema", rs.getString("TABLE_SCHEM"));
 			Assert.assertFalse("returned too many schemas", rs.next());
-		}
-		finally
-		{
+		} finally {
 			rs.close();
 		}
 
 		rs = metadata.getSchemas(null, "Sch_ma");
-		try
-		{
+		try {
 			Assert.assertTrue(rs.first());
 			Assert.assertEquals("Schema", rs.getString("TABLE_SCHEM"));
 			Assert.assertFalse("returned too many schemas", rs.next());
-		}
-		finally
-		{
+		} finally {
 			rs.close();
 		}
 
 		rs = metadata.getSchemas(null, "Sc%a");
-		try
-		{
+		try {
 			Assert.assertTrue(rs.first());
 			Assert.assertEquals("Schema", rs.getString("TABLE_SCHEM"));
 			Assert.assertFalse("returned too many schemas", rs.next());
-		}
-		finally
-		{
+		} finally {
 			rs.close();
 		}
 	}
@@ -652,24 +593,21 @@ public class J4SDatabaseMetaDataQueryTests
 	// }
 
 	@Test
-	public void testSuperTypesDef() throws Exception
-	{
+	public void testSuperTypesDef() throws Exception {
 		final String[] names = { "TYPE_CAT", "TYPE_SCHEM", "TYPE_NAME",
 				"SUPERTYPE_CAT", "SUPERTYPE_SCHEM", "SUPERTYPE_NAME", };
 		columnChecking(MetaCatalogBuilder.SUPER_TYPES_TABLE, names);
 	}
 
 	@Test
-	public void testTablePrivilegesDef() throws SQLException
-	{
+	public void testTablePrivilegesDef() throws SQLException {
 		final String[] names = { "TABLE_CAT", "TABLE_SCHEM", "TABLE_NAME",
 				"GRANTOR", "GRANTEE", "PRIVILEGE", "IS_GRANTABLE", };
 		columnChecking(MetaCatalogBuilder.TABLE_PRIVILEGES_TABLE, names);
 	}
 
 	@Test
-	public void testTablesDef() throws SQLException
-	{
+	public void testTablesDef() throws SQLException {
 		final String[] colNmes = { "TABLE_CAT", "TABLE_SCHEM", "TABLE_NAME",
 				"TABLE_TYPE", "REMARKS", "TYPE_CAT", "TYPE_SCHEM", "TYPE_NAME",
 				"SELF_REFERENCING_COL_NAME", "REF_GENERATION", };
@@ -685,49 +623,38 @@ public class J4SDatabaseMetaDataQueryTests
 
 		// read entire column suite
 		ResultSet rs = metadata.getTables(null, null, null, null);
-		try
-		{
+		try {
 			Assert.assertTrue(rs.first());
 			String cat = null;
 			String schema = null;
 			String table = null;
 			String type = null;
-			while (!rs.isAfterLast())
-			{
-				if (type == null)
-				{
+			while (!rs.isAfterLast()) {
+				if (type == null) {
 					cat = rs.getString("TABLE_CAT");
 					schema = rs.getString("TABLE_SCHEM");
 					table = rs.getString("TABLE_NAME");
 					type = rs.getString("TABLE_TYPE");
-				}
-				else if (!type.equals(rs.getString("TABLE_TYPE")))
-				{
+				} else if (!type.equals(rs.getString("TABLE_TYPE"))) {
 					Assert.assertTrue("Table type out of sequence",
 							type.compareTo(rs.getString("TABLE_TYPE")) < 0);
 					type = rs.getString("TABLE_TYPE");
 					cat = rs.getString("TABLE_CAT");
 					schema = rs.getString("TABLE_SCHEM");
 					table = rs.getString("TABLE_NAME");
-				}
-				else if (!cat.equals(rs.getString("TABLE_CAT")))
-				{
+				} else if (!cat.equals(rs.getString("TABLE_CAT"))) {
 					// catalog changed
 					Assert.assertTrue("Catalog out of sequence",
 							cat.compareTo(rs.getString("TABLE_CAT")) < 0);
 					cat = rs.getString("TABLE_CAT");
 					schema = rs.getString("TABLE_SCHEM");
 					table = rs.getString("TABLE_NAME");
-				}
-				else if (!schema.equals(rs.getString("TABLE_SCHEM")))
-				{
+				} else if (!schema.equals(rs.getString("TABLE_SCHEM"))) {
 					Assert.assertTrue("Schema out of sequence",
 							schema.compareTo(rs.getString("TABLE_SCHEMA")) < 0);
 					schema = rs.getString("TABLE_SCHEM");
 					table = rs.getString("TABLE_NAME");
-				}
-				else if (!table.equals(rs.getString("TABLE_NAME")))
-				{
+				} else if (!table.equals(rs.getString("TABLE_NAME"))) {
 					Assert.assertTrue("Table out of sequence",
 							table.compareTo(rs.getString("TABLE_NAME")) < 0);
 					table = rs.getString("TABLE_NAME");
@@ -739,19 +666,15 @@ public class J4SDatabaseMetaDataQueryTests
 				Assert.assertEquals(table, rs.getString("TABLE_NAME"));
 				rs.next();
 			}
-		}
-		finally
-		{
+		} finally {
 			rs.close();
 		}
 
 		// test metadata tables
 		rs = metadata.getTables(MetaCatalogBuilder.LOCAL_NAME,
 				MetaCatalogBuilder.SCHEMA_NAME, null, null);
-		try
-		{
-			for (final String name : tblNames)
-			{
+		try {
+			for (final String name : tblNames) {
 				Assert.assertTrue("No next when looking for " + name, rs.next());
 				Assert.assertEquals(MetaCatalogBuilder.TABLE_TYPE,
 						rs.getString("TABLE_TYPE"));
@@ -765,9 +688,7 @@ public class J4SDatabaseMetaDataQueryTests
 			}
 			Assert.assertFalse("Extra column after all names were found",
 					rs.next());
-		}
-		finally
-		{
+		} finally {
 			rs.close();
 		}
 
@@ -775,11 +696,9 @@ public class J4SDatabaseMetaDataQueryTests
 		rs = metadata.getTables(MetaCatalogBuilder.LOCAL_NAME,
 				MetaCatalogBuilder.SCHEMA_NAME, "Columns",
 				new String[] { MetaCatalogBuilder.TABLE_TYPE });
-		try
-		{
+		try {
 			Assert.assertTrue(rs.first());
-			while (!rs.isAfterLast())
-			{
+			while (!rs.isAfterLast()) {
 				Assert.assertEquals(MetaCatalogBuilder.TABLE_TYPE,
 						rs.getString("TABLE_TYPE"));
 				Assert.assertEquals(MetaCatalogBuilder.LOCAL_NAME,
@@ -789,9 +708,7 @@ public class J4SDatabaseMetaDataQueryTests
 				Assert.assertEquals("Columns", rs.getString("TABLE_NAME"));
 				rs.next();
 			}
-		}
-		finally
-		{
+		} finally {
 			rs.close();
 		}
 
@@ -799,11 +716,9 @@ public class J4SDatabaseMetaDataQueryTests
 		rs = metadata.getTables(MetaCatalogBuilder.LOCAL_NAME,
 				MetaCatalogBuilder.SCHEMA_NAME, "Col_mns",
 				new String[] { MetaCatalogBuilder.TABLE_TYPE });
-		try
-		{
+		try {
 			Assert.assertTrue(rs.first());
-			while (!rs.isAfterLast())
-			{
+			while (!rs.isAfterLast()) {
 				Assert.assertEquals(MetaCatalogBuilder.TABLE_TYPE,
 						rs.getString("TABLE_TYPE"));
 				Assert.assertEquals(MetaCatalogBuilder.LOCAL_NAME,
@@ -813,9 +728,7 @@ public class J4SDatabaseMetaDataQueryTests
 				Assert.assertEquals("Columns", rs.getString("TABLE_NAME"));
 				rs.next();
 			}
-		}
-		finally
-		{
+		} finally {
 			rs.close();
 		}
 
@@ -823,11 +736,9 @@ public class J4SDatabaseMetaDataQueryTests
 		rs = metadata.getTables(MetaCatalogBuilder.LOCAL_NAME,
 				MetaCatalogBuilder.SCHEMA_NAME, "Col%ns",
 				new String[] { MetaCatalogBuilder.TABLE_TYPE });
-		try
-		{
+		try {
 			Assert.assertTrue(rs.first());
-			while (!rs.isAfterLast())
-			{
+			while (!rs.isAfterLast()) {
 				Assert.assertEquals(MetaCatalogBuilder.TABLE_TYPE,
 						rs.getString("TABLE_TYPE"));
 				Assert.assertEquals(MetaCatalogBuilder.LOCAL_NAME,
@@ -837,47 +748,37 @@ public class J4SDatabaseMetaDataQueryTests
 				Assert.assertEquals("Columns", rs.getString("TABLE_NAME"));
 				rs.next();
 			}
-		}
-		finally
-		{
+		} finally {
 			rs.close();
 		}
 
 		// test multi table type query
 		rs = metadata.getTables(null, null, null, new String[] {
 				MetaCatalogBuilder.TABLE_TYPE, "TABLE" });
-		try
-		{
+		try {
 			// just read the first entry to ensure that the query works. There
 			// are no table types of TABLE
 			Assert.assertTrue(rs.first());
-		}
-		finally
-		{
+		} finally {
 			rs.close();
 		}
 	}
 
 	@Test
-	public void testTableTypesDef() throws SQLException
-	{
+	public void testTableTypesDef() throws SQLException {
 		final String[] names = { "TABLE_TYPE", };
 		columnChecking(MetaCatalogBuilder.TABLE_TYPES_TABLE, names);
 		final ResultSet rs = metadata.getTableTypes();
-		try
-		{
+		try {
 			Assert.assertNotNull(rs);
 			Assert.assertTrue(rs.next());
-		}
-		finally
-		{
+		} finally {
 			rs.close();
 		}
 	}
 
 	@Test
-	public void testTypeInfoDef() throws SQLException
-	{
+	public void testTypeInfoDef() throws SQLException {
 		final String[] names = { "TYPE_NAME", "DATA_TYPE", "PRECISION",
 				"LITERAL_PREFIX", "LITERAL_SUFFIX", "CREATE_PARAMS",
 				"NULLABLE", "CASE_SENSITIVE", "SEARCHABLE",
@@ -888,35 +789,30 @@ public class J4SDatabaseMetaDataQueryTests
 	}
 
 	@Test
-	public void testUDTDef() throws SQLException
-	{
+	public void testUDTDef() throws SQLException {
 		final String[] names = { "TYPE_CAT", "TYPE_SCHEM", "TYPE_NAME",
 				"CLASS_NAME", "DATA_TYPE", "REMARKS", "BASE_TYPE", };
 		columnChecking(MetaCatalogBuilder.UDT_TABLES, names);
 	}
 
 	@Test
-	public void testVersionColumnsDef() throws SQLException
-	{
+	public void testVersionColumnsDef() throws SQLException {
 		final String[] names = { "SCOPE", "COLUMN_NAME", "DATA_TYPE",
 				"TYPE_NAME", "COLUMN_SIZE", "BUFFER_LENGTH", "DECIMAL_DIGITS",
 				"PSEUDO_COLUMN", };
 		columnChecking(MetaCatalogBuilder.VERSION_COLUMNS_TABLE, names);
 	}
 
-	private void verifyNames( final ResultSet rs, final String[] names )
-			throws SQLException
-	{
+	private void verifyNames(final ResultSet rs, final String[] names)
+			throws SQLException {
 		final ResultSetMetaData rsmd = rs.getMetaData();
 		Assert.assertEquals(names.length, rsmd.getColumnCount());
 		Assert.assertTrue("No records", rs.first());
-		for (int i = 0; i < names.length; i++)
-		{
+		for (int i = 0; i < names.length; i++) {
 			System.out.println(String.format("%s %s", i,
 					rsmd.getColumnName(i + 1)));
 		}
-		for (int i = 0; i < names.length; i++)
-		{
+		for (int i = 0; i < names.length; i++) {
 			Assert.assertEquals(names[i], rsmd.getColumnName(i + 1));
 			Assert.assertEquals(rs.getString(i + 1), rs.getString(names[i]));
 		}

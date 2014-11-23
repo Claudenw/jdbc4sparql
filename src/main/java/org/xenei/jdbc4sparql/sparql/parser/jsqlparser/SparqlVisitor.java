@@ -39,57 +39,48 @@ import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 
-public class SparqlVisitor implements StatementVisitor
-{
+public class SparqlVisitor implements StatementVisitor {
 	private final SparqlQueryBuilder sparqlQueryBuilder;
 	private static Logger LOG = LoggerFactory.getLogger(SparqlVisitor.class);
 
-	public SparqlVisitor( final Map<String, Catalog> catalogs,
+	public SparqlVisitor(final Map<String, Catalog> catalogs,
 			final SparqlParser parser, final RdfCatalog catalog,
-			final Schema schema )
-	{
+			final Schema schema) {
 		sparqlQueryBuilder = new SparqlQueryBuilder(catalogs, parser, catalog,
 				schema);
 	}
 
-	public SparqlQueryBuilder getBuilder()
-	{
+	public SparqlQueryBuilder getBuilder() {
 		return sparqlQueryBuilder;
 	}
 
 	@Override
-	public void visit( final CreateTable createTable )
-	{
+	public void visit(final CreateTable createTable) {
 		throw new UnsupportedOperationException("CREATE TABLE");
 	}
 
 	@Override
-	public void visit( final Delete delete )
-	{
+	public void visit(final Delete delete) {
 		throw new UnsupportedOperationException("DELETE");
 	}
 
 	@Override
-	public void visit( final Drop drop )
-	{
+	public void visit(final Drop drop) {
 		throw new UnsupportedOperationException("DROP");
 	}
 
 	@Override
-	public void visit( final Insert insert )
-	{
+	public void visit(final Insert insert) {
 		throw new UnsupportedOperationException("INSERT");
 	}
 
 	@Override
-	public void visit( final Replace replace )
-	{
+	public void visit(final Replace replace) {
 		throw new UnsupportedOperationException("REPLACE");
 	}
 
 	@Override
-	public void visit( final Select select )
-	{
+	public void visit(final Select select) {
 		SparqlVisitor.LOG.debug("visit: {}", select);
 		final SparqlSelectVisitor v = new SparqlSelectVisitor(
 				sparqlQueryBuilder);
@@ -97,14 +88,12 @@ public class SparqlVisitor implements StatementVisitor
 	}
 
 	@Override
-	public void visit( final Truncate truncate )
-	{
+	public void visit(final Truncate truncate) {
 		throw new UnsupportedOperationException("TRUNCATE");
 	}
 
 	@Override
-	public void visit( final Update update )
-	{
+	public void visit(final Update update) {
 		throw new UnsupportedOperationException("UPDATE");
 	}
 }

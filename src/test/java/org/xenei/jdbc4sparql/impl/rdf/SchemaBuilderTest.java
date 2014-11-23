@@ -7,42 +7,39 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
+import static org.mockito.Mockito.*;
 import org.xenei.jdbc4sparql.iface.Schema;
 
-public class SchemaBuilderTest
-{
+public class SchemaBuilderTest {
 
 	private Model model;
 	private RdfTable.Builder tableBldr;
 	private RdfCatalog mockCatalog;
 
 	@Before
-	public void setUp() throws Exception
-	{
+	public void setUp() throws Exception {
 		model = ModelFactory.createDefaultModel();
 		final RdfTableDef.Builder builder = new RdfTableDef.Builder()
-		.addColumnDef(
-				RdfColumnDef.Builder.getStringBuilder().build(model))
+				.addColumnDef(
+						RdfColumnDef.Builder.getStringBuilder().build(model))
 				.addColumnDef(
 						RdfColumnDef.Builder.getIntegerBuilder().build(model));
 		tableBldr = new RdfTable.Builder().setName("testTable")
 				.setTableDef(builder.build(model)).setColumn(0, "StringCol")
 				.setColumn(1, "IntCol");
-		mockCatalog = Mockito.mock(RdfCatalog.class);
-		Mockito.when(mockCatalog.getResource()).thenReturn(
+		mockCatalog = mock(RdfCatalog.class);
+		when(mockCatalog.getResource()).thenReturn(
 				model.createResource("http://example.com/mockCatalog"));
+		when(mockCatalog.getShortName()).thenReturn("mockCatalog");
 	}
 
 	@After
-	public void tearDown() throws Exception
-	{
+	public void tearDown() throws Exception {
 		model.close();
 	}
 
 	@Test
-	public void testAddTable() throws Exception
-	{
+	public void testAddTable() throws Exception {
 		final RdfSchema.Builder builder = new RdfSchema.Builder().setName(
 				"schema").setCatalog(mockCatalog);
 
@@ -58,8 +55,7 @@ public class SchemaBuilderTest
 	}
 
 	@Test
-	public void testAddTableTableRead()
-	{
+	public void testAddTableTableRead() {
 		final RdfSchema.Builder builder = new RdfSchema.Builder().setName(
 				"schema").setCatalog(mockCatalog);
 
@@ -74,8 +70,7 @@ public class SchemaBuilderTest
 	}
 
 	@Test
-	public void testDefault()
-	{
+	public void testDefault() {
 		final RdfSchema.Builder builder = new RdfSchema.Builder().setName(
 				"schema").setCatalog(mockCatalog);
 

@@ -30,11 +30,9 @@ import org.xenei.jdbc4sparql.sparql.builders.SchemaBuilder;
 import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 import org.xenei.jdbc4sparql.utils.SQLNameUtil;
 
-public class J4SUrl
-{
+public class J4SUrl {
 	/**
-	 * URLs of the form
-	 * jdbc:J4S:<configlocation>
+	 * URLs of the form jdbc:J4S:<configlocation>
 	 * jdbc:J4S?catalog=cat:<configlocation>
 	 * jdbc:J4S?catalog=cat&builder=builderclass:<sparqlendpint>
 	 */
@@ -42,8 +40,8 @@ public class J4SUrl
 	public static final String TYPE_SPARQL = "sparql";
 	public static final String TYPE_CONFIG = "config";
 	public static final String[] ARGS = { J4SPropertyNames.CATALOG_PROPERTY,
-		J4SPropertyNames.TYPE_PROPERTY, J4SPropertyNames.BUILDER_PROPERTY,
-		J4SPropertyNames.PARSER_PROPERTY };
+			J4SPropertyNames.TYPE_PROPERTY, J4SPropertyNames.BUILDER_PROPERTY,
+			J4SPropertyNames.PARSER_PROPERTY };
 
 	private URI endpoint;
 	private SparqlParser parser;
@@ -51,46 +49,35 @@ public class J4SUrl
 	private final Properties properties;
 
 	/**
-	 * Parses are URL of the form
-	 * jdbc:j4s[?ARG=Val[&ARG=VAL...]]:[URI]
+	 * Parses are URL of the form jdbc:j4s[?ARG=Val[&ARG=VAL...]]:[URI]
 	 *
 	 * @param urlStr
 	 */
-	public J4SUrl( final String urlStr )
-	{
+	public J4SUrl(final String urlStr) {
 		this.properties = new Properties();
 		final String jdbc = "jdbc:";
 		int pos = 0;
-		if (!doComp(urlStr, pos, jdbc))
-		{
+		if (!doComp(urlStr, pos, jdbc)) {
 			throw new IllegalArgumentException("Not a JDBC URL");
 		}
 		pos += jdbc.length();
-		if (!doComp(urlStr, pos, J4SUrl.SUB_PROTOCOL))
-		{
+		if (!doComp(urlStr, pos, J4SUrl.SUB_PROTOCOL)) {
 			throw new IllegalArgumentException("Not a J4S JDBC URL");
 		}
 		pos += J4SUrl.SUB_PROTOCOL.length();
-		if (urlStr.charAt(pos) == '?')
-		{
+		if (urlStr.charAt(pos) == '?') {
 			parseJ4SArgs(urlStr, pos + 1);
-		}
-		else if (urlStr.charAt(pos) == ':')
-		{
+		} else if (urlStr.charAt(pos) == ':') {
 			parseJ4SEndpoint(urlStr, pos + 1);
-		}
-		else
-		{
+		} else {
 			throw new IllegalArgumentException(
 					"Not a valid J4S JDBC URL -- missing endpoint");
 		}
 
 		// configure catalog name
-		if (StringUtils.isBlank(getCatalog()))
-		{
+		if (StringUtils.isBlank(getCatalog())) {
 			String catalogName = getEndpoint().getHost();
-			if (!StringUtils.isBlank(catalogName))
-			{
+			if (!StringUtils.isBlank(catalogName)) {
 				catalogName = SQLNameUtil.clean(catalogName);
 				properties.setProperty(J4SPropertyNames.CATALOG_PROPERTY,
 						catalogName);
@@ -98,9 +85,7 @@ public class J4SUrl
 		}
 	}
 
-	private boolean doComp( final String target, final int pos,
-			final String comp )
-	{
+	private boolean doComp(final String target, final int pos, final String comp) {
 		target.substring(pos, pos + comp.length());
 		return ((pos + comp.length()) < target.length())
 				&& target.substring(pos, pos + comp.length()).equalsIgnoreCase(
@@ -112,8 +97,7 @@ public class J4SUrl
 	 *
 	 * @return the SchemaBuilder
 	 */
-	public SchemaBuilder getBuilder()
-	{
+	public SchemaBuilder getBuilder() {
 		return builder;
 	}
 
@@ -122,8 +106,7 @@ public class J4SUrl
 	 *
 	 * @return the default catalog name or build one from URL name
 	 */
-	public String getCatalog()
-	{
+	public String getCatalog() {
 		return properties.getProperty(J4SPropertyNames.CATALOG_PROPERTY, "");
 	}
 
@@ -134,19 +117,17 @@ public class J4SUrl
 	 *
 	 * @return the URI for the endpoint.
 	 */
-	public URI getEndpoint()
-	{
+	public URI getEndpoint() {
 		return endpoint;
 	}
 
 	/**
-	 * Get the language for the specified type.
-	 * Will return null for SPARQL and CONFIG
+	 * Get the language for the specified type. Will return null for SPARQL and
+	 * CONFIG
 	 *
 	 * @return
 	 */
-	public Lang getLang()
-	{
+	public Lang getLang() {
 		return RDFLanguages.nameToLang(getType());
 	}
 
@@ -157,8 +138,7 @@ public class J4SUrl
 	 *
 	 * @return the sparql parser.
 	 */
-	public SparqlParser getParser()
-	{
+	public SparqlParser getParser() {
 		return parser;
 	}
 
@@ -167,8 +147,7 @@ public class J4SUrl
 	 *
 	 * @return The properties.
 	 */
-	public Properties getProperties()
-	{
+	public Properties getProperties() {
 		return new Properties(properties);
 	}
 
@@ -176,13 +155,11 @@ public class J4SUrl
 	 * Get the type (format) of the endpoint URI.
 	 *
 	 * May be Sparql, Config, or one of the language types supported by Apache
-	 * Jena.
-	 * e.g. TTL, RDF/XML, N3, etc.
+	 * Jena. e.g. TTL, RDF/XML, N3, etc.
 	 *
 	 * @return The type of the endpoint URI.
 	 */
-	public String getType()
-	{
+	public String getType() {
 		return properties.getProperty(J4SPropertyNames.TYPE_PROPERTY,
 				J4SUrl.TYPE_CONFIG);
 	}
@@ -196,8 +173,7 @@ public class J4SUrl
 	 * @param urlStr
 	 * @param startPos
 	 */
-	private void parseJ4SArgs( final String urlStr, final int startPos )
-	{
+	private void parseJ4SArgs(final String urlStr, final int startPos) {
 
 		int pos = startPos;
 		// (arg)=(val)(:|&)
@@ -205,68 +181,53 @@ public class J4SUrl
 				.compile("(([a-zA-Z]+)(\\=([^:\\&]+))?([:|\\&])).+");
 		Matcher matcher = pattern.matcher(urlStr.substring(startPos));
 
-		while (matcher.matches())
-		{
+		while (matcher.matches()) {
 			final String arg = matcher.group(2);
 			boolean found = false;
-			for (final String validArg : J4SUrl.ARGS)
-			{
+			for (final String validArg : J4SUrl.ARGS) {
 				found |= validArg.equalsIgnoreCase(arg);
 			}
-			if (!found)
-			{
+			if (!found) {
 				throw new IllegalArgumentException(
 						"Not a valid J4S JDBC URL -- '" + arg
-						+ "' is not a recognized argument");
+								+ "' is not a recognized argument");
 			}
 			properties.put(arg,
 					StringUtils.defaultIfBlank(matcher.group(4), ""));
 			pos += matcher.group(1).length();
-			if (":".equals(matcher.group(5)))
-			{
+			if (":".equals(matcher.group(5))) {
 				matcher = pattern.matcher("");
-			}
-			else
-			{
+			} else {
 				matcher = pattern.matcher(urlStr.substring(pos));
 			}
 		}
 
 		// check for valid type value and make sure it is upper case.
 		// valid type is a Jena Lang.
-		if (properties.containsKey(J4SPropertyNames.TYPE_PROPERTY))
-		{
+		if (properties.containsKey(J4SPropertyNames.TYPE_PROPERTY)) {
 			final String type = properties
 					.getProperty(J4SPropertyNames.TYPE_PROPERTY);
-			if (type.equalsIgnoreCase(J4SUrl.TYPE_SPARQL))
-			{
+			if (type.equalsIgnoreCase(J4SUrl.TYPE_SPARQL)) {
 				properties.setProperty(J4SPropertyNames.TYPE_PROPERTY,
 						J4SUrl.TYPE_SPARQL);
-			}
-			else
-			{
+			} else {
 				final Lang l = RDFLanguages.nameToLang(type);
-				if (l != null)
-				{
+				if (l != null) {
 					properties.setProperty(J4SPropertyNames.TYPE_PROPERTY,
 							l.getName());
-				}
-				else
-				{
+				} else {
 					throw new IllegalArgumentException(
 							"Not a valid J4S JDBC URL -- '" + type
-							+ "' is not a recognized type value");
+									+ "' is not a recognized type value");
 				}
 			}
 		}
-		if (properties.containsKey(J4SPropertyNames.PARSER_PROPERTY))
-		{
+		if (properties.containsKey(J4SPropertyNames.PARSER_PROPERTY)) {
 			// verify we can load the parser
 			parser = SparqlParser.Util.getParser(properties
 					.getProperty(J4SPropertyNames.PARSER_PROPERTY));
 		}
-		if (properties.containsKey(J4SPropertyNames.BUILDER_PROPERTY))
-		{
+		if (properties.containsKey(J4SPropertyNames.BUILDER_PROPERTY)) {
 			// verify we can load the builder
 			builder = SchemaBuilder.Util.getBuilder(properties
 					.getProperty(J4SPropertyNames.BUILDER_PROPERTY));
@@ -274,14 +235,10 @@ public class J4SUrl
 		parseJ4SEndpoint(urlStr, pos);
 	}
 
-	private void parseJ4SEndpoint( final String urlStr, final int pos )
-	{
-		try
-		{
+	private void parseJ4SEndpoint(final String urlStr, final int pos) {
+		try {
 			this.endpoint = new URI(urlStr.substring(pos));
-		}
-		catch (final URISyntaxException e)
-		{
+		} catch (final URISyntaxException e) {
 			throw new IllegalArgumentException(
 					"Not a valid J4S JDBC URL -- endpoint is not a valid URI : "
 							+ e.toString());
@@ -289,21 +246,17 @@ public class J4SUrl
 	}
 
 	@Override
-	public String toString()
-	{
+	public String toString() {
 		final StringBuilder sb = new StringBuilder("jdbc:").append(
 				J4SUrl.SUB_PROTOCOL).append(":");
-		if (!properties.isEmpty())
-		{
+		if (!properties.isEmpty()) {
 			sb.append("?");
 			final int limit = properties.keySet().size();
 			int i = 0;
-			for (final Object key : properties.keySet())
-			{
+			for (final Object key : properties.keySet()) {
 				sb.append(key.toString()).append("=")
-				.append(properties.getProperty(key.toString()));
-				if (++i < limit)
-				{
+						.append(properties.getProperty(key.toString()));
+				if (++i < limit) {
 					sb.append("&");
 				}
 			}

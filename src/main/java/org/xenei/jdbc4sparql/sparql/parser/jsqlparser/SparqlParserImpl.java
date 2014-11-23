@@ -41,76 +41,62 @@ import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.functions.NumericFunctionH
 import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.functions.StringFunctionHandler;
 import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.functions.SystemFunctionHandler;
 
-public class SparqlParserImpl implements SparqlParser
-{
+public class SparqlParserImpl implements SparqlParser {
 	public static final String PARSER_NAME = "JSqlParser";
 	public static final String DESCRIPTION = "Parser based on JSqlParser (http://jsqlparser.sourceforge.net/). Under LGPL V2 license";
 	private final CCJSqlParserManager parserManager = new CCJSqlParserManager();
 	private static Logger LOG = LoggerFactory.getLogger(SparqlParserImpl.class);
 
-	public SparqlParserImpl()
-	{
+	public SparqlParserImpl() {
 	}
 
 	@Override
-	public List<String> getSupportedNumericFunctions()
-	{
+	public List<String> getSupportedNumericFunctions() {
 		return Arrays.asList(NumericFunctionHandler.NUMERIC_FUNCTIONS);
 	}
 
 	@Override
-	public List<String> getSupportedStringFunctions()
-	{
+	public List<String> getSupportedStringFunctions() {
 		return Arrays.asList(StringFunctionHandler.STRING_FUNCTIONS);
 	}
 
 	@Override
-	public List<String> getSupportedSystemFunctions()
-	{
+	public List<String> getSupportedSystemFunctions() {
 		return Arrays.asList(SystemFunctionHandler.SYSTEM_FUNCTIONS);
 	}
 
 	@Override
-	public String nativeSQL( final String sqlQuery ) throws SQLException
-	{
+	public String nativeSQL(final String sqlQuery) throws SQLException {
 		SparqlParserImpl.LOG.debug("nativeSQL: {}", sqlQuery);
-		try
-		{
+		try {
 			final Statement stmt = parserManager.parse(new StringReader(
 					sqlQuery));
 			final StringBuffer sb = new StringBuffer();
 			final StatementDeParser dp = new StatementDeParser(sb);
 			stmt.accept(dp);
 			return sb.toString();
-		}
-		catch (final JSQLParserException e)
-		{
+		} catch (final JSQLParserException e) {
 			throw new SQLException(e);
 		}
 	}
 
 	@Override
-	public SparqlQueryBuilder parse( final Map<String, Catalog> catalogs,
-			final Catalog catalog, final Schema schema, final String sqlQuery )
-			throws SQLException
-	{
+	public SparqlQueryBuilder parse(final Map<String, Catalog> catalogs,
+			final Catalog catalog, final Schema schema, final String sqlQuery)
+			throws SQLException {
 		SparqlParserImpl.LOG.debug("catalog: '{}' parsing SQL: {}",
 				catalog.getName(), sqlQuery);
-		try
-		{
+		try {
 			final Statement stmt = parserManager.parse(new StringReader(
 					sqlQuery));
 			final SparqlVisitor sv = new SparqlVisitor(catalogs, this,
 					(RdfCatalog) catalog, schema);
 			stmt.accept(sv);
-			if (SparqlParserImpl.LOG.isDebugEnabled())
-			{
+			if (SparqlParserImpl.LOG.isDebugEnabled()) {
 				SparqlParserImpl.LOG.debug("Parsed as {}", sv.getBuilder());
 			}
 			return sv.getBuilder();
-		}
-		catch (final JSQLParserException e)
-		{
+		} catch (final JSQLParserException e) {
 			SparqlParserImpl.LOG.error("Error parsing: " + e.getMessage(), e);
 			throw new SQLException(e);
 		}

@@ -32,20 +32,18 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class SparqlParserUtilTest
-{
-	Var vIs = Var.alloc("is");
-	Var vWas = Var.alloc("was");
-	Node nWho = NodeFactory.createURI("who");
-	Node nWhat = NodeFactory.createURI("what");
-	Path pWho = new P_Link(nWho);
-	Path pWhat = new P_Link(nWhat);
-	Node nThis = NodeFactory.createLiteral("this");
-	Node nThat = NodeFactory.createLiteral("that");
+public class SparqlParserUtilTest {
+	private Var vIs = Var.alloc("is");
+	private Var vWas = Var.alloc("was");
+	private Node nWho = NodeFactory.createURI("who");
+	private Node nWhat = NodeFactory.createURI("what");
+	private Path pWho = new P_Link(nWho);
+	private Path pWhat = new P_Link(nWhat);
+	private Node nThis = NodeFactory.createLiteral("this");
+	private Node nThat = NodeFactory.createLiteral("that");
 
 	@Test
-	public void parseDisjointQuerySegmentTest() throws Exception
-	{
+	public void parseDisjointQuerySegmentTest() throws Exception {
 		final Element parsed = SparqlParser.Util.parse("{ ?is <who> 'this' ."
 				+ "?was <what> 'that' }");
 		Assert.assertTrue(parsed instanceof ElementGroup);
@@ -63,8 +61,7 @@ public class SparqlParserUtilTest
 	}
 
 	@Test
-	public void parseLinkedQuerySegmentTest() throws Exception
-	{
+	public void parseLinkedQuerySegmentTest() throws Exception {
 		final Element parsed = SparqlParser.Util.parse("{ ?is <who> 'this' ;"
 				+ "	<what> 'that' }");
 		Assert.assertTrue(parsed instanceof ElementGroup);
@@ -79,8 +76,7 @@ public class SparqlParserUtilTest
 	}
 
 	@Test
-	public void parseSingleQuerySegmentTest() throws Exception
-	{
+	public void parseSingleQuerySegmentTest() throws Exception {
 		final Element parsed = SparqlParser.Util.parse("{ ?is <who> 'that' }");
 
 		Assert.assertTrue(parsed instanceof ElementGroup);

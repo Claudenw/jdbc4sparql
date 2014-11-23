@@ -23,16 +23,14 @@ import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jena.entities.EntityManager;
 import org.xenei.jena.entities.EntityManagerFactory;
 
-public class CatalogTest
-{
+public class CatalogTest {
 	private Model model;
 	private Model dataModel;
 	private RdfCatalog catalog;
 	private EntityManager entityManager;
 
 	@Before
-	public void setUp() throws Exception
-	{
+	public void setUp() throws Exception {
 		model = ModelFactory.createDefaultModel();
 		dataModel = ModelFactory.createDefaultModel();
 		catalog = new RdfCatalog.Builder().setName("testCatalog")
@@ -41,16 +39,14 @@ public class CatalogTest
 	}
 
 	@After
-	public void tearDown() throws Exception
-	{
+	public void tearDown() throws Exception {
 		catalog.close();
 		model.close();
 		dataModel.close();
 	}
 
 	@Test
-	public void testClose()
-	{
+	public void testClose() {
 		Assert.assertFalse(model.isClosed());
 		Assert.assertFalse(dataModel.isClosed());
 		catalog.close();
@@ -59,10 +55,9 @@ public class CatalogTest
 	}
 
 	@Test
-	public void testCloseMultiple()
-	{
+	public void testCloseMultiple() {
 		new RdfCatalog.Builder().setName("testCatalog2")
-		.setLocalModel(dataModel).build(model);
+				.setLocalModel(dataModel).build(model);
 		Assert.assertFalse(model.isClosed());
 		Assert.assertFalse(dataModel.isClosed());
 		catalog.close();
@@ -71,8 +66,7 @@ public class CatalogTest
 	}
 
 	@Test
-	public void testExecuteLocalQuery() throws Exception
-	{
+	public void testExecuteLocalQuery() throws Exception {
 		final Resource r = dataModel.createResource("http://example.com/res");
 		final Property p = dataModel.createProperty("http://example.com/prop");
 		r.addLiteral(p, "foo");
@@ -85,35 +79,30 @@ public class CatalogTest
 		Assert.assertEquals(2, lqs.size());
 
 		/*
-		 * // test reading from model
-		 * final RdfCatalog cat2 = entityManager.read(catalog.getResource(),
-		 * RdfCatalog.class);
-		 * lqs = cat2.executeLocalQuery(query);
-		 * Assert.assertEquals(2, lqs.size());
+		 * // test reading from model final RdfCatalog cat2 =
+		 * entityManager.read(catalog.getResource(), RdfCatalog.class); lqs =
+		 * cat2.executeLocalQuery(query); Assert.assertEquals(2, lqs.size());
 		 */
 		// build a catalog with service node
 		final RdfCatalog cat3 = new RdfCatalog.Builder()
-		.setName("testCatalog2")
-		.setSparqlEndpoint(new URL("http://example.com"))
-		.setLocalModel(dataModel).build(model);
+				.setName("testCatalog2")
+				.setSparqlEndpoint(new URL("http://example.com"))
+				.setLocalModel(dataModel).build(model);
 
 		lqs = cat3.executeLocalQuery(query);
 		Assert.assertEquals(2, lqs.size());
 
 		/*
-		 * // check reading from model
-		 * final RdfCatalog cat4 = entityManager.read(cat3.getResource(),
-		 * RdfCatalog.class);
+		 * // check reading from model final RdfCatalog cat4 =
+		 * entityManager.read(cat3.getResource(), RdfCatalog.class);
 		 * Assert.assertEquals("http://example.com", cat3.getServiceNode()
-		 * .getURI());
-		 * lqs = cat4.executeLocalQuery(query);
+		 * .getURI()); lqs = cat4.executeLocalQuery(query);
 		 * Assert.assertEquals(2, lqs.size());
 		 */
 	}
 
 	@Test
-	public void testExecuteQueryQuery() throws Exception
-	{
+	public void testExecuteQueryQuery() throws Exception {
 		final Resource r = dataModel.createResource("http://example.com/res");
 		final Property p = dataModel.createProperty("http://example.com/prop");
 		r.addLiteral(p, "foo");
@@ -126,12 +115,11 @@ public class CatalogTest
 		Assert.assertEquals(2, lqs.size());
 
 		new RdfCatalog.Builder().setName("testCatalog2")
-		.setSparqlEndpoint(new URL("http://example.com")).build(model);
+				.setSparqlEndpoint(new URL("http://example.com")).build(model);
 	}
 
 	@Test
-	public void testExecuteQueryString() throws Exception
-	{
+	public void testExecuteQueryString() throws Exception {
 
 		final Resource r = dataModel.createResource("http://example.com/res");
 		final Property p = dataModel.createProperty("http://example.com/prop");
@@ -144,18 +132,17 @@ public class CatalogTest
 		Assert.assertEquals(2, lqs.size());
 
 		new RdfCatalog.Builder().setName("testCatalog2")
-		.setSparqlEndpoint(new URL("http://example.com")).build(model);
+				.setSparqlEndpoint(new URL("http://example.com")).build(model);
 	}
 
 	@Test
-	public void testFindSchemas() throws Exception
-	{
+	public void testFindSchemas() throws Exception {
 
 		new RdfSchema.Builder().setName("testSchema1").setCatalog(catalog)
-		.build(model);
+				.build(model);
 
 		new RdfSchema.Builder().setName("testSchema2").setCatalog(catalog)
-		.build(model);
+				.build(model);
 
 		NameFilter<Schema> schemas = catalog.findSchemas(null);
 		Assert.assertEquals(2, schemas.toList().size());
@@ -185,22 +172,19 @@ public class CatalogTest
 	}
 
 	@Test
-	public void testGetName()
-	{
+	public void testGetName() {
 		Assert.assertEquals("testCatalog", catalog.getName().getShortName());
 	}
 
 	@Test
-	public void testGetResource()
-	{
+	public void testGetResource() {
 		Assert.assertNotNull(catalog.getResource());
 		final Resource r = catalog.getResource();
 		Assert.assertTrue(model.contains(r, null, (RDFNode) null));
 	}
 
 	@Test
-	public void testGetSchema() throws Exception
-	{
+	public void testGetSchema() throws Exception {
 		Assert.assertNull(catalog.getSchema(null));
 		Assert.assertNull(catalog.getSchema(""));
 
@@ -208,7 +192,7 @@ public class CatalogTest
 		Assert.assertNull(catalog.getSchema("testSchema2"));
 
 		new RdfSchema.Builder().setName("testSchema1").setCatalog(catalog)
-		.build(model);
+				.build(model);
 
 		Assert.assertNull(catalog.getSchema(null));
 		Assert.assertNull(catalog.getSchema(""));
@@ -220,7 +204,7 @@ public class CatalogTest
 		Assert.assertNull(catalog.getSchema("testSchema2"));
 
 		new RdfSchema.Builder().setName("testSchema2").setCatalog(catalog)
-		.build(model);
+				.build(model);
 
 		Assert.assertNull(catalog.getSchema(null));
 		Assert.assertNull(catalog.getSchema(""));
@@ -248,8 +232,7 @@ public class CatalogTest
 	}
 
 	@Test
-	public void testGetSchemas() throws Exception
-	{
+	public void testGetSchemas() throws Exception {
 
 		final List<String> names = new ArrayList<String>();
 
@@ -257,23 +240,21 @@ public class CatalogTest
 		Assert.assertEquals(0, schemas.size());
 
 		new RdfSchema.Builder().setName("testSchema1").setCatalog(catalog)
-		.build(model);
+				.build(model);
 		names.add("testSchema1");
 		schemas = catalog.getSchemas();
 		Assert.assertEquals(1, schemas.size());
-		for (final Schema schema : schemas)
-		{
+		for (final Schema schema : schemas) {
 			Assert.assertTrue(names.contains(schema.getName().getShortName()));
 			Assert.assertEquals(catalog, schema.getCatalog());
 		}
 
 		new RdfSchema.Builder().setName("testSchema2").setCatalog(catalog)
-		.build(model);
+				.build(model);
 		names.add("testSchema2");
 		schemas = catalog.getSchemas();
 		Assert.assertEquals(2, schemas.size());
-		for (final Schema schema : schemas)
-		{
+		for (final Schema schema : schemas) {
 			Assert.assertTrue(names.contains(schema.getName().getShortName()));
 		}
 
@@ -283,15 +264,13 @@ public class CatalogTest
 
 		schemas = cat2.getSchemas();
 		Assert.assertEquals(2, schemas.size());
-		for (final Schema schema : schemas)
-		{
+		for (final Schema schema : schemas) {
 			Assert.assertTrue(names.contains(schema.getName().getShortName()));
 		}
 	}
 
 	@Test
-	public void testGetServiceNode() throws Exception
-	{
+	public void testGetServiceNode() throws Exception {
 		Assert.assertNull(catalog.getServiceNode());
 		// check reading from model
 		final RdfCatalog cat2 = entityManager.read(catalog.getResource(),
@@ -300,8 +279,8 @@ public class CatalogTest
 
 		// build a catalog with service node
 		final RdfCatalog cat3 = new RdfCatalog.Builder()
-		.setName("testCatalog2")
-		.setSparqlEndpoint(new URL("http://example.com")).build(model);
+				.setName("testCatalog2")
+				.setSparqlEndpoint(new URL("http://example.com")).build(model);
 
 		Assert.assertEquals("http://example.com", cat3.getServiceNode()
 				.getURI());
@@ -311,24 +290,23 @@ public class CatalogTest
 				.getURI());
 	}
 
-	@Test
-	public void testGetViewSchema() throws Exception
-	{
-		Schema schema = catalog.getViewSchema();
-		Assert.assertNotNull(schema);
-		Assert.assertEquals("", schema.getName().getShortName());
+	// @Test
+	// public void testGetViewSchema() throws Exception
+	// {
+	// Schema schema = catalog.getViewSchema();
+	// Assert.assertNotNull(schema);
+	// Assert.assertEquals("", schema.getName().getShortName());
+	//
+	// // check reading from model
+	// final RdfCatalog cat2 = entityManager.read(catalog.getResource(),
+	// RdfCatalog.class);
+	// schema = cat2.getViewSchema();
+	// Assert.assertNotNull(schema);
+	// Assert.assertEquals("", schema.getName().getShortName());
+	// }
 
-		// check reading from model
-		final RdfCatalog cat2 = entityManager.read(catalog.getResource(),
-				RdfCatalog.class);
-		schema = cat2.getViewSchema();
-		Assert.assertNotNull(schema);
-		Assert.assertEquals("", schema.getName().getShortName());
-	}
-
 	@Test
-	public void testIsService() throws Exception
-	{
+	public void testIsService() throws Exception {
 		Assert.assertFalse(catalog.isService());
 		// check reading from model
 		final RdfCatalog cat2 = entityManager.read(catalog.getResource(),
@@ -337,8 +315,8 @@ public class CatalogTest
 
 		// build a catalog with service node
 		final RdfCatalog cat3 = new RdfCatalog.Builder()
-		.setName("testCatalog2")
-		.setSparqlEndpoint(new URL("http://example.com")).build(model);
+				.setName("testCatalog2")
+				.setSparqlEndpoint(new URL("http://example.com")).build(model);
 
 		Assert.assertTrue(cat3.isService());
 

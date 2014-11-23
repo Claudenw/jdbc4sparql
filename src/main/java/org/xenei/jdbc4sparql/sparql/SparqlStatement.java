@@ -29,334 +29,288 @@ import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
 import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 
-public class SparqlStatement implements Statement
-{
+public class SparqlStatement implements Statement {
 	private final SparqlParser parser;
 	private final RdfCatalog catalog;
 	private final RdfSchema schema;
 	private final Map<String, Catalog> catalogs;
 
-	SparqlStatement( final Map<String, Catalog> catalogs,
+	SparqlStatement(final Map<String, Catalog> catalogs,
 			final RdfCatalog catalog, final RdfSchema schema,
-			final SparqlParser parser )
-			{
+			final SparqlParser parser) {
 		this.parser = parser;
 		this.catalog = catalog;
 		this.schema = schema;
 		this.catalogs = catalogs;
-			}
+	}
 
 	@Override
-	public void addBatch( final String arg0 ) throws SQLException
-	{
+	public void addBatch(final String arg0) throws SQLException {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void cancel() throws SQLException
-	{
+	public void cancel() throws SQLException {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void clearBatch() throws SQLException
-	{
+	public void clearBatch() throws SQLException {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void clearWarnings() throws SQLException
-	{
+	public void clearWarnings() throws SQLException {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void close() throws SQLException
-	{
+	public void close() throws SQLException {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void closeOnCompletion() throws SQLException
-	{
+	public void closeOnCompletion() throws SQLException {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public boolean execute( final String arg0 ) throws SQLException
-	{
+	public boolean execute(final String arg0) throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean execute( final String arg0, final int arg1 )
-			throws SQLException
-	{
+	public boolean execute(final String arg0, final int arg1)
+			throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean execute( final String arg0, final int[] arg1 )
-			throws SQLException
-	{
+	public boolean execute(final String arg0, final int[] arg1)
+			throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean execute( final String arg0, final String[] arg1 )
-			throws SQLException
-	{
+	public boolean execute(final String arg0, final String[] arg1)
+			throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public int[] executeBatch() throws SQLException
-	{
+	public int[] executeBatch() throws SQLException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public ResultSet executeQuery( final String query ) throws SQLException
-	{
+	public ResultSet executeQuery(final String query) throws SQLException {
 		final SparqlQueryBuilder builder = parser.parse(catalogs, catalog,
 				schema, query);
 		return new SparqlView(builder).getResultSet();
 	}
 
 	@Override
-	public int executeUpdate( final String arg0 ) throws SQLException
-	{
+	public int executeUpdate(final String arg0) throws SQLException {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public int executeUpdate( final String arg0, final int arg1 )
-			throws SQLException
-	{
+	public int executeUpdate(final String arg0, final int arg1)
+			throws SQLException {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public int executeUpdate( final String arg0, final int[] arg1 )
-			throws SQLException
-	{
+	public int executeUpdate(final String arg0, final int[] arg1)
+			throws SQLException {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public int executeUpdate( final String arg0, final String[] arg1 )
-			throws SQLException
-	{
+	public int executeUpdate(final String arg0, final String[] arg1)
+			throws SQLException {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public Connection getConnection() throws SQLException
-	{
+	public Connection getConnection() throws SQLException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public int getFetchDirection() throws SQLException
-	{
+	public int getFetchDirection() throws SQLException {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public int getFetchSize() throws SQLException
-	{
+	public int getFetchSize() throws SQLException {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public ResultSet getGeneratedKeys() throws SQLException
-	{
+	public ResultSet getGeneratedKeys() throws SQLException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public int getMaxFieldSize() throws SQLException
-	{
+	public int getMaxFieldSize() throws SQLException {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public int getMaxRows() throws SQLException
-	{
+	public int getMaxRows() throws SQLException {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public boolean getMoreResults() throws SQLException
-	{
+	public boolean getMoreResults() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean getMoreResults( final int arg0 ) throws SQLException
-	{
+	public boolean getMoreResults(final int arg0) throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public int getQueryTimeout() throws SQLException
-	{
+	public int getQueryTimeout() throws SQLException {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public ResultSet getResultSet() throws SQLException
-	{
+	public ResultSet getResultSet() throws SQLException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public int getResultSetConcurrency() throws SQLException
-	{
+	public int getResultSetConcurrency() throws SQLException {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public int getResultSetHoldability() throws SQLException
-	{
+	public int getResultSetHoldability() throws SQLException {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public int getResultSetType() throws SQLException
-	{
+	public int getResultSetType() throws SQLException {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public int getUpdateCount() throws SQLException
-	{
+	public int getUpdateCount() throws SQLException {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public SQLWarning getWarnings() throws SQLException
-	{
+	public SQLWarning getWarnings() throws SQLException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public boolean isClosed() throws SQLException
-	{
+	public boolean isClosed() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean isCloseOnCompletion() throws SQLException
-	{
+	public boolean isCloseOnCompletion() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean isPoolable() throws SQLException
-	{
+	public boolean isPoolable() throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean isWrapperFor( final Class<?> arg0 ) throws SQLException
-	{
+	public boolean isWrapperFor(final Class<?> arg0) throws SQLException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public void setCursorName( final String arg0 ) throws SQLException
-	{
+	public void setCursorName(final String arg0) throws SQLException {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void setEscapeProcessing( final boolean arg0 ) throws SQLException
-	{
+	public void setEscapeProcessing(final boolean arg0) throws SQLException {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void setFetchDirection( final int arg0 ) throws SQLException
-	{
+	public void setFetchDirection(final int arg0) throws SQLException {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void setFetchSize( final int arg0 ) throws SQLException
-	{
+	public void setFetchSize(final int arg0) throws SQLException {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void setMaxFieldSize( final int arg0 ) throws SQLException
-	{
+	public void setMaxFieldSize(final int arg0) throws SQLException {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void setMaxRows( final int arg0 ) throws SQLException
-	{
+	public void setMaxRows(final int arg0) throws SQLException {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void setPoolable( final boolean arg0 ) throws SQLException
-	{
+	public void setPoolable(final boolean arg0) throws SQLException {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void setQueryTimeout( final int arg0 ) throws SQLException
-	{
+	public void setQueryTimeout(final int arg0) throws SQLException {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public <T> T unwrap( final Class<T> arg0 ) throws SQLException
-	{
+	public <T> T unwrap(final Class<T> arg0) throws SQLException {
 		// TODO Auto-generated method stub
 		return null;
 	}

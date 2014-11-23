@@ -1,7 +1,6 @@
 package org.xenei.jdbc4sparql;
 
-public interface J4SPropertyNames
-{
+public interface J4SPropertyNames {
 	public static final String BUILDER_PROPERTY = "builder";
 	public static final String CATALOG_PROPERTY = "catalog";
 	public static final String PARSER_PROPERTY = "parser";

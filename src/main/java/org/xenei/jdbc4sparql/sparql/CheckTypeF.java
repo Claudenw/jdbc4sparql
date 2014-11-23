@@ -13,52 +13,50 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLDataException;
 import java.sql.SQLException;
 
-import org.xenei.jdbc4sparql.iface.Column;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xenei.jdbc4sparql.iface.TypeConverter;
+import org.xenei.jdbc4sparql.sparql.items.QueryColumnInfo;
 
 /**
- * A local filter that removes any values that are null and not allowed to
- * be null or that can not be converted
- * to the expected column value type.
+ * A local filter that removes any values that are null and not allowed to be
+ * null or that can not be converted to the expected column value type.
  */
-public class CheckTypeF extends ExprFunction1
-{
+public class CheckTypeF extends ExprFunction1 {
 	private final QueryColumnInfo columnInfo;
 	private final Class<?> resultingClass;
 	private Object convertedValue;
-	
-	private static QueryColumnInfo checkColumnInfo(QueryColumnInfo columnInfo)
-	{
-		if (columnInfo == null)
-		{
+	private static final Logger LOG = LoggerFactory.getLogger(CheckTypeF.class);
+
+	private static QueryColumnInfo checkColumnInfo(QueryColumnInfo columnInfo) {
+		if (columnInfo == null) {
 			throw new IllegalArgumentException("Column may not be null");
 		}
 		return columnInfo;
 	}
-	
-	public CheckTypeF( final QueryColumnInfo columnInfo ) throws SQLDataException
-	{
-		super(new ExprVar(checkColumnInfo(columnInfo).getAlias()), "checkTypeF");
-		
+
+	public CheckTypeF(final QueryColumnInfo columnInfo) throws SQLDataException {
+		super(new ExprVar(checkColumnInfo(columnInfo).getGUIDVar()),
+				"checkTypeF");
+
 		this.columnInfo = columnInfo;
-		resultingClass = TypeConverter.getJavaType(columnInfo.getColumn().getColumnDef().getType());
+		resultingClass = TypeConverter.getJavaType(columnInfo.getColumn()
+				.getColumnDef().getType());
 	}
 
 	@Override
-	public Expr copy( final Expr expr )
-	{
+	public Expr copy(final Expr expr) {
 		try {
 			return new CheckTypeF(columnInfo);
 		} catch (SQLDataException e) {
-			throw new IllegalStateException( String.format( "Error while copying: %s", e.getMessage()),e);
+			throw new IllegalStateException(String.format(
+					"Error while copying: %s", e.getMessage()), e);
 		}
 	}
 
 	@Override
-	public boolean equals( final Object o )
-	{
-		if (o instanceof CheckTypeF)
-		{
+	public boolean equals(final Object o) {
+		if (o instanceof CheckTypeF) {
 			final CheckTypeF cf = (CheckTypeF) o;
 
 			return columnInfo.equals(cf.columnInfo)
@@ -68,62 +66,55 @@ public class CheckTypeF extends ExprFunction1
 	}
 
 	@Override
-	public NodeValue eval( final NodeValue v )
-	{
+	public NodeValue eval(final NodeValue v) {
 		return NodeValue.FALSE;
 	}
 
 	@Override
-	protected NodeValue evalSpecial( final Binding binding,
-			final FunctionEnv env )
-	{
+	protected NodeValue evalSpecial(final Binding binding, final FunctionEnv env) {
 		final Var v = expr.asVar();
 		final Node n = binding.get(v);
-		if (n == null)
-		{
-			return columnInfo.getColumn().getColumnDef().getNullable() == ResultSetMetaData.columnNullable ? NodeValue.TRUE
-					: NodeValue.FALSE;
+		if (n == null) {
+			boolean retval = columnInfo.getColumn().getColumnDef()
+					.getNullable() == ResultSetMetaData.columnNullable;
+			LOG.debug("{} ({}) of {} ", this, columnInfo.getName(), binding);
+			LOG.debug("with value  {} is {}", n, retval);
+			return retval ? NodeValue.TRUE : NodeValue.FALSE;
 		}
 		Object columnObject;
-		if (n.isLiteral())
-		{
+		if (n.isLiteral()) {
 			columnObject = n.getLiteralValue();
-		}
-		else if (n.isURI())
-		{
+		} else if (n.isURI()) {
 			columnObject = n.getURI();
-		}
-		else if (n.isBlank())
-		{
+		} else if (n.isBlank()) {
 			columnObject = n.getBlankNodeId().toString();
-		}
-		else if (n.isVariable())
-		{
+		} else if (n.isVariable()) {
 			columnObject = n.getName();
-		}
-		else
-		{
+		} else {
 			columnObject = n.toString();
 		}
-		
+
 		try {
-			convertedValue = TypeConverter.extractData(columnObject, resultingClass);
-			return NodeValue.TRUE;
-		}
-		catch (SQLException e)
-		{
+			convertedValue = TypeConverter.extractData(columnObject,
+					resultingClass);
+			boolean retval = true;
+			if (convertedValue == null) {
+				retval = columnInfo.getColumn().getColumnDef().getNullable() == ResultSetMetaData.columnNullable;
+			}
+			LOG.debug("{} ({}) of {} ", this, columnInfo.getName(), binding);
+			LOG.debug("with value ({}) {} is {}", n, convertedValue, retval);
+			return retval ? NodeValue.TRUE : NodeValue.FALSE;
+
+		} catch (SQLException e) {
 			return NodeValue.FALSE;
 		}
-		
 	}
-	
-	public Object getValue()
-	{
+
+	public Object getValue() {
 		return convertedValue;
 	}
-	
-	public QueryColumnInfo getColumnInfo()
-	{
+
+	public QueryColumnInfo getColumnInfo() {
 		return columnInfo;
 	}
 

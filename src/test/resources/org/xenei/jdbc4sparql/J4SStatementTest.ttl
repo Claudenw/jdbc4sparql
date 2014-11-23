@@ -7,7 +7,7 @@
 
 []    a       <http://example.com/jdbc4sparql#fooTable> ;
       <http://example.com/jdbc4sparql#IntCol>
-              "5" ;
+              "4" ;
       <http://example.com/jdbc4sparql#StringCol>
               "Foo2String" .
 

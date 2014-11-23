@@ -8,39 +8,31 @@ import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.NameFilter;
 import org.xenei.jdbc4sparql.iface.Table;
 
-public abstract class AbstractTable implements Table
-{
+public abstract class AbstractTable implements Table {
 
-	public AbstractTable()
-	{
+	public AbstractTable() {
 
 	}
 
 	@Override
-	public NameFilter<Column> findColumns( final String columnNamePattern )
-	{
+	public NameFilter<Column> findColumns(final String columnNamePattern) {
 		return new NameFilter<Column>(columnNamePattern, getColumns());
 	}
 
 	@Override
-	public Catalog getCatalog()
-	{
+	public Catalog getCatalog() {
 		return getSchema().getCatalog();
 	}
 
 	@Override
-	public Column getColumn( final int idx )
-	{
+	public Column getColumn(final int idx) {
 		return getColumnList().get(idx);
 	}
 
 	@Override
-	public Column getColumn( final String name )
-	{
-		for (final Column col : getColumnList())
-		{
-			if (col.getName().equals(name))
-			{
+	public Column getColumn(final String name) {
+		for (final Column col : getColumnList()) {
+			if (col.getName().equals(name)) {
 				return col;
 			}
 		}
@@ -48,14 +40,12 @@ public abstract class AbstractTable implements Table
 	}
 
 	@Override
-	public int getColumnCount()
-	{
+	public int getColumnCount() {
 		return getColumnList().size();
 	}
 
 	@Override
-	public int getColumnIndex( final Column column )
-	{
+	public int getColumnIndex(final Column column) {
 		return getColumnList().indexOf(column);
 	}
 
@@ -67,13 +57,10 @@ public abstract class AbstractTable implements Table
 	 * @return the column index (0 based) or -1 if not found.
 	 */
 	@Override
-	public int getColumnIndex( final String columnName )
-	{
+	public int getColumnIndex(final String columnName) {
 		final List<? extends Column> cols = getColumnList();
-		for (int i = 0; i < cols.size(); i++)
-		{
-			if (cols.get(i).getName().equals(columnName))
-			{
+		for (int i = 0; i < cols.size(); i++) {
+			if (cols.get(i).getName().equals(columnName)) {
 				return i;
 			}
 		}
@@ -81,26 +68,22 @@ public abstract class AbstractTable implements Table
 	}
 
 	@Override
-	public Iterator<Column> getColumns()
-	{
+	public Iterator<Column> getColumns() {
 		return getColumnList().iterator();
 	}
 
 	@Override
-	public String getSPARQLName()
-	{
+	public String getSPARQLName() {
 		return NameUtils.getSPARQLName(this);
 	}
 
 	@Override
-	public String getSQLName()
-	{
+	public String getSQLName() {
 		return NameUtils.getDBName(this);
 	}
 
 	@Override
-	public String toString()
-	{
+	public String toString() {
 		return String.format("Table[ %s.%s ]", getCatalog().getName(),
 				getSQLName());
 	}

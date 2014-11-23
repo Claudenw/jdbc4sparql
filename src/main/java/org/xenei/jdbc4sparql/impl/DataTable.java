@@ -28,16 +28,15 @@ import java.util.TreeSet;
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.Key;
 import org.xenei.jdbc4sparql.iface.Table;
-import org.xenei.jdbc4sparql.iface.TableName;
+import org.xenei.jdbc4sparql.iface.name.TableName;
 
 /**
- * An implementation of AbstractTable that stores the data
- * in a collection of object arrays.
+ * An implementation of AbstractTable that stores the data in a collection of
+ * object arrays.
  *
  * This table is useful for fixed data sets (e.g. schema tables)
  */
-public class DataTable extends AbstractWrappedTable
-{
+public class DataTable extends AbstractWrappedTable {
 	private Collection<Object[]> data;
 	private DataTable superDataTable;
 
@@ -49,22 +48,15 @@ public class DataTable extends AbstractWrappedTable
 	 * @param tableDef
 	 *            The table definition to use.
 	 */
-	public DataTable( final Table table )
-	{
+	public DataTable(final Table table) {
 		super(table.getSchema(), table);
 		final Key key = table.getTableDef().getSortKey();
-		if (key == null)
-		{
+		if (key == null) {
 			data = new ArrayList<Object[]>();
-		}
-		else
-		{
-			if (key.isUnique())
-			{
+		} else {
+			if (key.isUnique()) {
 				data = new TreeSet<Object[]>(key);
-			}
-			else
-			{
+			} else {
 				// supress warning is for this conversion as TreeBag is not
 				// generic.
 				data = new SortedBag<Object[]>(key);
@@ -81,51 +73,43 @@ public class DataTable extends AbstractWrappedTable
 	 * @param args
 	 *            the data to add.
 	 */
-	public void addData( final Object[] args )
-	{
+	public void addData(final Object[] args) {
 		verify(args);
 		data.add(args);
 	}
 
 	@Override
-	public void delete()
-	{
+	public void delete() {
 		getTable().delete();
 	}
 
 	@Override
-	public Column getColumn( final int idx )
-	{
+	public Column getColumn(final int idx) {
 		return getTable().getColumn(idx);
 	}
 
 	@Override
-	public Column getColumn( final String name )
-	{
+	public Column getColumn(final String name) {
 		return getTable().getColumn(name);
 	}
 
 	@Override
-	public int getColumnIndex( final String name )
-	{
+	public int getColumnIndex(final String name) {
 		return getTable().getColumnIndex(name);
 	}
 
 	@Override
-	public TableName getName()
-	{
+	public TableName getName() {
 		return getTable().getName();
 	}
 
 	@Override
-	public String getQuerySegmentFmt()
-	{
+	public String getQuerySegmentFmt() {
 		return null;
 	}
 
 	@Override
-	public String getRemarks()
-	{
+	public String getRemarks() {
 		return null;
 	}
 
@@ -135,47 +119,38 @@ public class DataTable extends AbstractWrappedTable
 	 * @return
 	 */
 	@Override
-	public ResultSet getResultSet() throws SQLException
-	{
+	public ResultSet getResultSet() throws SQLException {
 		ResultSet retval = null;
 
-		if (data instanceof TreeSet)
-		{
+		if (data instanceof TreeSet) {
 			final NavigableSet<Object[]> ns = (TreeSet<Object[]>) data;
 			retval = new NavigableSetResultSet(ns, this) {
 
 				@Override
-				protected Object readObject( final int columnOrdinal )
-						throws SQLException
-				{
+				protected Object readObject(final int columnOrdinal)
+						throws SQLException {
 					checkColumn(columnOrdinal);
 					final Object[] rowData = (Object[]) getRowObject();
 					return rowData[columnOrdinal - 1];
 				}
 			};
-		}
-		else if (data instanceof SortedBag)
-		{
+		} else if (data instanceof SortedBag) {
 			retval = new IteratorResultSet(data.iterator(), this) {
 
 				@Override
-				protected Object readObject( final int columnOrdinal )
-						throws SQLException
-				{
+				protected Object readObject(final int columnOrdinal)
+						throws SQLException {
 					checkColumn(columnOrdinal);
 					final Object[] rowData = (Object[]) getRowObject();
 					return rowData[columnOrdinal - 1];
 				}
 			};
-		}
-		else
-		{
+		} else {
 			retval = new ListResultSet((List<?>) data, this) {
 
 				@Override
-				protected Object readObject( final int columnOrdinal )
-						throws SQLException
-				{
+				protected Object readObject(final int columnOrdinal)
+						throws SQLException {
 					checkColumn(columnOrdinal);
 					final Object[] rowData = (Object[]) getRowObject();
 					return rowData[columnOrdinal - 1];
@@ -187,12 +162,9 @@ public class DataTable extends AbstractWrappedTable
 	}
 
 	@Override
-	public DataTable getSuperTable()
-	{
-		if (superDataTable == null)
-		{
-			if (getSuperTableDef() == null)
-			{
+	public DataTable getSuperTable() {
+		if (superDataTable == null) {
+			if (getSuperTableDef() == null) {
 				return null;
 			}
 			superDataTable = new DataTable(getTable().getSuperTable());
@@ -201,13 +173,11 @@ public class DataTable extends AbstractWrappedTable
 	}
 
 	@Override
-	public boolean hasQuerySegments()
-	{
+	public boolean hasQuerySegments() {
 		return false;
 	}
 
-	public boolean isEmpty()
-	{
+	public boolean isEmpty() {
 		return data.isEmpty();
 	}
 

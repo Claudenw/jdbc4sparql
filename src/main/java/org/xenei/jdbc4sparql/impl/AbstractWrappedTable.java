@@ -34,8 +34,7 @@ import org.xenei.jdbc4sparql.iface.TypeConverter;
 /**
  * An abstract table implementation
  */
-public abstract class AbstractWrappedTable extends AbstractTable
-{
+public abstract class AbstractWrappedTable extends AbstractTable {
 	// the table definition
 	private final Table table;
 	// the schema this table is in.
@@ -49,53 +48,44 @@ public abstract class AbstractWrappedTable extends AbstractTable
 	 * @param table
 	 *            The definition of the table.
 	 */
-	public AbstractWrappedTable( final Schema schema, final Table table )
-	{
+	public AbstractWrappedTable(final Schema schema, final Table table) {
 		this.schema = schema;
 		this.table = table;
 	}
 
-	public ColumnDef getColumnDef( final int idx )
-	{
+	public ColumnDef getColumnDef(final int idx) {
 		return table.getTableDef().getColumnDef(idx);
 	}
 
-	public List<ColumnDef> getColumnDefs()
-	{
+	public List<ColumnDef> getColumnDefs() {
 		return table.getTableDef().getColumnDefs();
 	}
 
 	@Override
-	public List<Column> getColumnList()
-	{
+	public List<Column> getColumnList() {
 		return table.getColumnList();
 	}
 
-	public Key getPrimaryKey()
-	{
+	public Key getPrimaryKey() {
 		return table.getTableDef().getPrimaryKey();
 	}
 
 	abstract public ResultSet getResultSet() throws SQLException;
 
 	@Override
-	public Schema getSchema()
-	{
+	public Schema getSchema() {
 		return schema;
 	}
 
-	public Key getSortKey()
-	{
+	public Key getSortKey() {
 		return table.getTableDef().getSortKey();
 	}
 
-	public TableDef getSuperTableDef()
-	{
+	public TableDef getSuperTableDef() {
 		return table.getTableDef().getSuperTableDef();
 	}
 
-	protected Table getTable()
-	{
+	protected Table getTable() {
 		return table;
 	}
 
@@ -103,51 +93,43 @@ public abstract class AbstractWrappedTable extends AbstractTable
 	 * @return The table definition for this table.
 	 */
 	@Override
-	public TableDef getTableDef()
-	{
+	public TableDef getTableDef() {
 		return table.getTableDef();
 	}
 
 	@Override
-	public String getType()
-	{
+	public String getType() {
 		return table.getType();
 	}
 
-	public void verify( final Object[] row )
-	{
+	public void verify(final Object[] row) {
 		final List<ColumnDef> columns = table.getTableDef().getColumnDefs();
-		if (row.length != columns.size())
-		{
+		if (row.length != columns.size()) {
 			throw new IllegalArgumentException(String.format(
 					"Expected %s columns but got %s", columns.size(),
 					row.length));
 		}
-		for (int i = 0; i < row.length; i++)
-		{
+		for (int i = 0; i < row.length; i++) {
 			final ColumnDef c = columns.get(i);
 
-			if (row[i] == null)
-			{
-				if (c.getNullable() == DatabaseMetaData.columnNoNulls)
-				{
+			if (row[i] == null) {
+				if (c.getNullable() == DatabaseMetaData.columnNoNulls) {
 					throw new IllegalArgumentException(
 							String.format("Column %s may not be null",
 									getColumn(i).getName()));
 				}
-			}
-			else
-			{
+			} else {
 				Class<?> clazz;
 				try {
 					clazz = TypeConverter.getJavaType(c.getType());
 				} catch (SQLDataException e) {
-					throw new IllegalArgumentException(String.format(
-							"Column %s can not receive values of class %s -- Conversion Error (%s)",
-							getColumn(i).getName(), row[i].getClass(), e.getMessage()), e);
+					throw new IllegalArgumentException(
+							String.format(
+									"Column %s can not receive values of class %s -- Conversion Error (%s)",
+									getColumn(i).getName(), row[i].getClass(),
+									e.getMessage()), e);
 				}
-				if (!clazz.isAssignableFrom(row[i].getClass()))
-				{
+				if (!clazz.isAssignableFrom(row[i].getClass())) {
 					throw new IllegalArgumentException(String.format(
 							"Column %s can not receive values of class %s",
 							getColumn(i).getName(), row[i].getClass()));

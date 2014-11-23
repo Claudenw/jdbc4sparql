@@ -33,8 +33,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-public class J4SDriverTest
-{
+public class J4SDriverTest {
 	// file URL
 	private URL fUrl;
 
@@ -44,45 +43,38 @@ public class J4SDriverTest
 	// JDBC Connection
 	private Connection conn;
 
-	private List<String> getColumnNames( final String table )
-			throws SQLException
-			{
+	private List<String> getColumnNames(final String table) throws SQLException {
 		final ResultSet rs = conn.getMetaData().getColumns(conn.getCatalog(),
 				conn.getSchema(), table, null);
 		final List<String> colNames = new ArrayList<String>();
-		while (rs.next())
-		{
+		while (rs.next()) {
 			colNames.add(rs.getString(4));
 		}
 		return colNames;
-			}
+	}
 
 	@Before
-	public void setup() throws Exception
-	{
+	public void setup() throws Exception {
 		Class.forName("org.xenei.jdbc4sparql.J4SDriver");
 		fUrl = J4SDriverTest.class.getResource("./J4SDriverTest.ttl");
 		url = "jdbc:j4s?catalog=test&type=turtle&builder:" + fUrl.toString();
 	}
 
 	@After
-	public void tearDown() throws SQLException
-	{
+	public void tearDown() throws SQLException {
 		conn.close();
 	}
 
 	@Test
 	public void testTestDriverLoadingIdPwd() throws ClassNotFoundException,
-	SQLException
-	{
+			SQLException {
 		conn = DriverManager.getConnection(url, "myschema", "mypassw");
 		verifyCorrect();
 	}
 
 	@Test
 	public void testTestDriverLoadingMemDatasetProducer()
-			throws ClassNotFoundException, SQLException
-	{
+			throws ClassNotFoundException, SQLException {
 		final Properties properties = new Properties();
 		properties.setProperty("DatasetProducer",
 				"org.xenei.jdbc4sparql.config.MemDatasetProducer");
@@ -92,16 +84,14 @@ public class J4SDriverTest
 
 	@Test
 	public void testTestDriverLoadingNoProps() throws ClassNotFoundException,
-	SQLException
-	{
+			SQLException {
 		conn = DriverManager.getConnection(url);
 		verifyCorrect();
 	}
 
 	@Test
 	public void testTestDriverLoadingTDBDatasetProducer()
-			throws ClassNotFoundException, SQLException
-	{
+			throws ClassNotFoundException, SQLException {
 		final Properties properties = new Properties();
 		properties.setProperty("DatasetProducer",
 				"org.xenei.jdbc4sparql.config.TDBDatasetProducer");
@@ -109,14 +99,12 @@ public class J4SDriverTest
 		verifyCorrect();
 	}
 
-	private void verifyCorrect() throws SQLException
-	{
+	private void verifyCorrect() throws SQLException {
 		final DatabaseMetaData metaData = conn.getMetaData();
 
 		// verify table exists
 		final ResultSet rs1 = metaData.getTables(null, null, null, null);
-		while (rs1.next())
-		{
+		while (rs1.next()) {
 			System.out.println(String.format("cat: %s, schem: %s, tbl: %s",
 					rs1.getString(1), rs1.getString(2), rs1.getString(3)));
 		}
@@ -132,11 +120,9 @@ public class J4SDriverTest
 		conn.setAutoCommit(false);
 		final Statement stmt = conn.createStatement();
 		final ResultSet rset = stmt.executeQuery("select * from fooTable");
-		while (rset.next())
-		{
+		while (rset.next()) {
 			// verify that all colums are returned ... we don't care about value
-			for (final String colName : colNames)
-			{
+			for (final String colName : colNames) {
 				rset.getString(colName);
 			}
 		}

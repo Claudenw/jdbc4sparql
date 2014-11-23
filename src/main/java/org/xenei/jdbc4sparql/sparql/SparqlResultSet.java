@@ -27,26 +27,22 @@ import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.TypeConverter;
 import org.xenei.jdbc4sparql.impl.ListResultSet;
 
-public class SparqlResultSet extends ListResultSet
-{
+public class SparqlResultSet extends ListResultSet {
 	private final Query query;
 
-	public SparqlResultSet( final Table table, final Query query )
-			throws SQLException
-	{
+	public SparqlResultSet(final Table table, final Query query)
+			throws SQLException {
 		super(table.getCatalog().executeLocalQuery(query), table);
 		this.query = query;
 	}
 
 	@Override
-	protected Table getTable()
-	{
+	protected Table getTable() {
 		return super.getTable();
 	}
 
 	@Override
-	protected Object readObject( final int columnOrdinal ) throws SQLException
-	{
+	protected Object readObject(final int columnOrdinal) throws SQLException {
 		checkPosition();
 		checkColumn(columnOrdinal);
 		final QuerySolution soln = (QuerySolution) getRowObject();
@@ -54,12 +50,10 @@ public class SparqlResultSet extends ListResultSet
 				.getName();
 		final RDFNode node = soln.get(colName);
 
-		if (node == null)
-		{
+		if (node == null) {
 			return null;
 		}
-		if (node.isLiteral())
-		{
+		if (node.isLiteral()) {
 			return TypeConverter.getJavaValue(node.asLiteral());
 		}
 		return node.toString();

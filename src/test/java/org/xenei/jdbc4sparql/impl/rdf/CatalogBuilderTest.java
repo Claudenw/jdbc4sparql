@@ -13,31 +13,27 @@ import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.meta.MetaCatalogBuilder;
 
-public class CatalogBuilderTest
-{
+public class CatalogBuilderTest {
 
 	private Model model;
 	private RdfSchema.Builder schemaBldr;
 
 	@Before
-	public void setUp() throws Exception
-	{
+	public void setUp() throws Exception {
 		model = ModelFactory.createDefaultModel();
 
 		schemaBldr = new RdfSchema.Builder().setName("testSchema");
 	}
 
 	@After
-	public void tearDown() throws Exception
-	{
+	public void tearDown() throws Exception {
 		model.close();
 	}
 
 	@Test
-	public void testAddSchema()
-	{
+	public void testAddSchema() {
 		final RdfCatalog.Builder builder = new RdfCatalog.Builder()
-		.setName("catalog");
+				.setName("catalog");
 
 		final RdfCatalog catalog = builder.build(model);
 		Assert.assertEquals("catalog", catalog.getName().getShortName());
@@ -52,10 +48,9 @@ public class CatalogBuilderTest
 	}
 
 	@Test
-	public void testDefault()
-	{
+	public void testDefault() {
 		final RdfCatalog.Builder builder = new RdfCatalog.Builder()
-		.setName("catalog");
+				.setName("catalog");
 
 		final Catalog catalog = builder.build(model);
 
@@ -66,10 +61,9 @@ public class CatalogBuilderTest
 	}
 
 	@Test
-	public void testFindSchema()
-	{
+	public void testFindSchema() {
 		final RdfCatalog.Builder builder = new RdfCatalog.Builder()
-		.setName("catalog");
+				.setName("catalog");
 
 		final RdfCatalog catalog = builder.build(model);
 
@@ -81,10 +75,9 @@ public class CatalogBuilderTest
 	}
 
 	@Test
-	public void testGetSchema() throws Exception
-	{
+	public void testGetSchema() throws Exception {
 		final RdfCatalog.Builder builder = new RdfCatalog.Builder()
-		.setName("catalog");
+				.setName("catalog");
 
 		final RdfCatalog catalog = builder.build(model);
 
@@ -95,10 +88,9 @@ public class CatalogBuilderTest
 	}
 
 	@Test
-	public void testGetSchemas()
-	{
+	public void testGetSchemas() {
 		final RdfCatalog.Builder builder = new RdfCatalog.Builder()
-		.setName("catalog");
+				.setName("catalog");
 
 		final RdfCatalog catalog = builder.build(model);
 

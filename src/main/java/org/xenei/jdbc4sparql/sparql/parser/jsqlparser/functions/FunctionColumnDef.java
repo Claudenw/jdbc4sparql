@@ -4,8 +4,7 @@ import java.sql.ResultSetMetaData;
 
 import org.xenei.jdbc4sparql.iface.ColumnDef;
 
-public class FunctionColumnDef implements ColumnDef
-{
+public class FunctionColumnDef implements ColumnDef {
 	private int displaySize = 0;
 	private int nullable = ResultSetMetaData.columnNoNulls;
 	private int precision = 0;
@@ -16,139 +15,115 @@ public class FunctionColumnDef implements ColumnDef
 	private boolean currency = false;
 	private boolean signed = false;
 
-	public FunctionColumnDef( final int type )
-	{
+	public FunctionColumnDef(final int type) {
 		this.type = type;
 	}
 
 	@Override
-	public String getColumnClassName()
-	{
+	public String getColumnClassName() {
 		return null;
 	}
 
 	@Override
-	public int getDisplaySize()
-	{
+	public int getDisplaySize() {
 		return displaySize;
 	}
 
 	@Override
-	public int getNullable()
-	{
+	public int getNullable() {
 		return nullable;
 	}
 
 	@Override
-	public int getPrecision()
-	{
+	public int getPrecision() {
 		return precision;
 	}
 
 	@Override
-	public int getScale()
-	{
+	public int getScale() {
 		return scale;
 	}
 
 	@Override
-	public int getType()
-	{
+	public int getType() {
 		return type;
 	}
 
 	@Override
-	public String getTypeName()
-	{
+	public String getTypeName() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public boolean isAutoIncrement()
-	{
+	public boolean isAutoIncrement() {
 		return autoIncrement;
 	}
 
 	@Override
-	public boolean isCaseSensitive()
-	{
+	public boolean isCaseSensitive() {
 		return caseSensitive;
 	}
 
 	@Override
-	public boolean isCurrency()
-	{
+	public boolean isCurrency() {
 		return currency;
 	}
 
 	@Override
-	public boolean isDefinitelyWritable()
-	{
+	public boolean isDefinitelyWritable() {
 		return false;
 	}
 
 	@Override
-	public boolean isReadOnly()
-	{
+	public boolean isReadOnly() {
 		return true;
 	}
 
 	@Override
-	public boolean isSearchable()
-	{
+	public boolean isSearchable() {
 		return false;
 	}
 
 	@Override
-	public boolean isSigned()
-	{
+	public boolean isSigned() {
 		return signed;
 	}
 
 	@Override
-	public boolean isWritable()
-	{
+	public boolean isWritable() {
 		return false;
 	}
 
-	public void setAutoIncrement( final boolean autoIncrement )
-	{
+	public void setAutoIncrement(final boolean autoIncrement) {
 		this.autoIncrement = autoIncrement;
 	}
 
-	public void setCaseSensitive( final boolean caseSensitive )
-	{
+	public void setCaseSensitive(final boolean caseSensitive) {
 		this.caseSensitive = caseSensitive;
 	}
 
-	public void setCurrency( final boolean currency )
-	{
+	public void setCurrency(final boolean currency) {
 		this.currency = currency;
 	}
 
-	public void setDisplaySize( final int displaySize )
-	{
+	public void setDisplaySize(final int displaySize) {
 		this.displaySize = displaySize;
 	}
 
-	public void setNullable( final int nullable )
-	{
+	public void setNullable(final int nullable) {
 		this.nullable = nullable;
 	}
 
-	public void setPrecision( final int precision )
-	{
+	public void setPrecision(final int precision) {
 		this.precision = precision;
 	}
 
-	public void setScale( final int scale )
-	{
+	public void setScale(final int scale) {
 		this.scale = scale;
 	}
 
-	public void setSigned( final boolean signed )
-	{
+	public void setSigned(final boolean signed) {
 		this.signed = signed;
 	}
 

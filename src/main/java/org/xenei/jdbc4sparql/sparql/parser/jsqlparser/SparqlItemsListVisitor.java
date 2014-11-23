@@ -13,43 +13,37 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 
-public class SparqlItemsListVisitor implements ItemsListVisitor
-{
+public class SparqlItemsListVisitor implements ItemsListVisitor {
 	private static Logger LOG = LoggerFactory
 			.getLogger(SparqlItemsListVisitor.class);
 	private final SparqlExprVisitor exprVisitor;
 	private ExprList result;
 
-	SparqlItemsListVisitor( final SparqlQueryBuilder builder )
-	{
+	SparqlItemsListVisitor(final SparqlQueryBuilder builder) {
 		exprVisitor = new SparqlExprVisitor(builder,
 				SparqlQueryBuilder.OPTIONAL);
 	}
 
-	public ExprList getResult()
-	{
+	public ExprList getResult() {
 		return result;
 	}
 
 	@Override
-	public void visit( final ExpressionList expressionList )
-	{
+	public void visit(final ExpressionList expressionList) {
 		SparqlItemsListVisitor.LOG.debug("visit ExpressionList: {}",
 				expressionList);
-		@SuppressWarnings( "unchecked" )
+		@SuppressWarnings("unchecked")
 		final List<Expression> l = expressionList.getExpressions();
 		result = new ExprList();
 		// accept them in reverse order
-		for (final Expression e : l)
-		{
+		for (final Expression e : l) {
 			e.accept(exprVisitor);
 			result.add(exprVisitor.getResult());
 		}
 	}
 
 	@Override
-	public void visit( final SubSelect subSelect )
-	{
+	public void visit(final SubSelect subSelect) {
 		SparqlItemsListVisitor.LOG.debug("visit SubSelect: {}", subSelect);
 		subSelect.accept(exprVisitor);
 	}

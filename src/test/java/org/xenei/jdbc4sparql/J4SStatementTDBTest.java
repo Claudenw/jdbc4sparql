@@ -2,12 +2,13 @@ package org.xenei.jdbc4sparql;
 
 import java.net.URL;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.Properties;
 
+import org.junit.After;
 import org.junit.Before;
 
-public class J4SStatementTDBTest extends AbstractJ4SStatementTest
-{
+public class J4SStatementTDBTest extends AbstractJ4SStatementTest {
 	// file URL
 	private URL fUrl;
 
@@ -15,8 +16,7 @@ public class J4SStatementTDBTest extends AbstractJ4SStatementTest
 	private String url;
 
 	@Before
-	public void setup() throws Exception
-	{
+	public void setup() throws Exception {
 		Class.forName("org.xenei.jdbc4sparql.J4SDriver");
 
 		fUrl = J4SDriverTest.class.getResource("./J4SStatementTest.ttl");
@@ -32,6 +32,11 @@ public class J4SStatementTDBTest extends AbstractJ4SStatementTest
 		conn = DriverManager.getConnection(url, prop);
 		conn.setAutoCommit(false);
 		stmt = conn.createStatement();
+	}
+
+	@After
+	public void teardown() throws SQLException {
+		stmt.close();
 	}
 
 }

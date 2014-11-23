@@ -27,29 +27,23 @@ import org.xenei.jdbc4sparql.utils.NoCloseZipInputStream;
 /**
  * Interface that defines the dataset producer.
  *
- * The dataset producer produces the local dataset (set of graphs that
- * represent the local data) and the meta dataset (set of graphs that
- * contain the metadata)
+ * The dataset producer produces the local dataset (set of graphs that represent
+ * the local data) and the meta dataset (set of graphs that contain the
+ * metadata)
  *
  * Implementations of this class should construct the dataset when first
  * requested and return the same dataset on all subsequent calls.
  */
-abstract public class AbstractDatasetProducer implements DatasetProducer
-{
-	public static String getModelURI( final String modelName )
-	{
+abstract public class AbstractDatasetProducer implements DatasetProducer {
+	public static String getModelURI(final String modelName) {
 		String name = StringUtils.defaultString(modelName);
-		if (StringUtils.isEmpty(name))
-		{
+		if (StringUtils.isEmpty(name)) {
 			name = RdfCatalog.Builder.getFQName(name);
-		}
-		else
-		{
+		} else {
 			final int i = Util.splitNamespace(name);
-			if (i == 1)
-			{
-				if (XMLChar.isNCNameStart(name.charAt(0)))
-				{// we have a short name
+			if (i == 1) {
+				if (XMLChar.isNCNameStart(name.charAt(0))) {// we have a short
+															// name
 					name = RdfCatalog.Builder.getFQName(name);
 				}
 			}
@@ -65,17 +59,15 @@ abstract public class AbstractDatasetProducer implements DatasetProducer
 
 	protected Dataset metaData;
 
-	protected AbstractDatasetProducer( final Properties properties,
-			final Dataset metaDataset, final Dataset localDataset )
-	{
+	protected AbstractDatasetProducer(final Properties properties,
+			final Dataset metaDataset, final Dataset localDataset) {
 		this.properties = properties;
 		this.metaData = metaDataset;
 		this.localData = localDataset;
 	}
 
 	@Override
-	public void addLocalDataModel( final String modelName, final Model model )
-	{
+	public void addLocalDataModel(final String modelName, final Model model) {
 		final String name = AbstractDatasetProducer.getModelURI(modelName);
 		getLocalDataset().addNamedModel(name, model);
 	}
@@ -84,21 +76,18 @@ abstract public class AbstractDatasetProducer implements DatasetProducer
 	 * Close the datasets in preparation for shutdown.
 	 */
 	@Override
-	public void close()
-	{
+	public void close() {
 		getMetaDataset().close();
 		getLocalDataset().close();
 	}
 
-	private String createFN( final String prefix )
-	{
+	private String createFN(final String prefix) {
 		return String.format("%s.%s", prefix, format.getLang()
 				.getFileExtensions().get(0));
 	}
 
 	@Override
-	public Model getLocalDataModel( final String modelName )
-	{
+	public Model getLocalDataModel(final String modelName) {
 		return getModel(getLocalDataset(), modelName);
 	}
 
@@ -107,14 +96,12 @@ abstract public class AbstractDatasetProducer implements DatasetProducer
 	 *
 	 * @return the local dataset
 	 */
-	protected Dataset getLocalDataset()
-	{
+	protected Dataset getLocalDataset() {
 		return localData;
 	}
 
 	@Override
-	public Model getMetaDataModel( final String modelName )
-	{
+	public Model getMetaDataModel(final String modelName) {
 		return getModel(getMetaDataset(), modelName);
 	}
 
@@ -123,8 +110,7 @@ abstract public class AbstractDatasetProducer implements DatasetProducer
 	 *
 	 * @return the meta dataset.
 	 */
-	protected Dataset getMetaDataset()
-	{
+	protected Dataset getMetaDataset() {
 		return metaData;
 	}
 
@@ -134,17 +120,14 @@ abstract public class AbstractDatasetProducer implements DatasetProducer
 	 * @return
 	 */
 	@Override
-	public Model getMetaDatasetUnionModel()
-	{
+	public Model getMetaDatasetUnionModel() {
 		return getMetaDataset().getNamedModel("urn:x-arq:UnionGraph");
 	}
 
-	private Model getModel( final Dataset dataset, final String modelName )
-	{
+	private Model getModel(final Dataset dataset, final String modelName) {
 		final String name = AbstractDatasetProducer.getModelURI(modelName);
 		final Model model = dataset.getNamedModel(name);
-		if (!dataset.containsNamedModel(name))
-		{
+		if (!dataset.containsNamedModel(name)) {
 			dataset.addNamedModel(name, model);
 		}
 
@@ -153,14 +136,12 @@ abstract public class AbstractDatasetProducer implements DatasetProducer
 	}
 
 	@Override
-	public Properties getProperties()
-	{
+	public Properties getProperties() {
 		return new Properties(properties);
 	}
 
 	@Override
-	public Iterator<String> listMetaDataNames()
-	{
+	public Iterator<String> listMetaDataNames() {
 		return getMetaDataset().listNames();
 	}
 
@@ -170,71 +151,55 @@ abstract public class AbstractDatasetProducer implements DatasetProducer
 	 * @param zis
 	 * @throws IOException
 	 */
-	protected void load( final ZipInputStream zis ) throws IOException
-	{
+	protected void load(final ZipInputStream zis) throws IOException {
 		ZipEntry e = zis.getNextEntry();
 
-		if (e.getName().startsWith(DatasetProducer.META_PREFIX))
-		{
+		if (e.getName().startsWith(DatasetProducer.META_PREFIX)) {
 			loadMeta(zis, e);
-		}
-		else
-		{
+		} else {
 			throw new IllegalStateException("Entry must start with "
 					+ DatasetProducer.META_PREFIX);
 		}
 		e = zis.getNextEntry();
-		if (e.getName().startsWith(DatasetProducer.LOCAL_PREFIX))
-		{
+		if (e.getName().startsWith(DatasetProducer.LOCAL_PREFIX)) {
 			loadLocal(zis, e);
-		}
-		else
-		{
+		} else {
 			throw new IllegalStateException("Entry must start with "
 					+ DatasetProducer.LOCAL_PREFIX);
 		}
 
 	}
 
-	private void loadDataset( final ZipInputStream zis, final ZipEntry e,
-			final Dataset ds, final String prefix )
-	{
-		if (e.getName().equals(createFN(prefix)))
-		{
+	private void loadDataset(final ZipInputStream zis, final ZipEntry e,
+			final Dataset ds, final String prefix) {
+		if (e.getName().equals(createFN(prefix))) {
 
 			RDFDataMgr.read(ds, new NoCloseZipInputStream(zis),
 					format.getLang());
-		}
-		else
-		{
+		} else {
 			throw new IllegalArgumentException("Entry name must be "
 					+ createFN(prefix));
 		}
 	}
 
-	protected void loadLocal( final ZipInputStream zis, final ZipEntry e )
-	{
+	protected void loadLocal(final ZipInputStream zis, final ZipEntry e) {
 		loadDataset(zis, e, localData, DatasetProducer.LOCAL_PREFIX);
 	}
 
-	protected void loadMeta( final ZipInputStream zis, final ZipEntry e )
-	{
+	protected void loadMeta(final ZipInputStream zis, final ZipEntry e) {
 		loadDataset(zis, e, metaData, DatasetProducer.META_PREFIX);
 	}
 
 	@Override
-	final public void save( final File f ) throws FileNotFoundException,
-	IOException
-	{
+	final public void save(final File f) throws FileNotFoundException,
+			IOException {
 		save(new FileOutputStream(f));
 	}
 
 	@Override
-	final public void save( final OutputStream out ) throws IOException
-	{
+	final public void save(final OutputStream out) throws IOException {
 		final ZipOutputStream zos = new ZipOutputStream(out);
-		try
-		{
+		try {
 			properties.setProperty(J4SPropertyNames.DATASET_PRODUCER, this
 					.getClass().getCanonicalName());
 
@@ -247,29 +212,24 @@ abstract public class AbstractDatasetProducer implements DatasetProducer
 			saveMeta(zos);
 
 			saveLocal(zos);
-		}
-		finally
-		{
+		} finally {
 			zos.close();
 		}
 	}
 
-	private void saveDataset( final ZipOutputStream out, final Dataset ds,
-			final String prefix ) throws IOException
-	{
+	private void saveDataset(final ZipOutputStream out, final Dataset ds,
+			final String prefix) throws IOException {
 		final ZipEntry e = new ZipEntry(createFN(prefix));
 		out.putNextEntry(e);
 		RDFDataMgr.write(out, ds, format);
 		out.closeEntry();
 	}
 
-	protected void saveLocal( final ZipOutputStream out ) throws IOException
-	{
+	protected void saveLocal(final ZipOutputStream out) throws IOException {
 		saveDataset(out, getLocalDataset(), DatasetProducer.LOCAL_PREFIX);
 	}
 
-	protected void saveMeta( final ZipOutputStream out ) throws IOException
-	{
+	protected void saveMeta(final ZipOutputStream out) throws IOException {
 		saveDataset(out, getMetaDataset(), DatasetProducer.META_PREFIX);
 	}
 

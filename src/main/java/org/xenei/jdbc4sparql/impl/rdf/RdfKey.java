@@ -37,22 +37,17 @@ import org.xenei.jena.entities.MissingAnnotation;
 import org.xenei.jena.entities.annotations.Predicate;
 import org.xenei.jena.entities.annotations.Subject;
 
-@Subject( namespace = "http://org.xenei.jdbc4sparql/entity/Key#" )
-public class RdfKey implements Key
-{
+@Subject(namespace = "http://org.xenei.jdbc4sparql/entity/Key#")
+public class RdfKey implements Key {
 
-	public static class Builder implements Key
-	{
+	public static class Builder implements Key {
 		private final List<RdfKeySegment> segments = new ArrayList<RdfKeySegment>();
 		private boolean unique;
 		private String keyName;
 
-		public Builder addSegment( final RdfKeySegment segment )
-		{
-			for (final KeySegment seg : segments)
-			{
-				if (seg.getIdx() == segment.getIdx())
-				{
+		public Builder addSegment(final RdfKeySegment segment) {
+			for (final KeySegment seg : segments) {
+				if (seg.getIdx() == segment.getIdx()) {
 					throw new IllegalArgumentException(
 							"Same segment may not be added more than once");
 				}
@@ -61,20 +56,16 @@ public class RdfKey implements Key
 			return this;
 		}
 
-		public RdfKey build( final Model model )
-		{
+		public RdfKey build(final Model model) {
 			checkBuildState();
 			final Class<?> typeClass = Key.class;
 			final String fqName = String.format("%s/instance/key-%s",
 					ResourceBuilder.getFQName(typeClass), getId());
 			final ResourceBuilder builder = new ResourceBuilder(model);
 			Resource key = null;
-			if (builder.hasResource(fqName))
-			{
+			if (builder.hasResource(fqName)) {
 				key = builder.getResource(fqName, typeClass);
-			}
-			else
-			{
+			} else {
 				key = builder.getResource(fqName, typeClass);
 
 				key.addLiteral(builder.getProperty(typeClass, "keyName"),
@@ -84,15 +75,11 @@ public class RdfKey implements Key
 
 				RDFList lst = null;
 
-				for (final KeySegment seg : segments)
-				{
+				for (final KeySegment seg : segments) {
 					final Resource s = seg.getResource();
-					if (lst == null)
-					{
+					if (lst == null) {
 						lst = model.createList().with(s);
-					}
-					else
-					{
+					} else {
 						lst.add(s);
 					}
 				}
@@ -105,89 +92,72 @@ public class RdfKey implements Key
 
 			final EntityManager entityManager = EntityManagerFactory
 					.getEntityManager();
-			try
-			{
+			try {
 				return entityManager.read(key, RdfKey.class);
-			}
-			catch (final MissingAnnotation e)
-			{
+			} catch (final MissingAnnotation e) {
 				throw new RuntimeException(e);
 			}
 		}
 
-		private void checkBuildState()
-		{
-			if (segments.size() == 0)
-			{
+		private void checkBuildState() {
+			if (segments.size() == 0) {
 				throw new IllegalStateException(
 						"there must be at least one key segment");
 			}
 		}
 
 		@Override
-		public int compare( final Object[] data1, final Object[] data2 )
-		{
+		public int compare(final Object[] data1, final Object[] data2) {
 			return RdfKey.compare(getSegments(), data1, data2);
 		}
 
 		@Override
-		public String getId()
-		{
+		public String getId() {
 			final StringBuilder sb = new StringBuilder().append(isUnique());
-			for (final RdfKeySegment ks : getSegments())
-			{
+			for (final RdfKeySegment ks : getSegments()) {
 				sb.append(ks.getId());
 			}
 			return UUID.nameUUIDFromBytes(sb.toString().getBytes()).toString();
 		}
 
 		@Override
-		public String getKeyName()
-		{
+		public String getKeyName() {
 			return keyName;
 		}
 
 		@Override
 		@Predicate
-		public Resource getResource()
-		{
+		public Resource getResource() {
 			throw new UnsupportedOperationException();
 		}
 
 		@Override
-		public List<RdfKeySegment> getSegments()
-		{
+		public List<RdfKeySegment> getSegments() {
 			return segments;
 		}
 
 		@Override
-		public boolean isUnique()
-		{
+		public boolean isUnique() {
 			return unique;
 		}
 
-		public Builder setKeyName( final String keyName )
-		{
+		public Builder setKeyName(final String keyName) {
 			this.keyName = keyName;
 			return this;
 
 		}
 
-		public Builder setUnique( final boolean unique )
-		{
+		public Builder setUnique(final boolean unique) {
 			this.unique = unique;
 			return this;
 		}
 	}
 
-	private final static int compare( final List<RdfKeySegment> segments,
-			final Object[] data1, final Object[] data2 )
-	{
-		for (final RdfKeySegment segment : segments)
-		{
+	private final static int compare(final List<RdfKeySegment> segments,
+			final Object[] data1, final Object[] data2) {
+		for (final RdfKeySegment segment : segments) {
 			final int retval = segment.compare(data1, data2);
-			if (retval != 0)
-			{
+			if (retval != 0) {
 				return retval;
 			}
 		}
@@ -197,14 +167,12 @@ public class RdfKey implements Key
 	private List<RdfKeySegment> segments;
 
 	@Override
-	public final int compare( final Object[] data1, final Object[] data2 )
-	{
+	public final int compare(final Object[] data1, final Object[] data2) {
 		return RdfKey.compare(getSegments(), data1, data2);
 	}
 
 	@Override
-	public final String getId()
-	{
+	public final String getId() {
 		return UUID.nameUUIDFromBytes(toString().getBytes()).toString();
 	}
 
@@ -214,44 +182,35 @@ public class RdfKey implements Key
 	 * @return the key name.
 	 */
 	@Override
-	@Predicate( impl = true )
-	public String getKeyName()
-	{
+	@Predicate(impl = true)
+	public String getKeyName() {
 		throw new EntityManagerRequiredException();
 	}
 
-	@Predicate( impl = true )
-	public RDFNode getKeySegments()
-	{
-		throw new EntityManagerRequiredException();
-	}
-
-	@Override
-	@Predicate( impl = true )
-	public Resource getResource()
-	{
+	@Predicate(impl = true)
+	public RDFNode getKeySegments() {
 		throw new EntityManagerRequiredException();
 	}
 
 	@Override
-	public List<RdfKeySegment> getSegments()
-	{
-		if (segments == null)
-		{
+	@Predicate(impl = true)
+	public Resource getResource() {
+		throw new EntityManagerRequiredException();
+	}
+
+	@Override
+	public List<RdfKeySegment> getSegments() {
+		if (segments == null) {
 			final RDFList lst = getKeySegments().as(RDFList.class);
 			final EntityManager entityManager = EntityManagerFactory
 					.getEntityManager();
 			segments = new ArrayList<RdfKeySegment>();
 
-			for (final RDFNode n : lst.asJavaList())
-			{
-				try
-				{
+			for (final RDFNode n : lst.asJavaList()) {
+				try {
 					segments.add(entityManager.read(n.asResource(),
 							RdfKeySegment.class));
-				}
-				catch (final MissingAnnotation e)
-				{
+				} catch (final MissingAnnotation e) {
 					throw new RuntimeException(e);
 				}
 			}
@@ -260,18 +219,15 @@ public class RdfKey implements Key
 	}
 
 	@Override
-	@Predicate( impl = true )
-	public boolean isUnique()
-	{
+	@Predicate(impl = true)
+	public boolean isUnique() {
 		throw new EntityManagerRequiredException();
 	}
 
 	@Override
-	public String toString()
-	{
+	public String toString() {
 		final StringBuilder sb = new StringBuilder().append(isUnique());
-		for (final RdfKeySegment ks : getSegments())
-		{
+		for (final RdfKeySegment ks : getSegments()) {
 			sb.append(ks.getId());
 		}
 		return sb.toString();

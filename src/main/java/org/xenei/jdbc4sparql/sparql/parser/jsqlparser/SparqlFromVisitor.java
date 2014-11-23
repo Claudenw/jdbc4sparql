@@ -26,13 +26,13 @@ import net.sf.jsqlparser.statement.select.FromItemVisitor;
 import net.sf.jsqlparser.statement.select.SubJoin;
 import net.sf.jsqlparser.statement.select.SubSelect;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xenei.jdbc4sparql.iface.TableName;
+import org.xenei.jdbc4sparql.iface.name.TableName;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 
-class SparqlFromVisitor implements FromItemVisitor
-{
+class SparqlFromVisitor implements FromItemVisitor {
 
 	private final SparqlQueryBuilder builder;
 	private final boolean optional;
@@ -40,50 +40,44 @@ class SparqlFromVisitor implements FromItemVisitor
 	private static Logger LOG = LoggerFactory
 			.getLogger(SparqlFromVisitor.class);
 
-	SparqlFromVisitor( final SparqlQueryBuilder builder )
-	{
+	SparqlFromVisitor(final SparqlQueryBuilder builder) {
 		this(builder, SparqlQueryBuilder.REQUIRED);
 	}
 
-	SparqlFromVisitor( final SparqlQueryBuilder builder, final boolean optional )
-	{
+	SparqlFromVisitor(final SparqlQueryBuilder builder, final boolean optional) {
 		this.builder = builder;
 		this.optional = optional;
 	}
 
-	public TableName getName()
-	{
+	public TableName getName() {
 		return name;
 	}
 
 	@Override
-	public void visit( final SubJoin subjoin )
-	{
+	public void visit(final SubJoin subjoin) {
 		throw new UnsupportedOperationException("FROM subjoin is not supported");
 	}
 
 	@Override
-	public void visit( final SubSelect subSelect )
-	{
+	public void visit(final SubSelect subSelect) {
 		throw new UnsupportedOperationException(
 				"FROM subselect is not supported");
 	}
 
 	@Override
-	public void visit( final Table table )
-	{
+	public void visit(final Table table) {
 		SparqlFromVisitor.LOG.debug("visit table: {}", table);
-		try
-		{
-			final TableName tName = new TableName(table.getSchemaName(),
-					table.getName());
-			name = (table.getAlias() != null) ? TableName.getNameInstance(table
-					.getAlias()) : tName;
+		try {
+			String defaultCatalog = builder.getCatalogName();
+			String defaultSchema = builder.getDefaultSchemaName();
+			final TableName tName = new TableName(defaultCatalog,
+					StringUtils.defaultString(table.getSchemaName(),
+							defaultSchema), table.getName());
+			name = (table.getAlias() != null) ? TableName.getNameInstance(
+					defaultCatalog, defaultSchema, table.getAlias()) : tName;
 			builder.addTable(tName, name, optional);
 
-		}
-		catch (final SQLException e)
-		{
+		} catch (final SQLException e) {
 			throw new RuntimeException(e);
 		}
 	}

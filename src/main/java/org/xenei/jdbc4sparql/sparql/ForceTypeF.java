@@ -1,46 +1,43 @@
 package org.xenei.jdbc4sparql.sparql;
 
-import com.hp.hpl.jena.sparql.core.Var;
 import com.hp.hpl.jena.sparql.expr.Expr;
 import com.hp.hpl.jena.sparql.expr.ExprFunction1;
-import com.hp.hpl.jena.sparql.expr.ExprVar;
 import com.hp.hpl.jena.sparql.expr.NodeValue;
 import com.hp.hpl.jena.sparql.syntax.ElementBind;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xenei.jdbc4sparql.iface.TypeConverter;
 
 /**
- * A local filter that removes any values that are null and not allowed to
- * be null or that can not be converted
- * to the expected column value type.
+ * A local filter that removes any values that are null and not allowed to be
+ * null or that can not be converted to the expected column value type.
  */
-public class ForceTypeF extends ExprFunction1
-{
+public class ForceTypeF extends ExprFunction1 {
 	private final CheckTypeF checkFunc;
+	private static final Logger LOG = LoggerFactory.getLogger(ForceTypeF.class);
 
-	public ForceTypeF( CheckTypeF checkFunc )
-	{
-		super(checkFunc==null?null:checkFunc.getArg(), "forceTypeF");
-		if (checkFunc == null)
-		{
+	private static CheckTypeF checkCheckTypeF(CheckTypeF checkTypeF) {
+		if (checkTypeF == null) {
 			throw new IllegalArgumentException("checkTypeF may not be null");
 		}
+		return checkTypeF;
+	}
+
+	public ForceTypeF(CheckTypeF checkFunc) {
+		super(checkCheckTypeF(checkFunc).getArg(), "forceTypeF");
 		this.checkFunc = checkFunc;
 	}
 
 	@Override
-	public Expr copy( final Expr expr )
-	{
+	public Expr copy(final Expr expr) {
 		return new ForceTypeF(checkFunc);
 	}
 
 	@Override
-	public boolean equals( final Object o )
-	{
-		if (o instanceof ForceTypeF)
-		{
+	public boolean equals(final Object o) {
+		if (o instanceof ForceTypeF) {
 			final ForceTypeF cf = (ForceTypeF) o;
-
 			return checkFunc.equals(cf.checkFunc)
 					&& getArg().asVar().equals(cf.getArg().asVar());
 		}
@@ -48,13 +45,15 @@ public class ForceTypeF extends ExprFunction1
 	}
 
 	@Override
-	public NodeValue eval( final NodeValue v )
-	{
-		return TypeConverter.getNodeValue( checkFunc.getValue() );
+	public NodeValue eval(final NodeValue v) {
+		Object value = checkFunc.getValue();
+		NodeValue retval = TypeConverter.getNodeValue(value);
+		LOG.debug("{} of {} ({}) is {}", this, v, value, retval);
+		return retval;
 	}
-	
+
 	public ElementBind getBinding() {
-		return new ElementBind( checkFunc.getColumnInfo().getVar(), this );
+		return new ElementBind(checkFunc.getColumnInfo().getVar(), this);
 	}
 
 }

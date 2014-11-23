@@ -6,6 +6,7 @@ import com.hp.hpl.jena.sparql.expr.E_NumFloor;
 import com.hp.hpl.jena.sparql.expr.E_NumRound;
 import com.hp.hpl.jena.sparql.expr.E_Random;
 import com.hp.hpl.jena.sparql.expr.Expr;
+import com.hp.hpl.jena.sparql.expr.ExprAggregator;
 import com.hp.hpl.jena.sparql.expr.aggregate.AggCount;
 import com.hp.hpl.jena.sparql.expr.aggregate.AggCountDistinct;
 import com.hp.hpl.jena.sparql.expr.aggregate.AggCountVar;
@@ -29,10 +30,15 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 
+import org.xenei.jdbc4sparql.iface.ColumnDef;
+import org.xenei.jdbc4sparql.iface.name.ColumnName;
+import org.xenei.jdbc4sparql.impl.virtual.VirtualCatalog;
+import org.xenei.jdbc4sparql.impl.virtual.VirtualSchema;
+import org.xenei.jdbc4sparql.impl.virtual.VirtualTable;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
+import org.xenei.jdbc4sparql.sparql.items.QueryColumnInfo;
 
-public class NumericFunctionHandler extends AbstractFunctionHandler
-{
+public class NumericFunctionHandler extends AbstractFunctionHandler {
 	public static final String[] NUMERIC_FUNCTIONS = { "MAX", "MIN", "COUNT",
 			"SUM", "ABS", "ROUND", "CEIL", "FLOOR", "RAND" };
 	private static final int MAX = 0;
@@ -45,190 +51,160 @@ public class NumericFunctionHandler extends AbstractFunctionHandler
 	private static final int FLOOR = 7;
 	private static final int RAND = 8;
 
-	public NumericFunctionHandler( final SparqlQueryBuilder builder,
-			final Stack<Expr> stack )
-	{
+	public NumericFunctionHandler(final SparqlQueryBuilder builder,
+			final Stack<Expr> stack) {
 		super(builder, stack);
 	}
 
 	@Override
-	public boolean handle( final Function func ) throws SQLException
-	{
+	public ColumnDef handle(final Function func) throws SQLException {
+		ColumnDef retval = null;
 		final int stackCheck = stack.size();
 		final int i = Arrays.asList(NumericFunctionHandler.NUMERIC_FUNCTIONS)
 				.indexOf(func.getName().toUpperCase());
-		switch (i)
-		{
-			case MAX:
-				handleAggregate(AggMaxDistinct.class, AggMax.class, func);
-				break;
-			case MIN:
-				handleAggregate(AggMinDistinct.class, AggMin.class, func);
-				break;
-			case COUNT:
-				handleAggregate(AggCountDistinct.class, AggCount.class,
-						AggCountVarDistinct.class, AggCountVar.class, func);
-				break;
-			case SUM:
-				handleAggregate(AggSumDistinct.class, AggSum.class, func);
-				break;
-			case ABS:
-				handleExpr1(E_NumAbs.class, func, java.sql.Types.NUMERIC);
-				break;
-			case ROUND:
-				handleExpr1(E_NumRound.class, func, java.sql.Types.INTEGER);
-				break;
-			case CEIL:
-				handleExpr1(E_NumCeiling.class, func, java.sql.Types.INTEGER);
-				break;
-			case FLOOR:
-				handleExpr1(E_NumFloor.class, func, java.sql.Types.INTEGER);
-				break;
-			case RAND:
-				handleExpr0(E_Random.class, func, java.sql.Types.NUMERIC);
-				break;
-			default:
-				return false;
+		switch (i) {
+		case MAX:
+			retval = handleAggregate(AggMaxDistinct.class, AggMax.class, func);
+			break;
+		case MIN:
+			retval = handleAggregate(AggMinDistinct.class, AggMin.class, func);
+			break;
+		case COUNT:
+			retval = handleAggregate(AggCountDistinct.class, AggCount.class,
+					AggCountVarDistinct.class, AggCountVar.class, func);
+			break;
+		case SUM:
+			retval = handleAggregate(AggSumDistinct.class, AggSum.class, func);
+			break;
+		case ABS:
+			retval = handleExpr1(E_NumAbs.class, func, java.sql.Types.NUMERIC);
+			break;
+		case ROUND:
+			retval = handleExpr1(E_NumRound.class, func, java.sql.Types.INTEGER);
+			break;
+		case CEIL:
+			retval = handleExpr1(E_NumCeiling.class, func,
+					java.sql.Types.INTEGER);
+			break;
+		case FLOOR:
+			retval = handleExpr1(E_NumFloor.class, func, java.sql.Types.INTEGER);
+			break;
+		case RAND:
+			retval = handleExpr0(E_Random.class, func, java.sql.Types.NUMERIC);
+			break;
+		default:
+			return null;
 		}
-		if (stack.size() != (stackCheck + 1))
-		{
+		if (stack.size() != (stackCheck + 1)) {
 			throw new IllegalStateException(String.format(
 					"Expected %s items on stack, found %s", stackCheck + 1,
 					stack.size()));
 		}
-		return true;
+		return retval;
 	}
 
-	private void handleAggregate(
+	private ColumnDef handleAggregate(
 			final Class<? extends AggregatorBase> allDistinct,
 			final Class<? extends AggregatorBase> all,
 			final Class<? extends AggregatorBase> varDistinct,
-			final Class<? extends AggregatorBase> var, final Function func )
-			throws SQLException
-	{
+			final Class<? extends AggregatorBase> var, final Function func)
+			throws SQLException {
 		Aggregator agg = null;
 		final ExpressionList l = func.getParameters();
-		if (l == null)
-		{
-			if (func.isAllColumns())
-			{
-				try
-				{
+		if (l == null) {
+			if (func.isAllColumns()) {
+				try {
 					agg = func.isDistinct() ? allDistinct.newInstance() : all
 							.newInstance();
-				}
-				catch (final InstantiationException e)
-				{
+				} catch (final InstantiationException e) {
+					throw new IllegalStateException(e.getMessage(), e);
+				} catch (final IllegalAccessException e) {
 					throw new IllegalStateException(e.getMessage(), e);
 				}
-				catch (final IllegalAccessException e)
-				{
-					throw new IllegalStateException(e.getMessage(), e);
-				}
-			}
-			else
-			{
+			} else {
 				throw getNoArgumentEx(func, "one");
 			}
-		}
-		else if (l.getExpressions().size() > 1)
-		{
+		} else if (l.getExpressions().size() > 1) {
 			throw getToManyArgumentEx(func, "one");
-		}
-		else
-		{
+		} else {
 			final Expression expression = (Expression) l.getExpressions()
 					.get(0);
 			expression.accept(exprVisitor);
-			try
-			{
+			try {
 				final Constructor<? extends AggregatorBase> c = func
 						.isDistinct() ? varDistinct.getConstructor(Expr.class)
 						: var.getConstructor(Expr.class);
 				agg = c.newInstance(exprVisitor.getResult());
-			}
-			catch (final NoSuchMethodException e)
-			{
+			} catch (final NoSuchMethodException e) {
 				throw new IllegalArgumentException(e.getMessage(), e);
 
-			}
-			catch (final SecurityException e)
-			{
+			} catch (final SecurityException e) {
 				throw new IllegalStateException(e.getMessage(), e);
 
-			}
-			catch (final InstantiationException e)
-			{
+			} catch (final InstantiationException e) {
 				throw new IllegalStateException(e.getMessage(), e);
 
-			}
-			catch (final IllegalAccessException e)
-			{
+			} catch (final IllegalAccessException e) {
 				throw new IllegalStateException(e.getMessage(), e);
 
-			}
-			catch (final InvocationTargetException e)
-			{
+			} catch (final InvocationTargetException e) {
 				throw new IllegalStateException(e.getMessage(), e);
 
 			}
 		}
-		stack.push(builder.register(agg, java.sql.Types.NUMERIC));
+		ExprAggregator expr = builder.register(agg, java.sql.Types.NUMERIC);
+		final ColumnName columnName = ColumnName.getNameInstance(
+				VirtualCatalog.NAME, VirtualSchema.NAME, VirtualTable.NAME,
+				expr.getAggVar().getVarName());
+		QueryColumnInfo qci = builder.getColumn(columnName);
+		stack.push(expr);
+		return qci.getColumn().getColumnDef();
 	}
 
-	private void handleAggregate(
+	private ColumnDef handleAggregate(
 			final Class<? extends AggregatorBase> varDistinct,
-			final Class<? extends AggregatorBase> var, final Function func )
-			throws SQLException
-	{
+			final Class<? extends AggregatorBase> var, final Function func)
+			throws SQLException {
 		Aggregator agg = null;
 		final ExpressionList l = func.getParameters();
-		if (l == null)
-		{
+		if (l == null) {
 			throw getNoArgumentEx(func, "one");
 		}
-		if (l.getExpressions().size() > 1)
-		{
+		if (l.getExpressions().size() > 1) {
 			throw getToManyArgumentEx(func, "one");
-		}
-		else
-		{
+		} else {
 			final Expression expression = (Expression) l.getExpressions()
 					.get(0);
 			expression.accept(exprVisitor);
-			try
-			{
+			try {
 				final Constructor<? extends AggregatorBase> c = func
 						.isDistinct() ? varDistinct.getConstructor(Expr.class)
 						: var.getConstructor(Expr.class);
 				agg = c.newInstance(exprVisitor.getResult());
-			}
-			catch (final NoSuchMethodException e)
-			{
+			} catch (final NoSuchMethodException e) {
 				throw new IllegalArgumentException(e.getMessage(), e);
 
-			}
-			catch (final SecurityException e)
-			{
+			} catch (final SecurityException e) {
 				throw new IllegalStateException(e.getMessage(), e);
 
-			}
-			catch (final InstantiationException e)
-			{
+			} catch (final InstantiationException e) {
 				throw new IllegalStateException(e.getMessage(), e);
 
-			}
-			catch (final IllegalAccessException e)
-			{
+			} catch (final IllegalAccessException e) {
 				throw new IllegalStateException(e.getMessage(), e);
 
-			}
-			catch (final InvocationTargetException e)
-			{
+			} catch (final InvocationTargetException e) {
 				throw new IllegalStateException(e.getMessage(), e);
 
 			}
 		}
-		stack.push(builder.register(agg, java.sql.Types.NUMERIC));
+		ExprAggregator expr = builder.register(agg, java.sql.Types.NUMERIC);
+		final ColumnName columnName = ColumnName.getNameInstance(
+				VirtualCatalog.NAME, VirtualSchema.NAME, VirtualTable.NAME,
+				expr.getAggVar().getVarName());
+		QueryColumnInfo qci = builder.getColumn(columnName);
+		stack.push(expr);
+		return qci.getColumn().getColumnDef();
+
 	}
 }

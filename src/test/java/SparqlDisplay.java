@@ -1,14 +1,12 @@
 import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.query.QueryFactory;
 
-public class SparqlDisplay
-{
+public class SparqlDisplay {
 
 	/**
 	 * @param args
 	 */
-	public static void main( final String[] args )
-	{
+	public static void main(final String[] args) {
 		final Query q = QueryFactory
 				.create("SELECT (MAX(?tstamp) as ?maxts) (MAX(?state) as ?x) WHERE {"
 						+ "	      ?state a <http://example/ConnectionState> ."
@@ -17,8 +15,7 @@ public class SparqlDisplay
 		q.toString();
 	}
 
-	public SparqlDisplay()
-	{
+	public SparqlDisplay() {
 		// TODO Auto-generated constructor stub
 	}
 

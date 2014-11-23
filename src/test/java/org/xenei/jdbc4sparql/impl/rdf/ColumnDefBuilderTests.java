@@ -12,25 +12,21 @@ import org.junit.Before;
 import org.junit.Test;
 import org.xenei.jdbc4sparql.iface.ColumnDef;
 
-public class ColumnDefBuilderTests
-{
+public class ColumnDefBuilderTests {
 	private Model model;
 
 	@Before
-	public void setUp() throws Exception
-	{
+	public void setUp() throws Exception {
 		model = ModelFactory.createDefaultModel();
 	}
 
 	@After
-	public void tearDown() throws Exception
-	{
+	public void tearDown() throws Exception {
 		model.close();
 	}
 
 	@Test
-	public void testIntegerCreation()
-	{
+	public void testIntegerCreation() {
 		final RdfColumnDef.Builder builder = RdfColumnDef.Builder
 				.getIntegerBuilder();
 		final ColumnDef cd = builder.build(model);
@@ -52,17 +48,16 @@ public class ColumnDefBuilderTests
 	}
 
 	@Test
-	public void testSetValuesCreation()
-	{
+	public void testSetValuesCreation() {
 		final RdfColumnDef.Builder builder = new RdfColumnDef.Builder();
 		builder.setType(Types.VARCHAR).setAutoIncrement(true)
-		.setCaseSensitive(true).setColumnClassName("foo")
-		.setCurrency(true).setDefinitelyWritable(true)
-		.setDisplaySize(5)
-		.setNullable(DatabaseMetaData.columnNullableUnknown)
-		.setPrecision(3).setReadOnly(true).setScale(10)
-		.setSearchable(true).setSigned(true).setTypeName("bar")
-		.setWritable(true);
+				.setCaseSensitive(true).setColumnClassName("foo")
+				.setCurrency(true).setDefinitelyWritable(true)
+				.setDisplaySize(5)
+				.setNullable(DatabaseMetaData.columnNullableUnknown)
+				.setPrecision(3).setReadOnly(true).setScale(10)
+				.setSearchable(true).setSigned(true).setTypeName("bar")
+				.setWritable(true);
 
 		final ColumnDef cd = builder.build(model);
 
@@ -84,8 +79,7 @@ public class ColumnDefBuilderTests
 	}
 
 	@Test
-	public void testSmallIntCreation()
-	{
+	public void testSmallIntCreation() {
 		final RdfColumnDef.Builder builder = RdfColumnDef.Builder
 				.getSmallIntBuilder();
 		final ColumnDef cd = builder.build(model);
@@ -107,8 +101,7 @@ public class ColumnDefBuilderTests
 	}
 
 	@Test
-	public void testStandardCreation()
-	{
+	public void testStandardCreation() {
 		final RdfColumnDef.Builder builder = new RdfColumnDef.Builder();
 		builder.setType(Types.VARCHAR);
 		final ColumnDef cd = builder.build(model);
@@ -130,8 +123,7 @@ public class ColumnDefBuilderTests
 	}
 
 	@Test
-	public void testStringCreation()
-	{
+	public void testStringCreation() {
 		final RdfColumnDef.Builder builder = RdfColumnDef.Builder
 				.getStringBuilder();
 		final ColumnDef cd = builder.build(model);

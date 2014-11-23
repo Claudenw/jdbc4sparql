@@ -18,33 +18,27 @@ import org.xenei.jena.entities.ResourceWrapper;
 import org.xenei.jena.entities.annotations.Predicate;
 import org.xenei.jena.entities.annotations.Subject;
 
-@Subject( namespace = "http://org.xenei.jdbc4sparql/entity/ColumnDef#" )
-public class RdfColumnDef implements ColumnDef, ResourceWrapper
-{
+@Subject(namespace = "http://org.xenei.jdbc4sparql/entity/ColumnDef#")
+public class RdfColumnDef implements ColumnDef, ResourceWrapper {
 	/**
 	 * Column builder, by default columns are not nullable.
 	 */
-	public static class Builder implements ColumnDef
-	{
-		public static String getFQName( final ColumnDef colDef )
-		{
+	public static class Builder implements ColumnDef {
+		public static String getFQName(final ColumnDef colDef) {
 			return String.format("%s/instance/UUID-%s",
 					ResourceBuilder.getFQName(RdfColumnDef.class),
 					ColumnDef.Util.createID(colDef));
 		}
 
-		public static Builder getIntegerBuilder()
-		{
+		public static Builder getIntegerBuilder() {
 			return new Builder().setType(Types.INTEGER).setSigned(true);
 		}
 
-		public static Builder getSmallIntBuilder()
-		{
+		public static Builder getSmallIntBuilder() {
 			return new Builder().setType(Types.SMALLINT).setSigned(true);
 		}
 
-		public static Builder getStringBuilder()
-		{
+		public static Builder getStringBuilder() {
 			return new Builder().setType(Types.VARCHAR).setSigned(false);
 		}
 
@@ -71,19 +65,15 @@ public class RdfColumnDef implements ColumnDef, ResourceWrapper
 
 		private final Class<? extends RdfColumnDef> typeClass = RdfColumnDef.class;
 
-		public RdfColumnDef build( final Model model )
-		{
+		public RdfColumnDef build(final Model model) {
 			checkBuildState();
 
 			final String fqName = Builder.getFQName(this);
 			final ResourceBuilder builder = new ResourceBuilder(model);
 			Resource columnDef = null;
-			if (builder.hasResource(fqName))
-			{
+			if (builder.hasResource(fqName)) {
 				columnDef = builder.getResource(fqName, typeClass);
-			}
-			else
-			{
+			} else {
 				columnDef = builder.getResource(fqName, typeClass);
 
 				columnDef.addLiteral(
@@ -100,8 +90,9 @@ public class RdfColumnDef implements ColumnDef, ResourceWrapper
 				columnDef.addLiteral(
 						builder.getProperty(typeClass, "nullable"), nullable);
 				columnDef.addLiteral(
-						builder.getProperty(typeClass, "typeName"), StringUtils
-						.defaultString(typeName, javaType.getSimpleName()));
+						builder.getProperty(typeClass, "typeName"),
+						StringUtils.defaultString(typeName,
+								javaType.getSimpleName()));
 				columnDef.addLiteral(
 						builder.getProperty(typeClass, "columnClassName"),
 						columnClassName);
@@ -128,205 +119,171 @@ public class RdfColumnDef implements ColumnDef, ResourceWrapper
 
 			final EntityManager entityManager = EntityManagerFactory
 					.getEntityManager();
-			try
-			{
+			try {
 				return entityManager.read(columnDef, typeClass);
-			}
-			catch (final MissingAnnotation e)
-			{
+			} catch (final MissingAnnotation e) {
 				throw new RuntimeException(e);
 			}
 		}
 
-		protected void checkBuildState()
-		{
-			if (type == null)
-			{
+		protected void checkBuildState() {
+			if (type == null) {
 				throw new IllegalStateException("type must be set");
 			}
 		}
 
 		@Override
-		public String getColumnClassName()
-		{
+		public String getColumnClassName() {
 			return columnClassName;
 		}
 
 		@Override
-		public int getDisplaySize()
-		{
+		public int getDisplaySize() {
 			return displaySize;
 		}
 
 		@Override
-		public int getNullable()
-		{
+		public int getNullable() {
 			return nullable;
 		}
 
 		@Override
-		public int getPrecision()
-		{
+		public int getPrecision() {
 			return precision;
 		}
 
 		@Override
-		public int getScale()
-		{
+		public int getScale() {
 			return scale;
 		}
 
 		@Override
-		public int getType()
-		{
+		public int getType() {
 			return type;
 		}
 
 		@Override
-		public String getTypeName()
-		{
+		public String getTypeName() {
 			return typeName;
 		}
 
 		@Override
-		public boolean isAutoIncrement()
-		{
+		public boolean isAutoIncrement() {
 			return autoIncrement;
 		}
 
 		@Override
-		public boolean isCaseSensitive()
-		{
+		public boolean isCaseSensitive() {
 			return caseSensitive;
 		}
 
 		@Override
-		public boolean isCurrency()
-		{
+		public boolean isCurrency() {
 			return currency;
 		}
 
 		@Override
-		public boolean isDefinitelyWritable()
-		{
+		public boolean isDefinitelyWritable() {
 			return definitelyWritable;
 		}
 
 		@Override
-		public boolean isReadOnly()
-		{
+		public boolean isReadOnly() {
 			return readOnly;
 		}
 
 		@Override
-		public boolean isSearchable()
-		{
+		public boolean isSearchable() {
 			return searchable;
 		}
 
 		@Override
-		public boolean isSigned()
-		{
+		public boolean isSigned() {
 			return signed;
 		}
 
 		@Override
-		public boolean isWritable()
-		{
+		public boolean isWritable() {
 			return writable;
 		}
 
-		public Builder setAutoIncrement( final boolean autoIncrement )
-		{
+		public Builder setAutoIncrement(final boolean autoIncrement) {
 			this.autoIncrement = autoIncrement;
 			return this;
 		}
 
-		public Builder setCaseSensitive( final boolean caseSensitive )
-		{
+		public Builder setCaseSensitive(final boolean caseSensitive) {
 			this.caseSensitive = caseSensitive;
 			return this;
 		}
 
-		public Builder setColumnClassName( final String columnClassName )
-		{
+		public Builder setColumnClassName(final String columnClassName) {
 			this.columnClassName = columnClassName;
 			return this;
 		}
 
-		public Builder setCurrency( final boolean currency )
-		{
+		public Builder setCurrency(final boolean currency) {
 			this.currency = currency;
 			return this;
 		}
 
-		public Builder setDefinitelyWritable( final boolean definitelyWritable )
-		{
+		public Builder setDefinitelyWritable(final boolean definitelyWritable) {
 			this.definitelyWritable = definitelyWritable;
 			return this;
 		}
 
-		public Builder setDisplaySize( final int displaySize )
-		{
+		public Builder setDisplaySize(final int displaySize) {
 			this.displaySize = displaySize;
 			return this;
 		}
 
-		public Builder setNullable( final int nullable )
-		{
+		public Builder setNullable(final int nullable) {
 			this.nullable = nullable;
 			return this;
 		}
 
-		public Builder setPrecision( final int precision )
-		{
+		public Builder setPrecision(final int precision) {
 			this.precision = precision;
 			return this;
 		}
 
-		public Builder setReadOnly( final boolean readOnly )
-		{
+		public Builder setReadOnly(final boolean readOnly) {
 			this.readOnly = readOnly;
 			return this;
 		}
 
-		public Builder setScale( final int scale )
-		{
+		public Builder setScale(final int scale) {
 			this.scale = scale;
 			return this;
 		}
 
-		public Builder setSearchable( final boolean searchable )
-		{
+		public Builder setSearchable(final boolean searchable) {
 			this.searchable = searchable;
 			return this;
 		}
 
-		public Builder setSigned( final boolean signed )
-		{
+		public Builder setSigned(final boolean signed) {
 			this.signed = signed;
 			return this;
 		}
 
-		public Builder setType( final int type )
-		{
+		public Builder setType(final int type) {
 			this.type = type;
 			try {
 				this.javaType = TypeConverter.getJavaType(type);
 			} catch (SQLDataException e) {
-				throw new IllegalArgumentException( String.format( "SQL type %s is not supported", type ));
+				throw new IllegalArgumentException(String.format(
+						"SQL type %s is not supported", type));
 			}
 			return this;
 		}
 
-		public Builder setTypeName( final String typeName )
-		{
+		public Builder setTypeName(final String typeName) {
 			this.typeName = typeName;
 			return this;
 		}
 
-		public Builder setWritable( final boolean writable )
-		{
+		public Builder setWritable(final boolean writable) {
 			this.writable = writable;
 			return this;
 		}
@@ -334,114 +291,98 @@ public class RdfColumnDef implements ColumnDef, ResourceWrapper
 	}
 
 	@Override
-	@Predicate( impl = true )
-	public String getColumnClassName()
-	{
+	@Predicate(impl = true)
+	public String getColumnClassName() {
 		throw new EntityManagerRequiredException();
 	}
 
 	@Override
-	@Predicate( impl = true )
-	public int getDisplaySize()
-	{
+	@Predicate(impl = true)
+	public int getDisplaySize() {
 		throw new EntityManagerRequiredException();
 	}
 
 	@Override
-	@Predicate( impl = true )
-	public int getNullable()
-	{
+	@Predicate(impl = true)
+	public int getNullable() {
 		throw new EntityManagerRequiredException();
 	}
 
 	@Override
-	@Predicate( impl = true )
-	public int getPrecision()
-	{
+	@Predicate(impl = true)
+	public int getPrecision() {
 		throw new EntityManagerRequiredException();
 	}
 
 	@Override
-	@Predicate( impl = true )
-	public Resource getResource()
-	{
+	@Predicate(impl = true)
+	public Resource getResource() {
 		throw new EntityManagerRequiredException();
 	}
 
 	@Override
-	@Predicate( impl = true )
-	public int getScale()
-	{
+	@Predicate(impl = true)
+	public int getScale() {
 		throw new EntityManagerRequiredException();
 	}
 
 	@Override
-	@Predicate( impl = true )
-	public int getType()
-	{
+	@Predicate(impl = true)
+	public int getType() {
 		throw new EntityManagerRequiredException();
 	}
 
 	@Override
-	@Predicate( impl = true )
-	public String getTypeName()
-	{
+	@Predicate(impl = true)
+	public String getTypeName() {
 		throw new EntityManagerRequiredException();
 	}
 
 	@Override
-	@Predicate( impl = true )
-	public boolean isAutoIncrement()
-	{
+	@Predicate(impl = true)
+	public boolean isAutoIncrement() {
 		throw new EntityManagerRequiredException();
 	}
 
 	@Override
-	@Predicate( impl = true )
-	public boolean isCaseSensitive()
-	{
+	@Predicate(impl = true)
+	public boolean isCaseSensitive() {
 		throw new EntityManagerRequiredException();
 	}
 
 	@Override
-	@Predicate( impl = true )
-	public boolean isCurrency()
-	{
+	@Predicate(impl = true)
+	public boolean isCurrency() {
 		throw new EntityManagerRequiredException();
 	}
 
 	@Override
-	@Predicate( impl = true )
-	public boolean isDefinitelyWritable()
-	{
+	@Predicate(impl = true)
+	public boolean isDefinitelyWritable() {
 		throw new EntityManagerRequiredException();
 	}
 
 	@Override
-	@Predicate( impl = true )
-	public boolean isReadOnly()
-	{
+	@Predicate(impl = true)
+	public boolean isReadOnly() {
 		throw new EntityManagerRequiredException();
 	}
 
 	@Override
-	@Predicate( impl = true )
-	public boolean isSearchable()
-	{
+	@Predicate(impl = true)
+	public boolean isSearchable() {
 		throw new EntityManagerRequiredException();
 	}
 
 	@Override
-	@Predicate( impl = true )
-	public boolean isSigned()
-	{
+	@Predicate(impl = true)
+	public boolean isSigned() {
 		throw new EntityManagerRequiredException();
 	}
 
 	@Override
-	@Predicate( impl = true )
-	public boolean isWritable()
-	{
+	@Predicate(impl = true)
+	public boolean isWritable() {
 		throw new EntityManagerRequiredException();
 	}
 }

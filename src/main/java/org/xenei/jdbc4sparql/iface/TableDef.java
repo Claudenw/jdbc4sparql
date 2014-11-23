@@ -19,12 +19,11 @@ package org.xenei.jdbc4sparql.iface;
 
 import java.util.List;
 
-public interface TableDef
-{
+public interface TableDef {
 
 	public int getColumnCount();
 
-	public ColumnDef getColumnDef( int idx );
+	public ColumnDef getColumnDef(int idx);
 
 	/**
 	 * Get the list of columns in the table
@@ -33,7 +32,7 @@ public interface TableDef
 	 */
 	public List<ColumnDef> getColumnDefs();
 
-	public int getColumnIndex( ColumnDef column );
+	public int getColumnIndex(ColumnDef column);
 
 	/**
 	 * get the primary key for the table
@@ -44,8 +43,7 @@ public interface TableDef
 	public Key getPrimaryKey();
 
 	/**
-	 * Get the table sort order key.
-	 * returns null if the table is not sorted.
+	 * Get the table sort order key. returns null if the table is not sorted.
 	 *
 	 * @return
 	 */
