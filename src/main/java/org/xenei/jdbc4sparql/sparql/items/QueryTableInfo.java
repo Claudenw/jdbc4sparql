@@ -85,13 +85,16 @@ public class QueryTableInfo extends QueryItemInfo<TableName> {
 		this.dataFilterList = new HashSet<QueryColumnInfo>();
 
 		if (queryElementGroup == null) {
-			QueryTableInfo.LOG.debug("marking {} as not in query.", this);
+			if (LOG.isDebugEnabled())
+				QueryTableInfo.LOG.debug("marking {} as not in query.", this);
 		} else {
 			if (optional) {
-				QueryTableInfo.LOG.debug("marking {} as optional.", this);
+				if (LOG.isDebugEnabled())
+					QueryTableInfo.LOG.debug("marking {} as optional.", this);
 				queryElementGroup.addElement(new ElementOptional(egWrapper));
 			} else {
-				QueryTableInfo.LOG.debug("marking {} as required.", this);
+				if (LOG.isDebugEnabled())
+					QueryTableInfo.LOG.debug("marking {} as required.", this);
 				queryElementGroup.addElement(egWrapper);
 			}
 		}
@@ -137,7 +140,8 @@ public class QueryTableInfo extends QueryItemInfo<TableName> {
 		final QueryColumnInfo columnInfo = new QueryColumnInfo(column,
 				getName().getColumnName(cName.getShortName()), optional);
 		infoSet.addColumn(columnInfo);
-		QueryTableInfo.LOG.debug("Adding column: {} as {} ({})", columnInfo,
+		if (LOG.isDebugEnabled())
+			QueryTableInfo.LOG.debug("Adding column: {} as {} ({})", columnInfo,
 				columnInfo.getGUID(), columnInfo.isOptional() ? "optional"
 						: "required");
 
@@ -186,7 +190,8 @@ public class QueryTableInfo extends QueryItemInfo<TableName> {
 	}
 
 	public void addFilter(final Expr expr) {
-		QueryTableInfo.LOG.debug("Adding filter: {}", expr);
+		if (LOG.isDebugEnabled())
+			QueryTableInfo.LOG.debug("Adding filter: {}", expr);
 		eg.addElementFilter(new ElementFilter(expr));
 
 	}
@@ -198,7 +203,8 @@ public class QueryTableInfo extends QueryItemInfo<TableName> {
 	 *            The segments that must be used in the column names.
 	 */
 	public void addRequiredColumns() {
-		QueryTableInfo.LOG.debug("adding required columns for {}", getName());
+		if (LOG.isDebugEnabled())
+			QueryTableInfo.LOG.debug("adding required columns for {}", getName());
 		final String eol = System.getProperty("line.separator");
 		final StringBuilder queryFmt = new StringBuilder("{ ")
 				.append(StringUtils.defaultString(table.getQuerySegmentFmt(),
@@ -236,7 +242,8 @@ public class QueryTableInfo extends QueryItemInfo<TableName> {
 			throw new IllegalStateException(table.getName() + " query segment "
 					+ queryStr, e);
 		}
-		QueryTableInfo.LOG.debug("finished adding required columns for {}",
+		if (LOG.isDebugEnabled())
+			QueryTableInfo.LOG.debug("finished adding required columns for {}",
 				getName());
 	}
 
@@ -287,14 +294,16 @@ public class QueryTableInfo extends QueryItemInfo<TableName> {
 			throws SQLDataException {
 		for (QueryColumnInfo columnInfo : typeFilterList) {
 			CheckTypeF f = columnInfo.getTypeFilter();
-			QueryTableInfo.LOG.debug("Adding filter: {}", f);
+			if (LOG.isDebugEnabled())
+				QueryTableInfo.LOG.debug("Adding filter: {}", f);
 			filterGroup.addElementFilter(new ElementFilter(f));
 		}
 
 		for (QueryColumnInfo columnInfo : dataFilterList) {
 			ForceTypeF f = columnInfo.getDataFilter();
 			ElementBind bind = f.getBinding();
-			QueryTableInfo.LOG.debug("Adding binding: {}", bind);
+			if (LOG.isDebugEnabled())
+				QueryTableInfo.LOG.debug("Adding binding: {}", bind);
 			typeGroup.addElement(bind);
 		}
 	}

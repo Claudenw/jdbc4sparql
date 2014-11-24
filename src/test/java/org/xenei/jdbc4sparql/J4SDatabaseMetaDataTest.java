@@ -270,10 +270,10 @@ public class J4SDatabaseMetaDataTest {
 	@Before
 	public void setup() throws IOException, InstantiationException,
 			IllegalAccessException, ClassNotFoundException {
-		LoggingConfig.setConsole(Level.DEBUG);
+		LoggingConfig.setConsole(Level.INFO);
 		LoggingConfig.setRootLogger(Level.INFO);
 		LoggingConfig.setLogger("com.hp.hpl.jena.", Level.INFO);
-		LoggingConfig.setLogger("org.xenei.jdbc4sparql", Level.DEBUG);
+		LoggingConfig.setLogger("org.xenei.jdbc4sparql", Level.INFO);
 		final J4SDriver driver = new J4SDriver();
 		connection = Mockito.mock(J4SConnection.class);
 		final Map<String, Catalog> catalogs = new HashMap<String, Catalog>();

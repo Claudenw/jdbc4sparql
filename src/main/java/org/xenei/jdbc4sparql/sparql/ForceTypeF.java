@@ -48,7 +48,8 @@ public class ForceTypeF extends ExprFunction1 {
 	public NodeValue eval(final NodeValue v) {
 		Object value = checkFunc.getValue();
 		NodeValue retval = TypeConverter.getNodeValue(value);
-		LOG.debug("{} of {} ({}) is {}", this, v, value, retval);
+		if (LOG.isDebugEnabled())
+			LOG.debug("{} of {} ({}) is {}", this, v, value, retval);
 		return retval;
 	}
 

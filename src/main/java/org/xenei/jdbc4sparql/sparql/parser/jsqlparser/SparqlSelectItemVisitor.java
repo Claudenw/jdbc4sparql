@@ -74,7 +74,8 @@ class SparqlSelectItemVisitor implements SelectItemVisitor {
 
 	@Override
 	public void visit(final AllColumns allColumns) {
-		SparqlSelectItemVisitor.LOG.debug("visit All Columns {}", allColumns);
+		if (LOG.isDebugEnabled())
+			SparqlSelectItemVisitor.LOG.debug("visit All Columns {}", allColumns);
 		try {
 			queryBuilder.setAllColumns();
 		} catch (final SQLException e) {
@@ -86,7 +87,8 @@ class SparqlSelectItemVisitor implements SelectItemVisitor {
 
 	@Override
 	public void visit(final AllTableColumns allTableColumns) {
-		SparqlSelectItemVisitor.LOG.debug("visit All Table Columns {}",
+		if (LOG.isDebugEnabled())
+			SparqlSelectItemVisitor.LOG.debug("visit All Table Columns {}",
 				allTableColumns.toString());
 
 		TableName name = null;
@@ -108,7 +110,8 @@ class SparqlSelectItemVisitor implements SelectItemVisitor {
 
 	@Override
 	public void visit(final SelectExpressionItem selectExpressionItem) {
-		SparqlSelectItemVisitor.LOG.debug("visit Select {}",
+		if (LOG.isDebugEnabled())
+			SparqlSelectItemVisitor.LOG.debug("visit Select {}",
 				selectExpressionItem);
 		final SparqlExprVisitor v = new SparqlExprVisitor(queryBuilder,
 				SparqlQueryBuilder.OPTIONAL);

@@ -67,7 +67,8 @@ public class SparqlParserImpl implements SparqlParser {
 
 	@Override
 	public String nativeSQL(final String sqlQuery) throws SQLException {
-		SparqlParserImpl.LOG.debug("nativeSQL: {}", sqlQuery);
+		if (LOG.isDebugEnabled())
+			SparqlParserImpl.LOG.debug("nativeSQL: {}", sqlQuery);
 		try {
 			final Statement stmt = parserManager.parse(new StringReader(
 					sqlQuery));
@@ -84,7 +85,8 @@ public class SparqlParserImpl implements SparqlParser {
 	public SparqlQueryBuilder parse(final Map<String, Catalog> catalogs,
 			final Catalog catalog, final Schema schema, final String sqlQuery)
 			throws SQLException {
-		SparqlParserImpl.LOG.debug("catalog: '{}' parsing SQL: {}",
+		if (LOG.isDebugEnabled())
+			SparqlParserImpl.LOG.debug("catalog: '{}' parsing SQL: {}",
 				catalog.getName(), sqlQuery);
 		try {
 			final Statement stmt = parserManager.parse(new StringReader(

@@ -30,7 +30,8 @@ public class SparqlItemsListVisitor implements ItemsListVisitor {
 
 	@Override
 	public void visit(final ExpressionList expressionList) {
-		SparqlItemsListVisitor.LOG.debug("visit ExpressionList: {}",
+		if (LOG.isDebugEnabled())
+			SparqlItemsListVisitor.LOG.debug("visit ExpressionList: {}",
 				expressionList);
 		@SuppressWarnings("unchecked")
 		final List<Expression> l = expressionList.getExpressions();
@@ -44,7 +45,8 @@ public class SparqlItemsListVisitor implements ItemsListVisitor {
 
 	@Override
 	public void visit(final SubSelect subSelect) {
-		SparqlItemsListVisitor.LOG.debug("visit SubSelect: {}", subSelect);
+		if (LOG.isDebugEnabled())
+			SparqlItemsListVisitor.LOG.debug("visit SubSelect: {}", subSelect);
 		subSelect.accept(exprVisitor);
 	}
 

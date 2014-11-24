@@ -107,20 +107,6 @@ import org.xenei.jdbc4sparql.sparql.items.QueryTableInfo;
  * An expression visitor. Merges SQL expressions into the SparqlQueryBuilder.
  */
 public class SparqlExprVisitor implements ExpressionVisitor {
-	private class RegexNodeValue extends NodeValueString {
-		private final boolean wildcard;
-
-		public RegexNodeValue(final String str, final boolean wildcard) {
-			super(str);
-			this.wildcard = wildcard;
-		}
-
-		public boolean isWildcard() {
-			return wildcard;
-		}
-
-	}
-
 	// the query builder
 	private final SparqlQueryBuilder builder;
 
@@ -174,47 +160,7 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 		return stack.isEmpty();
 	}
 
-	private RegexNodeValue parseWildCard(final String part) {
-		final Map<String, String> conversion = new HashMap<String, String>();
-		conversion.put("_", ".");
-		conversion.put("%", "(.+)");
-
-		final StringTokenizer tokenizer = new StringTokenizer(part, "_%", true);
-		final StringBuilder sb = new StringBuilder().append("^");
-		final StringBuilder workingToken = new StringBuilder();
-		boolean wildcard = false;
-		while (tokenizer.hasMoreTokens()) {
-			final String candidate = tokenizer.nextToken();
-			if ((candidate.length() == 1)
-					&& conversion.keySet().contains(candidate)) {
-				// token
-				if ((workingToken.length() > 0)
-						&& (workingToken.charAt(workingToken.length() - 1) == '\\')) {
-					// escaped token
-					workingToken.setCharAt(workingToken.length() - 1,
-							candidate.charAt(0));
-				} else {
-					sb.append(
-							workingToken.length() > 0 ? Pattern
-									.quote(workingToken.toString()) : "")
-							.append(conversion.get(candidate));
-					workingToken.setLength(0);
-					wildcard = true;
-				}
-			} else {
-				workingToken.append(candidate);
-			}
-		}
-		// end of while
-		if (workingToken.length() > 0) {
-			sb.append(Pattern.quote(workingToken.toString()));
-		}
-		sb.append("$");
-		final RegexNodeValue retval = new RegexNodeValue(
-				wildcard ? sb.toString() : workingToken.toString(), wildcard);
-		return retval;
-	}
-
+	
 	// process a binary expression.
 	private void process(final BinaryExpression biExpr) {
 		// put on in reverse order so they can be popped back off in the proper
@@ -225,7 +171,8 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 
 	@Override
 	public void visit(final Addition addition) {
-		SparqlExprVisitor.LOG.debug("visit Addition: {}", addition);
+		if (LOG.isDebugEnabled())
+			SparqlExprVisitor.LOG.debug("visit Addition: {}", addition);
 		process(addition);
 		stack.push(new E_Add(stack.pop(), stack.pop()));
 	}
@@ -237,7 +184,8 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 
 	@Override
 	public void visit(final AndExpression andExpression) {
-		SparqlExprVisitor.LOG.debug("visit And: {}", andExpression);
+		if (LOG.isDebugEnabled())
+			SparqlExprVisitor.LOG.debug("visit And: {}", andExpression);
 		process(andExpression);
 		stack.push(new E_LogicalAnd(stack.pop(), stack.pop()));
 	}
@@ -249,7 +197,8 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 
 	@Override
 	public void visit(final Between between) {
-		SparqlExprVisitor.LOG.debug("visit Between: {}", between);
+		if (LOG.isDebugEnabled())
+			SparqlExprVisitor.LOG.debug("visit Between: {}", between);
 		between.getBetweenExpressionEnd().accept(this);
 		between.getBetweenExpressionStart().accept(this);
 		between.getLeftExpression().accept(this);
@@ -282,7 +231,8 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 
 	@Override
 	public void visit(final Column tableColumn) {
-		SparqlExprVisitor.LOG.debug("visit Column: {}", tableColumn);
+		if (LOG.isDebugEnabled())
+			SparqlExprVisitor.LOG.debug("visit Column: {}", tableColumn);
 		try {
 			String schema = StringUtils.defaultString(tableColumn.getTable()
 					.getSchemaName(), builder.getDefaultSchemaName());
@@ -311,7 +261,8 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 
 	@Override
 	public void visit(final DateValue dateValue) {
-		SparqlExprVisitor.LOG.debug("visit DateValue: {}", dateValue);
+		if (LOG.isDebugEnabled())
+			SparqlExprVisitor.LOG.debug("visit DateValue: {}", dateValue);
 		final String val = dateValue.getValue().toString();
 		final Node n = NodeFactory.createLiteral(val, XSDDatatype.XSDdate);
 		stack.push(new NodeValueDT(val, n));
@@ -319,20 +270,23 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 
 	@Override
 	public void visit(final Division division) {
-		SparqlExprVisitor.LOG.debug("visit Division: {}", division);
+		if (LOG.isDebugEnabled())
+			SparqlExprVisitor.LOG.debug("visit Division: {}", division);
 		process(division);
 		stack.push(new E_Divide(stack.pop(), stack.pop()));
 	}
 
 	@Override
 	public void visit(final DoubleValue doubleValue) {
-		SparqlExprVisitor.LOG.debug("visit DoubleValue: {}", doubleValue);
+		if (LOG.isDebugEnabled())
+			SparqlExprVisitor.LOG.debug("visit DoubleValue: {}", doubleValue);
 		stack.push(new NodeValueDouble(doubleValue.getValue()));
 	}
 
 	@Override
 	public void visit(final EqualsTo equalsTo) {
-		SparqlExprVisitor.LOG.debug("visit EqualsTo: {}", equalsTo);
+		if (LOG.isDebugEnabled())
+			SparqlExprVisitor.LOG.debug("visit EqualsTo: {}", equalsTo);
 		process(equalsTo);
 		stack.push(new E_Equals(stack.pop(), stack.pop()));
 	}
@@ -344,7 +298,8 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 
 	@Override
 	public void visit(final Function function) {
-		SparqlExprVisitor.LOG.debug("visit Function: {}", function);
+		if (LOG.isDebugEnabled())
+			SparqlExprVisitor.LOG.debug("visit Function: {}", function);
 		final StandardFunctionHandler sfh = new StandardFunctionHandler(
 				builder, stack);
 		try {
@@ -362,14 +317,16 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 
 	@Override
 	public void visit(final GreaterThan greaterThan) {
-		SparqlExprVisitor.LOG.debug("visit GreaterThan: {}", greaterThan);
+		if (LOG.isDebugEnabled())
+			SparqlExprVisitor.LOG.debug("visit GreaterThan: {}", greaterThan);
 		process(greaterThan);
 		stack.push(new E_GreaterThan(stack.pop(), stack.pop()));
 	}
 
 	@Override
 	public void visit(final GreaterThanEquals greaterThanEquals) {
-		SparqlExprVisitor.LOG.debug("visit GreaterThanEquals: {}",
+		if (LOG.isDebugEnabled())
+			SparqlExprVisitor.LOG.debug("visit GreaterThanEquals: {}",
 				greaterThanEquals);
 		process(greaterThanEquals);
 		stack.push(new E_GreaterThanOrEqual(stack.pop(), stack.pop()));
@@ -377,7 +334,8 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 
 	@Override
 	public void visit(final InExpression inExpression) {
-		SparqlExprVisitor.LOG.debug("visit InExpression: {}", inExpression);
+		if (LOG.isDebugEnabled())
+			SparqlExprVisitor.LOG.debug("visit InExpression: {}", inExpression);
 
 		final SparqlItemsListVisitor listVisitor = new SparqlItemsListVisitor(
 				builder);
@@ -394,7 +352,8 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 
 	@Override
 	public void visit(final IsNullExpression isNullExpression) {
-		SparqlExprVisitor.LOG.debug("visit isNull: {}", isNullExpression);
+		if (LOG.isDebugEnabled())
+			SparqlExprVisitor.LOG.debug("visit isNull: {}", isNullExpression);
 
 		isNullExpression.getLeftExpression().accept(this);
 		ExprFunction func = new E_Bound(stack.pop());
@@ -414,12 +373,13 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 
 	@Override
 	public void visit(final LikeExpression likeExpression) {
-		SparqlExprVisitor.LOG.debug("visit LikeExpression: {}", likeExpression);
+		if (LOG.isDebugEnabled())
+			SparqlExprVisitor.LOG.debug("visit LikeExpression: {}", likeExpression);
 		process(likeExpression);
 		final Expr left = stack.pop();
 		final Expr right = stack.pop();
 		if (right instanceof NodeValueString) {
-			final RegexNodeValue rnv = parseWildCard(((NodeValueString) right)
+			final RegexNodeValue rnv = new RegexNodeValue(((NodeValueString) right)
 					.getString());
 			if (rnv.isWildcard()) {
 				stack.push(new E_Regex(left, rnv, new NodeValueString("")));
@@ -434,7 +394,8 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 
 	@Override
 	public void visit(final LongValue longValue) {
-		SparqlExprVisitor.LOG.debug("visit Long: {}", longValue);
+		if (LOG.isDebugEnabled())
+			SparqlExprVisitor.LOG.debug("visit Long: {}", longValue);
 		stack.push(new NodeValueInteger(longValue.getValue()));
 	}
 
@@ -445,14 +406,16 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 
 	@Override
 	public void visit(final MinorThan minorThan) {
-		SparqlExprVisitor.LOG.debug("visit MinorThan: {}", minorThan);
+		if (LOG.isDebugEnabled())
+			SparqlExprVisitor.LOG.debug("visit MinorThan: {}", minorThan);
 		process(minorThan);
 		stack.push(new E_LessThan(stack.pop(), stack.pop()));
 	}
 
 	@Override
 	public void visit(final MinorThanEquals minorThanEquals) {
-		SparqlExprVisitor.LOG.debug("visit MinorThanEquals: {}",
+		if (LOG.isDebugEnabled())
+			SparqlExprVisitor.LOG.debug("visit MinorThanEquals: {}",
 				minorThanEquals);
 		process(minorThanEquals);
 		stack.push(new E_LessThanOrEqual(stack.pop(), stack.pop()));
@@ -460,41 +423,47 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 
 	@Override
 	public void visit(final Multiplication multiplication) {
-		SparqlExprVisitor.LOG.debug("visit Multiplication: {}", multiplication);
+		if (LOG.isDebugEnabled())
+			SparqlExprVisitor.LOG.debug("visit Multiplication: {}", multiplication);
 		process(multiplication);
 		stack.push(new E_Multiply(stack.pop(), stack.pop()));
 	}
 
 	@Override
 	public void visit(final NotEqualsTo notEqualsTo) {
-		SparqlExprVisitor.LOG.debug("visit not equals: {}", notEqualsTo);
+		if (LOG.isDebugEnabled())
+			SparqlExprVisitor.LOG.debug("visit not equals: {}", notEqualsTo);
 		process(notEqualsTo);
 		stack.push(new E_NotEquals(stack.pop(), stack.pop()));
 	}
 
 	@Override
 	public void visit(final NullValue nullValue) {
-		SparqlExprVisitor.LOG.debug("visit null value: {}", nullValue);
+		if (LOG.isDebugEnabled())
+			SparqlExprVisitor.LOG.debug("visit null value: {}", nullValue);
 		throw new UnsupportedOperationException(
 				"Figure out how to process NULL");
 	}
 
 	@Override
 	public void visit(final OrExpression orExpression) {
-		SparqlExprVisitor.LOG.debug("visit orExpression: {}", orExpression);
+		if (LOG.isDebugEnabled())
+			SparqlExprVisitor.LOG.debug("visit orExpression: {}", orExpression);
 		process(orExpression);
 		stack.push(new E_LogicalOr(stack.pop(), stack.pop()));
 	}
 
 	@Override
 	public void visit(final Parenthesis parenthesis) {
-		SparqlExprVisitor.LOG.debug("visit Parenthesis: {}", parenthesis);
+		if (LOG.isDebugEnabled())
+			SparqlExprVisitor.LOG.debug("visit Parenthesis: {}", parenthesis);
 		parenthesis.getExpression().accept(this);
 	}
 
 	@Override
 	public void visit(final StringValue stringValue) {
-		SparqlExprVisitor.LOG.debug("visit String Value: {}", stringValue);
+		if (LOG.isDebugEnabled())
+			SparqlExprVisitor.LOG.debug("visit String Value: {}", stringValue);
 		stack.push(new NodeValueString(stringValue.getValue()));
 	}
 
@@ -505,14 +474,16 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 
 	@Override
 	public void visit(final Subtraction subtraction) {
-		SparqlExprVisitor.LOG.debug("visit Subtraction: {}", subtraction);
+		if (LOG.isDebugEnabled())
+			SparqlExprVisitor.LOG.debug("visit Subtraction: {}", subtraction);
 		process(subtraction);
 		stack.push(new E_Subtract(stack.pop(), stack.pop()));
 	}
 
 	@Override
 	public void visit(final TimestampValue timestampValue) {
-		SparqlExprVisitor.LOG.debug("visit Timestamp: {}", timestampValue);
+		if (LOG.isDebugEnabled())
+			SparqlExprVisitor.LOG.debug("visit Timestamp: {}", timestampValue);
 		final String val = timestampValue.getValue().toString();
 		final Node n = NodeFactory.createLiteral(val, XSDDatatype.XSDdateTime);
 		stack.push(new NodeValueDT(val, n));
@@ -520,7 +491,8 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 
 	@Override
 	public void visit(final TimeValue timeValue) {
-		SparqlExprVisitor.LOG.debug("visit TimeValue: {}", timeValue);
+		if (LOG.isDebugEnabled())
+			SparqlExprVisitor.LOG.debug("visit TimeValue: {}", timeValue);
 		final String val = timeValue.getValue().toString();
 		final Node n = NodeFactory.createLiteral(val, XSDDatatype.XSDtime);
 		stack.push(new NodeValueDT(val, n));

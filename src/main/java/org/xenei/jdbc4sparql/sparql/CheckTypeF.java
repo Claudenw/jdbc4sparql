@@ -77,8 +77,10 @@ public class CheckTypeF extends ExprFunction1 {
 		if (n == null) {
 			boolean retval = columnInfo.getColumn().getColumnDef()
 					.getNullable() == ResultSetMetaData.columnNullable;
-			LOG.debug("{} ({}) of {} ", this, columnInfo.getName(), binding);
-			LOG.debug("with value  {} is {}", n, retval);
+			if (LOG.isDebugEnabled()) {
+				LOG.debug("{} ({}) of {} ", this, columnInfo.getName(), binding);
+				LOG.debug("with value  {} is {}", n, retval);
+			}
 			return retval ? NodeValue.TRUE : NodeValue.FALSE;
 		}
 		Object columnObject;
@@ -101,8 +103,11 @@ public class CheckTypeF extends ExprFunction1 {
 			if (convertedValue == null) {
 				retval = columnInfo.getColumn().getColumnDef().getNullable() == ResultSetMetaData.columnNullable;
 			}
-			LOG.debug("{} ({}) of {} ", this, columnInfo.getName(), binding);
-			LOG.debug("with value ({}) {} is {}", n, convertedValue, retval);
+			if (LOG.isDebugEnabled())
+			{
+				LOG.debug("{} ({}) of {} ", this, columnInfo.getName(), binding);
+				LOG.debug("with value ({}) {} is {}", n, convertedValue, retval);
+			}
 			return retval ? NodeValue.TRUE : NodeValue.FALSE;
 
 		} catch (SQLException e) {

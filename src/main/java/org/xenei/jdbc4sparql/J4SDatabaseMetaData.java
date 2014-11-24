@@ -157,7 +157,8 @@ public class J4SDatabaseMetaData implements DatabaseMetaData {
 
 	@Override
 	public ResultSet getCatalogs() throws SQLException {
-		J4SDatabaseMetaData.LOG.debug("Getting catalogs");
+		if (LOG.isDebugEnabled())
+			J4SDatabaseMetaData.LOG.debug("Getting catalogs");
 		final RdfTable table = (RdfTable) metaSchema
 				.getTable(MetaCatalogBuilder.CATALOGS_TABLE);
 

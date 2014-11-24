@@ -32,7 +32,7 @@ public class StringFunctionTests extends AbstractJ4SSetup {
 				+ fUrl.toString();
 
 		final Properties prop = new Properties();
-		prop.setProperty(J4SPropertyNames.USER_PROPERTY, "myschema");
+		prop.setProperty(J4SPropertyNames.USER_PROPERTY, "myid");
 		prop.setProperty(J4SPropertyNames.PASSWORD_PROPERTY, "mypassw");
 		conn = DriverManager.getConnection(url, prop);
 		conn.setAutoCommit(false);

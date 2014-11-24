@@ -124,7 +124,8 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor {
 
 	private void applyOuterExpr(final Expr aExpr, final ItemName mapFrom,
 			final ItemName mapTo) {
-		SparqlSelectVisitor.LOG.debug("apply outer expr {}", aExpr);
+		if (LOG.isDebugEnabled())
+			SparqlSelectVisitor.LOG.debug("apply outer expr {}", aExpr);
 		final Expr expr = aExpr;
 		if (expr instanceof ExprFunction) {
 			if (applyOuterExprSub(aExpr, aExpr, mapFrom, mapTo)) {
@@ -136,7 +137,8 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor {
 
 	private boolean applyOuterExprSub(final Expr aExpr, final Expr toApply,
 			final ItemName mapFrom, final ItemName mapTo) {
-		SparqlSelectVisitor.LOG.debug("apply outer expr sub {} {}", aExpr,
+		if (LOG.isDebugEnabled())
+			SparqlSelectVisitor.LOG.debug("apply outer expr sub {} {}", aExpr,
 				toApply);
 		final Expr expr = aExpr;
 		if (expr instanceof ExprFunction) {
@@ -220,7 +222,8 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor {
 
 	// take apart the join and figure out how to merge it.
 	private void deparseJoin(final Join join, final TableName tableName) {
-		SparqlSelectVisitor.LOG.debug("deparse join {}", join);
+		if (LOG.isDebugEnabled())
+			SparqlSelectVisitor.LOG.debug("deparse join {}", join);
 		if (join.isSimple()) {
 			final SparqlFromVisitor fromVisitor = new SparqlFromVisitor(
 					queryBuilder);
@@ -237,7 +240,8 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor {
 		if (limit == null) {
 			return;
 		}
-		SparqlSelectVisitor.LOG.debug("deparse limit {}", limit);
+		if (LOG.isDebugEnabled())
+			SparqlSelectVisitor.LOG.debug("deparse limit {}", limit);
 		// LIMIT n OFFSET skip
 		if (limit.isOffsetJdbcParameter()) {
 			throw new UnsupportedOperationException(
@@ -261,7 +265,8 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor {
 		if (orderByElements == null) {
 			return;
 		}
-		SparqlSelectVisitor.LOG.debug("deparse orderby {}", orderByElements);
+		if (LOG.isDebugEnabled())
+			SparqlSelectVisitor.LOG.debug("deparse orderby {}", orderByElements);
 		for (final Object name : orderByElements) {
 			final OrderByElement orderByElement = (OrderByElement) name;
 			orderByElement.accept(this);
@@ -326,7 +331,8 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor {
 
 	@Override
 	public void visit(final OrderByElement orderBy) {
-		SparqlSelectVisitor.LOG.debug("visit orderby: {}", orderBy);
+		if (LOG.isDebugEnabled())
+			SparqlSelectVisitor.LOG.debug("visit orderby: {}", orderBy);
 		final SparqlExprVisitor expressionVisitor = new SparqlExprVisitor(
 				queryBuilder, SparqlQueryBuilder.REQUIRED);
 		orderBy.getExpression().accept(expressionVisitor);
@@ -339,7 +345,8 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor {
 
 	@Override
 	public void visit(final PlainSelect plainSelect) {
-		SparqlSelectVisitor.LOG.debug("visit plainSelect: {}", plainSelect);
+		if (LOG.isDebugEnabled())
+			SparqlSelectVisitor.LOG.debug("visit plainSelect: {}", plainSelect);
 		TableName lastTableName = null;
 		final SparqlExprVisitor expressionVisitor = new SparqlExprVisitor(
 				queryBuilder, SparqlQueryBuilder.OPTIONAL);

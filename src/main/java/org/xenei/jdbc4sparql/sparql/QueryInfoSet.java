@@ -50,7 +50,8 @@ public class QueryInfoSet {
 			final QueryColumnInfo columnInfo) {
 		columnInfo.getName().setUseGUID(guidFlg);
 		columnInfo.setSegments(segments);
-		QueryInfoSet.LOG.debug("adding column: {}", columnInfo);
+		if (LOG.isDebugEnabled())
+			QueryInfoSet.LOG.debug("adding column: {}", columnInfo);
 		columnsInQuery.add(columnInfo);
 	}
 
@@ -82,7 +83,8 @@ public class QueryInfoSet {
 	public void addTable(final QueryTableInfo tbl) {
 		if (!tablesInQuery.contains(tbl)) {
 			tbl.getName().setUseGUID(guidFlg);
-			QueryInfoSet.LOG.debug("adding table: {}", tbl);
+			if (LOG.isDebugEnabled())
+				QueryInfoSet.LOG.debug("adding table: {}", tbl);
 			tablesInQuery.add(tbl);
 			tbl.setSegments(NameSegments.ALL);
 		}
@@ -166,7 +168,8 @@ public class QueryInfoSet {
 			segments = new NameSegments(false, duplicateTable, duplicateTable
 					| duplicateColumn, true);
 		}
-		LOG.debug(String.format("Setting default segments to %s", segments));
+		if (LOG.isDebugEnabled())
+			LOG.debug(String.format("Setting default segments to %s", segments));
 		for (QueryTableInfo qti : tablesInQuery) {
 			qti.setSegments(segments);
 		}

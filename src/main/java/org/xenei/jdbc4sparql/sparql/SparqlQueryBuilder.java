@@ -201,7 +201,8 @@ public class SparqlQueryBuilder {
 	 *            The Triple to add.
 	 */
 	public void addBGP(final Triple t) {
-		SparqlQueryBuilder.LOG.debug("addBGP: {}", t);
+		if (LOG.isDebugEnabled())
+			SparqlQueryBuilder.LOG.debug("addBGP: {}", t);
 		checkBuilt();
 		final ElementGroup eg = getElementGroup();
 		for (final Element el : eg.getElements()) {
@@ -254,7 +255,8 @@ public class SparqlQueryBuilder {
 	public void addDataFilter(QueryColumnInfo columnInfo)
 			throws SQLDataException {
 		QueryTableInfo tableInfo = getTable(columnInfo.getName().getTableName());
-		SparqlQueryBuilder.LOG.debug("adding Data Filter: {}", columnInfo);
+		if (LOG.isDebugEnabled())
+			SparqlQueryBuilder.LOG.debug("adding Data Filter: {}", columnInfo);
 		tableInfo.addDataFilter(columnInfo);
 	}
 
@@ -265,7 +267,8 @@ public class SparqlQueryBuilder {
 	 *            The filter to add.
 	 */
 	public void addFilter(final Expr filter) {
-		SparqlQueryBuilder.LOG.debug("adding Filter: {}", filter);
+		if (LOG.isDebugEnabled())
+			SparqlQueryBuilder.LOG.debug("adding Filter: {}", filter);
 		checkBuilt();
 		SparqlQueryBuilder.addFilter(query, filter);
 	}
@@ -297,7 +300,8 @@ public class SparqlQueryBuilder {
 	 *            true of order should be ascending, false = descending.
 	 */
 	public void addOrderBy(final Expr expr, final boolean ascending) {
-		SparqlQueryBuilder.LOG.debug("Adding order by {} {}", expr,
+		if (LOG.isDebugEnabled())
+			SparqlQueryBuilder.LOG.debug("Adding order by {} {}", expr,
 				ascending ? "Ascending" : "Descending");
 		checkBuilt();
 		query.addOrderBy(expr, ascending ? Query.ORDER_ASCENDING
@@ -376,7 +380,8 @@ public class SparqlQueryBuilder {
 	}
 
 	public void addUsing(final String columnName) {
-		SparqlQueryBuilder.LOG.debug("adding Using {}", columnName);
+		if (LOG.isDebugEnabled())
+			SparqlQueryBuilder.LOG.debug("adding Using {}", columnName);
 		final Collection<QueryTableInfo> tables = infoSet.getTables();
 		if (tables.size() < 2) {
 			throw new IllegalArgumentException(
@@ -419,7 +424,8 @@ public class SparqlQueryBuilder {
 	 *            the alias for the expression, if null no alias is used.
 	 */
 	public void addVar(final Expr expr, final String name) {
-		SparqlQueryBuilder.LOG.debug("Adding Var {} as {}", expr, name);
+		if (LOG.isDebugEnabled())
+			SparqlQueryBuilder.LOG.debug("Adding Var {} as {}", expr, name);
 		checkBuilt();
 		final NodeValue nv = expr.getConstant();
 		if ((name != null) || (nv == null) || !nv.asNode().isVariable()) {
@@ -453,7 +459,8 @@ public class SparqlQueryBuilder {
 		checkBuilt();
 		QueryColumnInfo columnInfo = infoSet.getColumn(name);
 		if (!query.getProjectVars().contains(columnInfo.getVar())) {
-			SparqlQueryBuilder.LOG.debug("Adding {} as {}", expr, name);
+			if (LOG.isDebugEnabled())
+				SparqlQueryBuilder.LOG.debug("Adding {} as {}", expr, name);
 			query.addResultVar(columnInfo.getVar(), expr);
 			query.getResultVars();
 		}
@@ -468,7 +475,8 @@ public class SparqlQueryBuilder {
 	 * @throws SQLException
 	 */
 	public void addVar(ColumnName columnName) throws SQLException {
-		SparqlQueryBuilder.LOG.debug("Adding Var {}", columnName);
+		if (LOG.isDebugEnabled())
+			SparqlQueryBuilder.LOG.debug("Adding Var {}", columnName);
 		checkBuilt();
 
 		QueryColumnInfo qci = addColumn(columnName, false);
@@ -565,13 +573,15 @@ public class SparqlQueryBuilder {
 							.listColumns(new SearchName(null, null, null,
 									columnName))) {
 						CheckTypeF ctf = columnInfo.getTypeFilter();
-						LOG.debug("Adding filter: {}", ctf);
+						if (LOG.isDebugEnabled())
+							LOG.debug("Adding filter: {}", ctf);
 						filterGroup.addElementFilter(new ElementFilter(ctf));
 
 						if (first == null) {
 							ForceTypeF ftf = columnInfo.getDataFilter();
 							ElementBind bind = ftf.getBinding();
-							LOG.debug("Adding binding: {}", bind);
+							if (LOG.isDebugEnabled())
+								LOG.debug("Adding binding: {}", bind);
 							typeGroup.addElement(bind);
 							first = columnInfo;
 						} else {
@@ -586,7 +596,8 @@ public class SparqlQueryBuilder {
 
 					}
 					if (expr != null) {
-						LOG.debug("Adding filter: {}", expr);
+						if (LOG.isDebugEnabled())
+							LOG.debug("Adding filter: {}", expr);
 						filterGroup.addElementFilter(new ElementFilter(expr));
 					}
 				}
@@ -595,7 +606,8 @@ public class SparqlQueryBuilder {
 				query = newResult;
 			}
 			isBuilt = true;
-			SparqlQueryBuilder.LOG.debug("Query parsed as {}", query);
+			if (LOG.isDebugEnabled())
+				SparqlQueryBuilder.LOG.debug("Query parsed as {}", query);
 		}
 		return query;
 	}
@@ -812,7 +824,8 @@ public class SparqlQueryBuilder {
 	 * @throws SQLException
 	 */
 	public void setAllColumns() throws SQLException {
-		SparqlQueryBuilder.LOG.debug("Setting All Columns");
+		if (LOG.isDebugEnabled())
+			SparqlQueryBuilder.LOG.debug("Setting All Columns");
 		checkBuilt();
 
 		final Collection<QueryTableInfo> tableInfos = infoSet.getTables();
@@ -868,7 +881,8 @@ public class SparqlQueryBuilder {
 	 * Sets the distinct flag for the SPARQL query.
 	 */
 	public void setDistinct() {
-		SparqlQueryBuilder.LOG.debug("Setting Distinct");
+		if (LOG.isDebugEnabled())
+			SparqlQueryBuilder.LOG.debug("Setting Distinct");
 		checkBuilt();
 		query.setDistinct(true);
 	}
@@ -878,7 +892,8 @@ public class SparqlQueryBuilder {
 	}
 
 	public SparqlQueryBuilder setKey(final RdfKey key) {
-		SparqlQueryBuilder.LOG.debug("Setting key {}", key);
+		if (LOG.isDebugEnabled())
+			SparqlQueryBuilder.LOG.debug("Setting key {}", key);
 		if (key != null) {
 			setOrderBy(key);
 			if (key.isUnique()) {
@@ -895,7 +910,8 @@ public class SparqlQueryBuilder {
 	 *            The number of records to return
 	 */
 	public void setLimit(final Long limit) {
-		SparqlQueryBuilder.LOG.debug("Setting limit {}", limit);
+		if (LOG.isDebugEnabled())
+			SparqlQueryBuilder.LOG.debug("Setting limit {}", limit);
 		checkBuilt();
 		query.setLimit(limit);
 	}
@@ -907,13 +923,15 @@ public class SparqlQueryBuilder {
 	 *            The number of rows to skip over.
 	 */
 	public void setOffset(final Long offset) {
-		SparqlQueryBuilder.LOG.debug("Setting Offset {}", offset);
+		if (LOG.isDebugEnabled())
+			SparqlQueryBuilder.LOG.debug("Setting Offset {}", offset);
 		checkBuilt();
 		query.setOffset(offset);
 	}
 
 	public void setOrderBy(final RdfKey key) {
-		SparqlQueryBuilder.LOG.debug("Setting orderBy {}", key);
+		if (LOG.isDebugEnabled())
+			SparqlQueryBuilder.LOG.debug("Setting orderBy {}", key);
 		final List<Var> vars = query.getProjectVars();
 		for (final RdfKeySegment seg : key.getSegments()) {
 			query.addOrderBy(vars.get(seg.getIdx()),

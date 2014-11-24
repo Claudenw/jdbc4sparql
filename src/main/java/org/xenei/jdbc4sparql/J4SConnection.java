@@ -82,7 +82,7 @@ public class J4SConnection implements Connection {
 	private final SparqlParser sparqlParser;
 	private SQLWarning sqlWarnings;
 	private int holdability;
-	private final Logger log = LoggerFactory.getLogger(J4SConnection.class);
+	private static final Logger LOG = LoggerFactory.getLogger(J4SConnection.class);
 	private DatasetProducer dsProducer = null;
 	private final Properties properties;
 
@@ -547,7 +547,8 @@ public class J4SConnection implements Connection {
 	@Override
 	public void setCatalog(final String catalog) throws SQLException {
 		if ((getCatalog() == null) || !getCatalog().equals(catalog)) {
-			log.debug("Setting catalog to '{}'", catalog);
+			if (LOG.isDebugEnabled())
+				LOG.debug("Setting catalog to '{}'", catalog);
 			if (catalogMap.get(catalog) == null) {
 				throw new SQLException("Catalog " + catalog + " was not found");
 			}

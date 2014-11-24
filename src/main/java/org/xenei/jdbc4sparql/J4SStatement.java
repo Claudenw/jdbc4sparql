@@ -23,6 +23,7 @@ import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,11 +55,18 @@ public class J4SStatement implements Statement {
 			final RdfCatalog catalog, final int resultSetType,
 			final int resultSetConcurrency, final int resultSetHoldability)
 			throws SQLException {
-		J4SStatement.LOG.debug("Creating statement");
+		if (LOG.isDebugEnabled())
+			J4SStatement.LOG.debug("Creating statement");
 		this.connection = connection;
 		this.catalog = catalog;
 		if (connection.getSchema() != null) {
 			this.schema = catalog.getSchema(connection.getSchema());
+		} else {
+			Set<Schema> schemas = catalog.getSchemas();
+			if (schemas.size() == 1)
+			{
+				this.schema = schemas.iterator().next();
+			}
 		}
 		this.queryTimeout = connection.getNetworkTimeout();
 		this.parser = connection.getSparqlParser();
@@ -107,7 +115,8 @@ public class J4SStatement implements Statement {
 	@Override
 	public boolean execute(final String sql) throws SQLException {
 		resultSet = null;
-		J4SStatement.LOG.debug("execute {}", sql);
+		if (LOG.isDebugEnabled())
+			J4SStatement.LOG.debug("execute {}", sql);
 		final String[] parts = sql.trim().split("\\s");
 		if (parts[0].equalsIgnoreCase("use")) {
 			executeUse(parts);

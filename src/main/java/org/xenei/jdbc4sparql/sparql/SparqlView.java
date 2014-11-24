@@ -116,7 +116,8 @@ public class SparqlView extends AbstractTable {
 	public static final String NAME_SPACE = "http://org.xenei.jdbc4sparql/vocab#View";
 
 	public SparqlView(final SparqlQueryBuilder builder) {
-		SparqlView.LOG.debug(builder.toString());
+		if (LOG.isDebugEnabled())
+			SparqlView.LOG.debug(builder.toString());
 		this.builder = builder;
 		Catalog catalog = builder.getCatalog(VirtualCatalog.NAME);
 		this.schema = catalog.getSchema(VirtualSchema.NAME);
