@@ -2,11 +2,14 @@ package org.xenei.jdbc4sparql.sparql;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.name.CatalogName;
@@ -17,6 +20,7 @@ import org.xenei.jdbc4sparql.iface.name.SchemaName;
 import org.xenei.jdbc4sparql.iface.name.TableName;
 import org.xenei.jdbc4sparql.impl.NameUtils;
 import org.xenei.jdbc4sparql.sparql.items.QueryColumnInfo;
+import org.xenei.jdbc4sparql.sparql.items.QueryItemCollection;
 import org.xenei.jdbc4sparql.sparql.items.QueryTableInfo;
 import org.xenei.jdbc4sparql.utils.ElementExtractor;
 
@@ -26,6 +30,7 @@ import com.hp.hpl.jena.sparql.core.TriplePath;
 import com.hp.hpl.jena.sparql.core.Var;
 import com.hp.hpl.jena.sparql.syntax.ElementGroup;
 import com.hp.hpl.jena.sparql.syntax.ElementPathBlock;
+
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
@@ -44,6 +49,8 @@ public class QueryInfoSetTest {
 
 	private Table table2;
 	private TableName tName2;
+	
+	private List<Column> cols2;
 
 	@Before
 	public void setup() {
@@ -62,7 +69,7 @@ public class QueryInfoSetTest {
 
 		List<Column> cols = new ArrayList<Column>();
 		cols.add(column);
-		when(table.getColumns()).thenReturn(cols.iterator());
+		when( table.getColumns()).thenAnswer( new ColumnAnswer( cols ) );
 
 		column2 = mock(Column.class);
 		cName2 = new ColumnName("catalog", "schema2", "table", "column");
@@ -75,12 +82,25 @@ public class QueryInfoSetTest {
 		when(table2.getQuerySegmentFmt()).thenReturn("{ ?tbl <a> %s }");
 		when(table2.getColumn(eq("column"))).thenReturn(column2);
 
-		List<Column> cols2 = new ArrayList<Column>();
+		cols2 = new ArrayList<Column>();
 		cols2.add(column2);
-		when(table2.getColumns()).thenReturn(cols2.iterator());
+		when( table2.getColumns()).thenAnswer( new ColumnAnswer( cols2 ) );
 
 	}
 
+	private static class ColumnAnswer implements Answer<Iterator<Column>> {
+		List<Column> cols;
+		ColumnAnswer( List<Column> cols )
+		{
+			this.cols = cols;
+		}
+		
+		@Override
+		public Iterator<Column> answer(InvocationOnMock invocation) throws Throwable {
+			return cols.iterator();
+		}
+	}
+	
 	@Test
 	public void testAddColumn() {
 		QueryColumnInfo columnInfo = new QueryColumnInfo(column);
@@ -268,80 +288,6 @@ public class QueryInfoSetTest {
 	}
 
 	@Test
-	public void testGetColumnByName_Var() {
-		Var v = Var.alloc(cName.getSPARQLName());
-		Var v2 = Var.alloc(cName2.getSPARQLName());
-		try {
-			queryInfo.getColumn(v2);
-			fail("Should have thrown IllegalArgumentException");
-		} catch (IllegalArgumentException expected) {
-
-		}
-		queryInfo.addColumn(new QueryColumnInfo(column2));
-		assertEquals(cName2, queryInfo.getColumn(v2).getName());
-
-		ElementGroup queryElementGroup = new ElementGroup();
-		QueryTableInfo tableInfo = new QueryTableInfo(queryInfo,
-				queryElementGroup, table, false);
-		queryInfo.addTable(tableInfo);
-		queryInfo.addRequiredColumns();
-		assertEquals(cName, queryInfo.getColumn(v).getName());
-
-		try {
-
-			queryInfo.getColumn(Var.alloc("Dummy"));
-		} catch (IllegalArgumentException expected) {
-
-		}
-	}
-
-	@Test
-	public void testGetColumnByNode() {
-		Node n = Var.alloc(cName.getSPARQLName()).asNode();
-		Node n2 = Var.alloc(cName2.getSPARQLName()).asNode();
-		try {
-			queryInfo.getColumn(n2);
-			fail("Should have thrown IllegalArgumentException");
-		} catch (IllegalArgumentException expected) {
-
-		}
-		queryInfo.addColumn(new QueryColumnInfo(column2));
-		assertEquals(cName2, queryInfo.getColumn(n2).getName());
-
-		ElementGroup queryElementGroup = new ElementGroup();
-		QueryTableInfo tableInfo = new QueryTableInfo(queryInfo,
-				queryElementGroup, table, false);
-		queryInfo.addTable(tableInfo);
-		queryInfo.addRequiredColumns();
-		assertEquals(cName, queryInfo.getColumn(n).getName());
-
-		try {
-			queryInfo.getColumn(NodeFactory.createAnon());
-		} catch (IllegalArgumentException expected) {
-		}
-
-		try {
-			queryInfo.getColumn(NodeFactory.createLiteral("foo"));
-		} catch (IllegalArgumentException expected) {
-		}
-
-		try {
-			queryInfo.getColumn(NodeFactory.createURI("dummy"));
-		} catch (IllegalArgumentException expected) {
-		}
-
-		try {
-			queryInfo.getColumn(NodeFactory.createVariable("dummy"));
-		} catch (IllegalArgumentException expected) {
-		}
-
-		try {
-			queryInfo.getColumn(Node.ANY);
-		} catch (IllegalArgumentException expected) {
-		}
-	}
-
-	@Test
 	public void testGetColumnIndex() {
 
 		assertEquals(-1, queryInfo.getColumnIndex(cName2));
@@ -373,7 +319,7 @@ public class QueryInfoSetTest {
 				queryElementGroup, table, false);
 		queryInfo.addTable(tableInfo);
 		queryInfo.addRequiredColumns();
-		List<QueryColumnInfo> cols = queryInfo.getColumns();
+		QueryItemCollection<QueryColumnInfo> cols = queryInfo.getColumns();
 		assertEquals(2, cols.size());
 		assertEquals(colInfo1, cols.get(0));
 		assertEquals(queryInfo.getColumn(cName), cols.get(1));
@@ -404,34 +350,6 @@ public class QueryInfoSetTest {
 	}
 
 	@Test
-	public void testGetTableByNode() {
-		Node n = Var.alloc(tName.getSPARQLName()).asNode();
-		Node n2 = Var.alloc(tName2.getSPARQLName()).asNode();
-		assertNull(queryInfo.getTable(n));
-
-		ElementGroup queryElementGroup = new ElementGroup();
-		QueryTableInfo tableInfo = new QueryTableInfo(queryInfo,
-				queryElementGroup, table, false);
-		assertNull(queryInfo.getTable(n));
-
-		queryInfo.addTable(tableInfo);
-		assertEquals(tableInfo, queryInfo.getTable(n));
-
-		ElementGroup queryElementGroup2 = new ElementGroup();
-		QueryTableInfo tableInfo2 = new QueryTableInfo(queryInfo,
-				queryElementGroup2, table2, false);
-		assertNull(queryInfo.getTable(n2));
-		queryInfo.addTable(tableInfo2);
-		assertEquals(tableInfo2, queryInfo.getTable(n2));
-
-		assertNull(queryInfo.getTable(NodeFactory.createAnon()));
-		assertNull(queryInfo.getTable(NodeFactory.createLiteral("foo")));
-		assertNull(queryInfo.getTable(NodeFactory.createURI("dummy")));
-		assertNull(queryInfo.getTable(NodeFactory.createVariable("dummy")));
-		assertNull(queryInfo.getTable(Node.ANY));
-	}
-
-	@Test
 	public void testGetTables() {
 		assertEquals(0, queryInfo.getTables().size());
 
@@ -447,7 +365,7 @@ public class QueryInfoSetTest {
 				queryElementGroup2, table2, false);
 		assertEquals(1, queryInfo.getTables().size());
 		queryInfo.addTable(tableInfo2);
-		List<QueryTableInfo> lst = queryInfo.getTables();
+		QueryItemCollection<QueryTableInfo> lst = queryInfo.getTables();
 		assertEquals(2, lst.size());
 
 		assertEquals(tableInfo, lst.get(0));
@@ -609,7 +527,76 @@ public class QueryInfoSetTest {
 		for (QueryColumnInfo columnInfoChk : queryInfo.getColumns()) {
 			assertEquals(expected, columnInfoChk.getSegments());
 		}
-
+	}
+	
+	@Test
+	public void testFindColumnByGUID_ColumnName() {
+		QueryColumnInfo colInfo = queryInfo.findColumnByGUID(cName);
+		assertNull( colInfo );
+		
+		ElementGroup queryElementGroup = new ElementGroup();
+		QueryTableInfo tableInfo = new QueryTableInfo(queryInfo,
+				queryElementGroup, table, false);
+		queryInfo.addTable( tableInfo );
+		queryInfo.addRequiredColumns();
+		
+		colInfo = queryInfo.findColumnByGUID(cName);
+		assertNotNull( colInfo );
+		assertEquals( cName.getGUID(), colInfo.getName().getGUID() );
+		assertEquals( cName.getGUID(), colInfo.getGUID() );
 	}
 
+	@Test
+	public void testFindColumnByGUID_String() {
+		QueryColumnInfo colInfo = queryInfo.findColumnByGUID(cName.getGUID());
+		assertNull( colInfo );
+		
+		ElementGroup queryElementGroup = new ElementGroup();
+		QueryTableInfo tableInfo = new QueryTableInfo(queryInfo,
+				queryElementGroup, table, false);
+		queryInfo.addTable( tableInfo );
+		queryInfo.addRequiredColumns();
+		
+		colInfo = queryInfo.findColumnByGUID(cName.getGUID());
+		assertNotNull( colInfo );
+		assertEquals( cName.getGUID(), colInfo.getName().getGUID() );
+		assertEquals( cName.getGUID(), colInfo.getGUID() );
+	}
+
+	@Test
+	public void testScanTablesForColumnByGUID() {
+		QueryColumnInfo colInfo = queryInfo.scanTablesForColumnByGUID(cName);
+		assertNull( colInfo );
+		
+		ElementGroup queryElementGroup = new ElementGroup();
+		QueryTableInfo tableInfo = new QueryTableInfo(queryInfo,
+				queryElementGroup, table, false);
+		queryInfo.addTable( tableInfo );
+		queryInfo.addRequiredColumns();
+		
+		colInfo = queryInfo.scanTablesForColumnByGUID(cName);
+		assertNotNull( colInfo );
+		assertEquals( cName.getGUID(), colInfo.getName().getGUID() );
+		assertEquals( cName.getGUID(), colInfo.getGUID() );
+	}
+
+	@Test
+	public void testScanTablesForColumnByGUID_beforeRequired() {
+		QueryColumnInfo colInfo = queryInfo.scanTablesForColumnByGUID(cName);
+		assertNull( colInfo );
+		
+		ElementGroup queryElementGroup = new ElementGroup();
+		QueryTableInfo tableInfo = new QueryTableInfo(queryInfo,
+				queryElementGroup, table, false);
+		queryInfo.addTable( tableInfo );
+		queryElementGroup = new ElementGroup();
+		tableInfo = new QueryTableInfo(queryInfo,
+				queryElementGroup, table2, false);
+		queryInfo.addTable( tableInfo );
+		
+		colInfo = queryInfo.scanTablesForColumnByGUID(cName);
+		assertNotNull( colInfo );
+		assertEquals( cName.getGUID(), colInfo.getName().getGUID() );
+		assertEquals( cName.getGUID(), colInfo.getGUID() );
+	}
 }

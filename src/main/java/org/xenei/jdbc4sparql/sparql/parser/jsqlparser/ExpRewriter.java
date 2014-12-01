@@ -1,6 +1,7 @@
 package org.xenei.jdbc4sparql.sparql.parser.jsqlparser;
 
 import com.hp.hpl.jena.graph.Node;
+import com.hp.hpl.jena.sparql.core.Var;
 import com.hp.hpl.jena.sparql.expr.Expr;
 import com.hp.hpl.jena.sparql.expr.ExprAggregator;
 import com.hp.hpl.jena.sparql.expr.ExprFunction;
@@ -147,8 +148,8 @@ public abstract class ExpRewriter implements ExprVisitor {
 
 	@Override
 	public void visit(final ExprVar nv) {
-		final Node n = nv.getAsNode();
-		final QueryColumnInfo ci = queryBuilder.getNodeColumn(n);
+		final Var v = nv.asVar();
+		final QueryColumnInfo ci = queryBuilder.getColumn(v);
 		if (ci != null) {
 			for (final ItemName qi : aliasMap.keySet()) {
 				if (new ColumnName(qi).matches(ci.getName())) {

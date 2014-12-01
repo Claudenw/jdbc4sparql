@@ -46,12 +46,7 @@ import com.hp.hpl.jena.sparql.expr.nodevalue.NodeValueDouble;
 import com.hp.hpl.jena.sparql.expr.nodevalue.NodeValueInteger;
 import com.hp.hpl.jena.sparql.expr.nodevalue.NodeValueString;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Stack;
-import java.util.StringTokenizer;
-import java.util.regex.Pattern;
-
 import net.sf.jsqlparser.expression.AllComparisonExpression;
 import net.sf.jsqlparser.expression.AnyComparisonExpression;
 import net.sf.jsqlparser.expression.BinaryExpression;
@@ -233,25 +228,16 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 	public void visit(final Column tableColumn) {
 		if (LOG.isDebugEnabled())
 			SparqlExprVisitor.LOG.debug("visit Column: {}", tableColumn);
-		try {
+	
 			String schema = StringUtils.defaultString(tableColumn.getTable()
 					.getSchemaName(), builder.getDefaultSchemaName());
 			String table = StringUtils.defaultString(tableColumn.getTable()
 					.getName(), builder.getDefaultTableName());
 			final ColumnName cName = new ColumnName(builder.getCatalogName(),
 					schema, table, tableColumn.getColumnName());
-			cName.setUsedSegments(builder.getSegments());
-			QueryColumnInfo columnInfo = builder.getColumn(cName);
-			QueryTableInfo tableInfo = builder.getTable(cName.getTableName());
-			tableInfo.addColumnToQuery(columnInfo.getColumn(),
-					columnInfo.getName(), optionalColumns);
-			builder.addDataFilter(columnInfo);
-			// cName.setUsedSegments( NameSegments.COLUMN );
-			// stack.push(new ExprVar(columnInfo.getName().getSPARQLName()));
+			QueryColumnInfo columnInfo = builder.addColumnToQuery(cName, optionalColumns);
 			stack.push(new ExprColumn(columnInfo));
-		} catch (final SQLException e) {
-			throw new RuntimeException(e);
-		}
+		
 	}
 
 	@Override
@@ -379,7 +365,7 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 		final Expr left = stack.pop();
 		final Expr right = stack.pop();
 		if (right instanceof NodeValueString) {
-			final RegexNodeValue rnv = new RegexNodeValue(((NodeValueString) right)
+			final RegexNodeValue rnv = RegexNodeValue.create(((NodeValueString) right)
 					.getString());
 			if (rnv.isWildcard()) {
 				stack.push(new E_Regex(left, rnv, new NodeValueString("")));

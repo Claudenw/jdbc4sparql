@@ -3,16 +3,14 @@ package org.xenei.jdbc4sparql.sparql.parser.jsqlparser;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
-import java.util.regex.Pattern;
-
 import com.hp.hpl.jena.sparql.expr.nodevalue.NodeValueString;
 
 class RegexNodeValue extends NodeValueString {
 	private final boolean wildcard;
 
-	public RegexNodeValue(final String str) {
-		super(parseWildCard(str));
-		this.wildcard = hasWildcard(str);
+	private RegexNodeValue(final String str, boolean wildcard) {
+		super(str);
+		this.wildcard = wildcard;
 	}
 
 	public boolean isWildcard() {
@@ -32,24 +30,27 @@ class RegexNodeValue extends NodeValueString {
 		CONVERSION.put("%", "(.+)");
 	}
 
-	private static boolean hasWildcard(final String part) {
-		String tst = " " + part + " ";
-		int barCnt = tst.split("_").length - 1;
-		int escBarCnt = tst.split("\\\\_").length - 1;
-		int pctCnt = tst.split("%").length - 1;
-		int escPctCnt = tst.split("\\\\%").length - 1;
-		return (barCnt > escBarCnt) || (pctCnt > escPctCnt);
-	}
+//	private static boolean hasWildcard(final String part) {
+//		String tst = " " + part + " ";
+//		int barCnt = tst.split("_").length - 1;
+//		int escBarCnt = tst.split("\\\\_").length - 1;
+//		int pctCnt = tst.split("%").length - 1;
+//		int escPctCnt = tst.split("\\\\%").length - 1;
+//		return (barCnt > escBarCnt) || (pctCnt > escPctCnt);
+//	}
 
-	private static String parseWildCard(final String part) {
+	public static RegexNodeValue create( final String part ) {
 		final StringTokenizer tokenizer = new StringTokenizer(part, PATTERN,
 				true);
 		final StringBuilder sb = new StringBuilder().append("^");
+		final StringBuilder plainSb = new StringBuilder();
 		final StringBuilder workingToken = new StringBuilder();
 		int backslashCount = 0;
-		boolean escaping = false;
+		int wildcard = 0;
+		int escaping = 0;
 		while (tokenizer.hasMoreTokens()) {
 			final String candidate = tokenizer.nextToken();
+			plainSb.append( candidate );
 			if ((candidate.length() == 1)
 					&& CONVERSION.keySet().contains(candidate)) {
 				// token
@@ -59,8 +60,12 @@ class RegexNodeValue extends NodeValueString {
 					if (candidate.equals("%") || candidate.equals("_")) {
 						sb.setCharAt(sb.length() - 2, candidate.charAt(0));
 						sb.setLength(sb.length() - 1);
+						plainSb.setCharAt(sb.length()-2, candidate.charAt(0));
+						plainSb.setLength(sb.length() - 1);
+						escaping--;
 					} else if (candidate.equals(SLASH)) {
 						sb.append( CONVERSION.get(candidate) );
+						escaping++;
 					} else {
 						sb.append(candidate);
 					}
@@ -68,7 +73,11 @@ class RegexNodeValue extends NodeValueString {
 					sb.append(
 							workingToken.length() > 0 ? workingToken.toString()
 									: "").append(CONVERSION.get(candidate));
-					escaping = true;
+					escaping++;
+					if (candidate.equals("%") || candidate.equals("_"))
+					{
+						wildcard++;
+					}
 
 				}
 				if (candidate.equals(SLASH)) {
@@ -89,7 +98,7 @@ class RegexNodeValue extends NodeValueString {
 		sb.append("$");
 		// final RegexNodeValue retval = new RegexNodeValue(
 		// wildcard ? sb.toString() : workingToken.toString(), wildcard);
-		return escaping ? sb.toString() : workingToken.toString();
+		return new RegexNodeValue( escaping>0 ? sb.toString() : plainSb.toString(), wildcard>0);
 	}
 
 }

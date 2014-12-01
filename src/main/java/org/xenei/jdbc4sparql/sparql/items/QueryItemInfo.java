@@ -16,9 +16,7 @@ import org.xenei.jdbc4sparql.iface.name.NameSegments;
 public class QueryItemInfo<T extends ItemName> implements NamedObject<T>,
 		GUIDObject {
 	private final T name;
-	// private final Var var;
 	private final Var baseVar;
-	private Expr expr;
 	private boolean optional;
 
 	protected QueryItemInfo(final T name, final boolean optional) {
@@ -26,14 +24,9 @@ public class QueryItemInfo<T extends ItemName> implements NamedObject<T>,
 			throw new IllegalArgumentException("name may not be null");
 		}
 		this.name = name;
-		// this.var = Var.alloc(this.name.getSPARQLName());
 		this.baseVar = Var.alloc(this.name.getGUID());
 		this.optional = optional;
-		this.expr = null;
-	}
 
-	public Expr getExpr() {
-		return expr;
 	}
 
 	protected void setSegments(NameSegments usedSegments) {
@@ -81,10 +74,6 @@ public class QueryItemInfo<T extends ItemName> implements NamedObject<T>,
 		return optional;
 	}
 
-	public void setExpr(final Expr expr) {
-		this.expr = expr;
-	}
-
 	@Override
 	public String getGUID() {
 		return getName().getGUID();
@@ -120,62 +109,4 @@ public class QueryItemInfo<T extends ItemName> implements NamedObject<T>,
 		return getName().hashCode();
 	}
 
-	// /**
-	// * Find the object matching the key in the map.
-	// * Uses matches() method to determine match.
-	// *
-	// * @param map
-	// * The map to find the object in.
-	// * @return The Object (T) or null if not found
-	// * @throws IllegalArgumentException
-	// * if more than one object matches.
-	// */
-	// public <T extends QueryItemInfo<?>> T findMatch( Collection<T> collection
-	// )
-	// {
-	// // check empty collection.
-	// if (collection.size() == 0)
-	// {
-	// return null;
-	// }
-	//
-	// // If we have a wild pattern
-	//
-	// if (getName().hasWild())
-	// {
-	// T retval = null;
-	// for (final T n : collection)
-	// {
-	// if (getName().matches(n.getName()))
-	// {
-	// if (retval != null)
-	// {
-	// throw new IllegalArgumentException(String.format(
-	// ItemName.FOUND_IN_MULTIPLE_, this, retval
-	// .getClass().getSimpleName()));
-	// }
-	// retval = n;
-	// }
-	// }
-	// return retval;
-	// }
-	//
-	// // check exact match
-	// Iterator<T> iter =
-	// WrappedIterator.create(collection.iterator()).filterKeep( new
-	// Filter<T>(){
-	//
-	// @Override
-	// public boolean accept(T o) {
-	// return ItemName.COMPARATOR.compare( QueryItemInfo.this.getName(),
-	// o.getName()) == 0;
-	// }});
-	//
-	// if (iter.hasNext())
-	// {
-	// return iter.next();
-	// }
-	//
-	// return null;
-	// }
 }

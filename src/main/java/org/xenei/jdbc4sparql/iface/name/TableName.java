@@ -7,6 +7,7 @@ import org.xenei.jdbc4sparql.impl.NameUtils;
  * Name implementation.
  */
 public class TableName extends ItemName {
+
 	public static TableName getNameInstance(String catalog, String schema,
 			final String alias) {
 		if (alias == null) {
@@ -37,12 +38,6 @@ public class TableName extends ItemName {
 		}
 	}
 
-	static ItemName checkItemName(ItemName name) {
-		SchemaName.checkItemName(name);
-		checkNotNull(name.getBaseName().getTable(), "table");
-		return name;
-	}
-
 	private static NameSegments adjustSegments(NameSegments segments) {
 		if (segments.isTable() && !segments.isColumn()) {
 			return segments;
@@ -50,13 +45,19 @@ public class TableName extends ItemName {
 		return new NameSegments(segments.isCatalog(), segments.isSchema(),
 				true, false);
 	}
+	
+	static ItemName checkItemName(ItemName name) {
+		SchemaName.checkItemName(name);
+		checkNotNull(name.getBaseName().getTable(), "table");
+		return name;
+	}
 
 	public TableName(final ItemName name) {
 		this(name, name.getUsedSegments());
 	}
 
 	public TableName(final ItemName name, NameSegments segments) {
-		super(checkItemName(name), adjustSegments(segments));
+		super(checkItemName(name), adjustSegments( segments));
 	}
 
 	public TableName(final String catalog, final String schema,

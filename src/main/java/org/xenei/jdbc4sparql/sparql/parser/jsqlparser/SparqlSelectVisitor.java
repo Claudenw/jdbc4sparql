@@ -21,6 +21,7 @@ package org.xenei.jdbc4sparql.sparql.parser.jsqlparser;
 
 import com.hp.hpl.jena.graph.Node;
 import com.hp.hpl.jena.query.Query;
+import com.hp.hpl.jena.sparql.core.Var;
 import com.hp.hpl.jena.sparql.expr.E_Bound;
 import com.hp.hpl.jena.sparql.expr.E_Equals;
 import com.hp.hpl.jena.sparql.expr.Expr;
@@ -75,11 +76,11 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor {
 				if ((eq.getArg1() instanceof ExprVar)
 						&& (eq.getArg2() instanceof ExprVar)) {
 					final QueryColumnInfo ci1 = queryBuilder
-							.getNodeColumn(((ExprVar) eq.getArg1()).getAsNode());
+							.getColumn(((ExprVar) eq.getArg1()).asVar());
 					if (ci1 != null) {
 						final QueryColumnInfo ci2 = queryBuilder
-								.getNodeColumn(((ExprVar) eq.getArg2())
-										.getAsNode());
+								.getColumn(((ExprVar) eq.getArg2())
+										.asVar());
 						if (ci2 != null) {
 							final ColumnName ci1a = isMapped(ci1);
 							final ColumnName ci2a = isMapped(ci2);
@@ -150,8 +151,8 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor {
 			return false;
 		}
 		if (expr instanceof ExprVar) {
-			final Node n = ((ExprVar) expr).getAsNode();
-			final QueryTableInfo tableInfo = queryBuilder.getNodeTable(n);
+			final Var v = ((ExprVar) expr).asVar();
+			final QueryTableInfo tableInfo = queryBuilder.getTable(v);
 			if ((tableInfo != null) && (tableInfo.isOptional())) {
 				tableInfo.addFilter(toApply);
 				return true;

@@ -15,7 +15,7 @@ public class NameCollectionTest {
 	@Before
 	public void setup() {
 		collection = new NameCollection<ItemName>();
-		itemName = new ItemNameTest.TestName();
+		itemName = new SearchName("catalog", "schema", "table", "column");
 
 		Boolean vals[] = new Boolean[] { Boolean.TRUE, Boolean.FALSE };
 		List<Boolean[]> lst = new ArrayList<Boolean[]>();

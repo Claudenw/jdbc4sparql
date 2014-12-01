@@ -1,12 +1,16 @@
 package org.xenei.jdbc4sparql.sparql.items;
 
 import java.sql.SQLDataException;
+import java.util.List;
 
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.name.ColumnName;
 import org.xenei.jdbc4sparql.iface.name.NameSegments;
 import org.xenei.jdbc4sparql.sparql.CheckTypeF;
 import org.xenei.jdbc4sparql.sparql.ForceTypeF;
+
+import com.hp.hpl.jena.util.iterator.ExtendedIterator;
+import com.hp.hpl.jena.util.iterator.Filter;
 
 /**
  * A column in a table in the query. This class maps the column to an alias
@@ -55,8 +59,10 @@ public class QueryColumnInfo extends QueryItemInfo<ColumnName> {
 		this.column = column;
 	}
 
-	public QueryColumnInfo addAlias(final ColumnName alias) {
-		return new QueryColumnInfo(this.column, alias);
+	public QueryColumnInfo createAlias(final ColumnName alias) throws SQLDataException {
+		QueryColumnInfo retval = new QueryColumnInfo(this.column, alias);
+		retval.typeFilter = getTypeFilter();
+		return retval;
 	}
 
 	@Override
@@ -105,4 +111,12 @@ public class QueryColumnInfo extends QueryItemInfo<ColumnName> {
 				getName());
 	}
 
+//	public List<QueryColumnInfo> sameBase(QueryItemCollection<QueryColumnInfo> cols) {
+//		return cols.iterator().filterKeep( new Filter<QueryColumnInfo>(){
+//
+//			@Override
+//			public boolean accept(QueryColumnInfo o) {
+//				return o.column.getName().getGUID().equals( column.getName().getGUID() );
+//			}}).toList();
+//	}
 }

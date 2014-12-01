@@ -94,7 +94,7 @@ class SparqlSelectItemVisitor implements SelectItemVisitor {
 		TableName name = null;
 		if (allTableColumns.getTable().getAlias() != null) {
 			String defaultCatalog = queryBuilder.getCatalogName();
-			String defaultSchema = queryBuilder.getDefaultSechema().getName()
+			String defaultSchema = queryBuilder.getDefaultSchema().getName()
 					.getShortName();
 			name = TableName.getNameInstance(defaultCatalog, defaultSchema,
 					allTableColumns.getTable().getAlias());
@@ -196,7 +196,7 @@ class SparqlSelectItemVisitor implements SelectItemVisitor {
 
 			} else {
 				String catalogName = queryBuilder.getCatalogName();
-				String schemaName = queryBuilder.getSchemaName();
+				String schemaName = queryBuilder.getDefaultSchemaName();
 				String tableName = queryBuilder.getDefaultTableName();
 				cName = ColumnName.getNameInstance(catalogName, schemaName,
 						tableName, nv.asVar().getName());
@@ -210,8 +210,12 @@ class SparqlSelectItemVisitor implements SelectItemVisitor {
 
 			} else {
 				ColumnName alias = ColumnName.getNameInstance(cName, origAlias);
-				queryBuilder.addAlias(cName, alias);
-				queryBuilder.addVar(nv, alias);
+				try {
+					queryBuilder.addAlias(cName, alias);
+					queryBuilder.addVar(nv, alias);
+				} catch (SQLException e) {
+					throw new IllegalArgumentException(e.getMessage(), e);
+				}
 			}
 
 		}

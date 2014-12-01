@@ -39,7 +39,7 @@ public class CatalogNameTests {
 
 	@Test
 	public void testCatalogFromOtherItemName() {
-		final ItemName itemName = new ItemNameTest.TestName("catalog",
+		final ItemName itemName = new SearchName("catalog",
 				"schema", "table", "column");
 		catalogName = new CatalogName(itemName);
 		assertEquals("catalog", catalogName.getCatalog());

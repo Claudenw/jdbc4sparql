@@ -1,5 +1,6 @@
 package org.xenei.jdbc4sparql.impl.virtual;
 
+import com.hp.hpl.jena.graph.Node;
 import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.query.QuerySolution;
 
@@ -21,7 +22,7 @@ public class VirtualCatalog implements Catalog {
 
 	public VirtualCatalog() {
 		schemas = new HashMap<String, Schema>();
-		schemas.put("", new VirtualSchema(this));
+		schemas.put(VirtualSchema.NAME, new VirtualSchema(this));
 	}
 
 	@Override
@@ -52,6 +53,19 @@ public class VirtualCatalog implements Catalog {
 	@Override
 	public Set<Schema> getSchemas() {
 		return new HashSet<Schema>(schemas.values());
+	}
+	
+	@Override
+	public boolean isService() {
+		return false;
+	}
+	
+	public Node getServiceNode() {
+		return null;
+	}
+	
+	public String getShortName() {
+		return getName().getCatalog();
 	}
 
 }

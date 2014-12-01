@@ -4,6 +4,8 @@ import com.hp.hpl.jena.graph.Node;
 import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.query.QueryException;
 import com.hp.hpl.jena.sparql.core.Var;
+import com.hp.hpl.jena.sparql.expr.E_Add;
+import com.hp.hpl.jena.sparql.expr.E_LogicalAnd;
 import com.hp.hpl.jena.sparql.expr.Expr;
 import com.hp.hpl.jena.sparql.lang.sparql_11.ParseException;
 import com.hp.hpl.jena.sparql.syntax.Element;
@@ -18,6 +20,7 @@ import com.hp.hpl.jena.util.iterator.WrappedIterator;
 
 import java.sql.SQLDataException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -147,9 +150,10 @@ public class QueryTableInfo extends QueryItemInfo<TableName> {
 
 		if (column.hasQuerySegments() && optional) {
 			eg.addElement(new ElementOptional(getQuerySegments(
-					columnInfo.getColumn(), getVar(), columnInfo.getGUIDVar())));
+					columnInfo.getColumn(), getGUIDVar(), columnInfo.getGUIDVar())));
 		}
-
+		dataFilterList.add( columnInfo );
+		
 		return columnInfo;
 	}
 
@@ -226,13 +230,13 @@ public class QueryTableInfo extends QueryItemInfo<TableName> {
 				final String fmt = columnInfo.getColumn().getQuerySegmentFmt();
 				if (StringUtils.isNotBlank(fmt)) {
 					queryFmt.append(
-							String.format(fmt, getVar(),
+							String.format(fmt, getGUIDVar(),
 									columnInfo.getGUIDVar())).append(eol);
 				}
 			}
 		}
 		queryFmt.append("}");
-		final String queryStr = String.format(queryFmt.toString(), getVar());
+		final String queryStr = String.format(queryFmt.toString(), getGUIDVar());
 		try {
 			eg.addElement(SparqlParser.Util.parse(queryStr));
 		} catch (final ParseException e) {
@@ -268,23 +272,18 @@ public class QueryTableInfo extends QueryItemInfo<TableName> {
 
 	public void addQueryFilters(final QueryInfoSet infoSet)
 			throws SQLDataException {
-		ExtendedIterator<QueryColumnInfo> iter = WrappedIterator
-				.create(table.getColumns())
-				.mapWith(new Map1<Column, QueryColumnInfo>() {
+		List<QueryColumnInfo> columnInfoList = new ArrayList<QueryColumnInfo>();
+		Iterator<Column> iter = table.getColumns();
+		while (iter.hasNext())
+		{
+			QueryColumnInfo columnInfo = infoSet.findColumnByGUID(iter.next().getName()); 
+			if (columnInfo != null)
+			{
+				columnInfoList.add( columnInfo );
+			}
+		}
 
-					@Override
-					public QueryColumnInfo map1(Column column) {
-						return infoSet.findColumnByGUID(column.getName());
-					}
-				}).filterDrop(new Filter<QueryColumnInfo>() {
-
-					@Override
-					public boolean accept(QueryColumnInfo o) {
-						return o == null;
-					}
-				});
-
-		addTypeFilters(iter.toList(), dataFilterList, eg, egWrapper);
+		addTypeFilters(columnInfoList, dataFilterList, eg, egWrapper);
 	}
 
 	public static void addTypeFilters(
@@ -292,16 +291,30 @@ public class QueryTableInfo extends QueryItemInfo<TableName> {
 			Collection<QueryColumnInfo> dataFilterList,
 			ElementGroup filterGroup, ElementGroup typeGroup)
 			throws SQLDataException {
+		
+		
+		Expr expr = null;
 		for (QueryColumnInfo columnInfo : typeFilterList) {
 			CheckTypeF f = columnInfo.getTypeFilter();
 			if (LOG.isDebugEnabled())
 				QueryTableInfo.LOG.debug("Adding filter: {}", f);
-			filterGroup.addElementFilter(new ElementFilter(f));
+			if (expr == null)
+			{
+				expr = f;
+			}
+			else
+			{
+				expr = new E_LogicalAnd( expr, f );
+			}
+		}
+		if (expr != null)
+		{
+			filterGroup.addElementFilter(new ElementFilter(expr));
 		}
 
 		for (QueryColumnInfo columnInfo : dataFilterList) {
 			ForceTypeF f = columnInfo.getDataFilter();
-			ElementBind bind = f.getBinding();
+			ElementBind bind = f.getBinding( columnInfo );
 			if (LOG.isDebugEnabled())
 				QueryTableInfo.LOG.debug("Adding binding: {}", bind);
 			typeGroup.addElement(bind);
@@ -346,8 +359,7 @@ public class QueryTableInfo extends QueryItemInfo<TableName> {
 			if (col != null) {
 				final boolean opt = optional ? col.isOptional()
 						: SparqlQueryBuilder.REQUIRED;
-				addColumnToQuery(col, cName, opt);
-				retval = infoSet.findColumnByGUID(col.getName());
+				retval = addColumnToQuery(col, cName, opt);
 			}
 		}
 		if ((retval != null)
@@ -360,6 +372,48 @@ public class QueryTableInfo extends QueryItemInfo<TableName> {
 		return null;
 	}
 
+	/**
+	 * Returns the column or null if not found
+	 *
+	 * @param name
+	 *            The name of the column to look for.
+	 * @param optional
+	 *            If false then column is required, if true then the column
+	 *            isOptional flag defines value
+	 * @return
+	 * @throws SQLException
+	 */
+	public QueryColumnInfo getColumnByGUID(final QueryInfoSet infoSet,
+			final ColumnName cName) {
+		
+		QueryColumnInfo retval = infoSet.findColumnByGUID(cName);
+		if (retval == null) {
+			// we have to check for the case where the column has the schema or
+			// table def and the
+			// infoSet does not.
+			Iterator<Column> iter = table.getColumns();
+			while (iter.hasNext())
+			{
+				Column c = iter.next();
+				if (c.getName().getGUID().equals( cName.getGUID() ))
+				{
+					if (infoSet.findColumn(c.getName()) == null)
+					{
+						addColumnToQuery( c );
+					}
+					retval = infoSet.findColumn(c.getName());
+					if (retval == null)
+					{
+						infoSet.addColumn( new QueryColumnInfo( c, cName ));
+						retval = infoSet.getColumn(cName);
+					}
+					return retval;
+				}
+			}
+		}
+		return retval;
+	}
+	
 	private Element getQuerySegments(final Column column, final Node tableVar,
 			final Node columnVar) {
 		final String fmt = "{" + column.getQuerySegmentFmt() + "}";

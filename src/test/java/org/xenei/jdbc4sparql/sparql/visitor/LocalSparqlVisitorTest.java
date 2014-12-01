@@ -170,7 +170,8 @@ public class LocalSparqlVisitorTest {
 
 		q.getQueryPattern().visit(
 				extractor.reset().setMatchType(ElementFilter.class));
-		Assert.assertEquals(8, extractor.getExtracted().size());
+		// one for each table + 1 for join
+		Assert.assertEquals(3, extractor.getExtracted().size());
 	}
 
 	@Test
@@ -198,7 +199,7 @@ public class LocalSparqlVisitorTest {
 
 		q.getQueryPattern().visit(
 				extractor.reset().setMatchType(ElementFilter.class));
-		Assert.assertEquals(4, extractor.getExtracted().size());
+		Assert.assertEquals(1, extractor.getExtracted().size());
 
 		q.getQueryPattern().visit(
 				extractor.reset().setMatchType(ElementOptional.class));
@@ -230,7 +231,7 @@ public class LocalSparqlVisitorTest {
 
 		q.getQueryPattern().visit(
 				extractor.reset().setMatchType(ElementFilter.class));
-		Assert.assertEquals(2, extractor.getExtracted().size());
+		Assert.assertEquals(1, extractor.getExtracted().size());
 
 	}
 
@@ -258,7 +259,7 @@ public class LocalSparqlVisitorTest {
 
 		q.getQueryPattern().visit(
 				extractor.reset().setMatchType(ElementFilter.class));
-		Assert.assertEquals(2, extractor.getExtracted().size());
+		Assert.assertEquals(1, extractor.getExtracted().size());
 
 	}
 
@@ -381,7 +382,8 @@ public class LocalSparqlVisitorTest {
 
 		q.getQueryPattern().visit(
 				extractor.reset().setMatchType(ElementFilter.class));
-		Assert.assertEquals(columnNames.length + 1, extractor.getExtracted()
+		// one for each table + one real (join) filter
+		Assert.assertEquals(3, extractor.getExtracted()
 				.size());
 		Expr expr = ((ElementFilter) extractor.getExtracted().get(
 				columnNames.length)).getExpr();
@@ -416,7 +418,7 @@ public class LocalSparqlVisitorTest {
 
 		q.getQueryPattern().visit(
 				extractor.reset().setMatchType(ElementFilter.class));
-		Assert.assertEquals(2, extractor.getExtracted().size());
+		Assert.assertEquals(1, extractor.getExtracted().size());
 	}
 
 	@Test
@@ -443,6 +445,6 @@ public class LocalSparqlVisitorTest {
 
 		q.getQueryPattern().visit(
 				extractor.reset().setMatchType(ElementFilter.class));
-		Assert.assertEquals(2, extractor.getExtracted().size());
+		Assert.assertEquals(1, extractor.getExtracted().size());
 	}
 }

@@ -25,11 +25,12 @@ import org.xenei.jena.entities.EntityManager;
 import org.xenei.jena.entities.EntityManagerFactory;
 import org.xenei.jena.entities.EntityManagerRequiredException;
 import org.xenei.jena.entities.MissingAnnotation;
+import org.xenei.jena.entities.ResourceWrapper;
 import org.xenei.jena.entities.annotations.Predicate;
 import org.xenei.jena.entities.annotations.Subject;
 
 @Subject(namespace = "http://org.xenei.jdbc4sparql/entity/KeySegment#")
-public class RdfKeySegment implements KeySegment {
+public class RdfKeySegment implements KeySegment, ResourceWrapper {
 
 	public static class Builder implements KeySegment {
 		private short idx;
@@ -65,7 +66,7 @@ public class RdfKeySegment implements KeySegment {
 
 		@Override
 		public int compare(final Object[] data1, final Object[] data2) {
-			return RdfKeySegment.compare(getIdx(), isAscending(), data1, data2);
+			return Utils.compare(getIdx(), isAscending(), data1, data2);
 		}
 
 		@Override
@@ -76,12 +77,6 @@ public class RdfKeySegment implements KeySegment {
 		@Override
 		public short getIdx() {
 			return idx;
-		}
-
-		@Override
-		@Predicate
-		public Resource getResource() {
-			throw new UnsupportedOperationException();
 		}
 
 		@Override
@@ -104,24 +99,9 @@ public class RdfKeySegment implements KeySegment {
 		}
 	}
 
-	private static final int compare(final int idx, final boolean isAscending,
-			final Object[] data1, final Object[] data2) {
-		final Object o1 = data1[idx];
-		final Object o2 = data2[idx];
-		int retval;
-		if (o1 == null) {
-			retval = o2 == null ? 0 : -1;
-		} else if (o2 == null) {
-			retval = 1;
-		} else {
-			retval = Comparable.class.cast(data1[idx]).compareTo(data2[idx]);
-		}
-		return isAscending ? retval : -1 * retval;
-	}
-
 	@Override
 	public final int compare(final Object[] data1, final Object[] data2) {
-		return RdfKeySegment.compare(getIdx(), isAscending(), data1, data2);
+		return Utils.compare(getIdx(), isAscending(), data1, data2);
 	}
 
 	@Override

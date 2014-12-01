@@ -46,7 +46,7 @@ public class QueryInfoSet {
 		this.segments = NameSegments.ALL;
 	}
 
-	public void addColumn( // final QueryTableInfo tableInfo,
+	public void addColumn( 
 			final QueryColumnInfo columnInfo) {
 		columnInfo.getName().setUseGUID(guidFlg);
 		columnInfo.setSegments(segments);
@@ -196,35 +196,6 @@ public class QueryInfoSet {
 	}
 
 	/**
-	 * Retrieves the column form the list of query columns
-	 *
-	 * @param node
-	 *            The node to retrieve
-	 * @return The column info for the column with that node, or null
-	 */
-	public QueryColumnInfo findColumn(final Node node) {
-		return columnsInQuery.get(node);
-	}
-
-	/**
-	 * Retrieves the column form the list of query columns
-	 *
-	 * @param node
-	 *            The node to retrieve
-	 * @return The column info for the column with that node
-	 * @throws IllegalArgumentException
-	 *             if the column is not found
-	 */
-	public QueryColumnInfo getColumn(final Node node) {
-		QueryColumnInfo columnInfo = columnsInQuery.get(node);
-		if (columnInfo == null) {
-			throw new IllegalArgumentException(String.format(
-					SparqlQueryBuilder.NOT_FOUND_IN_QUERY, node));
-		}
-		return columnInfo;
-	}
-
-	/**
 	 * Get the index of the column in the column name list.
 	 * 
 	 * @param name
@@ -239,8 +210,8 @@ public class QueryInfoSet {
 	 * 
 	 * @return the list of columns
 	 */
-	public List<QueryColumnInfo> getColumns() {
-		return columnsInQuery.iterator().toList();
+	public QueryItemCollection<QueryColumnInfo> getColumns() {
+		return new QueryItemCollection<QueryColumnInfo>(columnsInQuery.iterator().toList());
 	}
 
 	/**
@@ -256,19 +227,8 @@ public class QueryInfoSet {
 		return tablesInQuery.get(name);
 	}
 
-	/**
-	 * Return QueryTableInfo associated with node or null if not found.
-	 * 
-	 * @param node
-	 *            the node to look for.
-	 * @return QueryTableInfo or null if not found.
-	 */
-	public QueryTableInfo getTable(final Node n) {
-		return tablesInQuery.get(n);
-	}
-
-	public List<QueryTableInfo> getTables() {
-		return tablesInQuery.iterator().toList();
+	public QueryItemCollection<QueryTableInfo> getTables() {
+		return new QueryItemCollection<QueryTableInfo>(tablesInQuery.iterator().toList());
 	}
 
 	/**
@@ -334,6 +294,25 @@ public class QueryInfoSet {
 
 			if (tableInfo != null) {
 				retval = tableInfo.getColumn(this, cName);
+			}
+
+		}
+		return retval;
+	}
+	
+	public QueryColumnInfo scanTablesForColumnByGUID(final ColumnName cName) {
+		// check exact match
+		QueryColumnInfo retval = findColumnByGUID(cName);
+		if (retval == null) {
+			// get the table and see if column is in it
+			final TableName tName = cName.getTableName();
+			// table name may be wild so use list.
+			for (final QueryTableInfo testTableInfo : listTables(tName)) {
+				retval = testTableInfo.getColumnByGUID( this, cName );
+				if (retval != null)
+				{
+					return retval;
+				}
 			}
 
 		}

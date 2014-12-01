@@ -45,13 +45,6 @@ public class QueryTableInfoTest {
 	}
 
 	@Test
-	public void testGetExpr() {
-		assertNull(tableInfo.getExpr());
-		tableInfo.setExpr(new NodeValueString("foo"));
-		assertEquals(new NodeValueString("foo"), tableInfo.getExpr());
-	}
-
-	@Test
 	public void testSegments() {
 		assertEquals("C:false S:true T:true C:false", tableInfo.getSegments()
 				.toString());
@@ -179,12 +172,12 @@ public class QueryTableInfoTest {
 		TriplePath pth = epb.patternElts().next();
 		assertEquals(Var.alloc("tbl"), pth.asTriple().getSubject());
 		assertEquals(NodeFactory.createURI("a"), pth.asTriple().getPredicate());
-		assertEquals(Var.alloc("schema" + NameUtils.SPARQL_DOT + "table"), pth
-				.asTriple().getObject());
+		assertEquals( tableInfo.getGUIDVar(), pth
+		.asTriple().getObject());
 
 		epb = (ElementPathBlock) extractor.getExtracted().get(1);
 		pth = epb.patternElts().next();
-		assertEquals(Var.alloc("schema" + NameUtils.SPARQL_DOT + "table"), pth
+		assertEquals(tableInfo.getGUIDVar(), pth
 				.asTriple().getSubject());
 		assertEquals(NodeFactory.createURI("b"), pth.asTriple().getPredicate());
 		assertEquals(Var.alloc("v_906819fe_e4e6_30eb_8431_4483a755c4f4"), pth

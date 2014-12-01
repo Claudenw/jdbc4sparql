@@ -21,11 +21,30 @@ import java.util.Comparator;
 
 import org.xenei.jena.entities.ResourceWrapper;
 
-public interface KeySegment extends Comparator<Object[]>, ResourceWrapper {
+public interface KeySegment extends Comparator<Object[]> {
 
 	public String getId();
 
 	public short getIdx();
 
 	public boolean isAscending();
+	
+	public static class Utils {
+
+		public static final int compare(final int idx, final boolean isAscending,
+				final Object[] data1, final Object[] data2) {
+			final Object o1 = data1[idx];
+			final Object o2 = data2[idx];
+			int retval;
+			if (o1 == null) {
+				retval = o2 == null ? 0 : -1;
+			} else if (o2 == null) {
+				retval = 1;
+			} else {
+				retval = Comparable.class.cast(data1[idx]).compareTo(data2[idx]);
+			}
+			return isAscending ? retval : -1 * retval;
+		}
+		
+	}
 }

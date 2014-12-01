@@ -516,7 +516,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData {
 						schema.getTables())) {
 					final TableDef tableDef = tbl.getTableDef();
 					if (tableDef.getPrimaryKey() != null) {
-						final Key pk = tableDef.getPrimaryKey();
+						final Key<?> pk = tableDef.getPrimaryKey();
 						for (final KeySegment seg : pk.getSegments()) {
 							final Object[] data = { catalog.getName(), // TABLE_CAT
 									schema.getName(), // TABLE_SCHEM

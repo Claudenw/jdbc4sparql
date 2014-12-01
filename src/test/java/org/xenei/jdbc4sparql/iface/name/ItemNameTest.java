@@ -9,54 +9,54 @@ import org.xenei.jdbc4sparql.impl.NameUtils;
 public class ItemNameTest {
 	public ItemName itemName;
 
-	public static class TestName extends ItemName {
-		public TestName() {
-			this("catalog", "schema", "table", "column");
-		}
-
-		public TestName(String catalog, String schema, String table,
-				String column) {
-			this(catalog, schema, table, column, new NameSegments(true, true,
-					true, true));
-		}
-
-		public TestName(String catalog, String schema, String table,
-				String column, NameSegments segs) {
-			super(catalog, schema, table, column);
-			setUsedSegments(segs);
-		}
-
-		public TestName(ItemName itemName, NameSegments segs) {
-			super(itemName, segs);
-		}
-
-		@Override
-		protected String createName(String separator) {
-			return String.format("%s%s%s%s%s%s%s", getCatalog(), separator,
-					getSchema(), separator, getTable(), separator, getCol());
-		}
-
-		@Override
-		public String getShortName() {
-			return "shortName";
-		}
-
-		public RenamedBaseName rename(String catalog, String schema,
-				String table, String column) {
-			return new RenamedBaseName(getBaseName(), catalog, schema, table,
-					column);
-		}
-
-		@Override
-		public ItemName clone(NameSegments segs) {
-			return new TestName(this, segs);
-		}
-
-	}
+//	public static class TestName extends ItemName {
+//		public TestName() {
+//			this("catalog", "schema", "table", "column");
+//		}
+//
+//		public TestName(String catalog, String schema, String table,
+//				String column) {
+//			this(catalog, schema, table, column, new NameSegments(true, true,
+//					true, true));
+//		}
+//
+//		public TestName(String catalog, String schema, String table,
+//				String column, NameSegments segs) {
+//			super(catalog, schema, table, column);
+//			setUsedSegments(segs);
+//		}
+//
+//		public TestName(ItemName itemName, NameSegments segs) {
+//			super(itemName, segs);
+//		}
+//
+//		@Override
+//		protected String createName(String separator) {
+//			return String.format("%s%s%s%s%s%s%s", getCatalog(), separator,
+//					getSchema(), separator, getTable(), separator, getCol());
+//		}
+//
+//		@Override
+//		public String getShortName() {
+//			return "shortName";
+//		}
+//
+//		public RenamedBaseName rename(String catalog, String schema,
+//				String table, String column) {
+//			return new RenamedBaseName(getBaseName(), catalog, schema, table,
+//					column);
+//		}
+//
+//		@Override
+//		public ItemName clone(NameSegments segs) {
+//			return new TestName(this, segs);
+//		}
+//
+//	}
 
 	@Before
 	public void setup() {
-		itemName = new TestName();
+		itemName = new SearchName("catalog", "schema", "table", "column");
 	}
 
 	@Test
@@ -131,7 +131,7 @@ public class ItemNameTest {
 
 	@Test
 	public void testGetShortName() {
-		assertEquals("shortName", itemName.getShortName());
+		assertEquals("column", itemName.getShortName());
 	}
 
 	@Test
@@ -185,33 +185,10 @@ public class ItemNameTest {
 		assertTrue(itemName.isWild());
 	}
 
-	// /**
-	// * Find the object matching the key in the map.
-	// * Uses matches() method to determine match.
-	// *
-	// * @param map
-	// * The map to find the object in.
-	// * @return The Object (T) or null if not found
-	// * @throws IllegalArgumentException
-	// * if more than one object matches.
-	// */
-	// public <T> Set<T> listMatches( final Map<? extends ItemName, T> map )
-	// {
-	// final Set<T> retval = new HashSet<T>();
-	// for (final ItemName n : map.keySet())
-	// {
-	// if (matches(n))
-	// {
-	// retval.add(map.get(n));
-	// }
-	// }
-	// return retval;
-	// }
-	//
 	@Test
 	public void testMatches() {
 		assertFalse(itemName.matches(null));
-		TestName tn = new TestName();
+		SearchName tn = new SearchName("catalog", "schema", "table", "column");
 		assertTrue(itemName.matches(tn));
 		tn.setUsedSegments(new NameSegments(true, true, true, false));
 		assertTrue(tn.matches(itemName));
@@ -221,37 +198,26 @@ public class ItemNameTest {
 		assertTrue(tn.matches(itemName));
 		tn.setUsedSegments(new NameSegments(false, true, true, true));
 
-		tn = new TestName("catalog", "schema", "table", "column1");
+		tn = new SearchName("catalog", "schema", "table", "column1");
 		assertFalse(tn.matches(itemName));
 		tn.setUsedSegments(new NameSegments(true, true, true, false));
 		assertTrue(tn.matches(itemName));
 
-		tn = new TestName("catalog", "schema", "table1", "column");
+		tn = new SearchName("catalog", "schema", "table1", "column");
 		assertFalse(tn.matches(itemName));
 		tn.setUsedSegments(new NameSegments(true, true, false, true));
 		assertTrue(tn.matches(itemName));
 
-		tn = new TestName("catalog", "schema1", "table", "column");
+		tn = new SearchName("catalog", "schema1", "table", "column");
 		assertFalse(tn.matches(itemName));
 		tn.setUsedSegments(new NameSegments(true, false, true, true));
 		assertTrue(tn.matches(itemName));
 
-		tn = new TestName("catalog1", "schema", "table", "column");
+		tn = new SearchName("catalog1", "schema", "table", "column");
 		assertFalse(tn.matches(itemName));
 		tn.setUsedSegments(new NameSegments(false, true, true, true));
 		assertTrue(tn.matches(itemName));
 	}
-
-	//
-	// @Override
-	// public String toString()
-	// {
-	// if (isWild())
-	// {
-	// return "Wildcard Name";
-	// }
-	// return StringUtils.defaultIfBlank(getDBName(), "Blank Name");
-	// }
 
 	@Test
 	public void testEquality() {
@@ -261,7 +227,7 @@ public class ItemNameTest {
 			for (boolean schemaFlg : tf) {
 				for (boolean tableFlg : tf) {
 					for (boolean columnFlg : tf) {
-						itemName2 = new ItemNameTest.TestName(itemName,
+						itemName2 = new SearchName(itemName,
 								new NameSegments(catalogFlg, schemaFlg,
 										tableFlg, columnFlg));
 						if (catalogFlg && schemaFlg && tableFlg && columnFlg) {

@@ -34,13 +34,14 @@ import org.xenei.jena.entities.EntityManager;
 import org.xenei.jena.entities.EntityManagerFactory;
 import org.xenei.jena.entities.EntityManagerRequiredException;
 import org.xenei.jena.entities.MissingAnnotation;
+import org.xenei.jena.entities.ResourceWrapper;
 import org.xenei.jena.entities.annotations.Predicate;
 import org.xenei.jena.entities.annotations.Subject;
 
 @Subject(namespace = "http://org.xenei.jdbc4sparql/entity/Key#")
-public class RdfKey implements Key {
+public class RdfKey implements Key<RdfKeySegment>, ResourceWrapper  {
 
-	public static class Builder implements Key {
+	public static class Builder implements Key<RdfKeySegment> {
 		private final List<RdfKeySegment> segments = new ArrayList<RdfKeySegment>();
 		private boolean unique;
 		private String keyName;
@@ -75,7 +76,7 @@ public class RdfKey implements Key {
 
 				RDFList lst = null;
 
-				for (final KeySegment seg : segments) {
+				for (final RdfKeySegment seg : segments) {
 					final Resource s = seg.getResource();
 					if (lst == null) {
 						lst = model.createList().with(s);
@@ -108,7 +109,7 @@ public class RdfKey implements Key {
 
 		@Override
 		public int compare(final Object[] data1, final Object[] data2) {
-			return RdfKey.compare(getSegments(), data1, data2);
+			return Utils.compare(getSegments(), data1, data2);
 		}
 
 		@Override
@@ -123,12 +124,6 @@ public class RdfKey implements Key {
 		@Override
 		public String getKeyName() {
 			return keyName;
-		}
-
-		@Override
-		@Predicate
-		public Resource getResource() {
-			throw new UnsupportedOperationException();
 		}
 
 		@Override
@@ -153,22 +148,11 @@ public class RdfKey implements Key {
 		}
 	}
 
-	private final static int compare(final List<RdfKeySegment> segments,
-			final Object[] data1, final Object[] data2) {
-		for (final RdfKeySegment segment : segments) {
-			final int retval = segment.compare(data1, data2);
-			if (retval != 0) {
-				return retval;
-			}
-		}
-		return 0;
-	}
-
 	private List<RdfKeySegment> segments;
 
 	@Override
 	public final int compare(final Object[] data1, final Object[] data2) {
-		return RdfKey.compare(getSegments(), data1, data2);
+		return Utils.compare(getSegments(), data1, data2);
 	}
 
 	@Override

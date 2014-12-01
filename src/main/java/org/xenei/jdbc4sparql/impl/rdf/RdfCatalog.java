@@ -180,6 +180,21 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 			return this;
 		}
 
+		@Override
+		public String getShortName() {
+			return getName().getCatalog();
+		}
+
+		@Override
+		public boolean isService() {
+			return false;
+		}
+
+		@Override
+		public Node getServiceNode() {
+			return null;
+		}
+
 	}
 
 	public class ChangeListener extends

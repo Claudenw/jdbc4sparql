@@ -22,6 +22,12 @@ public class QueryItemCollection<T extends QueryItemInfo<?>> implements
 	public QueryItemCollection() {
 		lst = new ArrayList<T>();
 	}
+	
+	public QueryItemCollection( Collection<T> initial )
+	{
+		this();
+		addAll( initial );
+	}
 
 	@Override
 	public boolean add(T arg0) {
@@ -50,20 +56,23 @@ public class QueryItemCollection<T extends QueryItemInfo<?>> implements
 	 * Contains by name
 	 */
 
-	public boolean contains(ItemName name) {
-		return match(name).hasNext();
-	}
+//	public boolean contains(ItemName name) {
+//		return match(name).hasNext();
+//	}
 
-	public boolean contains(NamedObject<?> arg0) {
-		return match(arg0.getName()).hasNext();
+	public boolean contains(GUIDObject guidObj) {
+		return findGUID( guidObj ) != null;
 	}
+//	public boolean contains(NamedObject<?> arg0) {
+//		return match(arg0.getName()).hasNext();
+//	}
 
 	@Override
 	public boolean contains(Object arg0) {
-		if (arg0 instanceof ItemName) {
-			return contains((ItemName) arg0);
+		if (arg0 instanceof GUIDObject) {
+			return contains((GUIDObject) arg0);
 		}
-		return contains((NamedObject<?>) arg0);
+		return contains(((NamedObject<?>) arg0).getName());
 	}
 
 	@Override
@@ -90,23 +99,25 @@ public class QueryItemCollection<T extends QueryItemInfo<?>> implements
 		return iterator().mapWith(map);
 	}
 
-	public boolean remove(QueryItemInfo arg0) {
-		int startSize = lst.size();
-		lst = notMatch(arg0.getName()).toList();
-		return startSize != lst.size();
-	}
+//	public boolean remove(QueryItemInfo arg0) {
+//		int startSize = lst.size();
+//		lst = notMatch(arg0.getName()).toList();
+//		return startSize != lst.size();
+//	}
 
-	public boolean remove(ItemName arg0) {
+	public boolean remove(GUIDObject arg0) {
 		int startSize = lst.size();
-		lst = notMatch(arg0).toList();
+		NamedObjectGUIDFilter<T> nof = new NamedObjectGUIDFilter<T>(arg0);
+		lst = iterator().filterDrop(nof).toList();
 		return startSize != lst.size();
 	}
 
 	@Override
 	public boolean remove(Object arg0) {
-		int startSize = lst.size();
-		lst = notMatch((ItemName) arg0).toList();
-		return startSize != lst.size();
+		if (arg0 instanceof GUIDObject) {
+			return remove((GUIDObject) arg0);
+		}
+		return contains(((NamedObject<?>) arg0).getName());
 	}
 
 	@Override
@@ -174,28 +185,9 @@ public class QueryItemCollection<T extends QueryItemInfo<?>> implements
 		return lst.get(i);
 	}
 
-	/**
-	 * Return object associated with node or null if not found.
-	 * 
-	 * The string used to create the node must use the same segments as the
-	 * items in the list.
-	 * 
-	 * @param node
-	 *            the node to look for.
-	 * @return object or null if not found.
-	 */
-	public T get(Node node) {
-		QueryItemNodeFilter<T> nof = new QueryItemNodeFilter<T>(node);
-		Iterator<T> iter = iterator().filterKeep(nof);
-		if (iter.hasNext()) {
-			return iter.next();
-		}
-		return null;
-	}
-
 	public T findGUID(GUIDObject name) {
 		NamedObjectGUIDFilter<T> nof = new NamedObjectGUIDFilter<T>(name);
-		Iterator<T> iter = iterator().filterKeep(nof);
+		ExtendedIterator<T> iter = iterator().filterKeep(nof);
 		if (iter.hasNext()) {
 			return iter.next();
 		}
@@ -205,7 +197,7 @@ public class QueryItemCollection<T extends QueryItemInfo<?>> implements
 
 	public T findGUID(String name) {
 		NamedObjectGUIDFilter<T> nof = new NamedObjectGUIDFilter<T>(name);
-		Iterator<T> iter = iterator().filterKeep(nof);
+		ExtendedIterator<T> iter = iterator().filterKeep(nof);
 		if (iter.hasNext()) {
 			return iter.next();
 		}
@@ -248,5 +240,11 @@ public class QueryItemCollection<T extends QueryItemInfo<?>> implements
 			i++;
 		}
 		return -1;
+	}
+	
+	@Override
+	public String toString()
+	{
+		return lst.toString();
 	}
 }

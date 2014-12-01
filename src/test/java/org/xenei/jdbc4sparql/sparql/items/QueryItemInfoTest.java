@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.xenei.jdbc4sparql.iface.name.ItemName;
 import org.xenei.jdbc4sparql.iface.name.ItemNameTest;
 import org.xenei.jdbc4sparql.iface.name.NameSegments;
+import org.xenei.jdbc4sparql.iface.name.SearchName;
 import org.xenei.jdbc4sparql.impl.NameUtils;
 
 import com.hp.hpl.jena.sparql.core.Var;
@@ -19,18 +20,11 @@ public class QueryItemInfoTest {
 
 	@Before
 	public void setup() {
-		itemName = new ItemNameTest.TestName("catalog", "schema", "table",
+		itemName = new SearchName("catalog", "schema", "table",
 				"column");
 		itemName.setUsedSegments(new NameSegments(true, true, true, true));
 		itemInfo = new QueryItemInfo<ItemName>(itemName, false) {
 		};
-	}
-
-	@Test
-	public void testGetExpr() {
-		assertNull(itemInfo.getExpr());
-		itemInfo.setExpr(new NodeValueString("foo"));
-		assertEquals(new NodeValueString("foo"), itemInfo.getExpr());
 	}
 
 	@Test
@@ -95,7 +89,7 @@ public class QueryItemInfoTest {
 			for (boolean schemaFlg : tf) {
 				for (boolean tableFlg : tf) {
 					for (boolean columnFlg : tf) {
-						itemName2 = new ItemNameTest.TestName(itemName,
+						itemName2 = new SearchName(itemName,
 								new NameSegments(catalogFlg, schemaFlg,
 										tableFlg, columnFlg));
 						itemInfo2 = new QueryItemInfo<ItemName>(itemName2,
