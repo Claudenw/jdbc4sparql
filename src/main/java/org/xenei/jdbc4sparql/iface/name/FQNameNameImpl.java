@@ -6,8 +6,20 @@ import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
 import org.xenei.jdbc4sparql.impl.NameUtils;
 
-public class BaseNameImpl implements BaseName {
-	protected static String verifyOK(final String segment, final String value) {
+/**
+ * An implementation of FQName.
+ *
+ */
+public class FQNameNameImpl implements FQName {
+	/**
+	 * A method to verify that a segment is not null and does not
+	 * contain the JDBC or SPARQL "dot" characters.  Used in constructors to verify values.
+	 * @param segment The name of the segment.
+	 * @param value the value of the segment.
+	 * @return the value.
+	 * @throws IllegalArgumentException if the value is null.
+	 */
+	protected static String verifyOK(final String segment, final String value) throws IllegalArgumentException {
 		if (value != null) {
 			for (final String badChar : NameUtils.DOT_LIST) {
 				if (value.contains(badChar)) {
@@ -33,19 +45,21 @@ public class BaseNameImpl implements BaseName {
 
 	private transient Integer _hashCode;
 
-	protected BaseNameImpl(final String catalog, final String schema,
-			final String table, final String col) {
+	/**
+	 * Constructor.  No argument may be null.
+	 * @param catalog catalog name.
+	 * @param schema schema name.
+	 * @param table table name.
+	 * @param col column name.
+	 * @throws IllegalArgumentException if any segment is null.
+	 */
+	protected FQNameNameImpl(final String catalog, final String schema,
+			final String table, final String col)  throws IllegalArgumentException {
 		this.catalog = verifyOK("Catalog", catalog);
 		this.schema = verifyOK("Schema", schema);
 		this.table = verifyOK("Table", table);
 		this.col = verifyOK("Column", col);
-		String t = StringUtils.defaultString(catalog)
-				+ StringUtils.defaultString(schema)
-				+ StringUtils.defaultString(table)
-				+ StringUtils.defaultString(col);
-		guid = "v_"
-				+ (UUID.nameUUIDFromBytes(t.getBytes()).toString().replace("-",
-						"_"));
+		guid = FQName.Comparator.makeGUID( catalog, schema, table, col);
 	}
 
 	/**
@@ -79,7 +93,7 @@ public class BaseNameImpl implements BaseName {
 	 * @return
 	 */
 	@Override
-	public String getCol() {
+	public String getColumn() {
 		return col;
 	}
 
@@ -116,14 +130,14 @@ public class BaseNameImpl implements BaseName {
 	@Override
 	public int hashCode() {
 		if (_hashCode == null) {
-			_hashCode = BaseName.Comparator.hashCode(this);
+			_hashCode = FQName.Comparator.hashCode(this);
 		}
 		return _hashCode;
 	}
 
 	@Override
 	public boolean equals(Object o) {
-		return BaseName.Comparator.equals(this, o);
+		return FQName.Comparator.equals(this, o);
 	}
 
 	@Override

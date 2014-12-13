@@ -4,19 +4,52 @@ import org.apache.commons.lang.StringUtils;
 import org.xenei.jdbc4sparql.impl.NameUtils;
 
 /**
- * The name for the QueryColumnInfo.
+ * The ColumnName implementation of ItemName
  */
 public class ColumnName extends ItemName {
-	public static ColumnName getNameInstance(ItemName item, final String name) {
-		BaseName bn = item.getBaseName();
+	
+	/**
+	 * Create a column name in the item name.
+	 * The default catalog, schema and table will be taken from the basename for the item.
+	 * The name parameter may consist of the column name by itself, a column and table name, or a column, table and 
+	 * schema name.  the name parameter segments may be separated by either a JDBC or a SPARLQ "dot" 
+	 * character.
+	 * if the name contains  both a JDBC and a SPARQL "dot" character an IllegalArgumentException
+	 * is thrown.
+	 * if the catalog, the final schema name or name are null an IllegalArgumentException is thrown.
+	 * @param item The ItemName instance to create a column name in.
+	 * @param name the name string for the column
+	 * @return The ColumnName.
+	 * @throws IllegalArgumentException
+	 */
+	public static ColumnName getNameInstance(ItemName item, final String name) throws IllegalArgumentException {
+		FQName bn = item.getBaseName();
 		ColumnName retval = getNameInstance(bn.getCatalog(), bn.getSchema(),
 				bn.getTable(), name);
 		retval.setUsedSegments(adjustSegments(item.getUsedSegments()));
 		return retval;
 	}
 
+	/**
+	 * Create an instance of a ColumnName given a potentially fully qualified name and
+	 * default catalog, schema and table names.
+	 * The name parameter may consist of the column name by itself, a column and table name, or a column, table and 
+	 * schema name.  the name parameter segments may be separated by either a JDBC or a SPARLQ "dot" 
+	 * character.
+	 * if the name parameter specifies the table name the table parameter may be null.
+	 * if the name parameter specifies the schema name the schema parameter may be null.
+	 * if the name contains  both a JDBC and a SPARQL "dot" character an IllegalArgumentException
+	 * is thrown.
+	 * if the catalog, the final schema name or name are null an IllegalArgumentException is thrown.
+	 * @param catalog The catalog name string.  May not be null.
+	 * @param schema The schema name string.  May be null.
+	 * @param table The table name string.  May be null.
+	 * @param name the potentially fully qualified name. may not be null.
+	 * @return The ColumnName.
+	 * @throws IllegalArgumentException
+	 */
 	public static ColumnName getNameInstance(final String catalog,
-			final String schema, final String table, final String name) {
+			final String schema, final String table, final String name)  throws IllegalArgumentException {
 		checkNotNull(name, "column");
 		if (name.contains(NameUtils.DB_DOT)
 				&& name.contains(NameUtils.SPARQL_DOT)) {
@@ -49,54 +82,88 @@ public class ColumnName extends ItemName {
 		}
 	}
 
-	static ItemName checkItemName(ItemName name) {
+	/**
+	 * Check the column name.
+	 * Checks that the itemName column, table, schema and catalog name segments are not null.
+	 * @param name The ItemName to check.
+	 * @return the ItemName
+	 * @Throws IllegalArgumentException 
+	 */
+	static ItemName checkItemName(ItemName name)  throws IllegalArgumentException {
+		if (name == null)
+		{
+			throw new IllegalArgumentException( "name may not be null");
+		}
 		TableName.checkItemName(name);
-		checkNotNull(name.getBaseName().getCol(), "column");
+		checkNotNull(name.getBaseName().getColumn(), "column");
 		return name;
 	}
 
-	private static NameSegments adjustSegments(NameSegments segments) {
+	/**
+	 * Ensure that the column segment is on.
+	 * @param segments The segments to adjust
+	 * @return the adjusted segments.
+	 * @Throws IllegalArgumentException if segments is null.
+	 */
+	private static NameSegments adjustSegments(NameSegments segments)  throws IllegalArgumentException {
+		if (segments == null)
+		{
+			throw new IllegalArgumentException( "segments may not be null");
+		}
 		if (segments.isColumn()) {
 			return segments;
 		}
-		return new NameSegments(segments.isCatalog(), segments.isSchema(),
+		return NameSegments.getInstance(segments.isCatalog(), segments.isSchema(),
 				segments.isTable(), true);
 	}
 
-	public ColumnName(final ItemName name) {
+	/**
+	 * Create a ColumnName from an ItemName.
+	 * @param name the ItemName, must not be null.
+	 * @Throws IllegalArgumentException is name is null.
+	 */
+	public ColumnName(final ItemName name)  throws IllegalArgumentException {
 		this(name, name.getUsedSegments());
 	}
 
-	public ColumnName(final ItemName name, NameSegments segments) {
+	/**
+	 * Create a ColumnName from an ItemName with specific name segments.
+	 * @param name the ItemName, must not be null.
+	 * @param segments the name segments to use.
+	 * @Throws IllegalArgumentException is name or segments are null.
+	 */
+	public ColumnName(final ItemName name, NameSegments segments)  throws IllegalArgumentException {
 		super(checkItemName(name), adjustSegments(segments));
 	}
 
+	/**
+	 * Create a TableName from a catalog name string, a schema name string and a table name string
+	 * and a column name string.
+	 * Uses the default namesegments for a column.
+	 * @param catalog the catalog name string.
+	 * @param schema the schema name string.
+	 * @param table the table name string.
+	 * @param column the column name string.
+	 * @throws IllegalArgumentException if any string is null.
+	 */
 	public ColumnName(final String catalog, final String schema,
-			final String table, final String col) {
-		super(new BaseNameImpl(checkNotNull(catalog, "catalog"), checkNotNull(
+			final String table, final String column)  throws IllegalArgumentException {
+		super(new FQNameNameImpl(checkNotNull(catalog, "catalog"), checkNotNull(
 				schema, "schema"), checkNotNull(table, "table"), checkNotNull(
-				col, "column")), NameSegments.COLUMN);
+				column, "column")), NameSegments.COLUMN);
 	}
 
 	@Override
 	public String getShortName() {
-		return getCol();
+		return getColumn();
 	}
 
+	/**
+	 * Returns the TableName object for column
+	 * @return the TableName.
+	 */
 	public TableName getTableName() {
 		return new TableName(this);
-	}
-
-	public ColumnName merge(final ColumnName other) {
-		BaseName otherBase = other.getBaseName();
-
-		return new ColumnName(StringUtils.defaultIfEmpty(getBaseName()
-				.getCatalog(), otherBase.getCatalog()),
-				StringUtils.defaultIfEmpty(getBaseName().getSchema(),
-						otherBase.getSchema()), StringUtils.defaultIfEmpty(
-						getBaseName().getTable(), otherBase.getTable()),
-				StringUtils.defaultIfEmpty(getBaseName().getCol(),
-						otherBase.getCol()));
 	}
 
 	@Override
@@ -113,13 +180,16 @@ public class ColumnName extends ItemName {
 			sb.append(tbl).append(separator);
 		}
 
-		if (StringUtils.isNotEmpty(getCol())) {
-			sb.append(getCol());
+		if (StringUtils.isNotEmpty(getColumn())) {
+			sb.append(getColumn());
 		}
 		return sb.toString();
 
 	}
 
+	/**
+	 * Clone this column name with different segments.
+	 */
 	@Override
 	public ColumnName clone(NameSegments segs) {
 		return new ColumnName(this, segs);

@@ -105,7 +105,7 @@ public class QueryInfoSetTest {
 	public void testAddColumn() {
 		QueryColumnInfo columnInfo = new QueryColumnInfo(column);
 		queryInfo.addColumn(columnInfo);
-		QueryColumnInfo found = queryInfo.findColumnByGUID(cName);
+		QueryColumnInfo found = queryInfo.findColumn(column);// queryInfo.findColumnByGUID(cName);
 		assertEquals(found, columnInfo);
 	}
 
@@ -126,15 +126,15 @@ public class QueryInfoSetTest {
 		TriplePath pth = epb.patternElts().next();
 		assertEquals(Var.alloc("tbl"), pth.asTriple().getSubject());
 		assertEquals(NodeFactory.createURI("a"), pth.asTriple().getPredicate());
-		assertEquals(Var.alloc("schema" + NameUtils.SPARQL_DOT + "table"), pth
+		assertEquals(Var.alloc(tName.getGUID()), pth
 				.asTriple().getObject());
 
 		epb = (ElementPathBlock) extractor.getExtracted().get(1);
 		pth = epb.patternElts().next();
-		assertEquals(Var.alloc("schema" + NameUtils.SPARQL_DOT + "table"), pth
+		assertEquals(Var.alloc(tName.getGUID()), pth
 				.asTriple().getSubject());
 		assertEquals(NodeFactory.createURI("b"), pth.asTriple().getPredicate());
-		assertEquals(Var.alloc("v_906819fe_e4e6_30eb_8431_4483a755c4f4"), pth
+		assertEquals(Var.alloc(cName.getGUID()), pth
 				.asTriple().getObject());
 
 	}
@@ -168,7 +168,7 @@ public class QueryInfoSetTest {
 				queryElementGroup, table, false);
 		queryInfo.addTable(tableInfo);
 
-		assertEquals(new NameSegments(true, true, true, false),
+		assertEquals(NameSegments.TTTF,
 				tableInfo.getSegments());
 		assertEquals(1, queryInfo.getTables().size());
 		assertEquals(tableInfo.getGUID(), queryInfo.getTables().iterator()
@@ -178,9 +178,9 @@ public class QueryInfoSetTest {
 				queryElementGroup, table2, false);
 		queryInfo.addTable(tableInfo2);
 
-		assertEquals(new NameSegments(true, true, true, false),
+		assertEquals(NameSegments.TTTF,
 				tableInfo.getSegments());
-		assertEquals(new NameSegments(true, true, true, false),
+		assertEquals(NameSegments.TTTF,
 				tableInfo2.getSegments());
 		assertEquals(2, queryInfo.getTables().size());
 		Set<String> guids = new HashSet<String>();
@@ -239,25 +239,25 @@ public class QueryInfoSetTest {
 
 	}
 
-	@Test
-	public void testFindColumnByGUID() {
-		assertNull(queryInfo.findColumnByGUID(cName2));
-		queryInfo.addColumn(new QueryColumnInfo(column2));
-		assertEquals(cName2, queryInfo.findColumnByGUID(cName2).getName());
-		assertEquals(cName2, queryInfo.findColumnByGUID(new ColumnName(cName2))
-				.getName());
-
-		ElementGroup queryElementGroup = new ElementGroup();
-		QueryTableInfo tableInfo = new QueryTableInfo(queryInfo,
-				queryElementGroup, table, false);
-		queryInfo.addTable(tableInfo);
-		queryInfo.addRequiredColumns();
-		assertEquals(cName, queryInfo.findColumnByGUID(cName).getName());
-
-		assertNull(queryInfo.findColumnByGUID(new ColumnName("catalog",
-				"schema2", "table", "column2")));
-
-	}
+//	@Test
+//	public void testFindColumnByGUID() {
+//		assertNull(queryInfo.findColumnByGUID(cName2));
+//		queryInfo.addColumn(new QueryColumnInfo(column2));
+//		assertEquals(cName2, queryInfo.findColumnByGUID(cName2).getName());
+//		assertEquals(cName2, queryInfo.findColumnByGUID(new ColumnName(cName2))
+//				.getName());
+//
+//		ElementGroup queryElementGroup = new ElementGroup();
+//		QueryTableInfo tableInfo = new QueryTableInfo(queryInfo,
+//				queryElementGroup, table, false);
+//		queryInfo.addTable(tableInfo);
+//		queryInfo.addRequiredColumns();
+//		assertEquals(cName, queryInfo.findColumnByGUID(cName).getName());
+//
+//		assertNull(queryInfo.findColumnByGUID(new ColumnName("catalog",
+//				"schema2", "table", "column2")));
+//
+//	}
 
 	@Test
 	public void testGetColumnByName_ColumnName() {
@@ -319,7 +319,7 @@ public class QueryInfoSetTest {
 				queryElementGroup, table, false);
 		queryInfo.addTable(tableInfo);
 		queryInfo.addRequiredColumns();
-		QueryItemCollection<QueryColumnInfo> cols = queryInfo.getColumns();
+		QueryItemCollection<QueryColumnInfo,Column,ColumnName> cols = queryInfo.getColumns();
 		assertEquals(2, cols.size());
 		assertEquals(colInfo1, cols.get(0));
 		assertEquals(queryInfo.getColumn(cName), cols.get(1));
@@ -365,7 +365,7 @@ public class QueryInfoSetTest {
 				queryElementGroup2, table2, false);
 		assertEquals(1, queryInfo.getTables().size());
 		queryInfo.addTable(tableInfo2);
-		QueryItemCollection<QueryTableInfo> lst = queryInfo.getTables();
+		QueryItemCollection<QueryTableInfo,Table,TableName> lst = queryInfo.getTables();
 		assertEquals(2, lst.size());
 
 		assertEquals(tableInfo, lst.get(0));
@@ -440,8 +440,7 @@ public class QueryInfoSetTest {
 
 	@Test
 	public void testScanTablesForColumn() {
-		ColumnName cNameWild = new ColumnName(cName, new NameSegments(false,
-				false, false, true));
+		ColumnName cNameWild = new ColumnName(cName, NameSegments.FFFT);
 
 		assertNull(queryInfo.scanTablesForColumn(cNameWild));
 		assertNull(queryInfo.scanTablesForColumn(cName));
@@ -501,12 +500,12 @@ public class QueryInfoSetTest {
 		queryInfo.addRequiredColumns();
 
 		queryInfo.setMinimumColumnSegments();
-		NameSegments expected = new NameSegments(false, false, true, false);
+		NameSegments expected = NameSegments.FFTF;
 		for (QueryTableInfo tableInfoChk : queryInfo.getTables()) {
 			assertEquals(expected, tableInfoChk.getSegments());
 		}
 
-		expected = new NameSegments(false, false, false, true);
+		expected = NameSegments.FFFT;
 		for (QueryColumnInfo columnInfoChk : queryInfo.getColumns()) {
 			assertEquals(expected, columnInfoChk.getSegments());
 		}
@@ -518,85 +517,85 @@ public class QueryInfoSetTest {
 
 		queryInfo.setMinimumColumnSegments();
 
-		expected = new NameSegments(false, true, true, false);
+		expected = NameSegments.FTTF;
 		for (QueryTableInfo tableInfoChk : queryInfo.getTables()) {
 			assertEquals(expected, tableInfoChk.getSegments());
 		}
 
-		expected = new NameSegments(false, true, true, true);
+		expected = NameSegments.FTTT;
 		for (QueryColumnInfo columnInfoChk : queryInfo.getColumns()) {
 			assertEquals(expected, columnInfoChk.getSegments());
 		}
 	}
-	
-	@Test
-	public void testFindColumnByGUID_ColumnName() {
-		QueryColumnInfo colInfo = queryInfo.findColumnByGUID(cName);
-		assertNull( colInfo );
-		
-		ElementGroup queryElementGroup = new ElementGroup();
-		QueryTableInfo tableInfo = new QueryTableInfo(queryInfo,
-				queryElementGroup, table, false);
-		queryInfo.addTable( tableInfo );
-		queryInfo.addRequiredColumns();
-		
-		colInfo = queryInfo.findColumnByGUID(cName);
-		assertNotNull( colInfo );
-		assertEquals( cName.getGUID(), colInfo.getName().getGUID() );
-		assertEquals( cName.getGUID(), colInfo.getGUID() );
-	}
+//	
+//	@Test
+//	public void testFindColumnByGUID_ColumnName() {
+//		QueryColumnInfo colInfo = queryInfo.findColumnByGUID(cName);
+//		assertNull( colInfo );
+//		
+//		ElementGroup queryElementGroup = new ElementGroup();
+//		QueryTableInfo tableInfo = new QueryTableInfo(queryInfo,
+//				queryElementGroup, table, false);
+//		queryInfo.addTable( tableInfo );
+//		queryInfo.addRequiredColumns();
+//		
+//		colInfo = queryInfo.findColumnByGUID(cName);
+//		assertNotNull( colInfo );
+//		assertEquals( cName.getGUID(), colInfo.getName().getGUID() );
+//		assertEquals( cName.getGUID(), colInfo.getGUID() );
+//	}
+//
+//	@Test
+//	public void testFindColumnByGUID_String() {
+//		QueryColumnInfo colInfo = queryInfo.findColumnByGUID(cName.getGUID());
+//		assertNull( colInfo );
+//		
+//		ElementGroup queryElementGroup = new ElementGroup();
+//		QueryTableInfo tableInfo = new QueryTableInfo(queryInfo,
+//				queryElementGroup, table, false);
+//		queryInfo.addTable( tableInfo );
+//		queryInfo.addRequiredColumns();
+//		
+//		colInfo = queryInfo.findColumnByGUID(cName.getGUID());
+//		assertNotNull( colInfo );
+//		assertEquals( cName.getGUID(), colInfo.getName().getGUID() );
+//		assertEquals( cName.getGUID(), colInfo.getGUID() );
+//	}
 
-	@Test
-	public void testFindColumnByGUID_String() {
-		QueryColumnInfo colInfo = queryInfo.findColumnByGUID(cName.getGUID());
-		assertNull( colInfo );
-		
-		ElementGroup queryElementGroup = new ElementGroup();
-		QueryTableInfo tableInfo = new QueryTableInfo(queryInfo,
-				queryElementGroup, table, false);
-		queryInfo.addTable( tableInfo );
-		queryInfo.addRequiredColumns();
-		
-		colInfo = queryInfo.findColumnByGUID(cName.getGUID());
-		assertNotNull( colInfo );
-		assertEquals( cName.getGUID(), colInfo.getName().getGUID() );
-		assertEquals( cName.getGUID(), colInfo.getGUID() );
-	}
+//	@Test
+//	public void testScanTablesForColumnByGUID() {
+//		QueryColumnInfo colInfo = queryInfo.scanTablesForColumnByGUID(cName);
+//		assertNull( colInfo );
+//		
+//		ElementGroup queryElementGroup = new ElementGroup();
+//		QueryTableInfo tableInfo = new QueryTableInfo(queryInfo,
+//				queryElementGroup, table, false);
+//		queryInfo.addTable( tableInfo );
+//		queryInfo.addRequiredColumns();
+//		
+//		colInfo = queryInfo.scanTablesForColumnByGUID(cName);
+//		assertNotNull( colInfo );
+//		assertEquals( cName.getGUID(), colInfo.getName().getGUID() );
+//		assertEquals( cName.getGUID(), colInfo.getGUID() );
+//	}
 
-	@Test
-	public void testScanTablesForColumnByGUID() {
-		QueryColumnInfo colInfo = queryInfo.scanTablesForColumnByGUID(cName);
-		assertNull( colInfo );
-		
-		ElementGroup queryElementGroup = new ElementGroup();
-		QueryTableInfo tableInfo = new QueryTableInfo(queryInfo,
-				queryElementGroup, table, false);
-		queryInfo.addTable( tableInfo );
-		queryInfo.addRequiredColumns();
-		
-		colInfo = queryInfo.scanTablesForColumnByGUID(cName);
-		assertNotNull( colInfo );
-		assertEquals( cName.getGUID(), colInfo.getName().getGUID() );
-		assertEquals( cName.getGUID(), colInfo.getGUID() );
-	}
-
-	@Test
-	public void testScanTablesForColumnByGUID_beforeRequired() {
-		QueryColumnInfo colInfo = queryInfo.scanTablesForColumnByGUID(cName);
-		assertNull( colInfo );
-		
-		ElementGroup queryElementGroup = new ElementGroup();
-		QueryTableInfo tableInfo = new QueryTableInfo(queryInfo,
-				queryElementGroup, table, false);
-		queryInfo.addTable( tableInfo );
-		queryElementGroup = new ElementGroup();
-		tableInfo = new QueryTableInfo(queryInfo,
-				queryElementGroup, table2, false);
-		queryInfo.addTable( tableInfo );
-		
-		colInfo = queryInfo.scanTablesForColumnByGUID(cName);
-		assertNotNull( colInfo );
-		assertEquals( cName.getGUID(), colInfo.getName().getGUID() );
-		assertEquals( cName.getGUID(), colInfo.getGUID() );
-	}
+//	@Test
+//	public void testScanTablesForColumnByGUID_beforeRequired() {
+//		QueryColumnInfo colInfo = queryInfo.scanTablesForColumnByGUID(cName);
+//		assertNull( colInfo );
+//		
+//		ElementGroup queryElementGroup = new ElementGroup();
+//		QueryTableInfo tableInfo = new QueryTableInfo(queryInfo,
+//				queryElementGroup, table, false);
+//		queryInfo.addTable( tableInfo );
+//		queryElementGroup = new ElementGroup();
+//		tableInfo = new QueryTableInfo(queryInfo,
+//				queryElementGroup, table2, false);
+//		queryInfo.addTable( tableInfo );
+//		
+//		colInfo = queryInfo.scanTablesForColumnByGUID(cName);
+//		assertNotNull( colInfo );
+//		assertEquals( cName.getGUID(), colInfo.getName().getGUID() );
+//		assertEquals( cName.getGUID(), colInfo.getGUID() );
+//	}
 }

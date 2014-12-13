@@ -61,11 +61,11 @@ public class QueryTableInfoTest {
 		assertEquals("C:false S:true T:true C:false", tableInfo.getSegments()
 				.toString());
 		assertEquals("schema.table", tableInfo.getName().getDBName());
-		tableInfo.setSegments(new NameSegments(false, false, true, true));
+		tableInfo.setSegments( NameSegments.FFTT );
 		assertEquals("C:false S:false T:true C:false", tableInfo.getSegments()
 				.toString());
 		assertEquals("table", tableInfo.getName().getDBName());
-		tableInfo.setSegments(new NameSegments(true, true, true, true));
+		tableInfo.setSegments( NameSegments.TTTT);
 		assertEquals("C:true S:true T:true C:false", tableInfo.getSegments()
 				.toString());
 		assertEquals("schema.table", tableInfo.getName().getDBName());

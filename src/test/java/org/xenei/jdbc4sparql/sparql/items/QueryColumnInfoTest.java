@@ -69,11 +69,11 @@ public class QueryColumnInfoTest {
 		assertEquals("C:false S:true T:true C:true", columnInfo.getSegments()
 				.toString());
 		assertEquals("schema.table.column", columnInfo.getName().getDBName());
-		columnInfo.setSegments(new NameSegments(false, false, true, false));
+		columnInfo.setSegments( NameSegments.FFTF);
 		assertEquals("C:false S:false T:true C:true", columnInfo.getSegments()
 				.toString());
 		assertEquals("table.column", columnInfo.getName().getDBName());
-		columnInfo.setSegments(new NameSegments(true, true, true, false));
+		columnInfo.setSegments( NameSegments.TTTF );
 		assertEquals("C:true S:true T:true C:true", columnInfo.getSegments()
 				.toString());
 		assertEquals("schema.table.column", columnInfo.getName().getDBName());

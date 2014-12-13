@@ -63,7 +63,7 @@ public abstract class ExpRewriter implements ExprVisitor {
 			if (new ColumnName(qi).matches(ci.getName())) {
 				final ItemName mapTo = aliasMap.get(qi);
 				return new ColumnName(mapTo.getCatalog(), mapTo.getSchema(),
-						mapTo.getTable(), ci.getName().getCol());
+						mapTo.getTable(), ci.getName().getColumn());
 			}
 		}
 		return null;
@@ -156,7 +156,7 @@ public abstract class ExpRewriter implements ExprVisitor {
 					ItemName mapTo = aliasMap.get(qi);
 					mapTo = new ColumnName(mapTo.getCatalog(),
 							mapTo.getSchema(), mapTo.getTable(), ci.getName()
-									.getCol());
+									.getColumn());
 					stack.push(new ExprVar(mapTo.getSPARQLName()));
 					return;
 				}

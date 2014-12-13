@@ -148,6 +148,7 @@ public class SparqlQueryBuilderTest {
 		cols.add( column );
 		cols.add( column2 );
 		when( table.getColumns()).thenAnswer( new ColumnAnswer( cols ) );
+		when( table.getColumnList()).thenReturn( cols );
 		
 		builder = new SparqlQueryBuilder( catalogs, parser, catalog, schema );
 	}
@@ -239,7 +240,7 @@ public class SparqlQueryBuilderTest {
 		builder.addTable( table,  tName, false );
 	
 		QueryInfoSet infoSet = getInfoSet();
-		QueryItemCollection<QueryTableInfo> tableInfoList = infoSet.getTables();
+		QueryItemCollection<QueryTableInfo,Table,TableName> tableInfoList = infoSet.getTables();
 		assertEquals( 1, tableInfoList.size() );
 		QueryTableInfo tableInfo = tableInfoList.get(0);
 		assertEquals( tName, tableInfo.getName() );
@@ -255,7 +256,7 @@ public class SparqlQueryBuilderTest {
 		builder.addTable( table,  alias, false );
 	
 		QueryInfoSet infoSet = getInfoSet();
-		QueryItemCollection<QueryTableInfo> tableInfoList = infoSet.getTables();
+		QueryItemCollection<QueryTableInfo,Table,TableName> tableInfoList = infoSet.getTables();
 		assertEquals( 1, tableInfoList.size() );
 		QueryTableInfo tableInfo = tableInfoList.get(0);
 		assertEquals( alias, tableInfo.getName() );
@@ -271,7 +272,7 @@ public class SparqlQueryBuilderTest {
 		builder.addTable( table,  tName, true );
 	
 		QueryInfoSet infoSet = getInfoSet();
-		QueryItemCollection<QueryTableInfo> tableInfoList = infoSet.getTables();
+		QueryItemCollection<QueryTableInfo,Table,TableName> tableInfoList = infoSet.getTables();
 		assertEquals( 1, tableInfoList.size() );
 		QueryTableInfo tableInfo = tableInfoList.get(0);
 		assertEquals( tName, tableInfo.getName() );
@@ -287,13 +288,13 @@ public class SparqlQueryBuilderTest {
 		builder.addRequiredColumns();
 		
 		QueryInfoSet infoSet = getInfoSet();
-		QueryItemCollection<QueryTableInfo> tableInfoList = infoSet.getTables();
+		QueryItemCollection<QueryTableInfo,Table,TableName> tableInfoList = infoSet.getTables();
 		assertEquals( 1, tableInfoList.size() );
 		QueryTableInfo tableInfo = tableInfoList.get(0);
 		assertEquals( tName, tableInfo.getName() );
 		assertEquals( table, tableInfo.getTable() );
 		
-		QueryItemCollection<QueryColumnInfo> columnInfoList = infoSet.getColumns();
+		QueryItemCollection<QueryColumnInfo,Column,ColumnName> columnInfoList = infoSet.getColumns();
 		assertEquals( 1, columnInfoList.size() );
 		QueryColumnInfo columnInfo = columnInfoList.get(0);
 		assertEquals( colName, columnInfo.getName() );
@@ -325,13 +326,13 @@ public class SparqlQueryBuilderTest {
 		builder.addVar( col2Name );
 		
 		QueryInfoSet infoSet = getInfoSet();
-		QueryItemCollection<QueryTableInfo> tableInfoList = infoSet.getTables();
+		QueryItemCollection<QueryTableInfo,Table,TableName> tableInfoList = infoSet.getTables();
 		assertEquals( 1, tableInfoList.size() );
 		tableInfo = tableInfoList.get(0);
 		assertEquals( tName, tableInfo.getName() );
 		assertEquals( table, tableInfo.getTable() );
 		
-		QueryItemCollection<QueryColumnInfo> columnInfoList = new QueryItemCollection<QueryColumnInfo>(infoSet.getColumns());
+		QueryItemCollection<QueryColumnInfo,Column,ColumnName> columnInfoList = new QueryItemCollection<QueryColumnInfo,Column,ColumnName>(infoSet.getColumns());
 		assertEquals( 2, columnInfoList.size() );
 		
 		assertTrue( columnInfoList.contains( colName ));
@@ -380,7 +381,7 @@ public class SparqlQueryBuilderTest {
 	public void testAddAlias() throws Exception
 	{
 		ColumnName alias = new ColumnName( "", "", "" ,"alias");
-		alias.setUsedSegments( new NameSegments(false,false,false,true));
+		alias.setUsedSegments( NameSegments.FFFT);
 		
 		builder.addTable( table,  tName, false );
 		builder.addRequiredColumns();
@@ -389,13 +390,13 @@ public class SparqlQueryBuilderTest {
 		builder.addVar( alias );
 		
 		QueryInfoSet infoSet = getInfoSet();
-		QueryItemCollection<QueryTableInfo> tableInfoList = infoSet.getTables();
+		QueryItemCollection<QueryTableInfo,Table,TableName> tableInfoList = infoSet.getTables();
 		assertEquals( 1, tableInfoList.size() );
 		QueryTableInfo tableInfo = tableInfoList.get(0);
 		assertEquals( tName, tableInfo.getName() );
 		assertEquals( table, tableInfo.getTable() );
 		
-		QueryItemCollection<QueryColumnInfo> columnInfoList = new QueryItemCollection<QueryColumnInfo>(infoSet.getColumns());
+		QueryItemCollection<QueryColumnInfo,Column,ColumnName> columnInfoList = new QueryItemCollection<QueryColumnInfo,Column,ColumnName>(infoSet.getColumns());
 		assertEquals( 3, columnInfoList.size() );
 		
 		assertTrue( columnInfoList.contains( colName ));
@@ -621,7 +622,7 @@ public class SparqlQueryBuilderTest {
 		
 		Expr expr = new E_UUID();
 		ColumnName alias = new ColumnName( "", "", "" ,"alias");
-		alias.setUsedSegments( new NameSegments(false,false,false,true));
+		alias.setUsedSegments( NameSegments.FFFT );
 		builder.registerFunctionColumn(alias, java.sql.Types.INTEGER);
 		builder.addVar( expr, alias );
 		
@@ -644,7 +645,7 @@ public class SparqlQueryBuilderTest {
 		ColumnName cName = new ColumnName( "","","","func");
 		QueryColumnInfo columnInfo = builder.registerFunctionColumn(cName, java.sql.Types.INTEGER);
 		QueryInfoSet infoSet = getInfoSet();
-		QueryItemCollection<QueryColumnInfo> cols = infoSet.getColumns();
+		QueryItemCollection<QueryColumnInfo,Column,ColumnName> cols = infoSet.getColumns();
 		assertEquals( 1, cols.size() );
 		assertEquals( columnInfo, cols.get(0));
 		Column col = cols.get(0).getColumn();
@@ -664,7 +665,7 @@ public class SparqlQueryBuilderTest {
 		ColumnName cName = new ColumnName( "","","","func");
 		QueryColumnInfo columnInfo = builder.registerFunction(cName, java.sql.Types.INTEGER);
 		QueryInfoSet infoSet = getInfoSet();
-		QueryItemCollection<QueryColumnInfo> cols = infoSet.getColumns();
+		QueryItemCollection<QueryColumnInfo,Column,ColumnName> cols = infoSet.getColumns();
 		assertEquals( 1, cols.size() );
 		assertEquals( columnInfo, cols.get(0));
 		Column col = cols.get(0).getColumn();
@@ -687,7 +688,7 @@ public class SparqlQueryBuilderTest {
 		assertEquals( agg, expr.getAggregator());
 		QueryInfoSet infoSet = getInfoSet();
 		
-		QueryItemCollection<QueryColumnInfo> cols = infoSet.getColumns();
+		QueryItemCollection<QueryColumnInfo,Column,ColumnName> cols = infoSet.getColumns();
 		assertEquals( 1, cols.size() );
 		
 		assertEquals( expr.getAggVar().getVarName(), "."+cols.get(0).getVar().getName());
@@ -828,7 +829,7 @@ public class SparqlQueryBuilderTest {
 		builder.setSegmentCount();
 		s = builder.getSegments();
 		assertNotNull( s );
-		assertEquals( new NameSegments(false,false,false,true), s );
+		assertEquals( NameSegments.FFFT, s );
 		
 	}
 	

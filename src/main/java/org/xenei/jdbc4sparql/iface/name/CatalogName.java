@@ -3,24 +3,50 @@ package org.xenei.jdbc4sparql.iface.name;
 import org.apache.commons.lang.StringUtils;
 
 /**
- * Name implementation.
+ * Catalog ItemName implementation.
  */
 public class CatalogName extends ItemName {
-
-	static ItemName checkItemName(ItemName name) {
+	/**
+	 * Check the catalog name.
+	 * Checks that the itemName catalog name segment is not null.
+	 * @param name The ItemName to check.
+	 * @return the ItemName
+	 * @Throws IllegalArgumentException 
+	 */
+	static ItemName checkItemName(ItemName name) throws IllegalArgumentException {
+		if (name == null)
+		{
+			throw new IllegalArgumentException( "name may not be null");
+		}
 		checkNotNull(name.getBaseName().getCatalog(), "catalog");
 		return name;
 	}
 
-	public CatalogName(final ItemName name) {
+	/**
+	 * Create a CatalogName from an ItemName.
+	 * @param name the ItemName, must not be null.
+	 * @Throws IllegalArgumentException is name is null.
+	 */
+	public CatalogName(final ItemName name) throws IllegalArgumentException {
 		super(checkItemName(name), NameSegments.CATALOG);
 	}
 
-	public CatalogName(final String catalog) {
-		super(new BaseNameImpl(checkNotNull(catalog, "catalog"), null, null,
-				null), NameSegments.CATALOG);
+	/**
+	 * Create a CatalogName from a catalog name string.
+	 * Uses the default namesegments for a catalog.
+	 * @param catalog the catalog name string.
+	 * @throws IllegalArgumentException if the catalog name string is null.
+	 */
+	public CatalogName(final String catalog) throws IllegalArgumentException {
+		super(new FQNameNameImpl(checkNotNull(catalog, "catalog"), null,null,null), NameSegments.CATALOG);
 	}
-
+	
+	/**
+	 * Create a schemas name in this catalog.
+	 * @param column the columnName string
+	 * @return the ColumnName
+	 * @throws IllegalArgumentException
+	 */
 	public SchemaName getSchemaName(String name) {
 		return new SchemaName(getBaseName().getCatalog(), name);
 	}
@@ -40,6 +66,9 @@ public class CatalogName extends ItemName {
 		return getCatalog();
 	}
 
+	/**
+	 * Clone this catalog name with different segments.
+	 */
 	@Override
 	public CatalogName clone(NameSegments segs) {
 		return new CatalogName(this);

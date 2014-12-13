@@ -15,15 +15,25 @@ import static org.junit.Assert.*;
 
 public class QueryItemInfoTest {
 
-	private QueryItemInfo<ItemName> itemInfo;
+	private QueryItemInfo<NamedObject<ItemName>, ItemName> itemInfo;
 	private ItemName itemName;
+	private NamedObject<ItemName> namedObject;
 
 	@Before
 	public void setup() {
+		
 		itemName = new SearchName("catalog", "schema", "table",
 				"column");
-		itemName.setUsedSegments(new NameSegments(true, true, true, true));
-		itemInfo = new QueryItemInfo<ItemName>(itemName, false) {
+		itemName.setUsedSegments(NameSegments.ALL);
+		
+		namedObject = new NamedObject<ItemName>(){
+
+			@Override
+			public ItemName getName() {
+				return itemName;
+			}};
+			
+		itemInfo = new QueryItemInfo<NamedObject<ItemName>,ItemName>(namedObject, itemName, false) {
 		};
 	}
 
@@ -82,7 +92,7 @@ public class QueryItemInfoTest {
 
 	@Test
 	public void testEquality() {
-		QueryItemInfo<ItemName> itemInfo2;
+		QueryItemInfo<NamedObject<ItemName>, ItemName> itemInfo2;
 		ItemName itemName2;
 		boolean[] tf = { true, false };
 		for (boolean catalogFlg : tf) {
@@ -90,9 +100,9 @@ public class QueryItemInfoTest {
 				for (boolean tableFlg : tf) {
 					for (boolean columnFlg : tf) {
 						itemName2 = new SearchName(itemName,
-								new NameSegments(catalogFlg, schemaFlg,
+								NameSegments.getInstance(catalogFlg, schemaFlg,
 										tableFlg, columnFlg));
-						itemInfo2 = new QueryItemInfo<ItemName>(itemName2,
+						itemInfo2 = new QueryItemInfo<NamedObject<ItemName>, ItemName>(namedObject,itemName2,
 								false) {
 						};
 						if (catalogFlg && schemaFlg && tableFlg && columnFlg) {
@@ -103,7 +113,7 @@ public class QueryItemInfoTest {
 							assertNotEquals(itemInfo2, itemInfo);
 						}
 						assertEquals(itemInfo.hashCode(), itemInfo.hashCode());
-						itemInfo2 = new QueryItemInfo<ItemName>(itemName2, true) {
+						itemInfo2 = new QueryItemInfo<NamedObject<ItemName>, ItemName>(namedObject,itemName2, true) {
 						};
 						assertNotEquals(itemInfo, itemInfo2);
 						assertNotEquals(itemInfo2, itemInfo);

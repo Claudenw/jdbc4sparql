@@ -10,23 +10,34 @@ import org.xenei.jdbc4sparql.iface.name.NameSegments;
 /**
  * The base class for the Query items.
  *
- * @param <T>
+ * @param <N>
  *            The type of the name for query item.
  */
-public class QueryItemInfo<T extends ItemName> implements NamedObject<T>,
+public class QueryItemInfo<T extends NamedObject<N>, N extends ItemName> implements NamedObject<N>,
 		GUIDObject {
-	private final T name;
+	private final T baseObject;
+	private final N name;
 	private final Var baseVar;
 	private boolean optional;
 
-	protected QueryItemInfo(final T name, final boolean optional) {
+	protected QueryItemInfo(final T baseObject, final N name, final boolean optional) {
+		if (baseObject == null)
+		{
+			throw new IllegalArgumentException("baseObject may not be null");
+		}
 		if (name == null) {
 			throw new IllegalArgumentException("name may not be null");
 		}
+		this.baseObject = baseObject;
 		this.name = name;
 		this.baseVar = Var.alloc(this.name.getGUID());
 		this.optional = optional;
 
+	}
+	
+	protected T getBaseObject()
+	{
+		return baseObject;
 	}
 
 	protected void setSegments(NameSegments usedSegments) {
@@ -43,7 +54,7 @@ public class QueryItemInfo<T extends ItemName> implements NamedObject<T>,
 	 * @return the item name.
 	 */
 	@Override
-	public T getName() {
+	public N getName() {
 		return name;
 	}
 
@@ -76,7 +87,7 @@ public class QueryItemInfo<T extends ItemName> implements NamedObject<T>,
 
 	@Override
 	public String getGUID() {
-		return getName().getGUID();
+		return baseObject.getName().getGUID();
 	}
 
 	/**
@@ -97,7 +108,7 @@ public class QueryItemInfo<T extends ItemName> implements NamedObject<T>,
 	@Override
 	public boolean equals(Object o) {
 		if (o instanceof QueryItemInfo) {
-			QueryItemInfo<?> other = (QueryItemInfo<?>) o;
+			QueryItemInfo<?,?> other = (QueryItemInfo<?,?>) o;
 			return this.getName().equals(other.getName())
 					&& this.isOptional() == other.isOptional();
 		}

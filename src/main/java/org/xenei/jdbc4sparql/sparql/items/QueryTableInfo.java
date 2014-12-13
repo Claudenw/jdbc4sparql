@@ -46,13 +46,8 @@ import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
  * used multiple times with different aliases there will be multiple
  * QueryTableInfo instances with the same RdfTable but different names.
  */
-public class QueryTableInfo extends QueryItemInfo<TableName> {
+public class QueryTableInfo extends QueryItemInfo<Table,TableName> {
 
-	/**
-	 *
-	 */
-	// private final QueryInfoSet infoSet;
-	private final Table table;
 	private final ElementGroup eg;
 	private final ElementGroup egWrapper;
 	private final QueryInfoSet infoSet;
@@ -79,9 +74,9 @@ public class QueryTableInfo extends QueryItemInfo<TableName> {
 	public QueryTableInfo(final QueryInfoSet infoSet,
 			final ElementGroup queryElementGroup, final Table table,
 			final TableName alias, final boolean optional) {
-		super(alias, optional);
+		super(table, alias, optional);
 		this.infoSet = infoSet;
-		this.table = checkTable(table);
+		//this.table = checkTable(table);
 		this.egWrapper = new ElementGroup();
 		this.eg = new ElementGroup();
 		egWrapper.addElement(eg);
@@ -105,7 +100,7 @@ public class QueryTableInfo extends QueryItemInfo<TableName> {
 
 	@Override
 	public void setSegments(NameSegments usedSegments) {
-		NameSegments ourSegments = new NameSegments(usedSegments.isCatalog(),
+		NameSegments ourSegments = NameSegments.getInstance(usedSegments.isCatalog(),
 				usedSegments.isSchema(), true, false);
 
 		super.setSegments(ourSegments);
@@ -211,10 +206,10 @@ public class QueryTableInfo extends QueryItemInfo<TableName> {
 			QueryTableInfo.LOG.debug("adding required columns for {}", getName());
 		final String eol = System.getProperty("line.separator");
 		final StringBuilder queryFmt = new StringBuilder("{ ")
-				.append(StringUtils.defaultString(table.getQuerySegmentFmt(),
+				.append(StringUtils.defaultString(getTable().getQuerySegmentFmt(),
 						""));
 
-		for (final Iterator<Column> colIter = table.getColumns(); colIter
+		for (final Iterator<Column> colIter = getTable().getColumns(); colIter
 				.hasNext();) {
 			final Column column = colIter.next();
 			if (!column.isOptional()) {
@@ -240,10 +235,10 @@ public class QueryTableInfo extends QueryItemInfo<TableName> {
 		try {
 			eg.addElement(SparqlParser.Util.parse(queryStr));
 		} catch (final ParseException e) {
-			throw new IllegalStateException(table.getName() + " query segment "
+			throw new IllegalStateException(getTable().getName() + " query segment "
 					+ queryStr, e);
 		} catch (final QueryException e) {
-			throw new IllegalStateException(table.getName() + " query segment "
+			throw new IllegalStateException(getTable().getName() + " query segment "
 					+ queryStr, e);
 		}
 		if (LOG.isDebugEnabled())
@@ -259,7 +254,7 @@ public class QueryTableInfo extends QueryItemInfo<TableName> {
 	 *
 	 */
 	public void addTableColumns(final QueryInfoSet infoSet, final Query query) {
-		final Iterator<Column> iter = table.getColumns();
+		final Iterator<Column> iter = getTable().getColumns();
 		while (iter.hasNext()) {
 			final QueryColumnInfo columnInfo = addColumnToQuery(iter.next());
 			final Var v = columnInfo.getVar();
@@ -270,13 +265,18 @@ public class QueryTableInfo extends QueryItemInfo<TableName> {
 		}
 	}
 
+	/**
+	 * Add the filters for the columns in the table.
+	 * @param infoSet
+	 * @throws SQLDataException
+	 */
 	public void addQueryFilters(final QueryInfoSet infoSet)
 			throws SQLDataException {
 		List<QueryColumnInfo> columnInfoList = new ArrayList<QueryColumnInfo>();
-		Iterator<Column> iter = table.getColumns();
+		Iterator<Column> iter = getTable().getColumns();
 		while (iter.hasNext())
 		{
-			QueryColumnInfo columnInfo = infoSet.findColumnByGUID(iter.next().getName()); 
+			QueryColumnInfo columnInfo = infoSet.findColumn(iter.next()); 
 			if (columnInfo != null)
 			{
 				columnInfoList.add( columnInfo );
@@ -355,7 +355,7 @@ public class QueryTableInfo extends QueryItemInfo<TableName> {
 			// we have to check for the case where the column has the schema or
 			// table def and the
 			// infoSet does not.
-			final Column col = table.getColumn(cName.getCol());
+			final Column col = getTable().getColumn(cName.getColumn());
 			if (col != null) {
 				final boolean opt = optional ? col.isOptional()
 						: SparqlQueryBuilder.REQUIRED;
@@ -383,37 +383,37 @@ public class QueryTableInfo extends QueryItemInfo<TableName> {
 	 * @return
 	 * @throws SQLException
 	 */
-	public QueryColumnInfo getColumnByGUID(final QueryInfoSet infoSet,
-			final ColumnName cName) {
-		
-		QueryColumnInfo retval = infoSet.findColumnByGUID(cName);
-		if (retval == null) {
-			// we have to check for the case where the column has the schema or
-			// table def and the
-			// infoSet does not.
-			Iterator<Column> iter = table.getColumns();
-			while (iter.hasNext())
-			{
-				Column c = iter.next();
-				if (c.getName().getGUID().equals( cName.getGUID() ))
-				{
-					if (infoSet.findColumn(c.getName()) == null)
-					{
-						addColumnToQuery( c );
-					}
-					retval = infoSet.findColumn(c.getName());
-					if (retval == null)
-					{
-						infoSet.addColumn( new QueryColumnInfo( c, cName ));
-						retval = infoSet.getColumn(cName);
-					}
-					return retval;
-				}
-			}
-		}
-		return retval;
-	}
-	
+//	public QueryColumnInfo getColumnByGUID(final QueryInfoSet infoSet,
+//			final ColumnName cName) {
+//		
+//		QueryColumnInfo retval = infoSet.findColumnByGUID(cName);
+//		if (retval == null) {
+//			// we have to check for the case where the column has the schema or
+//			// table def and the
+//			// infoSet does not.
+//			Iterator<Column> iter = getTable().getColumns();
+//			while (iter.hasNext())
+//			{
+//				Column c = iter.next();
+//				if (c.getName().getGUID().equals( cName.getGUID() ))
+//				{
+//					if (infoSet.findColumn(c.getName()) == null)
+//					{
+//						addColumnToQuery( c );
+//					}
+//					retval = infoSet.findColumn(c.getName());
+//					if (retval == null)
+//					{
+//						infoSet.addColumn( new QueryColumnInfo( c, cName ));
+//						retval = infoSet.getColumn(cName);
+//					}
+//					return retval;
+//				}
+//			}
+//		}
+//		return retval;
+//	}
+//	
 	private Element getQuerySegments(final Column column, final Node tableVar,
 			final Node columnVar) {
 		final String fmt = "{" + column.getQuerySegmentFmt() + "}";
@@ -435,7 +435,7 @@ public class QueryTableInfo extends QueryItemInfo<TableName> {
 	}
 
 	public Table getTable() {
-		return table;
+		return getBaseObject();
 	}
 
 	/**
@@ -511,7 +511,7 @@ public class QueryTableInfo extends QueryItemInfo<TableName> {
 
 	@Override
 	public String toString() {
-		return String.format("QueryTableInfo[%s(%s)]", table.getSQLName(),
+		return String.format("QueryTableInfo[%s(%s)]", getTable().getSQLName(),
 				getName());
 	}
 

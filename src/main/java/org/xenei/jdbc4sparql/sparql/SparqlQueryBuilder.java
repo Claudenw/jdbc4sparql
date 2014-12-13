@@ -194,13 +194,27 @@ public class SparqlQueryBuilder {
 	}
 
 	public void addAlias(ColumnName orig, ColumnName alias) throws SQLDataException {
-		QueryColumnInfo columnInfo = infoSet.scanTablesForColumnByGUID(orig);
-		if (columnInfo == null)
+		QueryTableInfo tableInfo =infoSet.getTable( orig.getTableName() );
+		if (tableInfo == null)
 		{
 			throw new IllegalArgumentException(String.format(
-					SparqlQueryBuilder.NOT_FOUND_IN_QUERY, orig));
+				SparqlQueryBuilder.NOT_FOUND_IN_QUERY, orig.getTableName()));
 		}
-		QueryTableInfo tableInfo = infoSet.getTable( orig.getTableName());
+		
+		// find the column will check infoset for existing column first.
+		QueryColumnInfo columnInfo = tableInfo.getColumn(infoSet, orig);
+		if (columnInfo == null)
+		{
+			// ok now we have to look for column with the proper name.
+			Column column = tableInfo.getTable().getColumn( orig.getShortName());
+			if (column == null)
+			{
+				throw new IllegalArgumentException(String.format(
+					SparqlQueryBuilder.NOT_FOUND_IN_QUERY, orig));
+			}
+			columnInfo = tableInfo.addColumnToQuery(column);
+		}
+		//QueryTableInfo tableInfo = infoSet.getTable( orig.getTableName());
 		tableInfo.addDataFilter(columnInfo);
 		infoSet.addColumn( columnInfo );
 		
@@ -513,9 +527,10 @@ public class SparqlQueryBuilder {
 
 				for (Var v : vars.getVars()) {
 					
-					QueryColumnInfo colInfo = infoSet.findColumnByGUID(v
-							.getName());
-					newResult.addResultVar(colInfo.getVar());
+					//QueryColumnInfo colInfo = infoSet.findColumnByGUID(
+					//		v.getName());
+					//newResult.addResultVar(colInfo.getVar());
+					newResult.addResultVar(v);
 				}
 
 				// add the columns to the query.
@@ -677,7 +692,7 @@ public class SparqlQueryBuilder {
 			throw new IllegalArgumentException( "Name may not have more than 4 segments");
 		}
 		ColumnName cName = ColumnName.getNameInstance("", "", "", v.getName());
-		cName.setUsedSegments(new NameSegments( segs==4, segs>=3, segs>=2, true ));
+		cName.setUsedSegments(NameSegments.getInstance( segs==4, segs>=3, segs>=2, true ));
 		return cName;
 	}
 
@@ -693,7 +708,7 @@ public class SparqlQueryBuilder {
 			throw new IllegalArgumentException( "Name may not have more than 3 segments");
 		}
 		TableName tName = TableName.getNameInstance("", "", v.getName());
-		tName.setUsedSegments(new NameSegments( segs==3, segs>=2, true, false ));
+		tName.setUsedSegments(NameSegments.getInstance( segs==3, segs>=2, true, false ));
 		return infoSet.getTable( tName );
 	}
 
@@ -791,7 +806,7 @@ public class SparqlQueryBuilder {
 			throw new IllegalArgumentException(
 					"There must be a least one table");
 		}
-		QueryItemCollection<QueryColumnInfo> colInfoList = new QueryItemCollection<QueryColumnInfo>();
+		QueryItemCollection<QueryColumnInfo,Column,ColumnName> colInfoList = new QueryItemCollection<QueryColumnInfo,Column,ColumnName>();
 		for (final QueryTableInfo tableInfo : tableInfos) {
 			final Iterator<Column> iter = tableInfo.getTable().getColumns();
 			while (iter.hasNext()) {
@@ -806,18 +821,18 @@ public class SparqlQueryBuilder {
 		}
 
 		// find shortest name without name collision. skipping columns in using.
-		NameSegments segs = new NameSegments(false, false, false, true);
+		NameSegments segs = NameSegments.getInstance(false, false, false, true);
 		for (QueryColumnInfo columnInfo : colInfoList) {
 			if (!columnsInUsing.contains(columnInfo.getName().getShortName())) {
 				SearchName sn = new SearchName(columnInfo.getName(), segs);
 				while (colInfoList.count(sn) > 1
 						&& !sn.getUsedSegments().isCatalog()) {
 					if (segs.isSchema()) {
-						segs = new NameSegments(true, true, true, true);
+						segs = NameSegments.getInstance(true, true, true, true);
 					} else if (segs.isTable()) {
-						segs = new NameSegments(false, true, true, true);
+						segs = NameSegments.getInstance(false, true, true, true);
 					} else {
-						segs = new NameSegments(false, false, true, true);
+						segs = NameSegments.getInstance(false, false, true, true);
 					}
 					sn = new SearchName(columnInfo.getName(), segs);
 				}
@@ -827,10 +842,9 @@ public class SparqlQueryBuilder {
 		// remove the variables 
 		for (Var v : query.getProjectVars())
 		{
-			Iterator<QueryColumnInfo> iter = colInfoList.match( createColumnName(v) );
-			while (iter.hasNext())
+			for (QueryColumnInfo columnInfo : colInfoList.match( createColumnName(v) ).toList())
 			{
-				colInfoList.remove( iter.next() );
+				colInfoList.remove( columnInfo );
 			}
 		}
 		// anything left needs to be added

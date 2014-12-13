@@ -75,7 +75,7 @@ public class ColumnNameTests {
 	public void constructionTest() {
 		assertEquals(schema, columnName.getSchema());
 		assertEquals(table, columnName.getTable());
-		assertEquals(column, columnName.getCol());
+		assertEquals(column, columnName.getColumn());
 		assertEquals(DBName, columnName.getDBName());
 		assertEquals(SPARQLName, columnName.getSPARQLName());
 		assertEquals(column, columnName.getShortName());
@@ -86,7 +86,7 @@ public class ColumnNameTests {
 		TableName tableName = columnName.getTableName();
 		assertEquals(schema, tableName.getSchema());
 		assertEquals(table, tableName.getTable());
-		assertNull(tableName.getCol());
+		assertNull(tableName.getColumn());
 		assertEquals(table, tableName.getShortName());
 
 	}
@@ -196,7 +196,7 @@ public class ColumnNameTests {
 		columnName = new ColumnName(columnName);
 		assertEquals(schema, columnName.getSchema());
 		assertEquals(table, columnName.getTable());
-		assertEquals(column, columnName.getCol());
+		assertEquals(column, columnName.getColumn());
 		assertEquals(DBName, columnName.getDBName());
 		assertEquals(SPARQLName, columnName.getSPARQLName());
 		assertEquals(column, columnName.getShortName());
@@ -209,7 +209,7 @@ public class ColumnNameTests {
 		TableName tableName = columnName.getTableName();
 		assertEquals(schema, tableName.getSchema());
 		assertEquals(table, tableName.getTable());
-		assertNull(tableName.getCol());
+		assertNull(tableName.getColumn());
 		assertEquals(table, tableName.getShortName());
 
 		try {
@@ -243,7 +243,7 @@ public class ColumnNameTests {
 		for (boolean schemaFlg : tf) {
 			for (boolean tableFlg : tf) {
 				for (boolean columnFlg : tf) {
-					segments = new NameSegments(false, schemaFlg, tableFlg,
+					segments = NameSegments.getInstance(false, schemaFlg, tableFlg,
 							columnFlg);
 					ColumnName result = new ColumnName(columnName, segments);
 					assertEquals("Bad schema: " + segments.toString(),
@@ -251,31 +251,11 @@ public class ColumnNameTests {
 					assertEquals("Bad table: " + segments.toString(),
 							tableFlg ? table : null, result.getTable());
 					assertEquals("Bad column: " + segments.toString(), column,
-							result.getCol()); // column is always returned
+							result.getColumn()); // column is always returned
 				}
 			}
 		}
 
-	}
-
-	@Test
-	public void testMerge() {
-		for (String[] args : data()) {
-			String lbl = String.format("C:%s S:%s T:%s C:%s", args[0], args[1],
-					args[2], args[3]);
-			ColumnName other = new ColumnName(args[0], args[1], args[2],
-					args[3]);
-			ColumnName merged = columnName.merge(other);
-			assertEquals("Bad schema: " + lbl,
-					StringUtils.isEmpty(schema) ? args[1] : schema,
-					merged.getSchema());
-			assertEquals("Bad table: " + lbl,
-					StringUtils.isEmpty(table) ? args[2] : table,
-					merged.getTable());
-			assertEquals("Bad column: " + lbl,
-					StringUtils.isEmpty(column) ? args[3] : column,
-					merged.getCol());
-		}
 	}
 
 }

@@ -57,7 +57,7 @@ public class SchemaNameTests {
 	public void testConstructor() {
 		Assert.assertEquals(schema, schemaName.getSchema());
 		Assert.assertNull(schemaName.getTable());
-		Assert.assertNull(schemaName.getCol());
+		Assert.assertNull(schemaName.getColumn());
 		Assert.assertEquals(DBName, schemaName.getDBName());
 		Assert.assertEquals(SPARQLName, schemaName.getSPARQLName());
 		Assert.assertEquals(schema, schemaName.getShortName());
@@ -69,7 +69,7 @@ public class SchemaNameTests {
 		schemaName = new SchemaName(schemaName);
 		Assert.assertEquals(schema, schemaName.getSchema());
 		Assert.assertNull(schemaName.getTable());
-		Assert.assertNull(schemaName.getCol());
+		Assert.assertNull(schemaName.getColumn());
 		Assert.assertEquals(DBName, schemaName.getDBName());
 		Assert.assertEquals(SPARQLName, schemaName.getSPARQLName());
 		Assert.assertEquals(schema, schemaName.getShortName());
@@ -133,13 +133,13 @@ public class SchemaNameTests {
 		TableName tableName = schemaName.getTableName("table");
 		assertEquals(schema, tableName.getSchema());
 		assertEquals("table", tableName.getTable());
-		assertNull(tableName.getCol());
+		assertNull(tableName.getColumn());
 		assertEquals("table", tableName.getShortName());
 
 		tableName = schemaName.getTableName("");
 		assertEquals(schema, tableName.getSchema());
 		assertEquals("", tableName.getTable());
-		assertNull(tableName.getCol());
+		assertNull(tableName.getColumn());
 		assertEquals("", tableName.getShortName());
 
 		try {
@@ -160,7 +160,7 @@ public class SchemaNameTests {
 			for (boolean tableFlg : tf) {
 
 				for (boolean columnFlg : tf) {
-					segments = new NameSegments(false, schemaFlg, tableFlg,
+					segments = NameSegments.getInstance(false, schemaFlg, tableFlg,
 							columnFlg);
 
 					SchemaName result = new SchemaName(schemaName, segments);
@@ -169,7 +169,7 @@ public class SchemaNameTests {
 					assertNull("Bad table: " + segments.toString(),
 							result.getTable());
 					assertNull("Bad column: " + segments.toString(),
-							result.getCol());
+							result.getColumn());
 				}
 			}
 		}

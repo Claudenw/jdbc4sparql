@@ -3,37 +3,82 @@ package org.xenei.jdbc4sparql.iface.name;
 import org.apache.commons.lang.StringUtils;
 
 /**
- * Name implementation.
+ * Schema Name implementation.
  */
 public class SchemaName extends ItemName {
-	static ItemName checkItemName(ItemName name) {
+	/**
+	 * Check the schema name.
+	 * Checks that the itemName schema and catalog name segments are not null.
+	 * @param name The ItemName to check.
+	 * @return the ItemName
+	 * @Throws IllegalArgumentException 
+	 */
+	static ItemName checkItemName(ItemName name) throws IllegalArgumentException {
+		if (name == null)
+		{
+			throw new IllegalArgumentException( "name may not be null");
+		}
 		CatalogName.checkItemName(name);
 		checkNotNull(name.getBaseName().getSchema(), "schema");
 		return name;
 	}
 
-	private static NameSegments adjustSegments(NameSegments segments) {
+	/**
+	 * Ensure that the schema segment is on, and the table and column segments are off.
+	 * @param segments The segments to adjust
+	 * @return the adjusted segments.
+	 * @Throws IllegalArgumentException if segments is null.
+	 */
+	private static NameSegments adjustSegments(NameSegments segments) throws IllegalArgumentException{
+		if (segments == null)
+		{
+			throw new IllegalArgumentException( "Segments may not be null");
+		}
 		if (segments.isSchema() && !segments.isTable() && !segments.isColumn()) {
 			return segments;
 		}
-		return new NameSegments(segments.isCatalog(), true, false, false);
+		return NameSegments.getInstance(segments.isCatalog(), true, false, false);
 	}
 
-	public SchemaName(final ItemName name) {
+	/**
+	 * Create a SchmeaName from an ItemName.
+	 * @param name the ItemName, must not be null.
+	 * @Throws IllegalArgumentException is name is null.
+	 */
+	public SchemaName(final ItemName name) throws IllegalArgumentException {
 		this(checkItemName(name), name.getUsedSegments());
 	}
 
-	public SchemaName(final ItemName name, NameSegments segments) {
+	/**
+	 * Create a SchmeaName from an ItemName with specific name segments.
+	 * @param name the ItemName, must not be null.
+	 * @param segments the name segments to use.
+	 * @Throws IllegalArgumentException is name or segments are null.
+	 */
+	public SchemaName(final ItemName name, NameSegments segments) throws IllegalArgumentException {
 		super(checkItemName(name), adjustSegments(segments));
 	}
 
-	public SchemaName(final String catalog, final String schema) {
-		super(new BaseNameImpl(checkNotNull(catalog, "catalog"), checkNotNull(
+	/**
+	 * Create a SchemaNamefrom a catalog name string and a schema name string.
+	 * Uses the default namesegments for a schema.
+	 * @param catalog the catalog name string.
+	 * @param schema the schema name string.
+	 * @throws IllegalArgumentException if either string is null.
+	 */
+	public SchemaName(final String catalog, final String schema) throws IllegalArgumentException {
+		super(new FQNameNameImpl(checkNotNull(catalog, "catalog"), checkNotNull(
 				schema, "schema"), null, null), NameSegments.SCHEMA);
 	}
 
-	public TableName getTableName(final String tblName) {
-		BaseName baseName = getBaseName();
+	/**
+	 * Create a table name in this schema.
+	 * @param tblName the table name string.
+	 * @return the Table Name
+	 * @throws IllegalArgumentException if either name is null.
+	 */
+	public TableName getTableName(final String tblName) throws IllegalArgumentException {
+		FQName baseName = getBaseName();
 		return new TableName(baseName.getCatalog(), baseName.getSchema(),
 				tblName);
 	}
@@ -43,6 +88,9 @@ public class SchemaName extends ItemName {
 		return StringUtils.defaultString(getSchema());
 	}
 
+	/**
+	 * Returns the schema name.
+	 */
 	@Override
 	public String getShortName() {
 		return getSchema();

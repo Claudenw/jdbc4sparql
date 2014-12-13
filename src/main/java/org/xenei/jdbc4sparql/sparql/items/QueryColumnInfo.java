@@ -16,12 +16,12 @@ import com.hp.hpl.jena.util.iterator.Filter;
  * A column in a table in the query. This class maps the column to an alias
  * name. This may be a column in a base table or a function.
  */
-public class QueryColumnInfo extends QueryItemInfo<ColumnName> {
-	private final Column column;
+public class QueryColumnInfo extends QueryItemInfo<Column, ColumnName> {
+
 	private CheckTypeF typeFilter;
 
 	public static NameSegments createSegments(NameSegments segments) {
-		return new NameSegments(segments.isCatalog(), segments.isSchema(),
+		return NameSegments.getInstance(segments.isCatalog(), segments.isSchema(),
 				segments.isSchema() || segments.isTable(), true);
 	}
 
@@ -42,8 +42,8 @@ public class QueryColumnInfo extends QueryItemInfo<ColumnName> {
 
 	public QueryColumnInfo(final Column column, final ColumnName alias,
 			boolean optional) {
-		super(alias, optional);
-		this.column = column;
+		super(column, alias, optional);
+
 	}
 
 	/**
@@ -55,12 +55,11 @@ public class QueryColumnInfo extends QueryItemInfo<ColumnName> {
 	 * @param optional
 	 */
 	public QueryColumnInfo(final Column column, final boolean optional) {
-		super(checkColumn(column).getName(), optional);
-		this.column = column;
+		super(column, checkColumn(column).getName(), optional);
 	}
 
 	public QueryColumnInfo createAlias(final ColumnName alias) throws SQLDataException {
-		QueryColumnInfo retval = new QueryColumnInfo(this.column, alias);
+		QueryColumnInfo retval = new QueryColumnInfo(this.getColumn(), alias);
 		retval.typeFilter = getTypeFilter();
 		return retval;
 	}
@@ -86,13 +85,13 @@ public class QueryColumnInfo extends QueryItemInfo<ColumnName> {
 		if ((o != null) && (o instanceof QueryColumnInfo)) {
 			final QueryColumnInfo colInfo = (QueryColumnInfo) o;
 			return getName().equals(colInfo.getName())
-					&& column.equals(colInfo.getColumn());
+					&& getColumn().equals(colInfo.getColumn());
 		}
 		return false;
 	}
 
 	public Column getColumn() {
-		return column;
+		return getBaseObject();
 	}
 
 	@Override
@@ -107,16 +106,8 @@ public class QueryColumnInfo extends QueryItemInfo<ColumnName> {
 
 	@Override
 	public String toString() {
-		return String.format("QueryColumnInfo[%s(%s)]", column.getSQLName(),
+		return String.format("QueryColumnInfo[%s(%s)]", getColumn().getSQLName(),
 				getName());
 	}
 
-//	public List<QueryColumnInfo> sameBase(QueryItemCollection<QueryColumnInfo> cols) {
-//		return cols.iterator().filterKeep( new Filter<QueryColumnInfo>(){
-//
-//			@Override
-//			public boolean accept(QueryColumnInfo o) {
-//				return o.column.getName().getGUID().equals( column.getName().getGUID() );
-//			}}).toList();
-//	}
 }

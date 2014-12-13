@@ -13,7 +13,7 @@ import org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Parameterized.class)
 public class NameSegmentTest {
-	private BaseName baseName;
+	private FQName baseName;
 	private NameSegments segments;
 	private boolean catalog;
 	private boolean schema;
@@ -22,8 +22,8 @@ public class NameSegmentTest {
 
 	public NameSegmentTest(Boolean catalog, Boolean schema, Boolean table,
 			Boolean column) {
-		segments = new NameSegments(catalog, schema, table, column);
-		baseName = new BaseNameImpl("catalog", "schema", "table", "column");
+		segments = NameSegments.getInstance(catalog, schema, table, column);
+		baseName = new FQNameNameImpl("catalog", "schema", "table", "column");
 		this.catalog = catalog;
 		this.schema = schema;
 		this.table = table;

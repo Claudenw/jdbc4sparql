@@ -371,7 +371,7 @@ public class LocalSparqlVisitorTest {
 		for (Var v : vLst) {
 			ColumnName tn = ColumnName.getNameInstance("testCatalog",
 					"testSchema", "table", v.getName());
-			tn.setUsedSegments(new NameSegments(false, false, true, true));
+			tn.setUsedSegments( NameSegments.FFTT );
 			Assert.assertTrue("missing " + tn.getSPARQLName(),
 					Arrays.asList(columnNames).contains(tn.getSPARQLName()));
 		}

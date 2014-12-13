@@ -18,7 +18,7 @@ public class CatalogNameTests {
 		catalogName = new CatalogName("catalog");
 		assertEquals("catalog", catalogName.getCatalog());
 		assertNull(catalogName.getSchema());
-		assertNull(catalogName.getCol());
+		assertNull(catalogName.getColumn());
 		assertNull(catalogName.getTable());
 		assertEquals("catalog", catalogName.getDBName());
 		assertEquals("catalog", catalogName.getSPARQLName());
@@ -30,7 +30,7 @@ public class CatalogNameTests {
 		catalogName = new CatalogName(new CatalogName("catalog"));
 		assertEquals("catalog", catalogName.getCatalog());
 		assertNull(catalogName.getSchema());
-		assertNull(catalogName.getCol());
+		assertNull(catalogName.getColumn());
 		assertNull(catalogName.getTable());
 		assertEquals("catalog", catalogName.getDBName());
 		assertEquals("catalog", catalogName.getSPARQLName());
@@ -44,7 +44,7 @@ public class CatalogNameTests {
 		catalogName = new CatalogName(itemName);
 		assertEquals("catalog", catalogName.getCatalog());
 		assertNull(catalogName.getSchema());
-		assertNull(catalogName.getCol());
+		assertNull(catalogName.getColumn());
 		assertNull(catalogName.getTable());
 		assertEquals("catalog", catalogName.getDBName());
 		assertEquals("catalog", catalogName.getSPARQLName());
@@ -80,7 +80,7 @@ public class CatalogNameTests {
 		catalogName = new CatalogName("");
 		assertEquals("", catalogName.getCatalog());
 		assertNull(catalogName.getSchema());
-		assertNull(catalogName.getCol());
+		assertNull(catalogName.getColumn());
 		assertNull(catalogName.getTable());
 		assertEquals("", catalogName.getDBName());
 		assertEquals("", catalogName.getSPARQLName());
@@ -92,7 +92,7 @@ public class CatalogNameTests {
 		catalogName = new CatalogName(new CatalogName(""));
 		assertEquals("", catalogName.getCatalog());
 		assertNull(catalogName.getSchema());
-		assertNull(catalogName.getCol());
+		assertNull(catalogName.getColumn());
 		assertNull(catalogName.getTable());
 		assertEquals("", catalogName.getDBName());
 		assertEquals("", catalogName.getSPARQLName());
