@@ -1,6 +1,8 @@
 package org.xenei.jdbc4sparql.iface.name;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -10,47 +12,56 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.xenei.jdbc4sparql.iface.name.ColumnName;
-import org.xenei.jdbc4sparql.iface.name.TableName;
 import org.xenei.jdbc4sparql.impl.NameUtils;
 
 @RunWith(Parameterized.class)
 public class TableNameTests {
 	private TableName tableName;
-	private String catalog;
-	private String schema;
-	private String table;
+	private final String catalog;
+	private final String schema;
+	private final String table;
 	private String DBName;
 	private String SPARQLName;
 
 	@Parameters(name = "schema:{0} table:{1}")
 	public static Collection<String[]> data() {
-		List<String[]> lst = new ArrayList<String[]>();
-		for (String catalog : new String[] { "", "catalog" }) {
-			for (String schema : new String[] { "", "schema" }) {
-				for (String table : new String[] { "", "table" }) {
-					lst.add(new String[] { catalog, schema, table });
+		final List<String[]> lst = new ArrayList<String[]>();
+		for (final String catalog : new String[] {
+				"", "catalog"
+		}) {
+			for (final String schema : new String[] {
+					"", "schema"
+			}) {
+				for (final String table : new String[] {
+						"", "table"
+				}) {
+					lst.add(new String[] {
+							catalog, schema, table
+					});
 				}
 			}
 		}
 		return lst;
 	}
 
-	public TableNameTests(String catalog, String schema, String table) {
+	public TableNameTests(final String catalog, final String schema,
+			final String table) {
 		this.catalog = catalog;
 		this.schema = schema;
 		this.table = table;
 		tableName = new TableName(catalog, schema, table);
-		if (schema != null && schema.length() > 0) {
+		if ((schema != null) && (schema.length() > 0)) {
 			DBName = String.format("%s%s%s", schema, NameUtils.DB_DOT, table);
 			SPARQLName = String.format("%s%s%s", schema, NameUtils.SPARQL_DOT,
 					table);
 
-		} else {
-			if (table != null && table.length() > 0) {
+		}
+		else {
+			if ((table != null) && (table.length() > 0)) {
 				DBName = table;
 				SPARQLName = table;
-			} else {
+			}
+			else {
 				DBName = "";
 				SPARQLName = "";
 			}
@@ -74,7 +85,7 @@ public class TableNameTests {
 			tableName = new TableName(catalog,
 					"sch" + NameUtils.DB_DOT + "ema", table);
 			fail("Should have thrown IllegalArgumentException");
-		} catch (IllegalArgumentException expected) {
+		} catch (final IllegalArgumentException expected) {
 			assertEquals("Schema name may not contain '.'",
 					expected.getMessage());
 		}
@@ -87,7 +98,7 @@ public class TableNameTests {
 			tableName = new TableName("cat" + NameUtils.SPARQL_DOT + "alog",
 					schema, table);
 			fail("Should have thrown IllegalArgumentException");
-		} catch (IllegalArgumentException expected) {
+		} catch (final IllegalArgumentException expected) {
 			assertEquals("Catalog name may not contain '"
 					+ NameUtils.SPARQL_DOT + "'", expected.getMessage());
 		}
@@ -99,7 +110,7 @@ public class TableNameTests {
 			tableName = new TableName("cat" + NameUtils.DB_DOT + "alog",
 					schema, table);
 			fail("Should have thrown IllegalArgumentException");
-		} catch (IllegalArgumentException expected) {
+		} catch (final IllegalArgumentException expected) {
 			assertEquals("Catalog name may not contain '.'",
 					expected.getMessage());
 		}
@@ -112,7 +123,7 @@ public class TableNameTests {
 			tableName = new TableName(catalog, "sch" + NameUtils.SPARQL_DOT
 					+ "ema", table);
 			fail("Should have thrown IllegalArgumentException");
-		} catch (IllegalArgumentException expected) {
+		} catch (final IllegalArgumentException expected) {
 			assertEquals("Schema name may not contain '" + NameUtils.SPARQL_DOT
 					+ "'", expected.getMessage());
 		}
@@ -124,7 +135,7 @@ public class TableNameTests {
 			tableName = new TableName(catalog, schema, "ta" + NameUtils.DB_DOT
 					+ "ble");
 			fail("Should have thrown IllegalArgumentException");
-		} catch (IllegalArgumentException expected) {
+		} catch (final IllegalArgumentException expected) {
 			assertEquals("Table name may not contain '.'",
 					expected.getMessage());
 		}
@@ -137,7 +148,7 @@ public class TableNameTests {
 			tableName = new TableName(catalog, schema, "ta"
 					+ NameUtils.SPARQL_DOT + "ble");
 			fail("Should have thrown IllegalArgumentException");
-		} catch (IllegalArgumentException expected) {
+		} catch (final IllegalArgumentException expected) {
 			assertEquals("Table name may not contain '" + NameUtils.SPARQL_DOT
 					+ "'", expected.getMessage());
 		}
@@ -172,7 +183,7 @@ public class TableNameTests {
 		try {
 			columnName = tableName.getColumnName(null);
 			fail("Should have thrown IllegalArgumentException");
-		} catch (IllegalArgumentException e) {
+		} catch (final IllegalArgumentException e) {
 			assertEquals("Segment column may not be null", e.getMessage());
 		}
 
@@ -180,18 +191,20 @@ public class TableNameTests {
 
 	@Test
 	public void testTableWithSegments() {
-		boolean tf[] = { true, false };
+		final boolean tf[] = {
+				true, false
+		};
 
 		NameSegments segments = null;
-		for (boolean schemaFlg : tf) {
+		for (final boolean schemaFlg : tf) {
 
-			for (boolean tableFlg : tf) {
+			for (final boolean tableFlg : tf) {
 
-				for (boolean columnFlg : tf) {
-					segments = NameSegments.getInstance(false, schemaFlg, tableFlg,
-							columnFlg);
+				for (final boolean columnFlg : tf) {
+					segments = NameSegments.getInstance(false, schemaFlg,
+							tableFlg, columnFlg);
 
-					TableName result = new TableName(tableName, segments);
+					final TableName result = new TableName(tableName, segments);
 					assertEquals("Bad schema: " + segments.toString(),
 							schemaFlg ? schema : null, result.getSchema());
 					assertEquals("Bad table: " + segments.toString(), table,

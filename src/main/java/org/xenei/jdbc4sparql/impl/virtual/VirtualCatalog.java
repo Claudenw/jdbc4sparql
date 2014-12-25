@@ -1,9 +1,5 @@
 package org.xenei.jdbc4sparql.impl.virtual;
 
-import com.hp.hpl.jena.graph.Node;
-import com.hp.hpl.jena.query.Query;
-import com.hp.hpl.jena.query.QuerySolution;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -14,6 +10,10 @@ import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.NameFilter;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.name.CatalogName;
+
+import com.hp.hpl.jena.graph.Node;
+import com.hp.hpl.jena.query.Query;
+import com.hp.hpl.jena.query.QuerySolution;
 
 public class VirtualCatalog implements Catalog {
 	public static final String NAME = "";
@@ -54,16 +54,18 @@ public class VirtualCatalog implements Catalog {
 	public Set<Schema> getSchemas() {
 		return new HashSet<Schema>(schemas.values());
 	}
-	
+
 	@Override
 	public boolean isService() {
 		return false;
 	}
-	
+
+	@Override
 	public Node getServiceNode() {
 		return null;
 	}
-	
+
+	@Override
 	public String getShortName() {
 		return getName().getCatalog();
 	}

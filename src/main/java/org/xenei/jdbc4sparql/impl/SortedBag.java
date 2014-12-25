@@ -17,15 +17,15 @@
  */
 package org.xenei.jdbc4sparql.impl;
 
-import com.hp.hpl.jena.util.iterator.ExtendedIterator;
-import com.hp.hpl.jena.util.iterator.NiceIterator;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.TreeMap;
+
+import com.hp.hpl.jena.util.iterator.ExtendedIterator;
+import com.hp.hpl.jena.util.iterator.NiceIterator;
 
 /**
  * A bag that is sorted by key.
@@ -102,7 +102,8 @@ public class SortedBag<T> implements Collection<T> {
 			lst.remove(o);
 			if (lst.size() == 0) {
 				map.remove(o);
-			} else {
+			}
+			else {
 				map.put((T) o, lst);
 			}
 		}

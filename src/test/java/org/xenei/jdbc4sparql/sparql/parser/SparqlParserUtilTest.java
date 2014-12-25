@@ -17,6 +17,11 @@
  */
 package org.xenei.jdbc4sparql.sparql.parser;
 
+import java.util.List;
+
+import org.junit.Assert;
+import org.junit.Test;
+
 import com.hp.hpl.jena.graph.Node;
 import com.hp.hpl.jena.graph.NodeFactory;
 import com.hp.hpl.jena.sparql.core.TriplePath;
@@ -27,20 +32,15 @@ import com.hp.hpl.jena.sparql.syntax.Element;
 import com.hp.hpl.jena.sparql.syntax.ElementGroup;
 import com.hp.hpl.jena.sparql.syntax.ElementPathBlock;
 
-import java.util.List;
-
-import org.junit.Assert;
-import org.junit.Test;
-
 public class SparqlParserUtilTest {
-	private Var vIs = Var.alloc("is");
-	private Var vWas = Var.alloc("was");
-	private Node nWho = NodeFactory.createURI("who");
-	private Node nWhat = NodeFactory.createURI("what");
-	private Path pWho = new P_Link(nWho);
-	private Path pWhat = new P_Link(nWhat);
-	private Node nThis = NodeFactory.createLiteral("this");
-	private Node nThat = NodeFactory.createLiteral("that");
+	private final Var vIs = Var.alloc("is");
+	private final Var vWas = Var.alloc("was");
+	private final Node nWho = NodeFactory.createURI("who");
+	private final Node nWhat = NodeFactory.createURI("what");
+	private final Path pWho = new P_Link(nWho);
+	private final Path pWhat = new P_Link(nWhat);
+	private final Node nThis = NodeFactory.createLiteral("this");
+	private final Node nThat = NodeFactory.createLiteral("that");
 
 	@Test
 	public void parseDisjointQuerySegmentTest() throws Exception {

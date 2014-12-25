@@ -1,5 +1,12 @@
 package org.xenei.jdbc4sparql.config;
 
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.Properties;
+import java.util.zip.ZipInputStream;
+
+import org.xenei.jdbc4sparql.impl.AbstractDatasetProducer;
+
 import com.hp.hpl.jena.graph.compose.MultiUnion;
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.query.DatasetFactory;
@@ -10,13 +17,6 @@ import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.shared.Lock;
 import com.hp.hpl.jena.sparql.core.DatasetGraph;
 import com.hp.hpl.jena.sparql.util.Context;
-
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.zip.ZipInputStream;
-
-import org.xenei.jdbc4sparql.impl.AbstractDatasetProducer;
 
 public class MemDatasetProducer extends AbstractDatasetProducer {
 	private static class MetaDS implements Dataset {

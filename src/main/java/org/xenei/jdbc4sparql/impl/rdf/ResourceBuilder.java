@@ -1,14 +1,14 @@
 package org.xenei.jdbc4sparql.impl.rdf;
 
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.Property;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.vocabulary.RDF;
-
 import org.xenei.jdbc4sparql.iface.NamespacedObject;
 import org.xenei.jena.entities.EntityManager;
 import org.xenei.jena.entities.EntityManagerFactory;
 import org.xenei.jena.entities.annotations.Subject;
+
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.Property;
+import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.vocabulary.RDF;
 
 public class ResourceBuilder {
 	public static String getFQName(final Class<?> nsClass) {
@@ -57,9 +57,10 @@ public class ResourceBuilder {
 				throw new IllegalStateException(String.format(
 						"Object %s is of type %s not %s", retval.getURI(),
 						retval.getRequiredProperty(RDF.type).getResource()
-								.getURI(), type.getURI()));
+						.getURI(), type.getURI()));
 			}
-		} else {
+		}
+		else {
 			retval = model.createResource(fqName, type);
 		}
 		return retval;

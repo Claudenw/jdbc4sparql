@@ -133,7 +133,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData {
 	@Override
 	public ResultSet getBestRowIdentifier(final String arg0, final String arg1,
 			final String arg2, final int arg3, final boolean arg4)
-			throws SQLException {
+					throws SQLException {
 		final DataTable table = new DataTable(
 				metaSchema.getTable(MetaCatalogBuilder.BEST_ROW_TABLE));
 		// TODO populate table here.
@@ -157,8 +157,9 @@ public class J4SDatabaseMetaData implements DatabaseMetaData {
 
 	@Override
 	public ResultSet getCatalogs() throws SQLException {
-		if (LOG.isDebugEnabled())
+		if (LOG.isDebugEnabled()) {
 			J4SDatabaseMetaData.LOG.debug("Getting catalogs");
+		}
 		final RdfTable table = (RdfTable) metaSchema
 				.getTable(MetaCatalogBuilder.CATALOGS_TABLE);
 
@@ -237,7 +238,8 @@ public class J4SDatabaseMetaData implements DatabaseMetaData {
 					connection.getCatalogs(), table.getCatalog(),
 					table.getSchema(), query.toString()).setKey(table.getKey());
 			return new SparqlResultSet(table, sqb.build());
-		} else {
+		}
+		else {
 			return table.getResultSet(connection.getCatalogs(), parser);
 		}
 	}
@@ -358,7 +360,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData {
 	@Override
 	public ResultSet getIndexInfo(final String arg0, final String arg1,
 			final String arg2, final boolean arg3, final boolean arg4)
-			throws SQLException {
+					throws SQLException {
 		final DataTable table = new DataTable(
 				metaSchema.getTable(MetaCatalogBuilder.INDEXINFO_TABLE));
 		// TODO populate table here.
@@ -505,7 +507,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData {
 	@Override
 	public ResultSet getPrimaryKeys(final String catalogPattern,
 			final String schemaPattern, final String tableNamePattern)
-			throws SQLException {
+					throws SQLException {
 		final DataTable table = new DataTable(
 				metaSchema.getTable(MetaCatalogBuilder.PRIMARY_KEY_TABLE));
 		for (final Catalog catalog : new NameFilter<Catalog>(catalogPattern,
@@ -518,12 +520,14 @@ public class J4SDatabaseMetaData implements DatabaseMetaData {
 					if (tableDef.getPrimaryKey() != null) {
 						final Key<?> pk = tableDef.getPrimaryKey();
 						for (final KeySegment seg : pk.getSegments()) {
-							final Object[] data = { catalog.getName(), // TABLE_CAT
+							final Object[] data = {
+									catalog.getName(), // TABLE_CAT
 									schema.getName(), // TABLE_SCHEM
 									tbl.getName(), // TABLE_NAME
 									tbl.getColumn(seg.getIdx()).getName(), // COLUMN_NAME
 									new Short((short) (seg.getIdx() + 1)), // KEY_SEQ
-									pk.getKeyName() // PK_NAME
+									pk.getKeyName()
+							// PK_NAME
 							};
 							table.addData(data);
 						}
@@ -620,7 +624,8 @@ public class J4SDatabaseMetaData implements DatabaseMetaData {
 					connection.getCatalogs(), table.getCatalog(),
 					table.getSchema(), query.toString()).setKey(table.getKey());
 			return new SparqlResultSet(table, sqb.build());
-		} else {
+		}
+		else {
 			return table.getResultSet(connection.getCatalogs(), parser);
 		}
 	}
@@ -684,7 +689,8 @@ public class J4SDatabaseMetaData implements DatabaseMetaData {
 				for (final Table tbl : new NameFilter<Table>(tableNamePattern,
 						schema.getTables())) {
 					if (tbl.getSuperTable() != null) {
-						final Object[] data = { catalog.getName(), // TABLE_CAT
+						final Object[] data = {
+								catalog.getName(), // TABLE_CAT
 								schema.getName(), // TABLE_SCHEM
 								tbl.getName(), // TABLE_NAME
 								tbl.getSuperTable().getName(), // SUPERTABLE_NAME
@@ -714,7 +720,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData {
 	@Override
 	public ResultSet getTablePrivileges(final String catalogPattern,
 			final String schemaPattern, final String tablePattern)
-			throws SQLException {
+					throws SQLException {
 		final DataTable table = new DataTable(
 				metaSchema.getTable(MetaCatalogBuilder.TABLE_PRIVILEGES_TABLE));
 		for (final Catalog catalog : new NameFilter<Catalog>(catalogPattern,
@@ -768,9 +774,9 @@ public class J4SDatabaseMetaData implements DatabaseMetaData {
 				query.append(hasWhere ? " AND (" : "(");
 				for (int i = 0; i < types.length; i++) {
 					query.append(i > 0 ? " OR " : "")
-							.append(types.length > 1 ? "(" : "")
-							.append(String.format("TABLE_TYPE LIKE '%s'",
-									escapeString(types[i])))
+					.append(types.length > 1 ? "(" : "")
+					.append(String.format("TABLE_TYPE LIKE '%s'",
+							escapeString(types[i])))
 							.append(types.length > 1 ? ")" : "");
 				}
 				query.append(")");
@@ -782,7 +788,8 @@ public class J4SDatabaseMetaData implements DatabaseMetaData {
 					connection.getCatalogs(), table.getCatalog(),
 					table.getSchema(), query.toString()).setKey(table.getKey());
 			return new SparqlResultSet(table, sqb.build());
-		} else {
+		}
+		else {
 			return table.getResultSet(connection.getCatalogs(), parser);
 		}
 	}
@@ -791,7 +798,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData {
 	public ResultSet getTableTypes() throws SQLException {
 		return ((RdfTable) metaSchema
 				.getTable(MetaCatalogBuilder.TABLE_TYPES_TABLE)).getResultSet(
-				connection.getCatalogs(), parser);
+						connection.getCatalogs(), parser);
 	}
 
 	@Override
@@ -804,13 +811,13 @@ public class J4SDatabaseMetaData implements DatabaseMetaData {
 	public ResultSet getTypeInfo() throws SQLException {
 		return ((RdfTable) metaSchema
 				.getTable(MetaCatalogBuilder.TYPEINFO_TABLE)).getResultSet(
-				connection.getCatalogs(), parser);
+						connection.getCatalogs(), parser);
 	}
 
 	@Override
 	public ResultSet getUDTs(final String catalog, final String schemaPattern,
 			final String typeNamePattern, final int[] types)
-			throws SQLException {
+					throws SQLException {
 		final DataTable table = new DataTable(
 				metaSchema.getTable(MetaCatalogBuilder.UDT_TABLES));
 		// TODO populate table here.
@@ -1264,17 +1271,17 @@ public class J4SDatabaseMetaData implements DatabaseMetaData {
 	@Override
 	public boolean supportsResultSetType(final int arg0) throws SQLException {
 		switch (arg0) {
-		case ResultSet.TYPE_FORWARD_ONLY:
-		case ResultSet.CONCUR_READ_ONLY:
-		case ResultSet.TYPE_SCROLL_INSENSITIVE:
-		case ResultSet.HOLD_CURSORS_OVER_COMMIT:
-			return true;
+			case ResultSet.TYPE_FORWARD_ONLY:
+			case ResultSet.CONCUR_READ_ONLY:
+			case ResultSet.TYPE_SCROLL_INSENSITIVE:
+			case ResultSet.HOLD_CURSORS_OVER_COMMIT:
+				return true;
 
-		case ResultSet.CLOSE_CURSORS_AT_COMMIT:
-		case ResultSet.CONCUR_UPDATABLE:
-		case ResultSet.TYPE_SCROLL_SENSITIVE:
-		default:
-			return false;
+			case ResultSet.CLOSE_CURSORS_AT_COMMIT:
+			case ResultSet.CONCUR_UPDATABLE:
+			case ResultSet.TYPE_SCROLL_SENSITIVE:
+			default:
+				return false;
 		}
 	}
 
@@ -1287,7 +1294,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData {
 	@Override
 	public boolean supportsSchemasInDataManipulation() throws SQLException {
 		J4SDatabaseMetaData.LOG
-				.debug("supportsSchemasInDataManipulation: true ");
+		.debug("supportsSchemasInDataManipulation: true ");
 		return true;
 	}
 
@@ -1312,7 +1319,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData {
 	@Override
 	public boolean supportsSchemasInTableDefinitions() throws SQLException {
 		J4SDatabaseMetaData.LOG
-				.debug("supportsSchemasInTableDefinitions: true ");
+		.debug("supportsSchemasInTableDefinitions: true ");
 		return true;
 	}
 

@@ -1,17 +1,19 @@
 package org.xenei.jdbc4sparql.sparql.items;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.xenei.jdbc4sparql.iface.name.ItemName;
-import org.xenei.jdbc4sparql.iface.name.ItemNameTest;
 import org.xenei.jdbc4sparql.iface.name.NameSegments;
 import org.xenei.jdbc4sparql.iface.name.SearchName;
 import org.xenei.jdbc4sparql.impl.NameUtils;
 
 import com.hp.hpl.jena.sparql.core.Var;
-import com.hp.hpl.jena.sparql.expr.nodevalue.NodeValueString;
-
-import static org.junit.Assert.*;
 
 public class QueryItemInfoTest {
 
@@ -21,19 +23,20 @@ public class QueryItemInfoTest {
 
 	@Before
 	public void setup() {
-		
-		itemName = new SearchName("catalog", "schema", "table",
-				"column");
+
+		itemName = new SearchName("catalog", "schema", "table", "column");
 		itemName.setUsedSegments(NameSegments.ALL);
-		
-		namedObject = new NamedObject<ItemName>(){
+
+		namedObject = new NamedObject<ItemName>() {
 
 			@Override
 			public ItemName getName() {
 				return itemName;
-			}};
-			
-		itemInfo = new QueryItemInfo<NamedObject<ItemName>,ItemName>(namedObject, itemName, false) {
+			}
+		};
+
+		itemInfo = new QueryItemInfo<NamedObject<ItemName>, ItemName>(
+				namedObject, itemName, false) {
 		};
 	}
 
@@ -63,22 +66,22 @@ public class QueryItemInfoTest {
 
 	@Test
 	public void testGetName() {
-		ItemName name = itemInfo.getName();
+		final ItemName name = itemInfo.getName();
 		assertTrue(name == itemName);
 	}
 
 	@Test
 	public void testGetVar() {
-		String dbName = "catalog" + NameUtils.SPARQL_DOT + "schema"
+		final String dbName = "catalog" + NameUtils.SPARQL_DOT + "schema"
 				+ NameUtils.SPARQL_DOT + "table" + NameUtils.SPARQL_DOT
 				+ "column";
-		Var v = itemInfo.getVar();
+		final Var v = itemInfo.getVar();
 		assertEquals(dbName, v.getName());
 	}
 
 	@Test
 	public void testGetAlias() {
-		String varName = itemInfo.getName().getGUID();
+		final String varName = itemInfo.getName().getGUID();
 		assertNotNull(itemInfo.getGUIDVar());
 		assertEquals(varName, itemInfo.getGUIDVar().getVarName());
 	}
@@ -94,32 +97,51 @@ public class QueryItemInfoTest {
 	public void testEquality() {
 		QueryItemInfo<NamedObject<ItemName>, ItemName> itemInfo2;
 		ItemName itemName2;
-		boolean[] tf = { true, false };
-		for (boolean catalogFlg : tf) {
-			for (boolean schemaFlg : tf) {
-				for (boolean tableFlg : tf) {
-					for (boolean columnFlg : tf) {
+		final boolean[] tf = {
+				true, false
+		};
+		for (final boolean catalogFlg : tf) {
+			for (final boolean schemaFlg : tf) {
+				for (final boolean tableFlg : tf) {
+					for (final boolean columnFlg : tf) {
 						itemName2 = new SearchName(itemName,
 								NameSegments.getInstance(catalogFlg, schemaFlg,
 										tableFlg, columnFlg));
-						itemInfo2 = new QueryItemInfo<NamedObject<ItemName>, ItemName>(namedObject,itemName2,
-								false) {
+						itemInfo2 = new QueryItemInfo<NamedObject<ItemName>, ItemName>(
+								namedObject, itemName2, false) {
 						};
 						if (catalogFlg && schemaFlg && tableFlg && columnFlg) {
-							assertEquals(itemInfo, itemInfo2);
-							assertEquals(itemInfo2, itemInfo);
-						} else {
+							assertEquality(itemInfo, itemInfo2);
+						}
+						else {
 							assertNotEquals(itemInfo, itemInfo2);
 							assertNotEquals(itemInfo2, itemInfo);
+							assertEquals(itemInfo.hashCode(),
+									itemInfo2.hashCode());
 						}
-						assertEquals(itemInfo.hashCode(), itemInfo.hashCode());
-						itemInfo2 = new QueryItemInfo<NamedObject<ItemName>, ItemName>(namedObject,itemName2, true) {
+
+						itemInfo2 = new QueryItemInfo<NamedObject<ItemName>, ItemName>(
+								namedObject, itemName2, true) {
 						};
-						assertNotEquals(itemInfo, itemInfo2);
-						assertNotEquals(itemInfo2, itemInfo);
+						if (catalogFlg && schemaFlg && tableFlg && columnFlg) {
+							assertEquality(itemInfo, itemInfo2);
+						}
+						else {
+							assertNotEquals(itemInfo, itemInfo2);
+							assertNotEquals(itemInfo2, itemInfo);
+							assertEquals(itemInfo.hashCode(),
+									itemInfo2.hashCode());
+						}
 					}
 				}
 			}
 		}
+	}
+
+	private void assertEquality(final QueryItemInfo<?, ?> item1,
+			final QueryItemInfo<?, ?> item2) {
+		assertEquals(item1, item2);
+		assertEquals(item2, item1);
+		assertEquals(item1.hashCode(), item2.hashCode());
 	}
 }

@@ -6,33 +6,34 @@ package org.xenei.jdbc4sparql.iface.name;
  */
 public class SearchName extends ItemName {
 
-	public SearchName(String catalog, String schema, String table, String column) {
-		this(catalog, schema, table, column, NameSegments.getInstance(catalog != null,
-				schema != null, table != null, column != null));
+	public SearchName(final String catalog, final String schema,
+			final String table, final String column) {
+		this(catalog, schema, table, column, NameSegments.getInstance(
+				catalog != null, schema != null, table != null, column != null));
 	}
 
-	public SearchName(String catalog, String schema, String table, String col,
-			NameSegments segs) {
+	public SearchName(final String catalog, final String schema,
+			final String table, final String col, final NameSegments segs) {
 		super(catalog, schema, table, col, segs);
 	}
 
-	public SearchName(ItemName name, NameSegments segments) {
+	public SearchName(final ItemName name, final NameSegments segments) {
 		super(name, segments);
 	}
 
-	public SearchName(FQName name, NameSegments segments) {
+	public SearchName(final FQName name, final NameSegments segments) {
 		super(name, segments);
 	}
 
 	@Override
-	protected String createName(String separator) {
+	protected String createName(final String separator) {
 		return String.format("%s%s%s%s%s%s%s", getCatalog(), separator,
 				getSchema(), separator, getTable(), separator, getColumn());
 	}
 
 	@Override
 	public String getShortName() {
-		NameSegments ns = getUsedSegments();
+		final NameSegments ns = getUsedSegments();
 		if (ns.isColumn()) {
 			return getColumn();
 		}
@@ -49,7 +50,7 @@ public class SearchName extends ItemName {
 	}
 
 	@Override
-	public ItemName clone(NameSegments segs) {
+	public ItemName clone(final NameSegments segs) {
 		return new SearchName(this, segs);
 	}
 

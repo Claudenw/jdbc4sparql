@@ -13,17 +13,17 @@ import org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Parameterized.class)
 public class NameSegmentTest {
-	private FQName baseName;
-	private NameSegments segments;
-	private boolean catalog;
-	private boolean schema;
-	private boolean table;
-	private boolean column;
+	private final FQName baseName;
+	private final NameSegments segments;
+	private final boolean catalog;
+	private final boolean schema;
+	private final boolean table;
+	private final boolean column;
 
-	public NameSegmentTest(Boolean catalog, Boolean schema, Boolean table,
-			Boolean column) {
+	public NameSegmentTest(final Boolean catalog, final Boolean schema,
+			final Boolean table, final Boolean column) {
 		segments = NameSegments.getInstance(catalog, schema, table, column);
-		baseName = new FQNameNameImpl("catalog", "schema", "table", "column");
+		baseName = new FQNameImpl("catalog", "schema", "table", "column");
 		this.catalog = catalog;
 		this.schema = schema;
 		this.table = table;
@@ -32,13 +32,17 @@ public class NameSegmentTest {
 
 	@Parameters(name = "catalog:{0} schema:{1} table:{2} col:{3}")
 	public static Collection<Boolean[]> data() {
-		Boolean vals[] = new Boolean[] { Boolean.TRUE, Boolean.FALSE };
-		List<Boolean[]> lst = new ArrayList<Boolean[]>();
-		for (Boolean catalog : vals) {
-			for (Boolean schema : vals) {
-				for (Boolean table : vals) {
-					for (Boolean column : vals) {
-						lst.add(new Boolean[] { catalog, schema, table, column });
+		final Boolean vals[] = new Boolean[] {
+				Boolean.TRUE, Boolean.FALSE
+		};
+		final List<Boolean[]> lst = new ArrayList<Boolean[]>();
+		for (final Boolean catalog : vals) {
+			for (final Boolean schema : vals) {
+				for (final Boolean table : vals) {
+					for (final Boolean column : vals) {
+						lst.add(new Boolean[] {
+								catalog, schema, table, column
+						});
 					}
 				}
 			}

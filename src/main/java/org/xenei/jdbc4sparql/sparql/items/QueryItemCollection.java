@@ -2,12 +2,10 @@ package org.xenei.jdbc4sparql.sparql.items;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.xenei.jdbc4sparql.iface.name.GUIDObject;
 import org.xenei.jdbc4sparql.iface.name.ItemName;
 import org.xenei.jdbc4sparql.iface.name.NameSegments;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
@@ -20,8 +18,8 @@ import com.hp.hpl.jena.util.iterator.WrappedIterator;
 
 /**
  * A collection of QueryItemInfo objects.
- * 
- * locatable by 
+ *
+ * locatable by
  * <ul>
  * <li>ItemName - uses match() to locate items.</li>
  * <li>NamedObject - checks for equality of baseObject.</li>
@@ -30,26 +28,25 @@ import com.hp.hpl.jena.util.iterator.WrappedIterator;
  *
  * @param <T>
  */
-public class QueryItemCollection<I extends QueryItemInfo<T,N>, T extends NamedObject<N>, N extends ItemName> implements
-		Collection<I> {
+public class QueryItemCollection<I extends QueryItemInfo<T, N>, T extends NamedObject<N>, N extends ItemName>
+implements Collection<I> {
 
 	private List<I> lst;
 
 	public QueryItemCollection() {
 		lst = new ArrayList<I>();
 	}
-	
-	public QueryItemCollection( Collection<? extends I> initial )
-	{
+
+	public QueryItemCollection(final Collection<? extends I> initial) {
 		this();
-		addAll( initial );
+		addAll(initial);
 	}
 
 	/**
 	 * Add a QueryItemInfo to the collection
 	 */
 	@Override
-	public boolean add(I arg0) {
+	public boolean add(final I arg0) {
 		if (contains(arg0)) {
 			return false;
 		}
@@ -61,9 +58,9 @@ public class QueryItemCollection<I extends QueryItemInfo<T,N>, T extends NamedOb
 	 * Add all items in the collection.
 	 */
 	@Override
-	public boolean addAll(Collection<? extends I> arg0) {
+	public boolean addAll(final Collection<? extends I> arg0) {
 		boolean retval = false;
-		for (I t : arg0) {
+		for (final I t : arg0) {
 			retval |= add(t);
 		}
 		return retval;
@@ -77,27 +74,25 @@ public class QueryItemCollection<I extends QueryItemInfo<T,N>, T extends NamedOb
 		lst.clear();
 	}
 
-	
+	// public boolean contains(ItemName name) {
+	// return match(name).hasNext();
+	// }
 
-//	public boolean contains(ItemName name) {
-//		return match(name).hasNext();
-//	}
-
-//	public boolean contains(GUIDObject guidObj) {
-//		return findGUID( guidObj ) != null;
-//	}
-//	public boolean contains(NamedObject<?> arg0) {
-//		return match(arg0.getName()).hasNext();
-//	}
+	// public boolean contains(GUIDObject guidObj) {
+	// return findGUID( guidObj ) != null;
+	// }
+	// public boolean contains(NamedObject<?> arg0) {
+	// return match(arg0.getName()).hasNext();
+	// }
 
 	/**
-	 * Executes one of the NamedObject, QueryItemInfo, and ItemName contains() methods or 
-	 * throws an IllegalArgumentException if not one of the above.
+	 * Executes one of the NamedObject, QueryItemInfo, and ItemName contains()
+	 * methods or throws an IllegalArgumentException if not one of the above.
 	 */
 	@Override
-	public boolean contains(Object arg0) {
-		if (arg0 instanceof QueryItemInfo<?,?>) {
-			return contains((QueryItemInfo<?,?>) arg0);
+	public boolean contains(final Object arg0) {
+		if (arg0 instanceof QueryItemInfo<?, ?>) {
+			return contains((QueryItemInfo<?, ?>) arg0);
 		}
 		if (arg0 instanceof NamedObject<?>) {
 			return contains((NamedObject<?>) arg0);
@@ -105,49 +100,54 @@ public class QueryItemCollection<I extends QueryItemInfo<T,N>, T extends NamedOb
 		if (arg0 instanceof ItemName) {
 			return contains((ItemName) arg0);
 		}
-		throw new IllegalArgumentException( "Must be a QueryItemInfo, NamedObject, or ItemName");
+		throw new IllegalArgumentException(
+				"Must be a QueryItemInfo, NamedObject, or ItemName");
 	}
 
 	/**
 	 * Looks in the list for QueryItemInfo.equals( arg0 )
-	 * @param arg0 the QueryItemInfo to look for.
+	 *
+	 * @param arg0
+	 *            the QueryItemInfo to look for.
 	 * @return true if it is found.
 	 */
-	public boolean contains(QueryItemInfo<?,?> arg0) {
-			return lst.contains((QueryItemInfo<?,?>) arg0);
-		}
-	
+	public boolean contains(final QueryItemInfo<?, ?> arg0) {
+		return lst.contains(arg0);
+	}
+
 	/**
 	 * Looks in the list for any QueryItemInfo.getBaseObject.equals();
-	 * @param arg0 the Named object to look for
+	 *
+	 * @param arg0
+	 *            the Named object to look for
 	 * @return true if the named object is found.
 	 */
-	public boolean contains(NamedObject<?> arg0) {
-		for (QueryItemInfo<?,?> itemInfo : lst )
-		{
-			if (itemInfo.getBaseObject().equals(arg0))
-			{
+	public boolean contains(final NamedObject<?> arg0) {
+		for (final QueryItemInfo<?, ?> itemInfo : lst) {
+			if (itemInfo.getBaseObject().getName().matches(arg0.getName())) {
 				return true;
 			}
 		}
 		return false;
-		}
-	
+	}
+
 	/**
 	 * Looks in the list of any QueryItemInfo.match( ItemName )
-	 * @param arg0 The ItemName to look for.
+	 *
+	 * @param arg0
+	 *            The ItemName to look for.
 	 * @return true if the named object is found.
 	 */
-	public boolean contains(ItemName arg0) {
-		return match( arg0 ).hasNext();
+	public boolean contains(final ItemName arg0) {
+		return match(arg0).hasNext();
 	}
-	
+
 	/**
-	 * performs contains on all of the  objects in the collection.
+	 * performs contains on all of the objects in the collection.
 	 */
 	@Override
-	public boolean containsAll(Collection<?> arg0) {
-		for (Object o : arg0) {
+	public boolean containsAll(final Collection<?> arg0) {
+		for (final Object o : arg0) {
 			if (!contains(o)) {
 				return false;
 			}
@@ -174,56 +174,46 @@ public class QueryItemCollection<I extends QueryItemInfo<T,N>, T extends NamedOb
 	/**
 	 * the Set of the unique the NamedObjects
 	 */
-	public Set<T> setNamedObject() {
-		return iterator().mapWith( new Map1<I,T>(){
-
-			@Override
-			public T map1(I o) {
-				return o.getBaseObject();
-			}}).toSet();
+	public Set<T> getNamedObjectSet() {
+		return iterator().mapWith(new BaseObjectMap()).toSet();
 	}
-	
-//	/**
-//	 * Return a mapped iterator
-//	 * @param map A map that converts the QueryItemInfo into another object type.
-//	 * @return An iterator on the object.
-//	 */
-//	public <X> ExtendedIterator<X> iterator(Map1<I, X> map) {
-//		return iterator().mapWith(map);
-//	}
 
 	/**
 	 * Remove the QueryItemInfo from the list
-	 * @param arg0 The QueryItemInfo to remove
+	 *
+	 * @param arg0
+	 *            The QueryItemInfo to remove
 	 * @return true if the item was removed.
 	 */
-	public boolean remove(QueryItemInfo<?,?> arg0) {
-		return lst.remove( arg0 );
+	public boolean remove(final QueryItemInfo<?, ?> arg0) {
+		return lst.remove(arg0);
 	}
 
 	/**
 	 * Remove all matches for the ItemName.
-	 * @param arg0 the ItemName to remove.
+	 *
+	 * @param arg0
+	 *            the ItemName to remove.
 	 * @return true if an item has been removed.
 	 */
-	public boolean remove(ItemName arg0) {
-		int startSize = lst.size();
+	public boolean remove(final ItemName arg0) {
+		final int startSize = lst.size();
 		lst = notMatch(arg0).toList();
 		return startSize != lst.size();
 	}
-	
+
 	/**
 	 * Remove all items that have the NamedObject as the baseObject.
-	 * @param arg0 the NamedObject to remove.
+	 *
+	 * @param arg0
+	 *            the NamedObject to remove.
 	 * @return true if any objects were removed.
 	 */
-	public boolean remove(NamedObject<?> arg0) {
+	public boolean remove(final NamedObject<?> arg0) {
 		boolean found = false;
-		for (QueryItemInfo<?,?> itemInfo : lst )
-		{
-			if (itemInfo.getBaseObject().equals(arg0))
-			{
-				found |= remove( itemInfo );
+		for (final QueryItemInfo<?, ?> itemInfo : lst) {
+			if (itemInfo.getBaseObject().equals(arg0)) {
+				found |= remove(itemInfo);
 			}
 		}
 		return found;
@@ -231,12 +221,12 @@ public class QueryItemCollection<I extends QueryItemInfo<T,N>, T extends NamedOb
 
 	/**
 	 * remove the object if it is a QueryItemInfo, NamedObject or ItemName.
-	 * 
+	 *
 	 */
 	@Override
-	public boolean remove(Object arg0) {
-		if (arg0 instanceof QueryItemInfo<?,?>) {
-			return remove((QueryItemInfo<?,?>) arg0);
+	public boolean remove(final Object arg0) {
+		if (arg0 instanceof QueryItemInfo<?, ?>) {
+			return remove((QueryItemInfo<?, ?>) arg0);
 		}
 		if (arg0 instanceof NamedObject<?>) {
 			return remove((NamedObject<?>) arg0);
@@ -244,55 +234,87 @@ public class QueryItemCollection<I extends QueryItemInfo<T,N>, T extends NamedOb
 		if (arg0 instanceof ItemName) {
 			return remove((ItemName) arg0);
 		}
-		throw new IllegalArgumentException( "Must be a QueryItemInfo, NamedObject, or ItemName");
+		throw new IllegalArgumentException(
+				"Must be a QueryItemInfo, NamedObject, or ItemName");
 	}
 
 	/**
-	 * removes all the objects in the collection  if they are a QueryItemInfo, NamedObject or ItemName.
-	 * 
+	 * removes all the objects in the collection if they are a QueryItemInfo,
+	 * NamedObject or ItemName.
+	 *
 	 */
 	@Override
-	public boolean removeAll(Collection<?> arg0) {
+	public boolean removeAll(final Collection<?> arg0) {
 		boolean retval = false;
-		for (Object o : arg0)
-		{
-			retval |= remove( o );
+		for (final Object o : arg0) {
+			retval |= remove(o);
 		}
 		return retval;
 	}
 
 	/**
-	 * retains all the objects in the collection  if they are a QueryItemInfo, NamedObject or ItemName.
-	 * 
+	 * retains all the objects in the collection if they are a QueryItemInfo,
+	 * NamedObject or ItemName.
+	 *
 	 */
 	@Override
-	public boolean retainAll(Collection<?> arg0) {
-		if (arg0 instanceof QueryItemInfo<?,?>) {
-			return lst.retainAll( arg0);
+	public boolean retainAll(final Collection<?> arg0) {
+		if (arg0.isEmpty()) {
+			return false;
 		}
-		if (arg0 instanceof NamedObject<?>) {
-			int count  = lst.size();
-			Set<I> s = new HashSet<I>();
-			for (QueryItemInfo<T,N> itemInfo : lst)
-			{
-				s.addAll(match( (T)itemInfo.getBaseObject() ).toSet());
+		final Object o = arg0.iterator().next();
+		if (o instanceof QueryItemInfo<?, ?>) {
+			return lst.retainAll(arg0);
+		}
+
+		if (o instanceof NamedObject<?>) {
+			return retainAllNamedObject((Collection<NamedObject<?>>) arg0);
+		}
+		if (o instanceof ItemName) {
+			return retainAllItemName((Collection<ItemName>) arg0);
+		}
+		throw new IllegalArgumentException(
+				"Must be a collection of QueryItemInfo, NamedObject, or ItemName");
+	}
+
+	private boolean retainAllNamedObject(final Collection<NamedObject<?>> arg0) {
+		final List<ItemName> tmpLst = WrappedIterator.create(arg0.iterator())
+				.mapWith(new Map1<NamedObject<?>, ItemName>() {
+
+					@Override
+					public ItemName map1(final NamedObject<?> o) {
+						return o.getName();
+					}
+				}).toList();
+		return retainAllItemName(tmpLst);
+	}
+
+	private boolean retainAllItemName(final Collection<ItemName> arg0) {
+		boolean retval = false;
+		final List<I> newLst = new ArrayList<I>();
+		final List<I> dupLst = new ArrayList<I>();
+		I itemInfo;
+		dupLst.addAll(lst);
+		final Iterator<ItemName> outer = WrappedIterator
+				.create(arg0.iterator()).filterKeep(
+						new UniqueFilter<ItemName>());
+		ItemName name;
+		while (outer.hasNext()) {
+			name = outer.next();
+			final Iterator<I> iter = dupLst.iterator();
+			while (iter.hasNext()) {
+				itemInfo = iter.next();
+				if (itemInfo.getBaseObject().getName().matches(name)) {
+					newLst.add(itemInfo);
+					iter.remove();
+					retval = true;
+				}
 			}
-			lst = new ArrayList<I>();
-			lst.addAll( s );
-			return count - lst.size() > 0;
 		}
-		if (arg0 instanceof ItemName) {
-			int count  = lst.size();
-			Set<I> s = new HashSet<I>();
-			for (QueryItemInfo<?,?> itemInfo : lst)
-			{
-				s.addAll(match( itemInfo.getName() ).toSet());
-			}
-			lst = new ArrayList<I>();
-			lst.addAll( s );
-			return count - lst.size() > 0;
+		if (retval) {
+			lst = newLst;
 		}
-		throw new IllegalArgumentException( "Must be a QueryItemInfo, NamedObject, or ItemName");
+		return retval;
 	}
 
 	@Override
@@ -306,7 +328,7 @@ public class QueryItemCollection<I extends QueryItemInfo<T,N>, T extends NamedOb
 	}
 
 	@Override
-	public <T> T[] toArray(T[] arg0) {
+	public <T2> T2[] toArray(final T2[] arg0) {
 		return lst.toArray(arg0);
 	}
 
@@ -319,14 +341,14 @@ public class QueryItemCollection<I extends QueryItemInfo<T,N>, T extends NamedOb
 	 * @throws IllegalArgumentException
 	 *             if more than one object matches.
 	 */
-	public I get(ItemName name) {
-		Iterator<I> iter = match(name);
+	public I get(final ItemName name) {
+		final Iterator<I> iter = match(name);
 		if (iter.hasNext()) {
-			I retval = iter.next();
+			final I retval = iter.next();
 			if (iter.hasNext()) {
 				throw new IllegalArgumentException(String.format(
 						SparqlQueryBuilder.FOUND_IN_MULTIPLE_, name, lst.get(0)
-								.getClass()));
+						.getClass()));
 			}
 			return retval;
 		}
@@ -342,14 +364,14 @@ public class QueryItemCollection<I extends QueryItemInfo<T,N>, T extends NamedOb
 	 * @throws IllegalArgumentException
 	 *             if more than one object matches.
 	 */
-	public I get(T namedObject) {
-		Iterator<I> iter = match(namedObject);
+	public I get(final T namedObject) {
+		final Iterator<I> iter = match(namedObject);
 		if (match(namedObject).hasNext()) {
-			I retval = iter.next();
+			final I retval = iter.next();
 			if (iter.hasNext()) {
 				throw new IllegalArgumentException(String.format(
-						SparqlQueryBuilder.FOUND_IN_MULTIPLE_, namedObject, lst.get(0)
-								.getClass()));
+						SparqlQueryBuilder.FOUND_IN_MULTIPLE_, namedObject, lst
+						.get(0).getClass()));
 			}
 			return retval;
 		}
@@ -358,99 +380,84 @@ public class QueryItemCollection<I extends QueryItemInfo<T,N>, T extends NamedOb
 
 	/**
 	 * Return the object at position i.
-	 * 
+	 *
 	 * @param i
 	 *            the index (0 based) of the object to return.
 	 * @return the object.
 	 * @throws IndexOutIndexOutOfBoundsException
 	 *             if i<0 or i>=size();
 	 */
-	public I get(int i) throws IndexOutOfBoundsException {
+	public I get(final int i) throws IndexOutOfBoundsException {
 		return lst.get(i);
 	}
 
-//	public I findGUID(GUIDObject name) {
-//		NamedObjectGUIDFilter<I> nof = new NamedObjectGUIDFilter<I>(name);
-//		ExtendedIterator<I> iter = iterator().filterKeep(nof);
-//		if (iter.hasNext()) {
-//			return iter.next();
-//		}
-//		return null;
-//
-//	}
-//
-//	public I findGUID(String name) {
-//		NamedObjectGUIDFilter<I> nof = new NamedObjectGUIDFilter<I>(name);
-//		ExtendedIterator<I> iter = iterator().filterKeep(nof);
-//		if (iter.hasNext()) {
-//			return iter.next();
-//		}
-//		return null;
-//
-//	}
+	// public I findGUID(GUIDObject name) {
+	// NamedObjectGUIDFilter<I> nof = new NamedObjectGUIDFilter<I>(name);
+	// ExtendedIterator<I> iter = iterator().filterKeep(nof);
+	// if (iter.hasNext()) {
+	// return iter.next();
+	// }
+	// return null;
+	//
+	// }
+	//
+	public I findGUIDVar(final String guid) {
 
-	public int count(ItemName name) {
+		final ExtendedIterator<I> iter = iterator();
+		I backupResult = null;
+		while (iter.hasNext()) {
+			final I item = iter.next();
+			if (item.getName().getGUID().equals(guid)) {
+				return item;
+			}
+			if ((backupResult == null) && item.getGUID().equals(guid)) {
+				backupResult = item;
+			}
+		}
+
+		return backupResult;
+
+	}
+
+	public int count(final ItemName name) {
 		return match(name).toList().size();
 	}
-	
-	public int count(T namedObject) {
+
+	public int count(final T namedObject) {
 		return match(namedObject).toList().size();
 	}
-	
-	public ExtendedIterator<I> match(ItemName name) {
-		ItemNameFilter<I> nof = new ItemNameFilter<I>(name);
+
+	public ExtendedIterator<I> match(final ItemName name) {
+		final ItemNameFilter<I> nof = new ItemNameFilter<I>(name);
 		return iterator().filterKeep(nof);
 	}
 
-	public ExtendedIterator<I> match(T name) {
-		NamedObjectFilter<I> nof = new NamedObjectFilter<I>(name);
+	public ExtendedIterator<I> match(final T name) {
+		final NamedObjectFilter<I> nof = new NamedObjectFilter<I>(name);
 		return iterator().filterKeep(nof);
 	}
-	
-//	public ExtendedIterator<I> match(Collection<?> arg0) {
-//		NamedObjectFilter<I> nof = new NamedObjectFilter<I>(arg0);
-//		return iterator().filterKeep(nof);
-//	}
 
-	public ExtendedIterator<I> notMatch(ItemName name) {
-		ItemNameFilter<I> nof = new ItemNameFilter<I>(name);
+	public ExtendedIterator<I> findBaseObject(final T baseObject) {
+		return iterator().filterKeep(new BaseObjectFilter<I>(baseObject));
+	}
+
+	public ExtendedIterator<I> notMatch(final ItemName name) {
+		final ItemNameFilter<I> nof = new ItemNameFilter<I>(name);
 		return iterator().filterDrop(nof);
 	}
 
-	public ExtendedIterator<I> notMatch(T namedObject) {
-		NamedObjectFilter<I> nof = new NamedObjectFilter<I>(namedObject);
+	public ExtendedIterator<I> notMatch(final T namedObject) {
+		final NamedObjectFilter<I> nof = new NamedObjectFilter<I>(namedObject);
 		return iterator().filterDrop(nof);
 	}
-	
-//	public ExtendedIterator<I> notMatch(Collection<?> arg0) {
-//		Iterator<?> iter = arg0.iterator();
-//		if (iter.hasNext())
-//		{
-//			Filter<I> fltr = null;
-//			Object o = iter.next();
-//			if (o instanceof ItemName)
-//			{
-//				fltr = new ItemNameFilter<I>(arg0);
-//			}
-//			else if (o instanceof NamedObject)
-//			{
-//				fltr = new NamedObjectFilter<I>(arg0); 
-//			} else {
-//				throw new IllegalArgumentException( "Argument but be a collection of ItemName or NamedObject");
-//			}
-//			return iterator().filterDrop(fltr);
-//		}
-//		return WrappedIterator.emptyIterator();
-//	}
 
-	public int indexOf(QueryItemInfo<?,?> item)
-	{
+	public int indexOf(final QueryItemInfo<?, ?> item) {
 		return lst.indexOf(item);
 	}
-	
-	public int indexOf(T namedObject) {
-		NamedObjectFilter<I> nof = new NamedObjectFilter<I>(namedObject);
-		Iterator<I> iter = iterator();
+
+	public int indexOf(final T namedObject) {
+		final NamedObjectFilter<I> nof = new NamedObjectFilter<I>(namedObject);
+		final Iterator<I> iter = iterator();
 		int i = 0;
 		while (iter.hasNext()) {
 			if (nof.accept(iter.next())) {
@@ -460,10 +467,10 @@ public class QueryItemCollection<I extends QueryItemInfo<T,N>, T extends NamedOb
 		}
 		return -1;
 	}
-	
-	public int indexOf(ItemName name) {
-		ItemNameFilter<I> nof = new ItemNameFilter<I>(name);
-		Iterator<I> iter = iterator();
+
+	public int indexOf(final ItemName name) {
+		final ItemNameFilter<I> nof = new ItemNameFilter<I>(name);
+		final Iterator<I> iter = iterator();
 		int i = 0;
 		while (iter.hasNext()) {
 			if (nof.accept(iter.next())) {
@@ -473,30 +480,32 @@ public class QueryItemCollection<I extends QueryItemInfo<T,N>, T extends NamedOb
 		}
 		return -1;
 	}
-	
+
 	@Override
-	public String toString()
-	{
+	public String toString() {
 		return lst.toString();
 	}
 
-	public static class ItemNameFilter<I extends QueryItemInfo<?,?>> extends Filter<I> {
+	public static class ItemNameFilter<I extends QueryItemInfo<?, ?>> extends
+	Filter<I> {
 
 		protected Collection<ItemName> others;
 
-		public ItemNameFilter(ItemName other) {
+		public ItemNameFilter(final ItemName other) {
 			this.others = new ArrayList<ItemName>();
 			this.others.add(other);
 		}
 
-		public ItemNameFilter(Collection<?> others) {
+		public ItemNameFilter(final Collection<?> others) {
 			this.others = new ArrayList<ItemName>();
-			for (Object t : others) {
+			for (final Object t : others) {
 				if (t instanceof ItemName) {
 					this.others.add((ItemName) t);
-				} else if (t instanceof NamedObject) {
+				}
+				else if (t instanceof NamedObject) {
 					this.others.add(((NamedObject<?>) t).getName());
-				} else {
+				}
+				else {
 					throw new IllegalArgumentException(String.format(
 							"%s is not an instance of ItemName or NamedObject",
 							t.getClass()));
@@ -505,9 +514,9 @@ public class QueryItemCollection<I extends QueryItemInfo<T,N>, T extends NamedOb
 		}
 
 		@Override
-		public boolean accept(I item) {
-			ItemName name = item.getName().clone(NameSegments.ALL);
-			for (ItemName other : others) {
+		public boolean accept(final I item) {
+			final ItemName name = item.getName().clone(NameSegments.ALL);
+			for (final ItemName other : others) {
 				if (other.matches(name)) {
 					return true;
 				}
@@ -516,22 +525,31 @@ public class QueryItemCollection<I extends QueryItemInfo<T,N>, T extends NamedOb
 		}
 
 	}
-	
-	public class NamedObjectFilter<I extends QueryItemInfo<?,?>> extends Filter<I> {
+
+	public class BaseObjectMap implements Map1<I, T> {
+		@Override
+		public T map1(final I o) {
+			return o.getBaseObject();
+		}
+	}
+
+	public class BaseObjectFilter<I extends QueryItemInfo<?, ?>> extends
+	Filter<I> {
 
 		protected Collection<T> others;
 
-		public NamedObjectFilter(T other) {
+		public BaseObjectFilter(final T other) {
 			this.others = new ArrayList<T>();
 			this.others.add(other);
 		}
 
-		public NamedObjectFilter(Collection<?> others) {
+		public BaseObjectFilter(final Collection<?> others) {
 			this.others = new ArrayList<T>();
-			for (Object t : others) {
-			   if (t instanceof NamedObject<?>) {
+			for (final Object t : others) {
+				if (t instanceof NamedObject<?>) {
 					this.others.add((T) t);
-				} else {
+				}
+				else {
 					throw new IllegalArgumentException(String.format(
 							"%s is not an instance of ItemName or NamedObject",
 							t.getClass()));
@@ -540,9 +558,10 @@ public class QueryItemCollection<I extends QueryItemInfo<T,N>, T extends NamedOb
 		}
 
 		@Override
-		public boolean accept(I item) {
-			for (T other : others) {
-				if (other.equals(item.getBaseObject())) {
+		public boolean accept(final I item) {
+			for (final T other : others) {
+				if (other.getName().getGUID()
+						.equals(item.getBaseObject().getName().getGUID())) {
 					return true;
 				}
 			}
@@ -550,5 +569,4 @@ public class QueryItemCollection<I extends QueryItemInfo<T,N>, T extends NamedOb
 		}
 
 	}
-
 }

@@ -66,17 +66,18 @@ class SparqlFromVisitor implements FromItemVisitor {
 
 	@Override
 	public void visit(final Table table) {
-		if (LOG.isDebugEnabled())
+		if (LOG.isDebugEnabled()) {
 			SparqlFromVisitor.LOG.debug("visit table: {}", table);
+		}
 		try {
-			String defaultCatalog = builder.getCatalogName();
-			String defaultSchema = builder.getDefaultSchemaName();
+			final String defaultCatalog = builder.getCatalogName();
+			final String defaultSchema = builder.getDefaultSchemaName();
 			final TableName tName = new TableName(defaultCatalog,
 					StringUtils.defaultString(table.getSchemaName(),
 							defaultSchema), table.getName());
 			name = (table.getAlias() != null) ? TableName.getNameInstance(
 					defaultCatalog, defaultSchema, table.getAlias()) : tName;
-			builder.addTable(tName, name, optional);
+					builder.addTable(tName, name, optional);
 
 		} catch (final SQLException e) {
 			throw new RuntimeException(e);

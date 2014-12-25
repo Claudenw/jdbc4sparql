@@ -17,13 +17,6 @@
  */
 package org.xenei.jdbc4sparql;
 
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ResIterator;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.ResourceFactory;
-import com.hp.hpl.jena.util.iterator.WrappedIterator;
-import com.hp.hpl.jena.vocabulary.RDF;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -71,6 +64,13 @@ import org.xenei.jena.entities.EntityManager;
 import org.xenei.jena.entities.EntityManagerFactory;
 import org.xenei.jena.entities.MissingAnnotation;
 
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ResIterator;
+import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.rdf.model.ResourceFactory;
+import com.hp.hpl.jena.util.iterator.WrappedIterator;
+import com.hp.hpl.jena.vocabulary.RDF;
+
 public class J4SConnection implements Connection {
 	private Properties clientInfo;
 	private final J4SUrl url;
@@ -82,7 +82,8 @@ public class J4SConnection implements Connection {
 	private final SparqlParser sparqlParser;
 	private SQLWarning sqlWarnings;
 	private int holdability;
-	private static final Logger LOG = LoggerFactory.getLogger(J4SConnection.class);
+	private static final Logger LOG = LoggerFactory
+			.getLogger(J4SConnection.class);
 	private DatasetProducer dsProducer = null;
 	private final Properties properties;
 
@@ -145,7 +146,8 @@ public class J4SConnection implements Connection {
 		if (dataModel != null) {
 			dsProducer.addLocalDataModel(catalogBuilder.getName()
 					.getShortName(), dataModel);
-		} else {
+		}
+		else {
 			dataModel = dsProducer.getLocalDataModel(catalogBuilder.getName()
 					.getShortName());
 			if (dataModel != null) {
@@ -186,12 +188,13 @@ public class J4SConnection implements Connection {
 	}
 
 	private void configureCatalogMap() throws IOException,
-			InstantiationException, IllegalAccessException,
-			ClassNotFoundException, MissingAnnotation, SQLException {
+	InstantiationException, IllegalAccessException,
+	ClassNotFoundException, MissingAnnotation, SQLException {
 		// if this is a config file just read the file.
 		if (url.getType().equals(J4SUrl.TYPE_CONFIG)) {
 			loadConfig(url.getEndpoint().toURL());
-		} else {
+		}
+		else {
 			// otherwise we have to read the data and parse the input.
 			dsProducer = DatasetProducer.Loader.load(properties);
 			RdfCatalog catalog = null;
@@ -217,9 +220,10 @@ public class J4SConnection implements Connection {
 			// if a SPARQL endpoint the driver URL has the endpoint URL.
 			if (url.getType().equals(J4SUrl.TYPE_SPARQL)) {
 				catalog = new RdfCatalog.Builder()
-						.setSparqlEndpoint(url.getEndpoint().toURL())
-						.setName(getCatalog()).build(model);
-			} else {
+				.setSparqlEndpoint(url.getEndpoint().toURL())
+				.setName(getCatalog()).build(model);
+			}
+			else {
 				final Model dataModel = dsProducer
 						.getLocalDataModel(getCatalog());
 				RDFDataMgr.read(dataModel, url.getEndpoint().toURL()
@@ -229,7 +233,7 @@ public class J4SConnection implements Connection {
 			}
 
 			final RdfSchema schema = new RdfSchema.Builder()
-					.setCatalog(catalog).setName(schemaName).build(model);
+			.setCatalog(catalog).setName(schemaName).build(model);
 
 			catalogMap.put(catalog.getName().getShortName(), catalog);
 
@@ -284,12 +288,13 @@ public class J4SConnection implements Connection {
 	@Override
 	public Statement createStatement(final int resultSetType,
 			final int resultSetConcurrency, final int resultSetHoldability)
-			throws SQLException {
+					throws SQLException {
 		final Catalog catalog = catalogMap.get(getCatalog());
 		if (catalog instanceof RdfCatalog) {
 			return new J4SStatement(this, (RdfCatalog) catalog, resultSetType,
 					resultSetConcurrency, resultSetHoldability);
-		} else {
+		}
+		else {
 			throw new SQLException("Catalog '" + getCatalog()
 					+ "' does not support statements");
 		}
@@ -393,7 +398,7 @@ public class J4SConnection implements Connection {
 	}
 
 	private void loadConfig(final URL url) throws IOException,
-			MissingAnnotation {
+	MissingAnnotation {
 		// config specifies producer
 		dsProducer = DatasetProducer.Loader.load(properties, url);
 		mergeProperties(dsProducer.getProperties());
@@ -417,7 +422,8 @@ public class J4SConnection implements Connection {
 				if (AbstractDatasetProducer.getModelURI(
 						MetaCatalogBuilder.LOCAL_NAME).equals(name)) {
 					builder.setLocalModel(dsProducer.getMetaDatasetUnionModel());
-				} else {
+				}
+				else {
 					builder.setLocalModel(dsProducer.getLocalDataModel(name));
 				}
 				cat = builder.build(metaModel);
@@ -547,8 +553,9 @@ public class J4SConnection implements Connection {
 	@Override
 	public void setCatalog(final String catalog) throws SQLException {
 		if ((getCatalog() == null) || !getCatalog().equals(catalog)) {
-			if (LOG.isDebugEnabled())
+			if (LOG.isDebugEnabled()) {
 				LOG.debug("Setting catalog to '{}'", catalog);
+			}
 			if (catalogMap.get(catalog) == null) {
 				throw new SQLException("Catalog " + catalog + " was not found");
 			}
@@ -566,7 +573,8 @@ public class J4SConnection implements Connection {
 	public void setClientInfo(final String param, final String value) {
 		if (value != null) {
 			this.clientInfo.setProperty(param, value);
-		} else {
+		}
+		else {
 			this.clientInfo.remove(param);
 		}
 	}
@@ -621,7 +629,8 @@ public class J4SConnection implements Connection {
 			}
 			this.properties.setProperty(J4SPropertyNames.SCHEMA_PROPERTY,
 					schema);
-		} else {
+		}
+		else {
 			this.properties.remove(J4SPropertyNames.SCHEMA_PROPERTY);
 		}
 	}

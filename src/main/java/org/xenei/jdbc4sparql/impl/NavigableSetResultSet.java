@@ -53,7 +53,8 @@ public abstract class NavigableSetResultSet extends AbstractCollectionResultSet 
 			if ((getDataCollection().size() / 2) > getPosition()) {
 				lastPosition = 0;
 				currentObject = getDataCollection().first();
-			} else {
+			}
+			else {
 				lastPosition = getDataCollection().size() - 1;
 				currentObject = getDataCollection().last();
 			}

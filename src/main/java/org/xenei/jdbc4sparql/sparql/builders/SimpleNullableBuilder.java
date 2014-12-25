@@ -17,10 +17,6 @@
  */
 package org.xenei.jdbc4sparql.sparql.builders;
 
-import com.hp.hpl.jena.query.QuerySolution;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.Resource;
-
 import java.sql.DatabaseMetaData;
 import java.sql.Types;
 import java.util.LinkedHashMap;
@@ -30,6 +26,10 @@ import java.util.Map;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfColumnDef;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTableDef;
+
+import com.hp.hpl.jena.query.QuerySolution;
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.Resource;
 
 /**
  * A simple example builder that looks for the phrase "nullable" in column name
@@ -65,7 +65,8 @@ public class SimpleNullableBuilder extends SimpleBuilder {
 			}
 			if (cName.getLocalName().toLowerCase().contains("nullable")) {
 				builder.setNullable(DatabaseMetaData.columnNullable);
-			} else {
+			}
+			else {
 				builder.setNullable(DatabaseMetaData.columnNoNulls);
 			}
 			final String columnQuerySegment = String.format(

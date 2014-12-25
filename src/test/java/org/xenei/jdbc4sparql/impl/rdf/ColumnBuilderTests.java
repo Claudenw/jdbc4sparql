@@ -1,16 +1,18 @@
 package org.xenei.jdbc4sparql.impl.rdf;
 
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import static org.mockito.Mockito.*;
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.ColumnDef;
 import org.xenei.jdbc4sparql.iface.name.TableName;
+
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
 
 public class ColumnBuilderTests {
 	private Model model;
@@ -36,7 +38,7 @@ public class ColumnBuilderTests {
 	@Test
 	public void testStandardCreation() {
 		final RdfColumn.Builder builder = new RdfColumn.Builder()
-				.setColumnDef(columnDef).setName("test").setTable(mockTable);
+		.setColumnDef(columnDef).setName("test").setTable(mockTable);
 		final Column cd = builder.build(model);
 		Assert.assertEquals("test", cd.getName().getShortName());
 		Assert.assertEquals(false, cd.getColumnDef().isAutoIncrement());

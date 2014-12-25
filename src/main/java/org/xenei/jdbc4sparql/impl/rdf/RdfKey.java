@@ -17,12 +17,6 @@
  */
 package org.xenei.jdbc4sparql.impl.rdf;
 
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.Property;
-import com.hp.hpl.jena.rdf.model.RDFList;
-import com.hp.hpl.jena.rdf.model.RDFNode;
-import com.hp.hpl.jena.rdf.model.Resource;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -38,8 +32,14 @@ import org.xenei.jena.entities.ResourceWrapper;
 import org.xenei.jena.entities.annotations.Predicate;
 import org.xenei.jena.entities.annotations.Subject;
 
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.Property;
+import com.hp.hpl.jena.rdf.model.RDFList;
+import com.hp.hpl.jena.rdf.model.RDFNode;
+import com.hp.hpl.jena.rdf.model.Resource;
+
 @Subject(namespace = "http://org.xenei.jdbc4sparql/entity/Key#")
-public class RdfKey implements Key<RdfKeySegment>, ResourceWrapper  {
+public class RdfKey implements Key<RdfKeySegment>, ResourceWrapper {
 
 	public static class Builder implements Key<RdfKeySegment> {
 		private final List<RdfKeySegment> segments = new ArrayList<RdfKeySegment>();
@@ -66,7 +66,8 @@ public class RdfKey implements Key<RdfKeySegment>, ResourceWrapper  {
 			Resource key = null;
 			if (builder.hasResource(fqName)) {
 				key = builder.getResource(fqName, typeClass);
-			} else {
+			}
+			else {
 				key = builder.getResource(fqName, typeClass);
 
 				key.addLiteral(builder.getProperty(typeClass, "keyName"),
@@ -80,7 +81,8 @@ public class RdfKey implements Key<RdfKeySegment>, ResourceWrapper  {
 					final Resource s = seg.getResource();
 					if (lst == null) {
 						lst = model.createList().with(s);
-					} else {
+					}
+					else {
 						lst.add(s);
 					}
 				}
@@ -108,7 +110,7 @@ public class RdfKey implements Key<RdfKeySegment>, ResourceWrapper  {
 		}
 
 		@Override
-		public int compare(final Object[] data1, final Object[] data2) {
+		public int compare(final Comparable<Object>[] data1, final Comparable<Object>[] data2) {
 			return Utils.compare(getSegments(), data1, data2);
 		}
 
@@ -151,7 +153,7 @@ public class RdfKey implements Key<RdfKeySegment>, ResourceWrapper  {
 	private List<RdfKeySegment> segments;
 
 	@Override
-	public final int compare(final Object[] data1, final Object[] data2) {
+	public final int compare(final Comparable<Object>[] data1, final Comparable<Object>[] data2) {
 		return Utils.compare(getSegments(), data1, data2);
 	}
 

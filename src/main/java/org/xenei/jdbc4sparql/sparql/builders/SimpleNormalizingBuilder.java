@@ -17,14 +17,6 @@
  */
 package org.xenei.jdbc4sparql.sparql.builders;
 
-import com.hp.hpl.jena.query.QuerySolution;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.RDFNode;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.util.iterator.Filter;
-import com.hp.hpl.jena.util.iterator.Map1;
-import com.hp.hpl.jena.util.iterator.WrappedIterator;
-
 import java.sql.DatabaseMetaData;
 import java.sql.Types;
 import java.util.HashSet;
@@ -42,6 +34,14 @@ import org.xenei.jdbc4sparql.impl.rdf.RdfKeySegment;
 import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTableDef;
+
+import com.hp.hpl.jena.query.QuerySolution;
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.RDFNode;
+import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.util.iterator.Filter;
+import com.hp.hpl.jena.util.iterator.Map1;
+import com.hp.hpl.jena.util.iterator.WrappedIterator;
 
 /**
  * A simple builder that builds tables for all subjects of [?x a rdfs:Class]
@@ -93,7 +93,8 @@ public class SimpleNormalizingBuilder extends SimpleBuilder {
 					columnQuerySegment)) {
 				tableSet.add(makeSubTable(catalog, schema, tableQuerySegment,
 						columnQuerySegment, tName, cName));
-			} else {
+			}
+			else {
 				// might be a duplicate name
 				if (colNames.containsKey(cName.getLocalName())) {
 					int i = 2;
@@ -101,14 +102,15 @@ public class SimpleNormalizingBuilder extends SimpleBuilder {
 						i++;
 					}
 					colNames.put(cName.getLocalName() + i, columnQuerySegment);
-				} else {
+				}
+				else {
 					colNames.put(cName.getLocalName(), columnQuerySegment);
 				}
 				final int scale = calculateSize(catalog, tableQuerySegment,
 						columnQuerySegment);
 				builder.setType(Types.VARCHAR)
-						.setNullable(DatabaseMetaData.columnNullable)
-						.setScale(scale).setReadOnly(true);
+				.setNullable(DatabaseMetaData.columnNullable)
+				.setScale(scale).setReadOnly(true);
 				tableDefBuilder.addColumnDef(builder.build(model));
 			}
 		}
@@ -142,13 +144,13 @@ public class SimpleNormalizingBuilder extends SimpleBuilder {
 
 			// build the table
 			final RdfTable.Builder tblBuilder = new RdfTable.Builder()
-					.setTableDef(tableDef)
-					.addQuerySegment(tableQuerySegment)
-					.setName(tName.getLocalName())
-					.setSchema(schema)
-					.setRemarks(
-							"created by "
-									+ SimpleNormalizingBuilder.BUILDER_NAME);
+			.setTableDef(tableDef)
+			.addQuerySegment(tableQuerySegment)
+			.setName(tName.getLocalName())
+			.setSchema(schema)
+			.setRemarks(
+					"created by "
+							+ SimpleNormalizingBuilder.BUILDER_NAME);
 
 			if (colNames.keySet().size() != tableDef.getColumnCount()) {
 				throw new IllegalArgumentException(String.format(
@@ -163,12 +165,12 @@ public class SimpleNormalizingBuilder extends SimpleBuilder {
 
 				final String cName = iter.next();
 				tblBuilder
-						.setColumn(i, cName)
-						.getColumn(i)
-						.addQuerySegment(colNames.get(cName))
-						.setRemarks(
-								"created by "
-										+ SimpleNormalizingBuilder.BUILDER_NAME);
+				.setColumn(i, cName)
+				.getColumn(i)
+				.addQuerySegment(colNames.get(cName))
+				.setRemarks(
+						"created by "
+								+ SimpleNormalizingBuilder.BUILDER_NAME);
 				i++;
 			}
 
@@ -189,19 +191,19 @@ public class SimpleNormalizingBuilder extends SimpleBuilder {
 		final Iterator<Integer> iter = WrappedIterator.create(
 				results.iterator()).mapWith(new Map1<QuerySolution, Integer>() {
 
-			@Override
-			public Integer map1(final QuerySolution o) {
-				final RDFNode node = o.get("col");
-				if (node == null) {
-					return 0;
-				}
-				if (node.isLiteral()) {
-					return TypeConverter.getJavaValue(node.asLiteral())
-							.toString().length();
-				}
-				return node.toString().length();
-			}
-		});
+					@Override
+					public Integer map1(final QuerySolution o) {
+						final RDFNode node = o.get("col");
+						if (node == null) {
+							return 0;
+						}
+						if (node.isLiteral()) {
+							return TypeConverter.getJavaValue(node.asLiteral())
+									.toString().length();
+						}
+						return node.toString().length();
+					}
+				});
 		int retval = 0;
 		while (iter.hasNext()) {
 			final Integer i = iter.next();
@@ -219,7 +221,7 @@ public class SimpleNormalizingBuilder extends SimpleBuilder {
 		final Model model = schema.getResource().getModel();
 		final RdfColumnDef.Builder colBuilder = new RdfColumnDef.Builder();
 		colBuilder.setType(Types.VARCHAR)
-				.setNullable(DatabaseMetaData.columnNoNulls).setReadOnly(true);
+		.setNullable(DatabaseMetaData.columnNoNulls).setReadOnly(true);
 		// FIXME does this need a scale?
 		idColumnDef = colBuilder.build(model);
 		final HashSet<RdfTable> retval = new HashSet<RdfTable>();
@@ -245,8 +247,8 @@ public class SimpleNormalizingBuilder extends SimpleBuilder {
 		final int scale = calculateSize(catalog, tableQuerySegment,
 				columnQuerySegment);
 		builder.setType(Types.VARCHAR)
-				.setNullable(DatabaseMetaData.columnNoNulls).setScale(scale)
-				.setReadOnly(true);
+		.setNullable(DatabaseMetaData.columnNoNulls).setScale(scale)
+		.setReadOnly(true);
 		tblDefBuilder.addColumnDef(builder.build(model));
 
 		// add the key segments
@@ -272,26 +274,26 @@ public class SimpleNormalizingBuilder extends SimpleBuilder {
 
 		final RdfTableDef tableDef = tblDefBuilder.build(model);
 		final RdfTable.Builder tblBuilder = new RdfTable.Builder()
-				.setTableDef(tableDef)
-				.addQuerySegment(tableQuerySegment)
-				.setName(tblName)
-				.setSchema(schema)
-				.setRemarks(
-						"created by " + SimpleNormalizingBuilder.BUILDER_NAME);
+		.setTableDef(tableDef)
+		.addQuerySegment(tableQuerySegment)
+		.setName(tblName)
+		.setSchema(schema)
+		.setRemarks(
+				"created by " + SimpleNormalizingBuilder.BUILDER_NAME);
 
 		tblBuilder
-				.setColumn(0, "id")
-				.getColumn(0)
-				.addQuerySegment(SimpleNormalizingBuilder.ID_COLUMN_SEGMENT)
-				.setRemarks(
-						"created by " + SimpleNormalizingBuilder.BUILDER_NAME);
+		.setColumn(0, "id")
+		.getColumn(0)
+		.addQuerySegment(SimpleNormalizingBuilder.ID_COLUMN_SEGMENT)
+		.setRemarks(
+				"created by " + SimpleNormalizingBuilder.BUILDER_NAME);
 
 		tblBuilder
-				.setColumn(1, cName.getLocalName())
-				.getColumn(1)
-				.addQuerySegment(columnQuerySegment)
-				.setRemarks(
-						"created by " + SimpleNormalizingBuilder.BUILDER_NAME);
+		.setColumn(1, cName.getLocalName())
+		.getColumn(1)
+		.addQuerySegment(columnQuerySegment)
+		.setRemarks(
+				"created by " + SimpleNormalizingBuilder.BUILDER_NAME);
 
 		return tblBuilder.build(model);
 	}

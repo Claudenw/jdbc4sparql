@@ -48,7 +48,7 @@ public class J4SDriver implements Driver {
 		}
 		System.out.println("Valid Types:");
 		System.out
-				.println("(Default) config - URL is a J4S configuration file");
+		.println("(Default) config - URL is a J4S configuration file");
 		System.out.println("sparql - URL is a sparql endpoint");
 		for (final Lang l : RDFLanguages.getRegisteredLanguages()) {
 			System.out.println(String.format(

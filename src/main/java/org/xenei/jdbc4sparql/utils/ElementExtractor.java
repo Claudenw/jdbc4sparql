@@ -26,24 +26,24 @@ import com.hp.hpl.jena.sparql.syntax.ElementVisitor;
  * Class for test classes to extract element types from query.
  */
 public class ElementExtractor implements ElementVisitor {
-	private List<Element> extracted = new ArrayList<Element>();
+	private final List<Element> extracted = new ArrayList<Element>();
 	private Class<? extends Element> matchType;
 
 	/**
 	 * Set the type to match
-	 * 
+	 *
 	 * @param clazz
 	 *            The class type to match
 	 * @return this ElementExtractor for chaining
 	 */
-	public ElementExtractor setMatchType(Class<? extends Element> clazz) {
+	public ElementExtractor setMatchType(final Class<? extends Element> clazz) {
 		matchType = clazz;
 		return this;
 	}
 
 	/**
 	 * Reset the results.
-	 * 
+	 *
 	 * @return this ElementExtractor for chaining
 	 */
 	public ElementExtractor reset() {
@@ -55,64 +55,64 @@ public class ElementExtractor implements ElementVisitor {
 		return extracted;
 	}
 
-	public ElementExtractor(Class<? extends Element> clazz) {
+	public ElementExtractor(final Class<? extends Element> clazz) {
 		setMatchType(clazz);
 	}
 
 	@Override
-	public void visit(ElementTriplesBlock el) {
+	public void visit(final ElementTriplesBlock el) {
 		if (matchType.isAssignableFrom(el.getClass())) {
 			extracted.add(el);
 		}
 	}
 
 	@Override
-	public void visit(ElementPathBlock el) {
+	public void visit(final ElementPathBlock el) {
 		if (matchType.isAssignableFrom(el.getClass())) {
 			extracted.add(el);
 		}
 	}
 
 	@Override
-	public void visit(ElementFilter el) {
+	public void visit(final ElementFilter el) {
 		if (matchType.isAssignableFrom(el.getClass())) {
 			extracted.add(el);
 		}
 	}
 
 	@Override
-	public void visit(ElementAssign el) {
+	public void visit(final ElementAssign el) {
 		if (matchType.isAssignableFrom(el.getClass())) {
 			extracted.add(el);
 		}
 	}
 
 	@Override
-	public void visit(ElementBind el) {
+	public void visit(final ElementBind el) {
 		if (matchType.isAssignableFrom(el.getClass())) {
 			extracted.add(el);
 		}
 	}
 
 	@Override
-	public void visit(ElementData el) {
+	public void visit(final ElementData el) {
 		if (matchType.isAssignableFrom(el.getClass())) {
 			extracted.add(el);
 		}
 	}
 
 	@Override
-	public void visit(ElementUnion el) {
+	public void visit(final ElementUnion el) {
 		if (matchType.isAssignableFrom(el.getClass())) {
 			extracted.add(el);
 		}
-		for (Element e : el.getElements()) {
+		for (final Element e : el.getElements()) {
 			e.visit(this);
 		}
 	}
 
 	@Override
-	public void visit(ElementOptional el) {
+	public void visit(final ElementOptional el) {
 		if (matchType.isAssignableFrom(el.getClass())) {
 			extracted.add(el);
 		}
@@ -120,17 +120,17 @@ public class ElementExtractor implements ElementVisitor {
 	}
 
 	@Override
-	public void visit(ElementGroup el) {
+	public void visit(final ElementGroup el) {
 		if (matchType.isAssignableFrom(el.getClass())) {
 			extracted.add(el);
 		}
-		for (Element e : el.getElements()) {
+		for (final Element e : el.getElements()) {
 			e.visit(this);
 		}
 	}
 
 	@Override
-	public void visit(ElementDataset el) {
+	public void visit(final ElementDataset el) {
 		if (matchType.isAssignableFrom(el.getClass())) {
 			extracted.add(el);
 		}
@@ -138,7 +138,7 @@ public class ElementExtractor implements ElementVisitor {
 	}
 
 	@Override
-	public void visit(ElementNamedGraph el) {
+	public void visit(final ElementNamedGraph el) {
 		if (matchType.isAssignableFrom(el.getClass())) {
 			extracted.add(el);
 		}
@@ -146,7 +146,7 @@ public class ElementExtractor implements ElementVisitor {
 	}
 
 	@Override
-	public void visit(ElementExists el) {
+	public void visit(final ElementExists el) {
 		if (matchType.isAssignableFrom(el.getClass())) {
 			extracted.add(el);
 		}
@@ -154,7 +154,7 @@ public class ElementExtractor implements ElementVisitor {
 	}
 
 	@Override
-	public void visit(ElementNotExists el) {
+	public void visit(final ElementNotExists el) {
 		if (matchType.isAssignableFrom(el.getClass())) {
 			extracted.add(el);
 		}
@@ -162,7 +162,7 @@ public class ElementExtractor implements ElementVisitor {
 	}
 
 	@Override
-	public void visit(ElementMinus el) {
+	public void visit(final ElementMinus el) {
 		if (matchType.isAssignableFrom(el.getClass())) {
 			extracted.add(el);
 		}
@@ -170,7 +170,7 @@ public class ElementExtractor implements ElementVisitor {
 	}
 
 	@Override
-	public void visit(ElementService el) {
+	public void visit(final ElementService el) {
 		if (matchType.isAssignableFrom(el.getClass())) {
 			extracted.add(el);
 		}
@@ -178,7 +178,7 @@ public class ElementExtractor implements ElementVisitor {
 	}
 
 	@Override
-	public void visit(ElementSubQuery el) {
+	public void visit(final ElementSubQuery el) {
 		if (matchType.isAssignableFrom(el.getClass())) {
 			extracted.add(el);
 		}

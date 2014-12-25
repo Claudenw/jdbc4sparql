@@ -1,12 +1,5 @@
 package org.xenei.jdbc4sparql.impl.rdf;
 
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.Property;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.ResourceFactory;
-import com.hp.hpl.jena.shared.Lock;
-import com.hp.hpl.jena.vocabulary.RDFS;
-
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -24,9 +17,16 @@ import org.xenei.jena.entities.ResourceWrapper;
 import org.xenei.jena.entities.annotations.Predicate;
 import org.xenei.jena.entities.annotations.Subject;
 
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.Property;
+import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.rdf.model.ResourceFactory;
+import com.hp.hpl.jena.shared.Lock;
+import com.hp.hpl.jena.vocabulary.RDFS;
+
 @Subject(namespace = "http://org.xenei.jdbc4sparql/entity/Schema#")
 public class RdfSchema extends RdfNamespacedObject implements Schema,
-		ResourceWrapper {
+ResourceWrapper {
 	public static class Builder implements Schema {
 		public static RdfSchema fixupCatalog(final RdfCatalog catalog,
 				final RdfSchema schema) {
@@ -54,7 +54,8 @@ public class RdfSchema extends RdfNamespacedObject implements Schema,
 			Resource schema = null;
 			if (builder.hasResource(fqName)) {
 				schema = builder.getResource(fqName, typeClass);
-			} else {
+			}
+			else {
 				schema = builder.getResource(fqName, typeClass);
 				schema.addLiteral(RDFS.label, name);
 
@@ -100,14 +101,14 @@ public class RdfSchema extends RdfNamespacedObject implements Schema,
 
 		private String getFQName() {
 			final StringBuilder sb = new StringBuilder()
-					.append(catalog.getResource().getURI()).append(" ")
-					.append(name);
+			.append(catalog.getResource().getURI()).append(" ")
+			.append(name);
 
 			return String
 					.format("%s/instance/N%s", ResourceBuilder
 							.getFQName(RdfSchema.class),
 
-					UUID.nameUUIDFromBytes(sb.toString().getBytes()).toString());
+							UUID.nameUUIDFromBytes(sb.toString().getBytes()).toString());
 		}
 
 		@Override
@@ -139,7 +140,7 @@ public class RdfSchema extends RdfNamespacedObject implements Schema,
 	}
 
 	public class ChangeListener extends
-			AbstractChangeListener<Schema, RdfTable> {
+	AbstractChangeListener<Schema, RdfTable> {
 		public ChangeListener() {
 			super(RdfSchema.this.getResource(), RdfSchema.class, "tables",
 					RdfTable.class);
@@ -217,7 +218,7 @@ public class RdfSchema extends RdfNamespacedObject implements Schema,
 					.getEntityManager();
 			try {
 				catalog = entityManager.read(r, RdfCatalog.class);
-			} catch (MissingAnnotation e) {
+			} catch (final MissingAnnotation e) {
 				throw new RuntimeException(e.getMessage(), e);
 			}
 		}

@@ -17,9 +17,6 @@
  */
 package org.xenei.jdbc4sparql.impl.rdf;
 
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.Resource;
-
 import org.xenei.jdbc4sparql.iface.KeySegment;
 import org.xenei.jena.entities.EntityManager;
 import org.xenei.jena.entities.EntityManagerFactory;
@@ -28,6 +25,9 @@ import org.xenei.jena.entities.MissingAnnotation;
 import org.xenei.jena.entities.ResourceWrapper;
 import org.xenei.jena.entities.annotations.Predicate;
 import org.xenei.jena.entities.annotations.Subject;
+
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.Resource;
 
 @Subject(namespace = "http://org.xenei.jdbc4sparql/entity/KeySegment#")
 public class RdfKeySegment implements KeySegment, ResourceWrapper {
@@ -45,7 +45,8 @@ public class RdfKeySegment implements KeySegment, ResourceWrapper {
 			Resource keySegment = null;
 			if (builder.hasResource(fqName)) {
 				keySegment = builder.getResource(fqName, typeClass);
-			} else {
+			}
+			else {
 				keySegment = builder.getResource(fqName, typeClass);
 
 				keySegment.addLiteral(builder.getProperty(typeClass, "idx"),
@@ -65,7 +66,7 @@ public class RdfKeySegment implements KeySegment, ResourceWrapper {
 		}
 
 		@Override
-		public int compare(final Object[] data1, final Object[] data2) {
+		public int compare(final Comparable<Object>[] data1, final Comparable<Object>[] data2) {
 			return Utils.compare(getIdx(), isAscending(), data1, data2);
 		}
 
@@ -100,7 +101,7 @@ public class RdfKeySegment implements KeySegment, ResourceWrapper {
 	}
 
 	@Override
-	public final int compare(final Object[] data1, final Object[] data2) {
+	public final int compare(final Comparable<Object>[] data1, final Comparable<Object>[] data2) {
 		return Utils.compare(getIdx(), isAscending(), data1, data2);
 	}
 

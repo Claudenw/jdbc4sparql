@@ -1,6 +1,11 @@
 package org.xenei.jdbc4sparql.sparql.items;
 
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,11 +25,8 @@ import org.xenei.jdbc4sparql.utils.ElementExtractor;
 import com.hp.hpl.jena.graph.NodeFactory;
 import com.hp.hpl.jena.sparql.core.TriplePath;
 import com.hp.hpl.jena.sparql.core.Var;
-import com.hp.hpl.jena.sparql.expr.nodevalue.NodeValueString;
 import com.hp.hpl.jena.sparql.syntax.ElementGroup;
 import com.hp.hpl.jena.sparql.syntax.ElementPathBlock;
-
-import static org.junit.Assert.*;
 
 public class QueryTableInfoTest {
 
@@ -61,11 +63,11 @@ public class QueryTableInfoTest {
 		assertEquals("C:false S:true T:true C:false", tableInfo.getSegments()
 				.toString());
 		assertEquals("schema.table", tableInfo.getName().getDBName());
-		tableInfo.setSegments( NameSegments.FFTT );
+		tableInfo.setSegments(NameSegments.FFTT);
 		assertEquals("C:false S:false T:true C:false", tableInfo.getSegments()
 				.toString());
 		assertEquals("table", tableInfo.getName().getDBName());
-		tableInfo.setSegments( NameSegments.TTTT);
+		tableInfo.setSegments(NameSegments.TTTT);
 		assertEquals("C:true S:true T:true C:false", tableInfo.getSegments()
 				.toString());
 		assertEquals("schema.table", tableInfo.getName().getDBName());
@@ -74,20 +76,20 @@ public class QueryTableInfoTest {
 
 	@Test
 	public void testGetName() {
-		ItemName name = tableInfo.getName();
+		final ItemName name = tableInfo.getName();
 		assertTrue(name == tableName);
 	}
 
 	@Test
 	public void testGetVar() {
-		String dbName = "schema" + NameUtils.SPARQL_DOT + "table";
-		Var v = tableInfo.getVar();
+		final String dbName = "schema" + NameUtils.SPARQL_DOT + "table";
+		final Var v = tableInfo.getVar();
 		assertEquals(dbName, v.getName());
 	}
 
 	@Test
 	public void testGetAlias() {
-		String varName = tableInfo.getName().getGUID();
+		final String varName = tableInfo.getName().getGUID();
 		assertNotNull(tableInfo.getGUIDVar());
 		assertEquals(varName, tableInfo.getGUIDVar().getVarName());
 	}
@@ -108,7 +110,7 @@ public class QueryTableInfoTest {
 		column = mock(Column.class);
 		when(column.getName()).thenReturn(columnName);
 
-		QueryColumnInfo columnInfo = tableInfo.addColumnToQuery(column);
+		final QueryColumnInfo columnInfo = tableInfo.addColumnToQuery(column);
 		assertEquals(column.getName().getSPARQLName(), columnInfo.getName()
 				.getSPARQLName());
 	}
@@ -122,10 +124,10 @@ public class QueryTableInfoTest {
 		column = mock(Column.class);
 		when(column.getName()).thenReturn(columnName);
 
-		ColumnName columnName2 = new ColumnName("catalog", "schema", "table",
-				"column2");
+		final ColumnName columnName2 = new ColumnName("catalog", "schema",
+				"table", "column2");
 
-		QueryColumnInfo columnInfo = tableInfo.addColumnToQuery(column,
+		final QueryColumnInfo columnInfo = tableInfo.addColumnToQuery(column,
 				columnName2, true);
 		assertEquals(columnName2.getSPARQLName(), columnInfo.getName()
 				.getSPARQLName());
@@ -141,7 +143,8 @@ public class QueryTableInfoTest {
 		column = mock(Column.class);
 		when(column.getName()).thenReturn(columnName);
 
-		QueryColumnInfo columnInfo = tableInfo.addColumnToQuery(column, true);
+		final QueryColumnInfo columnInfo = tableInfo.addColumnToQuery(column,
+				true);
 		assertEquals(column.getName().getSPARQLName(), columnInfo.getName()
 				.getSPARQLName());
 	}
@@ -157,13 +160,13 @@ public class QueryTableInfoTest {
 		when(column.getName()).thenReturn(columnName);
 		when(column.getQuerySegmentFmt()).thenReturn(" { %s <b> %s } ");
 
-		List<Column> cols = new ArrayList<Column>();
+		final List<Column> cols = new ArrayList<Column>();
 		cols.add(column);
 		when(table.getColumns()).thenReturn(cols.iterator());
 
 		tableInfo.addRequiredColumns();
 
-		ElementExtractor extractor = new ElementExtractor(
+		final ElementExtractor extractor = new ElementExtractor(
 				ElementPathBlock.class);
 		extractor.visit(queryElementGroup);
 
@@ -172,13 +175,11 @@ public class QueryTableInfoTest {
 		TriplePath pth = epb.patternElts().next();
 		assertEquals(Var.alloc("tbl"), pth.asTriple().getSubject());
 		assertEquals(NodeFactory.createURI("a"), pth.asTriple().getPredicate());
-		assertEquals( tableInfo.getGUIDVar(), pth
-		.asTriple().getObject());
+		assertEquals(tableInfo.getGUIDVar(), pth.asTriple().getObject());
 
 		epb = (ElementPathBlock) extractor.getExtracted().get(1);
 		pth = epb.patternElts().next();
-		assertEquals(tableInfo.getGUIDVar(), pth
-				.asTriple().getSubject());
+		assertEquals(tableInfo.getGUIDVar(), pth.asTriple().getSubject());
 		assertEquals(NodeFactory.createURI("b"), pth.asTriple().getPredicate());
 		assertEquals(Var.alloc("v_906819fe_e4e6_30eb_8431_4483a755c4f4"), pth
 				.asTriple().getObject());

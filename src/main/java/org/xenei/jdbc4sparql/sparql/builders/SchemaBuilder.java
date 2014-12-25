@@ -93,7 +93,8 @@ public interface SchemaBuilder {
 						throw new IllegalStateException(clazz
 								+ " could not be instantiated.", e);
 					}
-				} else {
+				}
+				else {
 					throw new IllegalArgumentException(clazz
 							+ " does not implement SchemaBuilder.");
 				}

@@ -17,30 +17,6 @@
  */
 package org.xenei.jdbc4sparql.sparql;
 
-import com.hp.hpl.jena.graph.Node;
-import com.hp.hpl.jena.graph.Triple;
-import com.hp.hpl.jena.query.Query;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.sparql.core.Var;
-import com.hp.hpl.jena.sparql.core.VarExprList;
-import com.hp.hpl.jena.sparql.expr.E_Equals;
-import com.hp.hpl.jena.sparql.expr.E_LogicalAnd;
-import com.hp.hpl.jena.sparql.expr.Expr;
-import com.hp.hpl.jena.sparql.expr.ExprAggregator;
-import com.hp.hpl.jena.sparql.expr.NodeValue;
-import com.hp.hpl.jena.sparql.expr.aggregate.Aggregator;
-import com.hp.hpl.jena.sparql.syntax.Element;
-import com.hp.hpl.jena.sparql.syntax.ElementBind;
-import com.hp.hpl.jena.sparql.syntax.ElementFilter;
-import com.hp.hpl.jena.sparql.syntax.ElementGroup;
-import com.hp.hpl.jena.sparql.syntax.ElementService;
-import com.hp.hpl.jena.sparql.syntax.ElementSubQuery;
-import com.hp.hpl.jena.sparql.syntax.ElementTriplesBlock;
-import com.hp.hpl.jena.sparql.syntax.ElementUnion;
-import com.hp.hpl.jena.util.iterator.ExtendedIterator;
-import com.hp.hpl.jena.util.iterator.Filter;
-
 import java.sql.SQLDataException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -65,10 +41,6 @@ import org.xenei.jdbc4sparql.iface.name.NameSegments;
 import org.xenei.jdbc4sparql.iface.name.SearchName;
 import org.xenei.jdbc4sparql.iface.name.TableName;
 import org.xenei.jdbc4sparql.impl.NameUtils;
-import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
-import org.xenei.jdbc4sparql.impl.rdf.RdfKey;
-import org.xenei.jdbc4sparql.impl.rdf.RdfKeySegment;
-import org.xenei.jdbc4sparql.impl.rdf.RdfTableDef;
 import org.xenei.jdbc4sparql.impl.virtual.VirtualCatalog;
 import org.xenei.jdbc4sparql.impl.virtual.VirtualSchema;
 import org.xenei.jdbc4sparql.impl.virtual.VirtualTable;
@@ -77,6 +49,24 @@ import org.xenei.jdbc4sparql.sparql.items.QueryItemCollection;
 import org.xenei.jdbc4sparql.sparql.items.QueryTableInfo;
 import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.functions.FunctionColumn;
+
+import com.hp.hpl.jena.query.Query;
+import com.hp.hpl.jena.sparql.core.Var;
+import com.hp.hpl.jena.sparql.core.VarExprList;
+import com.hp.hpl.jena.sparql.expr.E_Equals;
+import com.hp.hpl.jena.sparql.expr.E_LogicalAnd;
+import com.hp.hpl.jena.sparql.expr.Expr;
+import com.hp.hpl.jena.sparql.expr.ExprAggregator;
+import com.hp.hpl.jena.sparql.expr.NodeValue;
+import com.hp.hpl.jena.sparql.expr.aggregate.Aggregator;
+import com.hp.hpl.jena.sparql.syntax.Element;
+import com.hp.hpl.jena.sparql.syntax.ElementBind;
+import com.hp.hpl.jena.sparql.syntax.ElementFilter;
+import com.hp.hpl.jena.sparql.syntax.ElementGroup;
+import com.hp.hpl.jena.sparql.syntax.ElementService;
+import com.hp.hpl.jena.sparql.syntax.ElementSubQuery;
+import com.hp.hpl.jena.sparql.syntax.ElementUnion;
+import com.hp.hpl.jena.util.iterator.Filter;
 
 /**
  * Creates a SparqlQuery while tracking naming changes between nomenclatures.
@@ -89,9 +79,11 @@ public class SparqlQueryBuilder {
 		if (e == null) {
 			retval = new ElementGroup();
 			query.setQueryPattern(retval);
-		} else if (e instanceof ElementGroup) {
+		}
+		else if (e instanceof ElementGroup) {
 			retval = (ElementGroup) e;
-		} else {
+		}
+		else {
 			retval = new ElementGroup();
 			retval.addElement(e);
 		}
@@ -186,41 +178,40 @@ public class SparqlQueryBuilder {
 
 	/**
 	 * Set the use GUID flag;
-	 * 
+	 *
 	 * @param state
 	 */
-	public void setUseGUID(boolean state) {
+	public void setUseGUID(final boolean state) {
 		this.infoSet.setUseGUID(state);
 	}
 
-	public void addAlias(ColumnName orig, ColumnName alias) throws SQLDataException {
-		QueryTableInfo tableInfo =infoSet.getTable( orig.getTableName() );
-		if (tableInfo == null)
-		{
+	public QueryColumnInfo addAlias(final ColumnName orig,
+			final ColumnName alias) throws SQLDataException {
+		final QueryTableInfo tableInfo = infoSet.getTable(orig.getTableName());
+		if (tableInfo == null) {
 			throw new IllegalArgumentException(String.format(
-				SparqlQueryBuilder.NOT_FOUND_IN_QUERY, orig.getTableName()));
+					SparqlQueryBuilder.NOT_FOUND_IN_QUERY, orig.getTableName()));
 		}
-		
+
 		// find the column will check infoset for existing column first.
-		QueryColumnInfo columnInfo = tableInfo.getColumn(infoSet, orig);
-		if (columnInfo == null)
-		{
+		QueryColumnInfo columnInfo = tableInfo.getColumn(orig);
+		if (columnInfo == null) {
 			// ok now we have to look for column with the proper name.
-			Column column = tableInfo.getTable().getColumn( orig.getShortName());
-			if (column == null)
-			{
+			final Column column = tableInfo.getTable().getColumn(
+					orig.getShortName());
+			if (column == null) {
 				throw new IllegalArgumentException(String.format(
-					SparqlQueryBuilder.NOT_FOUND_IN_QUERY, orig));
+						SparqlQueryBuilder.NOT_FOUND_IN_QUERY, orig));
 			}
 			columnInfo = tableInfo.addColumnToQuery(column);
 		}
-		//QueryTableInfo tableInfo = infoSet.getTable( orig.getTableName());
-		tableInfo.addDataFilter(columnInfo);
-		infoSet.addColumn( columnInfo );
-		
-		QueryColumnInfo aliasInfo = columnInfo.createAlias(alias);
+		// tableInfo.addDataFilter(columnInfo);
+		// infoSet.addColumn(columnInfo);
+
+		final QueryColumnInfo aliasInfo = columnInfo.createAlias(alias);
 		tableInfo.addDataFilter(aliasInfo);
 		infoSet.addColumn(aliasInfo);
+		return aliasInfo;
 	}
 
 	/**
@@ -246,7 +237,8 @@ public class SparqlQueryBuilder {
 			if (tName.isWild()) {
 				throw new SQLException(String.format(
 						SparqlQueryBuilder.NOT_FOUND_IN_ANY_, cName, "table"));
-			} else {
+			}
+			else {
 				throw new SQLException(String.format(
 						SparqlQueryBuilder.NOT_FOUND_IN_, cName, tName));
 			}
@@ -261,21 +253,19 @@ public class SparqlQueryBuilder {
 	 *            The filter to add.
 	 */
 	public void addFilter(final Expr filter) {
-		if (LOG.isDebugEnabled())
+		if (LOG.isDebugEnabled()) {
 			SparqlQueryBuilder.LOG.debug("adding Filter: {}", filter);
+		}
 		checkBuilt();
-		ElementFilter el = new ElementFilter(filter);
+		final ElementFilter el = new ElementFilter(filter);
 		SparqlQueryBuilder.getElementGroup(query).addElementFilter(el);
 	}
-	
-	
 
-	public QueryColumnInfo addColumnToQuery( ColumnName cName, boolean optional  )
-	{	
+	public QueryColumnInfo addColumnToQuery(final ColumnName cName,
+			final boolean optional) {
 		cName.setUsedSegments(getSegments());
-		QueryColumnInfo columnInfo = infoSet.scanTablesForColumn(cName);
-		if (columnInfo == null)
-		{
+		final QueryColumnInfo columnInfo = infoSet.scanTablesForColumn(cName);
+		if (columnInfo == null) {
 			throw new IllegalArgumentException(String.format(
 					SparqlQueryBuilder.NOT_FOUND_IN_QUERY, cName));
 		}
@@ -295,9 +285,10 @@ public class SparqlQueryBuilder {
 	 *            true of order should be ascending, false = descending.
 	 */
 	public void addOrderBy(final Expr expr, final boolean ascending) {
-		if (LOG.isDebugEnabled())
+		if (LOG.isDebugEnabled()) {
 			SparqlQueryBuilder.LOG.debug("Adding order by {} {}", expr,
-				ascending ? "Ascending" : "Descending");
+					ascending ? "Ascending" : "Descending");
+		}
 		checkBuilt();
 		query.addOrderBy(expr, ascending ? Query.ORDER_ASCENDING
 				: Query.ORDER_DESCENDING);
@@ -362,7 +353,7 @@ public class SparqlQueryBuilder {
 	}
 
 	public void addTableColumns(final QueryTableInfo tableInfo) {
-		tableInfo.addTableColumns(infoSet, query);
+		tableInfo.addTableColumns(query);
 	}
 
 	public void addUnion(final List<SparqlQueryBuilder> unionBuilders)
@@ -375,20 +366,20 @@ public class SparqlQueryBuilder {
 	}
 
 	public void addUsing(final String columnName) {
-		if (LOG.isDebugEnabled())
+		if (LOG.isDebugEnabled()) {
 			SparqlQueryBuilder.LOG.debug("adding Using {}", columnName);
+		}
 		final Collection<QueryTableInfo> tables = infoSet.getTables();
 		if (tables.size() < 2) {
 			throw new IllegalArgumentException(
 					"There must be at least 2 tables in the query");
 		}
 
-		Iterator<QueryTableInfo> iter = tables.iterator();
+		final Iterator<QueryTableInfo> iter = tables.iterator();
 
 		final QueryTableInfo tableInfo = iter.next();
 		ColumnName cName = tableInfo.getName().getColumnName(columnName);
-		final QueryColumnInfo columnInfo = tableInfo.getColumn(infoSet, cName,
-				false);
+		final QueryColumnInfo columnInfo = tableInfo.getColumn(cName, false);
 		if (columnInfo == null) {
 			throw new IllegalArgumentException(String.format(
 					"column %s not found in %s", columnName,
@@ -398,8 +389,8 @@ public class SparqlQueryBuilder {
 		while (iter.hasNext()) {
 			final QueryTableInfo tableInfo2 = iter.next();
 			cName = tableInfo2.getName().getColumnName(columnName);
-			final QueryColumnInfo columnInfo2 = tableInfo2.getColumn(infoSet,
-					cName, false);
+			final QueryColumnInfo columnInfo2 = tableInfo2.getColumn(cName,
+					false);
 			if (columnInfo2 == null) {
 				throw new IllegalArgumentException(String.format(
 						"column %s not found in %s", columnInfo2,
@@ -419,8 +410,9 @@ public class SparqlQueryBuilder {
 	 *            the alias for the expression, if null no alias is used.
 	 */
 	public void addVar(final Expr expr, final String name) {
-		if (LOG.isDebugEnabled())
+		if (LOG.isDebugEnabled()) {
 			SparqlQueryBuilder.LOG.debug("Adding Var {} as {}", expr, name);
+		}
 		checkBuilt();
 		final NodeValue nv = expr.getConstant();
 		if ((name != null) || (nv == null) || !nv.asNode().isVariable()) {
@@ -428,14 +420,17 @@ public class SparqlQueryBuilder {
 			if (StringUtils.isNotEmpty(s)
 					&& s.equals(StringUtils.defaultIfBlank(name, s))) {
 				query.addResultVar(s);
-			} else {
+			}
+			else {
 				if (name != null) {
 					query.addResultVar(name, expr);
-				} else {
+				}
+				else {
 					query.addResultVar(nv.asNode());
 				}
 			}
-		} else {
+		}
+		else {
 			query.addResultVar(nv.asNode());
 		}
 		query.getResultVars();
@@ -452,10 +447,11 @@ public class SparqlQueryBuilder {
 	 */
 	public void addVar(final Expr expr, final ColumnName name) {
 		checkBuilt();
-		QueryColumnInfo columnInfo = infoSet.getColumn(name);
+		final QueryColumnInfo columnInfo = infoSet.getColumn(name);
 		if (!query.getProjectVars().contains(columnInfo.getVar())) {
-			if (LOG.isDebugEnabled())
+			if (LOG.isDebugEnabled()) {
 				SparqlQueryBuilder.LOG.debug("Adding {} as {}", expr, name);
+			}
 			query.addResultVar(columnInfo.getVar(), expr);
 			query.getResultVars();
 		}
@@ -469,13 +465,15 @@ public class SparqlQueryBuilder {
 	 *            The column to add.
 	 * @throws SQLException
 	 */
-	public void addVar(ColumnName columnName) throws SQLException {
-		if (LOG.isDebugEnabled())
+	public void addVar(final ColumnName columnName) throws SQLException {
+		if (LOG.isDebugEnabled()) {
 			SparqlQueryBuilder.LOG.debug("Adding Var {}", columnName);
+		}
 		checkBuilt();
 
-		QueryColumnInfo qci = addColumn(columnName, false);
-		query.addResultVar(qci.getVar());
+		final QueryColumnInfo columnInfo = addColumn(columnName, false);
+		getTable(columnName.getTableName()).addDataFilter(columnInfo);
+		query.addResultVar(columnInfo.getVar());
 		query.getResultVars();
 	}
 
@@ -493,7 +491,7 @@ public class SparqlQueryBuilder {
 				for (final QueryTableInfo tableInfo : infoSet.getTables()) {
 					try {
 						tableInfo.addQueryFilters(infoSet);
-					} catch (SQLDataException e1) {
+					} catch (final SQLDataException e1) {
 						throw new IllegalStateException(e1.getMessage(), e1);
 					}
 				}
@@ -508,39 +506,38 @@ public class SparqlQueryBuilder {
 
 				// create a copy of the query so that we can verify that it is
 				// good.
-				Query serviceCall = query.cloneQuery();
+				final Query serviceCall = query.cloneQuery();
 				final VarExprList vars = serviceCall.getProject();
 
 				final ElementService service = new ElementService(
 						catalog.getServiceNode(), new ElementSubQuery(
 								serviceCall), false);
-				Query newResult = new Query();
+				final Query newResult = new Query();
 				newResult.setQuerySelectType();
-				ElementGroup filterGroup = SparqlQueryBuilder
+				final ElementGroup filterGroup = SparqlQueryBuilder
 						.getElementGroup(newResult);
 				filterGroup.addElement(service);
-				ElementGroup typeGroup = new ElementGroup();
+				final ElementGroup typeGroup = new ElementGroup();
 				typeGroup.addElement(filterGroup);
 				infoSet.setUseGUID(false); // we are now building complete set.
 				// create the service call
 				// make sure we project all vars for the filters.
 
-				for (Var v : vars.getVars()) {
-					
-					//QueryColumnInfo colInfo = infoSet.findColumnByGUID(
-					//		v.getName());
-					//newResult.addResultVar(colInfo.getVar());
-					newResult.addResultVar(v);
+				for (final Var v : vars.getVars()) {
+					final QueryColumnInfo colInfo = infoSet
+							.findColumnByGUIDVar(v.getName());
+					newResult.addResultVar(colInfo.getVar());
+
 				}
 
 				// add the columns to the query.
-				for (QueryTableInfo tableInfo : infoSet.getTables()) {
-					Collection<QueryColumnInfo> typeFilters = infoSet
+				for (final QueryTableInfo tableInfo : infoSet.getTables()) {
+					final Collection<QueryColumnInfo> typeFilters = infoSet
 							.iterateColumns(tableInfo.getName())
 							.filterDrop(new Filter<QueryColumnInfo>() {
 
 								@Override
-								public boolean accept(QueryColumnInfo o) {
+								public boolean accept(final QueryColumnInfo o) {
 									return columnsInUsing.contains(o.getName()
 											.getShortName());
 								}
@@ -548,53 +545,58 @@ public class SparqlQueryBuilder {
 					try {
 						QueryTableInfo.addTypeFilters(typeFilters, typeFilters,
 								filterGroup, typeGroup);
-					} catch (SQLDataException e1) {
+					} catch (final SQLDataException e1) {
 						throw new IllegalStateException(e1.getMessage(), e1);
 					}
-					for (QueryColumnInfo columnInfo : typeFilters) {
+					for (final QueryColumnInfo columnInfo : typeFilters) {
 						if (!serviceCall.getProjectVars().contains(
 								columnInfo.getGUIDVar())) {
-							serviceCall
-									.addProjectVars(Arrays
-											.asList(new Var[] { columnInfo
-													.getGUIDVar() }));
+							serviceCall.addProjectVars(Arrays.asList(new Var[] {
+								columnInfo.getGUIDVar()
+							}));
 						}
 					}
 				}
 
-				for (String columnName : columnsInUsing) {
+				for (final String columnName : columnsInUsing) {
 					QueryColumnInfo first = null;
 					Expr expr = null;
 
-					for (QueryColumnInfo columnInfo : infoSet
+					for (final QueryColumnInfo columnInfo : infoSet
 							.listColumns(new SearchName(null, null, null,
 									columnName))) {
-						CheckTypeF ctf = columnInfo.getTypeFilter();
-						if (LOG.isDebugEnabled())
+						final CheckTypeF ctf = columnInfo.getTypeFilter();
+						if (LOG.isDebugEnabled()) {
 							LOG.debug("Adding filter: {}", ctf);
+						}
 						filterGroup.addElementFilter(new ElementFilter(ctf));
 
 						if (first == null) {
-							ForceTypeF ftf = columnInfo.getDataFilter();
-							ElementBind bind = ftf.getBinding( columnInfo );
-							if (LOG.isDebugEnabled())
+							final ForceTypeF ftf = columnInfo.getDataFilter();
+							final ElementBind bind = ftf.getBinding(columnInfo);
+							if (LOG.isDebugEnabled()) {
 								LOG.debug("Adding binding: {}", bind);
+							}
 							typeGroup.addElement(bind);
 							first = columnInfo;
-						} else {
-							E_Equals eq = new E_Equals(first.getDataFilter(),
+						}
+						else {
+							final E_Equals eq = new E_Equals(
+									first.getDataFilter(),
 									columnInfo.getDataFilter());
 							if (expr == null) {
 								expr = eq;
-							} else {
+							}
+							else {
 								expr = new E_LogicalAnd(expr, eq);
 							}
 						}
 
 					}
 					if (expr != null) {
-						if (LOG.isDebugEnabled())
+						if (LOG.isDebugEnabled()) {
 							LOG.debug("Adding filter: {}", expr);
+						}
 						filterGroup.addElementFilter(new ElementFilter(expr));
 					}
 				}
@@ -603,8 +605,9 @@ public class SparqlQueryBuilder {
 				query = newResult;
 			}
 			isBuilt = true;
-			if (LOG.isDebugEnabled())
+			if (LOG.isDebugEnabled()) {
 				SparqlQueryBuilder.LOG.debug("Query parsed as {}", query);
+			}
 		}
 		return query;
 	}
@@ -683,33 +686,35 @@ public class SparqlQueryBuilder {
 	private ElementGroup getElementGroup() {
 		return SparqlQueryBuilder.getElementGroup(query);
 	}
-	
-	private ColumnName createColumnName( Var v )
-	{
-		int segs = v.getName().split( NameUtils.SPARQL_DOT).length;
-		if (segs>4)
-		{
-			throw new IllegalArgumentException( "Name may not have more than 4 segments");
+
+	private ColumnName createColumnName(final Var v) {
+		final int segs = v.getName().split(NameUtils.SPARQL_DOT).length;
+		if (segs > 4) {
+			throw new IllegalArgumentException(
+					"Name may not have more than 4 segments");
 		}
-		ColumnName cName = ColumnName.getNameInstance("", "", "", v.getName());
-		cName.setUsedSegments(NameSegments.getInstance( segs==4, segs>=3, segs>=2, true ));
+		final ColumnName cName = ColumnName.getNameInstance("", "", "",
+				v.getName());
+		cName.setUsedSegments(NameSegments.getInstance(segs == 4, segs >= 3,
+				segs >= 2, true));
 		return cName;
 	}
 
 	public QueryColumnInfo getColumn(final Var v) {
-		return infoSet.getColumn( createColumnName( v ) );
+		return infoSet.getColumn(createColumnName(v));
 	}
 
 	public QueryTableInfo getTable(final Var v) {
 		checkBuilt();
-		int segs = v.getName().split( NameUtils.SPARQL_DOT).length;
-		if (segs>3)
-		{
-			throw new IllegalArgumentException( "Name may not have more than 3 segments");
+		final int segs = v.getName().split(NameUtils.SPARQL_DOT).length;
+		if (segs > 3) {
+			throw new IllegalArgumentException(
+					"Name may not have more than 3 segments");
 		}
-		TableName tName = TableName.getNameInstance("", "", v.getName());
-		tName.setUsedSegments(NameSegments.getInstance( segs==3, segs>=2, true, false ));
-		return infoSet.getTable( tName );
+		final TableName tName = TableName.getNameInstance("", "", v.getName());
+		tName.setUsedSegments(NameSegments.getInstance(segs == 3, segs >= 2,
+				true, false));
+		return infoSet.getTable(tName);
 	}
 
 	public List<QueryColumnInfo> getResultColumns() {
@@ -733,21 +738,21 @@ public class SparqlQueryBuilder {
 		return infoSet.getTable(name);
 	}
 
-	public ExprAggregator register(final Aggregator agg, final int type)
-			throws SQLException {
+	public ExprAggregator register(final Aggregator agg, final int type,
+			final String alias) throws SQLException {
 		final ExprAggregator expr = (ExprAggregator) query.allocAggregate(agg);
 
 		final ColumnName columnName = ColumnName.getNameInstance(
 				VirtualCatalog.NAME, VirtualSchema.NAME, VirtualTable.NAME,
-				expr.getAggVar().getVarName());
+				alias);
 		if (infoSet.findColumn(columnName) == null) {
 			registerFunctionColumn(columnName, type);
 		}
 		return expr;
 	}
 
-	public QueryColumnInfo registerFunction(ColumnName funcName, final int type)
-			throws SQLException {
+	public QueryColumnInfo registerFunction(final ColumnName funcName,
+			final int type) throws SQLException {
 		QueryColumnInfo retval = infoSet.findColumn(funcName);
 		if (retval == null) {
 			retval = registerFunctionColumn(funcName, type);
@@ -755,14 +760,14 @@ public class SparqlQueryBuilder {
 		return retval;
 	}
 
-	public QueryColumnInfo registerFunctionColumn(ColumnName columnNameArg,
-			final int type) {
-		ColumnName columnName = new ColumnName(StringUtils.defaultString(
+	public QueryColumnInfo registerFunctionColumn(
+			final ColumnName columnNameArg, final int type) {
+		final ColumnName columnName = new ColumnName(StringUtils.defaultString(
 				columnNameArg.getCatalog(), VirtualCatalog.NAME),
 				StringUtils.defaultString(columnNameArg.getSchema(),
 						VirtualSchema.NAME), StringUtils.defaultString(
-						columnNameArg.getTable(), VirtualTable.NAME),
-				columnNameArg.getShortName());
+								columnNameArg.getTable(), VirtualTable.NAME),
+								columnNameArg.getShortName());
 		QueryTableInfo tableInfo = infoSet.getTable(columnName.getTableName());
 		Column column = null;
 		if (tableInfo == null) {
@@ -780,12 +785,13 @@ public class SparqlQueryBuilder {
 			tableInfo = new QueryTableInfo(infoSet, null, table,
 					columnName.getTableName(), false);
 			infoSet.addTable(tableInfo);
-		} else {
+		}
+		else {
 			column = new FunctionColumn(tableInfo.getTable(),
 					columnName.getShortName(), type);
 		}
-		QueryColumnInfo columnInfo = new QueryColumnInfo(column, columnName,
-				false);
+		final QueryColumnInfo columnInfo = new QueryColumnInfo(column,
+				columnName, false);
 		infoSet.addColumn(columnInfo);
 		return columnInfo;
 	}
@@ -797,8 +803,9 @@ public class SparqlQueryBuilder {
 	 * @throws SQLException
 	 */
 	public void setAllColumns() throws SQLException {
-		if (LOG.isDebugEnabled())
+		if (LOG.isDebugEnabled()) {
 			SparqlQueryBuilder.LOG.debug("Setting All Columns");
+		}
 		checkBuilt();
 
 		final Collection<QueryTableInfo> tableInfos = infoSet.getTables();
@@ -806,15 +813,15 @@ public class SparqlQueryBuilder {
 			throw new IllegalArgumentException(
 					"There must be a least one table");
 		}
-		QueryItemCollection<QueryColumnInfo,Column,ColumnName> colInfoList = new QueryItemCollection<QueryColumnInfo,Column,ColumnName>();
+		final QueryItemCollection<QueryColumnInfo, Column, ColumnName> colInfoList = new QueryItemCollection<QueryColumnInfo, Column, ColumnName>();
 		for (final QueryTableInfo tableInfo : tableInfos) {
 			final Iterator<Column> iter = tableInfo.getTable().getColumns();
 			while (iter.hasNext()) {
 				final Column col = iter.next();
 				final ColumnName cName = tableInfo.getName().getColumnName(
 						col.getName().getShortName());
-				final QueryColumnInfo columnInfo = tableInfo.getColumn(infoSet,
-						cName, col.isOptional());
+				final QueryColumnInfo columnInfo = tableInfo.getColumn(cName,
+						col.isOptional());
 				colInfoList.add(columnInfo);
 				tableInfo.addDataFilter(columnInfo);
 			}
@@ -822,35 +829,38 @@ public class SparqlQueryBuilder {
 
 		// find shortest name without name collision. skipping columns in using.
 		NameSegments segs = NameSegments.getInstance(false, false, false, true);
-		for (QueryColumnInfo columnInfo : colInfoList) {
+		for (final QueryColumnInfo columnInfo : colInfoList) {
 			if (!columnsInUsing.contains(columnInfo.getName().getShortName())) {
 				SearchName sn = new SearchName(columnInfo.getName(), segs);
-				while (colInfoList.count(sn) > 1
+				while ((colInfoList.count(sn) > 1)
 						&& !sn.getUsedSegments().isCatalog()) {
 					if (segs.isSchema()) {
 						segs = NameSegments.getInstance(true, true, true, true);
-					} else if (segs.isTable()) {
-						segs = NameSegments.getInstance(false, true, true, true);
-					} else {
-						segs = NameSegments.getInstance(false, false, true, true);
+					}
+					else if (segs.isTable()) {
+						segs = NameSegments
+								.getInstance(false, true, true, true);
+					}
+					else {
+						segs = NameSegments.getInstance(false, false, true,
+								true);
 					}
 					sn = new SearchName(columnInfo.getName(), segs);
 				}
 			}
 		}
 
-		// remove the variables 
-		for (Var v : query.getProjectVars())
-		{
-			for (QueryColumnInfo columnInfo : colInfoList.match( createColumnName(v) ).toList())
-			{
-				colInfoList.remove( columnInfo );
+		// remove the variables
+		for (final Var v : query.getProjectVars()) {
+			for (final QueryColumnInfo columnInfo : colInfoList.match(
+					createColumnName(v)).toList()) {
+				colInfoList.remove(columnInfo);
 			}
 		}
 		// anything left needs to be added
-		
-		for (QueryColumnInfo columnInfo : colInfoList) {
-			query.addResultVar( columnInfo.getVar() );
+
+		for (final QueryColumnInfo columnInfo : colInfoList) {
+			query.addResultVar(columnInfo.getVar());
 		}
 	}
 
@@ -858,8 +868,9 @@ public class SparqlQueryBuilder {
 	 * Sets the distinct flag for the SPARQL query.
 	 */
 	public void setDistinct() {
-		if (LOG.isDebugEnabled())
+		if (LOG.isDebugEnabled()) {
 			SparqlQueryBuilder.LOG.debug("Setting Distinct");
+		}
 		checkBuilt();
 		query.setDistinct(true);
 	}
@@ -869,8 +880,9 @@ public class SparqlQueryBuilder {
 	}
 
 	public SparqlQueryBuilder setKey(final Key<?> key) {
-		if (LOG.isDebugEnabled())
+		if (LOG.isDebugEnabled()) {
 			SparqlQueryBuilder.LOG.debug("Setting key {}", key);
+		}
 		if (key != null) {
 			setOrderBy(key);
 			if (key.isUnique()) {
@@ -887,8 +899,9 @@ public class SparqlQueryBuilder {
 	 *            The number of records to return
 	 */
 	public void setLimit(final Long limit) {
-		if (LOG.isDebugEnabled())
+		if (LOG.isDebugEnabled()) {
 			SparqlQueryBuilder.LOG.debug("Setting limit {}", limit);
+		}
 		checkBuilt();
 		query.setLimit(limit);
 	}
@@ -900,15 +913,17 @@ public class SparqlQueryBuilder {
 	 *            The number of rows to skip over.
 	 */
 	public void setOffset(final Long offset) {
-		if (LOG.isDebugEnabled())
+		if (LOG.isDebugEnabled()) {
 			SparqlQueryBuilder.LOG.debug("Setting Offset {}", offset);
+		}
 		checkBuilt();
 		query.setOffset(offset);
 	}
 
 	public void setOrderBy(final Key<?> key) {
-		if (LOG.isDebugEnabled())
+		if (LOG.isDebugEnabled()) {
 			SparqlQueryBuilder.LOG.debug("Setting orderBy {}", key);
+		}
 		final List<Var> vars = query.getProjectVars();
 		for (final KeySegment seg : key.getSegments()) {
 			query.addOrderBy(vars.get(seg.getIdx()),
@@ -935,16 +950,17 @@ public class SparqlQueryBuilder {
 	}
 
 	/**
-	 * Returns the table name if only one exists in the query. If multiple tables exist or no
-	 * table has been added return null.
+	 * Returns the table name if only one exists in the query. If multiple
+	 * tables exist or no table has been added return null.
+	 *
 	 * @return The default table name.
 	 */
 	public String getDefaultTableName() {
-		Iterator<QueryTableInfo> iter = infoSet.getTables().iterator();
+		final Iterator<QueryTableInfo> iter = infoSet.getTables().iterator();
 		if (!iter.hasNext()) {
 			return null;
 		}
-		QueryTableInfo table = iter.next();
+		final QueryTableInfo table = iter.next();
 		if (iter.hasNext()) {
 			return null;
 		}
@@ -953,9 +969,9 @@ public class SparqlQueryBuilder {
 
 	public void setSegmentCount() {
 		infoSet.setMinimumColumnSegments();
-		for (String columnName : columnsInUsing) {
-			SearchName sn = new SearchName(null, null, null, columnName);
-			for (QueryColumnInfo columnInfo : infoSet.listColumns(sn)) {
+		for (final String columnName : columnsInUsing) {
+			final SearchName sn = new SearchName(null, null, null, columnName);
+			for (final QueryColumnInfo columnInfo : infoSet.listColumns(sn)) {
 				columnInfo.setSegments(sn.getUsedSegments());
 			}
 		}

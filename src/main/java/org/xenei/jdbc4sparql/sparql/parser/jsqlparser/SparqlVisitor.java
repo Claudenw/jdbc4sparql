@@ -81,8 +81,9 @@ public class SparqlVisitor implements StatementVisitor {
 
 	@Override
 	public void visit(final Select select) {
-		if (LOG.isDebugEnabled())
+		if (LOG.isDebugEnabled()) {
 			SparqlVisitor.LOG.debug("visit: {}", select);
+		}
 		final SparqlSelectVisitor v = new SparqlSelectVisitor(
 				sparqlQueryBuilder);
 		select.getSelectBody().accept(v);

@@ -1,13 +1,13 @@
 package org.xenei.jdbc4sparql.impl.rdf;
 
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
-
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.xenei.jdbc4sparql.iface.Key;
+
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
 
 public class KeyBuilderTests {
 	private Model model;
@@ -27,7 +27,7 @@ public class KeyBuilderTests {
 		final RdfKeySegment.Builder segBuilder = new RdfKeySegment.Builder();
 
 		final RdfKey.Builder builder = new RdfKey.Builder()
-				.addSegment(segBuilder.build(model));
+		.addSegment(segBuilder.build(model));
 
 		final Key key = builder.build(model);
 
@@ -43,7 +43,7 @@ public class KeyBuilderTests {
 
 		final RdfKey.Builder builder = new RdfKey.Builder().addSegment(
 				segBuilder.build(model)).addSegment(
-				segBuilder.setAscending(false).setIdx(1).build(model));
+						segBuilder.setAscending(false).setIdx(1).build(model));
 
 		final Key key = builder.build(model);
 

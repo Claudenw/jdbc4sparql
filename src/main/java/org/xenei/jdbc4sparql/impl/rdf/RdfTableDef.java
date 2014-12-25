@@ -1,11 +1,5 @@
 package org.xenei.jdbc4sparql.impl.rdf;
 
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.Property;
-import com.hp.hpl.jena.rdf.model.RDFList;
-import com.hp.hpl.jena.rdf.model.RDFNode;
-import com.hp.hpl.jena.rdf.model.Resource;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -21,9 +15,15 @@ import org.xenei.jena.entities.ResourceWrapper;
 import org.xenei.jena.entities.annotations.Predicate;
 import org.xenei.jena.entities.annotations.Subject;
 
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.Property;
+import com.hp.hpl.jena.rdf.model.RDFList;
+import com.hp.hpl.jena.rdf.model.RDFNode;
+import com.hp.hpl.jena.rdf.model.Resource;
+
 @Subject(namespace = "http://org.xenei.jdbc4sparql/entity/TableDef#")
 public class RdfTableDef extends RdfNamespacedObject implements TableDef,
-		ResourceWrapper {
+ResourceWrapper {
 	public static class Builder implements TableDef {
 		private boolean distinct = false;
 		private final List<ColumnDef> columnDefs = new ArrayList<ColumnDef>();
@@ -54,7 +54,8 @@ public class RdfTableDef extends RdfNamespacedObject implements TableDef,
 			Resource tableDef = null;
 			if (builder.hasResource(fqName)) {
 				tableDef = builder.getResource(fqName, typeClass);
-			} else {
+			}
+			else {
 
 				tableDef = builder.getResource(fqName, typeClass);
 
@@ -87,7 +88,8 @@ public class RdfTableDef extends RdfNamespacedObject implements TableDef,
 					final Resource s = ((ResourceWrapper) seg).getResource();
 					if (lst == null) {
 						lst = model.createList().with(s);
-					} else {
+					}
+					else {
 						lst.add(s);
 					}
 				}
@@ -135,7 +137,7 @@ public class RdfTableDef extends RdfNamespacedObject implements TableDef,
 			final StringBuilder sb = new StringBuilder();
 			for (final ColumnDef cd : columnDefs) {
 				sb.append(((ResourceWrapper) cd).getResource().getURI())
-						.append(" ");
+				.append(" ");
 			}
 			if (primaryKey != null) {
 				sb.append(primaryKey.getId()).append(" ");

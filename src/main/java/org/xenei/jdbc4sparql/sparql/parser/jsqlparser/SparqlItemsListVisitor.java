@@ -1,7 +1,5 @@
 package org.xenei.jdbc4sparql.sparql.parser.jsqlparser;
 
-import com.hp.hpl.jena.sparql.expr.ExprList;
-
 import java.util.List;
 
 import net.sf.jsqlparser.expression.Expression;
@@ -12,6 +10,8 @@ import net.sf.jsqlparser.statement.select.SubSelect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
+
+import com.hp.hpl.jena.sparql.expr.ExprList;
 
 public class SparqlItemsListVisitor implements ItemsListVisitor {
 	private static Logger LOG = LoggerFactory
@@ -30,9 +30,10 @@ public class SparqlItemsListVisitor implements ItemsListVisitor {
 
 	@Override
 	public void visit(final ExpressionList expressionList) {
-		if (LOG.isDebugEnabled())
+		if (LOG.isDebugEnabled()) {
 			SparqlItemsListVisitor.LOG.debug("visit ExpressionList: {}",
-				expressionList);
+					expressionList);
+		}
 		@SuppressWarnings("unchecked")
 		final List<Expression> l = expressionList.getExpressions();
 		result = new ExprList();
@@ -45,8 +46,9 @@ public class SparqlItemsListVisitor implements ItemsListVisitor {
 
 	@Override
 	public void visit(final SubSelect subSelect) {
-		if (LOG.isDebugEnabled())
+		if (LOG.isDebugEnabled()) {
 			SparqlItemsListVisitor.LOG.debug("visit SubSelect: {}", subSelect);
+		}
 		subSelect.accept(exprVisitor);
 	}
 

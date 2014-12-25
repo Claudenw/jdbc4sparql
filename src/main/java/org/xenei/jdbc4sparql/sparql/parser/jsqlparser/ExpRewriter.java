@@ -1,6 +1,16 @@
 package org.xenei.jdbc4sparql.sparql.parser.jsqlparser;
 
-import com.hp.hpl.jena.graph.Node;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Stack;
+
+import org.xenei.jdbc4sparql.iface.name.ColumnName;
+import org.xenei.jdbc4sparql.iface.name.ItemName;
+import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
+import org.xenei.jdbc4sparql.sparql.items.QueryColumnInfo;
+
 import com.hp.hpl.jena.sparql.core.Var;
 import com.hp.hpl.jena.sparql.expr.Expr;
 import com.hp.hpl.jena.sparql.expr.ExprAggregator;
@@ -16,17 +26,6 @@ import com.hp.hpl.jena.sparql.expr.ExprVar;
 import com.hp.hpl.jena.sparql.expr.ExprVisitor;
 import com.hp.hpl.jena.sparql.expr.NodeValue;
 import com.hp.hpl.jena.sparql.expr.aggregate.Aggregator;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Stack;
-
-import org.xenei.jdbc4sparql.iface.name.ColumnName;
-import org.xenei.jdbc4sparql.iface.name.ItemName;
-import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
-import org.xenei.jdbc4sparql.sparql.items.QueryColumnInfo;
 
 public abstract class ExpRewriter implements ExprVisitor {
 	protected final Map<ItemName, ItemName> aliasMap = new HashMap<ItemName, ItemName>();
@@ -156,7 +155,7 @@ public abstract class ExpRewriter implements ExprVisitor {
 					ItemName mapTo = aliasMap.get(qi);
 					mapTo = new ColumnName(mapTo.getCatalog(),
 							mapTo.getSchema(), mapTo.getTable(), ci.getName()
-									.getColumn());
+							.getColumn());
 					stack.push(new ExprVar(mapTo.getSPARQLName()));
 					return;
 				}

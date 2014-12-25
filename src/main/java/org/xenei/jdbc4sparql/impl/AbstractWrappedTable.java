@@ -118,11 +118,12 @@ public abstract class AbstractWrappedTable extends AbstractTable {
 							String.format("Column %s may not be null",
 									getColumn(i).getName()));
 				}
-			} else {
+			}
+			else {
 				Class<?> clazz;
 				try {
 					clazz = TypeConverter.getJavaType(c.getType());
-				} catch (SQLDataException e) {
+				} catch (final SQLDataException e) {
 					throw new IllegalArgumentException(
 							String.format(
 									"Column %s can not receive values of class %s -- Conversion Error (%s)",

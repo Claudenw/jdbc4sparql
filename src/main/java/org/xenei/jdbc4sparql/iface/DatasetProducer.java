@@ -1,7 +1,5 @@
 package org.xenei.jdbc4sparql.iface;
 
-import com.hp.hpl.jena.rdf.model.Model;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -16,6 +14,8 @@ import java.util.zip.ZipInputStream;
 
 import org.apache.commons.lang.StringUtils;
 import org.xenei.jdbc4sparql.J4SPropertyNames;
+
+import com.hp.hpl.jena.rdf.model.Model;
 
 /**
  * Interface that defines the dataset producer.
@@ -67,7 +67,7 @@ public interface DatasetProducer {
 			if (!DatasetProducer.PROPERTIES_ENTRY_NAME.equals(name)) {
 				throw new IllegalStateException(
 						DatasetProducer.PROPERTIES_ENTRY_NAME
-								+ " was not the first entry");
+						+ " was not the first entry");
 			}
 			final Properties props = new Properties();
 			props.load(zis);

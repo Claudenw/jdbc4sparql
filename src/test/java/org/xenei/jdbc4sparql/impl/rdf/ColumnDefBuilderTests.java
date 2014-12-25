@@ -1,8 +1,5 @@
 package org.xenei.jdbc4sparql.impl.rdf;
 
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
-
 import java.sql.DatabaseMetaData;
 import java.sql.Types;
 
@@ -11,6 +8,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.xenei.jdbc4sparql.iface.ColumnDef;
+
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
 
 public class ColumnDefBuilderTests {
 	private Model model;
@@ -51,13 +51,13 @@ public class ColumnDefBuilderTests {
 	public void testSetValuesCreation() {
 		final RdfColumnDef.Builder builder = new RdfColumnDef.Builder();
 		builder.setType(Types.VARCHAR).setAutoIncrement(true)
-				.setCaseSensitive(true).setColumnClassName("foo")
-				.setCurrency(true).setDefinitelyWritable(true)
-				.setDisplaySize(5)
-				.setNullable(DatabaseMetaData.columnNullableUnknown)
-				.setPrecision(3).setReadOnly(true).setScale(10)
-				.setSearchable(true).setSigned(true).setTypeName("bar")
-				.setWritable(true);
+		.setCaseSensitive(true).setColumnClassName("foo")
+		.setCurrency(true).setDefinitelyWritable(true)
+		.setDisplaySize(5)
+		.setNullable(DatabaseMetaData.columnNullableUnknown)
+		.setPrecision(3).setReadOnly(true).setScale(10)
+		.setSearchable(true).setSigned(true).setTypeName("bar")
+		.setWritable(true);
 
 		final ColumnDef cd = builder.build(model);
 

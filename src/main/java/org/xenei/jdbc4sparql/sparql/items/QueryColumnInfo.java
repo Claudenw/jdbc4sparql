@@ -1,7 +1,6 @@
 package org.xenei.jdbc4sparql.sparql.items;
 
 import java.sql.SQLDataException;
-import java.util.List;
 
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.name.ColumnName;
@@ -9,46 +8,34 @@ import org.xenei.jdbc4sparql.iface.name.NameSegments;
 import org.xenei.jdbc4sparql.sparql.CheckTypeF;
 import org.xenei.jdbc4sparql.sparql.ForceTypeF;
 
-import com.hp.hpl.jena.util.iterator.ExtendedIterator;
-import com.hp.hpl.jena.util.iterator.Filter;
-
 /**
  * A column in a table in the query. This class maps the column to an alias
  * name. This may be a column in a base table or a function.
  */
 public class QueryColumnInfo extends QueryItemInfo<Column, ColumnName> {
 
-	private CheckTypeF typeFilter;
-
-	public static NameSegments createSegments(NameSegments segments) {
-		return NameSegments.getInstance(segments.isCatalog(), segments.isSchema(),
-				segments.isSchema() || segments.isTable(), true);
-	}
-
-	private static Column checkColumn(Column column) {
+	private static Column checkColumn(final Column column) {
 		if (column == null) {
 			throw new IllegalArgumentException("Column may not be null");
 		}
 		return column;
 	}
 
+	public static NameSegments createSegments(final NameSegments segments) {
+		return NameSegments.getInstance(segments.isCatalog(),
+				segments.isSchema(), segments.isSchema() || segments.isTable(),
+				true);
+	}
+
+	private CheckTypeF typeFilter;
+
 	public QueryColumnInfo(final Column column) {
 		this(column, column.isOptional());
 	}
 
-	public QueryColumnInfo(final Column column, final ColumnName alias) {
-		this(column, alias, column.isOptional());
-	}
-
-	public QueryColumnInfo(final Column column, final ColumnName alias,
-			boolean optional) {
-		super(column, alias, optional);
-
-	}
-
 	/**
 	 * Create a QueryColumnInfo not associated with a QueryInfoSet
-	 * 
+	 *
 	 * @param tableInfo
 	 * @param column
 	 * @param alias
@@ -58,26 +45,22 @@ public class QueryColumnInfo extends QueryItemInfo<Column, ColumnName> {
 		super(column, checkColumn(column).getName(), optional);
 	}
 
-	public QueryColumnInfo createAlias(final ColumnName alias) throws SQLDataException {
-		QueryColumnInfo retval = new QueryColumnInfo(this.getColumn(), alias);
+	public QueryColumnInfo(final Column column, final ColumnName alias) {
+		this(column, alias, column.isOptional());
+	}
+
+	public QueryColumnInfo(final Column column, final ColumnName alias,
+			final boolean optional) {
+		super(column, alias, optional);
+
+	}
+
+	public QueryColumnInfo createAlias(final ColumnName alias)
+			throws SQLDataException {
+		final QueryColumnInfo retval = new QueryColumnInfo(this.getColumn(),
+				alias);
 		retval.typeFilter = getTypeFilter();
 		return retval;
-	}
-
-	@Override
-	public void setSegments(NameSegments segments) {
-		super.setSegments(createSegments(segments));
-	}
-
-	public CheckTypeF getTypeFilter() throws SQLDataException {
-		if (typeFilter == null) {
-			typeFilter = new CheckTypeF(this);
-		}
-		return typeFilter;
-	}
-
-	public ForceTypeF getDataFilter() throws SQLDataException {
-		return new ForceTypeF(getTypeFilter());
 	}
 
 	@Override
@@ -94,6 +77,17 @@ public class QueryColumnInfo extends QueryItemInfo<Column, ColumnName> {
 		return getBaseObject();
 	}
 
+	public ForceTypeF getDataFilter() throws SQLDataException {
+		return new ForceTypeF(getTypeFilter());
+	}
+
+	public CheckTypeF getTypeFilter() throws SQLDataException {
+		if (typeFilter == null) {
+			typeFilter = new CheckTypeF(this);
+		}
+		return typeFilter;
+	}
+
 	@Override
 	public int hashCode() {
 		return getName().hashCode();
@@ -105,9 +99,14 @@ public class QueryColumnInfo extends QueryItemInfo<Column, ColumnName> {
 	}
 
 	@Override
+	public void setSegments(final NameSegments segments) {
+		super.setSegments(createSegments(segments));
+	}
+
+	@Override
 	public String toString() {
-		return String.format("QueryColumnInfo[%s(%s)]", getColumn().getSQLName(),
-				getName());
+		return String.format("QueryColumnInfo[%s(%s)]", getColumn()
+				.getSQLName(), getName());
 	}
 
 }

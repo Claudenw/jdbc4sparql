@@ -1,13 +1,13 @@
 package org.xenei.jdbc4sparql.sparql.parser.jsqlparser.functions;
 
-import com.hp.hpl.jena.sparql.expr.Expr;
-import com.hp.hpl.jena.sparql.expr.nodevalue.NodeValueString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.sql.SQLException;
-import java.util.Stack;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 import net.sf.jsqlparser.expression.Function;
 
 import org.junit.Before;
@@ -20,23 +20,26 @@ import org.xenei.jdbc4sparql.iface.name.ColumnName;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 import org.xenei.jdbc4sparql.sparql.items.QueryColumnInfo;
+import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.functions.AbstractFunctionHandler.FuncInfo;
+
+import com.hp.hpl.jena.sparql.expr.Expr;
+import com.hp.hpl.jena.sparql.expr.nodevalue.NodeValueString;
 
 public class SystemFunctionHandlerTests {
 	private SystemFunctionHandler handler;
-	private Stack<Expr> stack;
-	private SparqlQueryBuilder builder;
+	private final SparqlQueryBuilder builder;
 	private Function func;
-	private CatalogName catName;
-	private RdfCatalog catalog;
-	private ColumnDef colDef;
+	private final CatalogName catName;
+	private final RdfCatalog catalog;
+	private final ColumnDef colDef;
+	private String alias;
 
 	public SystemFunctionHandlerTests() {
-		ColumnName colName = mock(ColumnName.class);
-		QueryColumnInfo colInfo = mock(QueryColumnInfo.class);
+		final QueryColumnInfo colInfo = mock(QueryColumnInfo.class);
 		catName = new CatalogName("catalogName");
 		builder = mock(SparqlQueryBuilder.class);
 		catalog = mock(RdfCatalog.class);
-		Column column = mock(Column.class);
+		final Column column = mock(Column.class);
 		colDef = mock(ColumnDef.class);
 		when(builder.getCatalog()).thenReturn(catalog);
 		when(catalog.getName()).thenReturn(catName);
@@ -48,52 +51,56 @@ public class SystemFunctionHandlerTests {
 	@Before
 	public void setup() {
 		func = new Function();
-		stack = new Stack<Expr>();
-		handler = new SystemFunctionHandler(builder, stack);
+		handler = new SystemFunctionHandler(builder);
+		alias = "Alias";
 	}
 
 	@Test
 	public void testCatalogFunction() throws SQLException {
-		Expr expr = null;
 		func.setName("catalog");
-		assertNotNull(handler.handle(func));
-		expr = stack.pop();
+		FuncInfo funcInfo = handler.handle(func, alias);
+		assertEquals(alias, funcInfo.columnName.getShortName());
+		Expr expr = funcInfo.expr;
 		assertTrue(expr instanceof NodeValueString);
 		assertEquals("catalogName", ((NodeValueString) expr).asString());
 
 		func.setName("CATALOG");
-		assertNotNull(handler.handle(func));
-		expr = stack.pop();
+		funcInfo = handler.handle(func, alias);
+		assertEquals(alias, funcInfo.columnName.getShortName());
+		expr = funcInfo.expr;
 		assertTrue(expr instanceof NodeValueString);
 		assertEquals("catalogName", ((NodeValueString) expr).asString());
 
 		func.setName("CaTaLoG");
-		assertNotNull(handler.handle(func));
-		expr = stack.pop();
+		funcInfo = handler.handle(func, alias);
+		assertEquals(alias, funcInfo.columnName.getShortName());
+		expr = funcInfo.expr;
 		assertTrue(expr instanceof NodeValueString);
 		assertEquals("catalogName", ((NodeValueString) expr).asString());
 	}
 
 	@Test
 	public void testVersionFunction() throws SQLException {
-		Expr expr = null;
 		func.setName("version");
-		assertNotNull(handler.handle(func));
-		expr = stack.pop();
+		FuncInfo funcInfo = handler.handle(func, alias);
+		assertEquals(alias, funcInfo.columnName.getShortName());
+		Expr expr = funcInfo.expr;
 		assertTrue(expr instanceof NodeValueString);
 		assertEquals(J4SDriver.getVersion(),
 				((NodeValueString) expr).asString());
 
 		func.setName("VERSION");
-		assertNotNull(handler.handle(func));
-		expr = stack.pop();
+		funcInfo = handler.handle(func, alias);
+		assertEquals(alias, funcInfo.columnName.getShortName());
+		expr = funcInfo.expr;
 		assertTrue(expr instanceof NodeValueString);
 		assertEquals(J4SDriver.getVersion(),
 				((NodeValueString) expr).asString());
 
 		func.setName("VerSion");
-		assertNotNull(handler.handle(func));
-		expr = stack.pop();
+		funcInfo = handler.handle(func, alias);
+		assertEquals(alias, funcInfo.columnName.getShortName());
+		expr = funcInfo.expr;
 		assertTrue(expr instanceof NodeValueString);
 		assertEquals(J4SDriver.getVersion(),
 				((NodeValueString) expr).asString());

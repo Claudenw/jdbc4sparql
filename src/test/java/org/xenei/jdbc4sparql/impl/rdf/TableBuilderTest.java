@@ -1,11 +1,5 @@
 package org.xenei.jdbc4sparql.impl.rdf;
 
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.rdf.model.Property;
-import com.hp.hpl.jena.rdf.model.RDFList;
-import com.hp.hpl.jena.rdf.model.RDFNode;
-
 import java.util.List;
 
 import org.junit.After;
@@ -18,6 +12,12 @@ import org.xenei.jdbc4sparql.iface.NameFilter;
 import org.xenei.jdbc4sparql.iface.name.SchemaName;
 import org.xenei.jena.entities.EntityManagerFactory;
 
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.rdf.model.Property;
+import com.hp.hpl.jena.rdf.model.RDFList;
+import com.hp.hpl.jena.rdf.model.RDFNode;
+
 public class TableBuilderTest {
 
 	private Model model;
@@ -28,8 +28,8 @@ public class TableBuilderTest {
 	public void setUp() throws Exception {
 		model = ModelFactory.createDefaultModel();
 		final RdfTableDef.Builder builder = new RdfTableDef.Builder()
-				.addColumnDef(
-						RdfColumnDef.Builder.getStringBuilder().build(model))
+		.addColumnDef(
+				RdfColumnDef.Builder.getStringBuilder().build(model))
 				.addColumnDef(
 						RdfColumnDef.Builder.getIntegerBuilder().build(model));
 		tableDef = builder.build(model);
@@ -48,9 +48,9 @@ public class TableBuilderTest {
 	@Test
 	public void testDefaultBuilder() throws Exception {
 		final RdfTable.Builder builder = new RdfTable.Builder()
-				.setTableDef(tableDef).setName("table")
-				.setColumn(0, "StringCol").setColumn(1, "IntCol")
-				.setSchema(mockSchema).setType("testing Table");
+		.setTableDef(tableDef).setName("table")
+		.setColumn(0, "StringCol").setColumn(1, "IntCol")
+		.setSchema(mockSchema).setType("testing Table");
 		final RdfTable table = builder.build(model);
 
 		Assert.assertEquals(2, table.getColumnCount());

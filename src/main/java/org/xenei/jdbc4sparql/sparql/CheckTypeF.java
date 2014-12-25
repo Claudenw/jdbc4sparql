@@ -1,14 +1,5 @@
 package org.xenei.jdbc4sparql.sparql;
 
-import com.hp.hpl.jena.graph.Node;
-import com.hp.hpl.jena.sparql.core.Var;
-import com.hp.hpl.jena.sparql.engine.binding.Binding;
-import com.hp.hpl.jena.sparql.expr.Expr;
-import com.hp.hpl.jena.sparql.expr.ExprFunction1;
-import com.hp.hpl.jena.sparql.expr.ExprVar;
-import com.hp.hpl.jena.sparql.expr.NodeValue;
-import com.hp.hpl.jena.sparql.function.FunctionEnv;
-
 import java.sql.ResultSetMetaData;
 import java.sql.SQLDataException;
 import java.sql.SQLException;
@@ -17,6 +8,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xenei.jdbc4sparql.iface.TypeConverter;
 import org.xenei.jdbc4sparql.sparql.items.QueryColumnInfo;
+
+import com.hp.hpl.jena.graph.Node;
+import com.hp.hpl.jena.sparql.core.Var;
+import com.hp.hpl.jena.sparql.engine.binding.Binding;
+import com.hp.hpl.jena.sparql.expr.Expr;
+import com.hp.hpl.jena.sparql.expr.ExprFunction1;
+import com.hp.hpl.jena.sparql.expr.ExprVar;
+import com.hp.hpl.jena.sparql.expr.NodeValue;
+import com.hp.hpl.jena.sparql.function.FunctionEnv;
 
 /**
  * A local filter that removes any values that are null and not allowed to be
@@ -28,7 +28,8 @@ public class CheckTypeF extends ExprFunction1 {
 	private Object convertedValue;
 	private static final Logger LOG = LoggerFactory.getLogger(CheckTypeF.class);
 
-	private static QueryColumnInfo checkColumnInfo(QueryColumnInfo columnInfo) {
+	private static QueryColumnInfo checkColumnInfo(
+			final QueryColumnInfo columnInfo) {
 		if (columnInfo == null) {
 			throw new IllegalArgumentException("Column may not be null");
 		}
@@ -48,7 +49,7 @@ public class CheckTypeF extends ExprFunction1 {
 	public Expr copy(final Expr expr) {
 		try {
 			return new CheckTypeF(columnInfo);
-		} catch (SQLDataException e) {
+		} catch (final SQLDataException e) {
 			throw new IllegalStateException(String.format(
 					"Error while copying: %s", e.getMessage()), e);
 		}
@@ -75,7 +76,7 @@ public class CheckTypeF extends ExprFunction1 {
 		final Var v = expr.asVar();
 		final Node n = binding.get(v);
 		if (n == null) {
-			boolean retval = columnInfo.getColumn().getColumnDef()
+			final boolean retval = columnInfo.getColumn().getColumnDef()
 					.getNullable() == ResultSetMetaData.columnNullable;
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("{} ({}) of {} ", this, columnInfo.getName(), binding);
@@ -86,13 +87,17 @@ public class CheckTypeF extends ExprFunction1 {
 		Object columnObject;
 		if (n.isLiteral()) {
 			columnObject = n.getLiteralValue();
-		} else if (n.isURI()) {
+		}
+		else if (n.isURI()) {
 			columnObject = n.getURI();
-		} else if (n.isBlank()) {
+		}
+		else if (n.isBlank()) {
 			columnObject = n.getBlankNodeId().toString();
-		} else if (n.isVariable()) {
+		}
+		else if (n.isVariable()) {
 			columnObject = n.getName();
-		} else {
+		}
+		else {
 			columnObject = n.toString();
 		}
 
@@ -103,14 +108,13 @@ public class CheckTypeF extends ExprFunction1 {
 			if (convertedValue == null) {
 				retval = columnInfo.getColumn().getColumnDef().getNullable() == ResultSetMetaData.columnNullable;
 			}
-			if (LOG.isDebugEnabled())
-			{
+			if (LOG.isDebugEnabled()) {
 				LOG.debug("{} ({}) of {} ", this, columnInfo.getName(), binding);
 				LOG.debug("with value ({}) {} is {}", n, convertedValue, retval);
 			}
 			return retval ? NodeValue.TRUE : NodeValue.FALSE;
 
-		} catch (SQLException e) {
+		} catch (final SQLException e) {
 			return NodeValue.FALSE;
 		}
 	}

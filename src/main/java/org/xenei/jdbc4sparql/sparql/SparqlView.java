@@ -17,9 +17,6 @@
  */
 package org.xenei.jdbc4sparql.sparql;
 
-import com.hp.hpl.jena.util.iterator.Map1;
-import com.hp.hpl.jena.util.iterator.WrappedIterator;
-
 import java.sql.SQLException;
 import java.util.List;
 
@@ -39,6 +36,9 @@ import org.xenei.jdbc4sparql.impl.NameUtils;
 import org.xenei.jdbc4sparql.impl.virtual.VirtualCatalog;
 import org.xenei.jdbc4sparql.impl.virtual.VirtualSchema;
 import org.xenei.jdbc4sparql.sparql.items.QueryColumnInfo;
+
+import com.hp.hpl.jena.util.iterator.Map1;
+import com.hp.hpl.jena.util.iterator.WrappedIterator;
 
 public class SparqlView extends AbstractTable {
 	class RenamedColumn implements Column {
@@ -116,10 +116,11 @@ public class SparqlView extends AbstractTable {
 	public static final String NAME_SPACE = "http://org.xenei.jdbc4sparql/vocab#View";
 
 	public SparqlView(final SparqlQueryBuilder builder) {
-		if (LOG.isDebugEnabled())
+		if (LOG.isDebugEnabled()) {
 			SparqlView.LOG.debug(builder.toString());
+		}
 		this.builder = builder;
-		Catalog catalog = builder.getCatalog(VirtualCatalog.NAME);
+		final Catalog catalog = builder.getCatalog(VirtualCatalog.NAME);
 		this.schema = catalog.getSchema(VirtualSchema.NAME);
 		this.name = schema.getName().getTableName(NameUtils.createUUIDName());
 	}

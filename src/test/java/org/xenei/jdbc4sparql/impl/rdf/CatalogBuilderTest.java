@@ -1,8 +1,5 @@
 package org.xenei.jdbc4sparql.impl.rdf;
 
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
-
 import java.util.Set;
 
 import org.junit.After;
@@ -12,6 +9,9 @@ import org.junit.Test;
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.meta.MetaCatalogBuilder;
+
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
 
 public class CatalogBuilderTest {
 
@@ -33,7 +33,7 @@ public class CatalogBuilderTest {
 	@Test
 	public void testAddSchema() {
 		final RdfCatalog.Builder builder = new RdfCatalog.Builder()
-				.setName("catalog");
+		.setName("catalog");
 
 		final RdfCatalog catalog = builder.build(model);
 		Assert.assertEquals("catalog", catalog.getName().getShortName());
@@ -50,7 +50,7 @@ public class CatalogBuilderTest {
 	@Test
 	public void testDefault() {
 		final RdfCatalog.Builder builder = new RdfCatalog.Builder()
-				.setName("catalog");
+		.setName("catalog");
 
 		final Catalog catalog = builder.build(model);
 
@@ -63,7 +63,7 @@ public class CatalogBuilderTest {
 	@Test
 	public void testFindSchema() {
 		final RdfCatalog.Builder builder = new RdfCatalog.Builder()
-				.setName("catalog");
+		.setName("catalog");
 
 		final RdfCatalog catalog = builder.build(model);
 
@@ -77,7 +77,7 @@ public class CatalogBuilderTest {
 	@Test
 	public void testGetSchema() throws Exception {
 		final RdfCatalog.Builder builder = new RdfCatalog.Builder()
-				.setName("catalog");
+		.setName("catalog");
 
 		final RdfCatalog catalog = builder.build(model);
 
@@ -90,7 +90,7 @@ public class CatalogBuilderTest {
 	@Test
 	public void testGetSchemas() {
 		final RdfCatalog.Builder builder = new RdfCatalog.Builder()
-				.setName("catalog");
+		.setName("catalog");
 
 		final RdfCatalog catalog = builder.build(model);
 

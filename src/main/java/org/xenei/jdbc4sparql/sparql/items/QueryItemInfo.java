@@ -1,11 +1,10 @@
 package org.xenei.jdbc4sparql.sparql.items;
 
-import com.hp.hpl.jena.sparql.core.Var;
-import com.hp.hpl.jena.sparql.expr.Expr;
-
 import org.xenei.jdbc4sparql.iface.name.GUIDObject;
 import org.xenei.jdbc4sparql.iface.name.ItemName;
 import org.xenei.jdbc4sparql.iface.name.NameSegments;
+
+import com.hp.hpl.jena.sparql.core.Var;
 
 /**
  * The base class for the Query items.
@@ -13,16 +12,16 @@ import org.xenei.jdbc4sparql.iface.name.NameSegments;
  * @param <N>
  *            The type of the name for query item.
  */
-public class QueryItemInfo<T extends NamedObject<N>, N extends ItemName> implements NamedObject<N>,
-		GUIDObject {
+public class QueryItemInfo<T extends NamedObject<N>, N extends ItemName>
+implements NamedObject<N>, GUIDObject {
 	private final T baseObject;
 	private final N name;
 	private final Var baseVar;
 	private boolean optional;
 
-	protected QueryItemInfo(final T baseObject, final N name, final boolean optional) {
-		if (baseObject == null)
-		{
+	protected QueryItemInfo(final T baseObject, final N name,
+			final boolean optional) {
+		if (baseObject == null) {
 			throw new IllegalArgumentException("baseObject may not be null");
 		}
 		if (name == null) {
@@ -34,18 +33,33 @@ public class QueryItemInfo<T extends NamedObject<N>, N extends ItemName> impleme
 		this.optional = optional;
 
 	}
-	
-	protected T getBaseObject()
-	{
+
+	@Override
+	public boolean equals(final Object o) {
+		if (o instanceof QueryItemInfo) {
+			final QueryItemInfo<?, ?> other = (QueryItemInfo<?, ?>) o;
+			return this.getName().equals(other.getName());
+			// && this.isOptional() == other.isOptional();
+		}
+		return false;
+	}
+
+	protected T getBaseObject() {
 		return baseObject;
 	}
 
-	protected void setSegments(NameSegments usedSegments) {
-		this.name.setUsedSegments(usedSegments);
+	@Override
+	public String getGUID() {
+		return baseObject.getName().getGUID();
 	}
 
-	public NameSegments getSegments() {
-		return this.name.getUsedSegments();
+	/**
+	 * Get the alias variable for this column
+	 *
+	 * @return The variable based on the alias from the columnName
+	 */
+	public Var getGUIDVar() {
+		return baseVar;
 	}
 
 	/**
@@ -58,6 +72,10 @@ public class QueryItemInfo<T extends NamedObject<N>, N extends ItemName> impleme
 		return name;
 	}
 
+	public NameSegments getSegments() {
+		return this.name.getUsedSegments();
+	}
+
 	/**
 	 * Get the variable for the query item.
 	 *
@@ -67,13 +85,9 @@ public class QueryItemInfo<T extends NamedObject<N>, N extends ItemName> impleme
 		return Var.alloc(this.name.getSPARQLName());
 	}
 
-	/**
-	 * Get the alias variable for this column
-	 * 
-	 * @return The variable based on the alias from the columnName
-	 */
-	public Var getGUIDVar() {
-		return baseVar;
+	@Override
+	public int hashCode() {
+		return getName().hashCode();
 	}
 
 	/**
@@ -83,11 +97,6 @@ public class QueryItemInfo<T extends NamedObject<N>, N extends ItemName> impleme
 	 */
 	public boolean isOptional() {
 		return optional;
-	}
-
-	@Override
-	public String getGUID() {
-		return baseObject.getName().getGUID();
 	}
 
 	/**
@@ -100,24 +109,13 @@ public class QueryItemInfo<T extends NamedObject<N>, N extends ItemName> impleme
 		this.optional = optional;
 	}
 
+	protected void setSegments(final NameSegments usedSegments) {
+		this.name.setUsedSegments(usedSegments);
+	}
+
 	@Override
 	public String toString() {
 		return getName().toString();
-	}
-
-	@Override
-	public boolean equals(Object o) {
-		if (o instanceof QueryItemInfo) {
-			QueryItemInfo<?,?> other = (QueryItemInfo<?,?>) o;
-			return this.getName().equals(other.getName())
-					&& this.isOptional() == other.isOptional();
-		}
-		return false;
-	}
-
-	@Override
-	public int hashCode() {
-		return getName().hashCode();
 	}
 
 }

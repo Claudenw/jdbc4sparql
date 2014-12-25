@@ -17,16 +17,6 @@
  */
 package org.xenei.jdbc4sparql.iface;
 
-import com.hp.hpl.jena.datatypes.RDFDatatype;
-import com.hp.hpl.jena.datatypes.TypeMapper;
-import com.hp.hpl.jena.datatypes.xsd.XSDDateTime;
-import com.hp.hpl.jena.datatypes.xsd.XSDDuration;
-import com.hp.hpl.jena.graph.Node;
-import com.hp.hpl.jena.graph.NodeFactory;
-import com.hp.hpl.jena.graph.impl.LiteralLabel;
-import com.hp.hpl.jena.graph.impl.LiteralLabelFactory;
-import com.hp.hpl.jena.rdf.model.Literal;
-import com.hp.hpl.jena.sparql.expr.NodeValue;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -47,6 +37,17 @@ import javax.sql.rowset.serial.SerialClob;
 
 import org.apache.commons.io.IOUtils;
 
+import com.hp.hpl.jena.datatypes.RDFDatatype;
+import com.hp.hpl.jena.datatypes.TypeMapper;
+import com.hp.hpl.jena.datatypes.xsd.XSDDateTime;
+import com.hp.hpl.jena.datatypes.xsd.XSDDuration;
+import com.hp.hpl.jena.graph.Node;
+import com.hp.hpl.jena.graph.NodeFactory;
+import com.hp.hpl.jena.graph.impl.LiteralLabel;
+import com.hp.hpl.jena.graph.impl.LiteralLabelFactory;
+import com.hp.hpl.jena.rdf.model.Literal;
+import com.hp.hpl.jena.sparql.expr.NodeValue;
+
 /**
  * Class to convert to and from SQL, SPARQL and Java types.
  *
@@ -58,19 +59,21 @@ public final class TypeConverter {
 	private TypeConverter() {
 	}
 
-	public static NodeValue getNodeValue(Object value) {
+	public static NodeValue getNodeValue(final Object value) {
 		// add NodeValue types to SPARQLToJava class
 		// so building a node value is easier.
 		if (value == null) {
 			return null;
 		}
-		SPARQLToJava stj = getSPARQLType(value.getClass());
-		RDFDatatype dt = TypeMapper.getInstance().getTypeByName(stj.sparqlType);
+		final SPARQLToJava stj = getSPARQLType(value.getClass());
+		final RDFDatatype dt = TypeMapper.getInstance().getTypeByName(
+				stj.sparqlType);
 		LiteralLabel lit = null;
 		Node node = null;
 		if (dt == null) {
 			node = NodeFactory.createLiteral(value.toString());
-		} else {
+		}
+		else {
 			lit = LiteralLabelFactory.create(value, null, dt);
 			node = NodeFactory.createLiteral(lit);
 		}
@@ -79,7 +82,7 @@ public final class TypeConverter {
 
 	/**
 	 * Get the java type from the sql type.
-	 * 
+	 *
 	 * @param sqlType
 	 *            The sql type to lookup.
 	 * @return The java class for the type.
@@ -97,7 +100,7 @@ public final class TypeConverter {
 
 	/**
 	 * Get the java type from the SPQRQL literal.
-	 * 
+	 *
 	 * @param literal
 	 *            The SPARQL literal.
 	 * @return the java class for the literal.
@@ -124,7 +127,7 @@ public final class TypeConverter {
 
 	/**
 	 * Get the java object for the literal value.
-	 * 
+	 *
 	 * @param literal
 	 *            The literal to look up.
 	 * @return The object.
@@ -139,7 +142,7 @@ public final class TypeConverter {
 
 	/**
 	 * Get the sql type for the java class.
-	 * 
+	 *
 	 * @param javaType
 	 *            the java class to lookup.
 	 * @return The sql Type for the class.
@@ -164,7 +167,7 @@ public final class TypeConverter {
 
 	/**
 	 * True if the sql type is a boolean.
-	 * 
+	 *
 	 * @param sqlType
 	 *            the sql type.
 	 * @return true or false.
@@ -176,7 +179,7 @@ public final class TypeConverter {
 
 	/**
 	 * True if the sql type is a date type
-	 * 
+	 *
 	 * @param sqlType
 	 *            the sql type.
 	 * @return true or false.
@@ -188,7 +191,7 @@ public final class TypeConverter {
 
 	/**
 	 * True if the sqlType is numeric.
-	 * 
+	 *
 	 * @param sqlType
 	 *            the sql type
 	 * @return true or false
@@ -201,7 +204,7 @@ public final class TypeConverter {
 
 	/**
 	 * True if the sqlType is a time type.
-	 * 
+	 *
 	 * @param sqlType
 	 * @return true or false
 	 * @throws SQLDataException
@@ -212,7 +215,7 @@ public final class TypeConverter {
 
 	/**
 	 * True if the sqlType is a timestamp type.
-	 * 
+	 *
 	 * @param sqlType
 	 * @return true or false.
 	 * @throws SQLDataException
@@ -230,7 +233,7 @@ public final class TypeConverter {
 		int sqlType;
 		Class<?> javaType;
 
-		SQLToJava(int sqlType, Class<?> javaType) {
+		SQLToJava(final int sqlType, final Class<?> javaType) {
 			this.sqlType = sqlType;
 			this.javaType = javaType;
 		}
@@ -240,30 +243,31 @@ public final class TypeConverter {
 	// convert
 	// from java class to SQL class.
 	private static final SQLToJava[] SQL_TO_JAVA = {
-			// convert types
-			new SQLToJava(Types.VARCHAR, String.class),
-			new SQLToJava(Types.NUMERIC, BigDecimal.class),
-			new SQLToJava(Types.BOOLEAN, Boolean.class),
-			new SQLToJava(Types.TINYINT, Byte.class),
-			new SQLToJava(Types.SMALLINT, Short.class),
-			new SQLToJava(Types.INTEGER, Integer.class),
-			new SQLToJava(Types.BIGINT, Long.class),
-			new SQLToJava(Types.REAL, Float.class),
-			new SQLToJava(Types.DOUBLE, Double.class),
-			new SQLToJava(Types.DATE, java.sql.Date.class),
-			new SQLToJava(Types.TIME, java.sql.Time.class),
-			new SQLToJava(Types.TIMESTAMP, java.sql.Timestamp.class),
-			new SQLToJava(Types.BLOB, byte[].class),
-			new SQLToJava(Types.CLOB, char[].class),
+		// convert types
+		new SQLToJava(Types.VARCHAR, String.class),
+		new SQLToJava(Types.NUMERIC, BigDecimal.class),
+		new SQLToJava(Types.BOOLEAN, Boolean.class),
+		new SQLToJava(Types.TINYINT, Byte.class),
+		new SQLToJava(Types.SMALLINT, Short.class),
+		new SQLToJava(Types.INTEGER, Integer.class),
+		new SQLToJava(Types.BIGINT, Long.class),
+		new SQLToJava(Types.REAL, Float.class),
+		new SQLToJava(Types.DOUBLE, Double.class),
+		new SQLToJava(Types.DATE, java.sql.Date.class),
+		new SQLToJava(Types.TIME, java.sql.Time.class),
+		new SQLToJava(Types.TIMESTAMP, java.sql.Timestamp.class),
+		new SQLToJava(Types.BLOB, byte[].class),
+		new SQLToJava(Types.CLOB, char[].class),
 
-			// duplicate types
-			new SQLToJava(Types.BIT, Boolean.class),
-			new SQLToJava(Types.BINARY, byte[].class),
-			new SQLToJava(Types.LONGNVARCHAR, byte[].class),
-			new SQLToJava(Types.LONGVARCHAR, byte[].class),
-			new SQLToJava(Types.DECIMAL, BigDecimal.class),
-			new SQLToJava(Types.FLOAT, Double.class),
-			new SQLToJava(Types.CHAR, String.class), };
+		// duplicate types
+		new SQLToJava(Types.BIT, Boolean.class),
+		new SQLToJava(Types.BINARY, byte[].class),
+		new SQLToJava(Types.LONGNVARCHAR, byte[].class),
+		new SQLToJava(Types.LONGVARCHAR, byte[].class),
+		new SQLToJava(Types.DECIMAL, BigDecimal.class),
+		new SQLToJava(Types.FLOAT, Double.class),
+		new SQLToJava(Types.CHAR, String.class),
+	};
 
 	/**
 	 * The map of sparqltype to java type
@@ -272,7 +276,7 @@ public final class TypeConverter {
 		String sparqlType;
 		Class<?> javaType;
 
-		SPARQLToJava(String sparqlType, Class<?> javaType) {
+		SPARQLToJava(final String sparqlType, final Class<?> javaType) {
 			this.sparqlType = sparqlType;
 			this.javaType = javaType;
 		}
@@ -282,101 +286,102 @@ public final class TypeConverter {
 	// convert
 	// from java class to SPARQL class.
 	private static final SPARQLToJava[] SPARQL_TO_JAVA = {
-			// convert types
-			new SPARQLToJava(
-					"http://www.w3.org/2001/XMLSchema#normalizedString",
-					String.class),
-			new SPARQLToJava("http://www.w3.org/2001/XMLSchema#integer",
-					BigInteger.class),
-			new SPARQLToJava("http://www.w3.org/2001/XMLSchema#short",
-					Short.class),
-			new SPARQLToJava("http://www.w3.org/2001/XMLSchema#time",
-					Time.class),
-			new SPARQLToJava("http://www.w3.org/2001/XMLSchema#float",
-					Float.class),
-			new SPARQLToJava("http://www.w3.org/2001/XMLSchema#base64Binary",
-					byte[].class),
-			new SPARQLToJava("http://www.w3.org/2001/XMLSchema#double",
-					Double.class),
-			new SPARQLToJava("http://www.w3.org/2001/XMLSchema#dateTime",
-					XSDDateTime.class),
-			new SPARQLToJava("http://www.w3.org/2001/XMLSchema#byte",
-					Byte.class),
-			new SPARQLToJava("http://www.w3.org/2001/XMLSchema#anyURI",
-					URI.class),
-			new SPARQLToJava("http://www.w3.org/2001/XMLSchema#duration",
-					XSDDuration.class),
-			new SPARQLToJava("http://www.w3.org/2001/XMLSchema#int",
-					Integer.class),
-			new SPARQLToJava("http://www.w3.org/2001/XMLSchema#boolean",
-					Boolean.class),
-			new SPARQLToJava("http://www.w3.org/2001/XMLSchema#decimal",
-					BigDecimal.class),
-			new SPARQLToJava("http://www.w3.org/2001/XMLSchema#long",
-					Long.class),
+		// convert types
+		new SPARQLToJava(
+				"http://www.w3.org/2001/XMLSchema#normalizedString",
+				String.class),
+				new SPARQLToJava("http://www.w3.org/2001/XMLSchema#integer",
+						BigInteger.class),
+						new SPARQLToJava("http://www.w3.org/2001/XMLSchema#short",
+								Short.class),
+								new SPARQLToJava("http://www.w3.org/2001/XMLSchema#time",
+										Time.class),
+										new SPARQLToJava("http://www.w3.org/2001/XMLSchema#float",
+												Float.class),
+												new SPARQLToJava("http://www.w3.org/2001/XMLSchema#base64Binary",
+														byte[].class),
+														new SPARQLToJava("http://www.w3.org/2001/XMLSchema#double",
+																Double.class),
+																new SPARQLToJava("http://www.w3.org/2001/XMLSchema#dateTime",
+																		XSDDateTime.class),
+																		new SPARQLToJava("http://www.w3.org/2001/XMLSchema#byte",
+																				Byte.class),
+																				new SPARQLToJava("http://www.w3.org/2001/XMLSchema#anyURI",
+																						URI.class),
+																						new SPARQLToJava("http://www.w3.org/2001/XMLSchema#duration",
+																								XSDDuration.class),
+																								new SPARQLToJava("http://www.w3.org/2001/XMLSchema#int",
+																										Integer.class),
+																										new SPARQLToJava("http://www.w3.org/2001/XMLSchema#boolean",
+																												Boolean.class),
+																												new SPARQLToJava("http://www.w3.org/2001/XMLSchema#decimal",
+																														BigDecimal.class),
+																														new SPARQLToJava("http://www.w3.org/2001/XMLSchema#long",
+																																Long.class),
 
-			// duplicate types
-			new SPARQLToJava("http://www.w3.org/2001/XMLSchema#NMTOKEN",
-					String.class),
-			new SPARQLToJava("http://www.w3.org/2001/XMLSchema#unsignedInt",
-					String.class),
-			new SPARQLToJava("http://www.w3.org/2001/XMLSchema#unsignedShort",
-					String.class),
-			new SPARQLToJava("http://www.w3.org/2001/XMLSchema#unsignedLong",
-					String.class),
-			new SPARQLToJava("http://www.w3.org/2001/XMLSchema#token",
-					String.class),
-			new SPARQLToJava("http://www.w3.org/2001/XMLSchema#NCName",
-					String.class),
-			new SPARQLToJava("http://www.w3.org/2001/XMLSchema#ID",
-					String.class),
-			new SPARQLToJava(
-					"http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral",
-					String.class),
-			new SPARQLToJava("http://www.w3.org/2001/XMLSchema#anySimpleType",
-					String.class),
-			new SPARQLToJava("http://www.w3.org/2001/XMLSchema#gYear",
-					String.class),
-			new SPARQLToJava("http://www.w3.org/2001/XMLSchema#string",
-					String.class),
-			new SPARQLToJava("http://www.w3.org/2001/XMLSchema#date",
-					String.class),
-			new SPARQLToJava("http://www.w3.org/2001/XMLSchema#gMonthDay",
-					String.class),
-			new SPARQLToJava("http://www.w3.org/2001/XMLSchema#unsignedByte",
-					String.class),
-			new SPARQLToJava(
-					"http://www.w3.org/2001/XMLSchema#nonNegativeInteger",
-					String.class),
-			new SPARQLToJava("http://www.w3.org/2001/XMLSchema#QName",
-					String.class),
-			new SPARQLToJava("http://www.w3.org/2001/XMLSchema#Name",
-					String.class),
-			new SPARQLToJava(
-					"http://www.w3.org/2001/XMLSchema#negativeInteger",
-					String.class),
-			new SPARQLToJava("http://www.w3.org/2001/XMLSchema#hexBinary",
-					String.class),
-			new SPARQLToJava(
-					"http://www.w3.org/2001/XMLSchema#nonPositiveInteger",
-					String.class),
-			new SPARQLToJava("http://www.w3.org/2001/XMLSchema#NOTATION",
-					String.class),
-			new SPARQLToJava("http://www.w3.org/2001/XMLSchema#language",
-					String.class),
-			new SPARQLToJava(
-					"http://www.w3.org/2001/XMLSchema#positiveInteger",
-					String.class),
-			new SPARQLToJava("http://www.w3.org/2001/XMLSchema#IDREF",
-					String.class),
-			new SPARQLToJava("http://www.w3.org/2001/XMLSchema#ENTITY",
-					String.class),
-			new SPARQLToJava("http://www.w3.org/2001/XMLSchema#gDay",
-					String.class),
-			new SPARQLToJava("http://www.w3.org/2001/XMLSchema#gMonth",
-					String.class),
-			new SPARQLToJava("http://www.w3.org/2001/XMLSchema#gYearMonth",
-					String.class), };
+																																// duplicate types
+																																new SPARQLToJava("http://www.w3.org/2001/XMLSchema#NMTOKEN",
+																																		String.class),
+																																		new SPARQLToJava("http://www.w3.org/2001/XMLSchema#unsignedInt",
+																																				String.class),
+																																				new SPARQLToJava("http://www.w3.org/2001/XMLSchema#unsignedShort",
+																																						String.class),
+																																						new SPARQLToJava("http://www.w3.org/2001/XMLSchema#unsignedLong",
+																																								String.class),
+																																								new SPARQLToJava("http://www.w3.org/2001/XMLSchema#token",
+																																										String.class),
+																																										new SPARQLToJava("http://www.w3.org/2001/XMLSchema#NCName",
+																																												String.class),
+																																												new SPARQLToJava("http://www.w3.org/2001/XMLSchema#ID",
+																																														String.class),
+																																														new SPARQLToJava(
+																																																"http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral",
+																																																String.class),
+																																																new SPARQLToJava("http://www.w3.org/2001/XMLSchema#anySimpleType",
+																																																		String.class),
+																																																		new SPARQLToJava("http://www.w3.org/2001/XMLSchema#gYear",
+																																																				String.class),
+																																																				new SPARQLToJava("http://www.w3.org/2001/XMLSchema#string",
+																																																						String.class),
+																																																						new SPARQLToJava("http://www.w3.org/2001/XMLSchema#date",
+																																																								String.class),
+																																																								new SPARQLToJava("http://www.w3.org/2001/XMLSchema#gMonthDay",
+																																																										String.class),
+																																																										new SPARQLToJava("http://www.w3.org/2001/XMLSchema#unsignedByte",
+																																																												String.class),
+																																																												new SPARQLToJava(
+																																																														"http://www.w3.org/2001/XMLSchema#nonNegativeInteger",
+																																																														String.class),
+																																																														new SPARQLToJava("http://www.w3.org/2001/XMLSchema#QName",
+																																																																String.class),
+																																																																new SPARQLToJava("http://www.w3.org/2001/XMLSchema#Name",
+																																																																		String.class),
+																																																																		new SPARQLToJava(
+																																																																				"http://www.w3.org/2001/XMLSchema#negativeInteger",
+																																																																				String.class),
+																																																																				new SPARQLToJava("http://www.w3.org/2001/XMLSchema#hexBinary",
+																																																																						String.class),
+																																																																						new SPARQLToJava(
+																																																																								"http://www.w3.org/2001/XMLSchema#nonPositiveInteger",
+																																																																								String.class),
+																																																																								new SPARQLToJava("http://www.w3.org/2001/XMLSchema#NOTATION",
+																																																																										String.class),
+																																																																										new SPARQLToJava("http://www.w3.org/2001/XMLSchema#language",
+																																																																												String.class),
+																																																																												new SPARQLToJava(
+																																																																														"http://www.w3.org/2001/XMLSchema#positiveInteger",
+																																																																														String.class),
+																																																																														new SPARQLToJava("http://www.w3.org/2001/XMLSchema#IDREF",
+																																																																																String.class),
+																																																																																new SPARQLToJava("http://www.w3.org/2001/XMLSchema#ENTITY",
+																																																																																		String.class),
+																																																																																		new SPARQLToJava("http://www.w3.org/2001/XMLSchema#gDay",
+																																																																																				String.class),
+																																																																																				new SPARQLToJava("http://www.w3.org/2001/XMLSchema#gMonth",
+																																																																																						String.class),
+																																																																																						new SPARQLToJava("http://www.w3.org/2001/XMLSchema#gYearMonth",
+																																																																																								String.class),
+	};
 
 	private static Map<Class<?>, Object> nullValueMap;
 
@@ -433,9 +438,9 @@ public final class TypeConverter {
 					return resultingClass.cast(new ByteArrayInputStream(
 							(byte[]) columnObject));
 				}
-				String s = new String((byte[]) columnObject);
+				final String s = new String((byte[]) columnObject);
 				return fromString(s, resultingClass);
-			} catch (IOException e) {
+			} catch (final IOException e) {
 				throw new SQLException(e.getMessage(), e);
 			}
 		}
@@ -454,10 +459,11 @@ public final class TypeConverter {
 				if (resultingClass.isAssignableFrom(InputStream.class)) {
 					return resultingClass.cast(b.getBinaryStream());
 				}
-				String s = new String(IOUtils.toByteArray(((Blob) columnObject)
-						.getBinaryStream()));
+				final String s = new String(
+						IOUtils.toByteArray(((Blob) columnObject)
+								.getBinaryStream()));
 				return fromString(s, resultingClass);
-			} catch (IOException e) {
+			} catch (final IOException e) {
 				throw new SQLException(e.getMessage(), e);
 			}
 		}
@@ -475,10 +481,10 @@ public final class TypeConverter {
 				if (resultingClass.isAssignableFrom(InputStream.class)) {
 					return resultingClass.cast(c.getAsciiStream());
 				}
-				String s = String.valueOf(IOUtils.toCharArray(c
+				final String s = String.valueOf(IOUtils.toCharArray(c
 						.getCharacterStream()));
 				return fromString(s, resultingClass);
-			} catch (IOException e) {
+			} catch (final IOException e) {
 				throw new SQLException(e.getMessage(), e);
 			}
 		}
@@ -498,7 +504,7 @@ public final class TypeConverter {
 				}
 				return fromString(new String(IOUtils.toByteArray(is)),
 						resultingClass);
-			} catch (IOException e) {
+			} catch (final IOException e) {
 				throw new SQLException(e.getMessage(), e);
 			}
 		}

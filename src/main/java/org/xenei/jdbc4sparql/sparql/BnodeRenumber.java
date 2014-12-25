@@ -1,5 +1,11 @@
 package org.xenei.jdbc4sparql.sparql;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Stack;
+
 import com.hp.hpl.jena.graph.Node;
 import com.hp.hpl.jena.graph.NodeFactory;
 import com.hp.hpl.jena.graph.Triple;
@@ -27,12 +33,6 @@ import com.hp.hpl.jena.sparql.syntax.ElementSubQuery;
 import com.hp.hpl.jena.sparql.syntax.ElementTriplesBlock;
 import com.hp.hpl.jena.sparql.syntax.ElementUnion;
 import com.hp.hpl.jena.sparql.syntax.ElementVisitor;
-
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Stack;
 
 /**
  * Class to renumber bNodes to be unique within the query.
@@ -187,60 +187,60 @@ public class BnodeRenumber {
 		Element retval = e;
 		e.visit(handler);
 		switch (handler.getType()) {
-		case Assign:
-			retval = renumberAssign((ElementAssign) e);
-			break;
-		case Bind:
-			retval = renumberBind((ElementBind) e);
-			break;
-		case Data:
-			retval = renumberData((ElementData) e);
-			break;
-		case Dataset:
-			throw new IllegalArgumentException(
-					"Dataset should not be used in parser");
+			case Assign:
+				retval = renumberAssign((ElementAssign) e);
+				break;
+			case Bind:
+				retval = renumberBind((ElementBind) e);
+				break;
+			case Data:
+				retval = renumberData((ElementData) e);
+				break;
+			case Dataset:
+				throw new IllegalArgumentException(
+						"Dataset should not be used in parser");
 
-		case Exists:
-			retval = new ElementExists(
-					renumber(((ElementExists) e).getElement()));
-			break;
-		case Filter:
-			retval = new ElementFilter(
-					processExpr(((ElementFilter) e).getExpr()));
-			break;
-		case Group:
-			retval = renumberGroup((ElementGroup) e);
-			break;
-		case Minus:
-			retval = new ElementMinus(
-					renumber(((ElementMinus) e).getMinusElement()));
-			break;
-		case NamedGraph:
-			retval = renumberNamedGraph((ElementNamedGraph) e);
-			break;
-		case NotExists:
-			retval = new ElementNotExists(
-					renumber(((ElementNotExists) e).getElement()));
-			break;
-		case Optional:
-			retval = new ElementOptional(
-					renumber(((ElementOptional) e).getOptionalElement()));
-			break;
-		case PathBlock:
-			retval = renumberPathBlock((ElementPathBlock) e);
-			break;
-		case Service:
-			// default to returning e
-			break;
-		case SubQuery:
-			// default to returning e
-			break;
-		case TriplesBlock:
-			retval = renumberTriplesBlock((ElementTriplesBlock) e);
-			break;
-		case Union:
-			retval = renumberUnion((ElementUnion) e);
-			break;
+			case Exists:
+				retval = new ElementExists(
+						renumber(((ElementExists) e).getElement()));
+				break;
+			case Filter:
+				retval = new ElementFilter(
+						processExpr(((ElementFilter) e).getExpr()));
+				break;
+			case Group:
+				retval = renumberGroup((ElementGroup) e);
+				break;
+			case Minus:
+				retval = new ElementMinus(
+						renumber(((ElementMinus) e).getMinusElement()));
+				break;
+			case NamedGraph:
+				retval = renumberNamedGraph((ElementNamedGraph) e);
+				break;
+			case NotExists:
+				retval = new ElementNotExists(
+						renumber(((ElementNotExists) e).getElement()));
+				break;
+			case Optional:
+				retval = new ElementOptional(
+						renumber(((ElementOptional) e).getOptionalElement()));
+				break;
+			case PathBlock:
+				retval = renumberPathBlock((ElementPathBlock) e);
+				break;
+			case Service:
+				// default to returning e
+				break;
+			case SubQuery:
+				// default to returning e
+				break;
+			case TriplesBlock:
+				retval = renumberTriplesBlock((ElementTriplesBlock) e);
+				break;
+			case Union:
+				retval = renumberUnion((ElementUnion) e);
+				break;
 		}
 		return retval;
 
@@ -290,7 +290,8 @@ public class BnodeRenumber {
 		if (n != null) {
 			return new ElementNamedGraph(processNode(n),
 					renumber(e.getElement()));
-		} else {
+		}
+		else {
 			return new ElementNamedGraph(renumber(e.getElement()));
 		}
 	}
@@ -303,7 +304,8 @@ public class BnodeRenumber {
 				final Triple t = new Triple(processNode(tp.getSubject()),
 						tp.getPredicate(), processNode(tp.getObject()));
 				retval.addTriple(t);
-			} else {
+			}
+			else {
 				final TriplePath tp2 = new TriplePath(
 						processNode(tp.getSubject()), tp.getPath(),
 						processNode(tp.getObject()));

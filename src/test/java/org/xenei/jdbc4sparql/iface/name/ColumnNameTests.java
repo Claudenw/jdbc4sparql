@@ -1,6 +1,8 @@
 package org.xenei.jdbc4sparql.iface.name;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -11,8 +13,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.xenei.jdbc4sparql.iface.name.ColumnName;
-import org.xenei.jdbc4sparql.iface.name.TableName;
 import org.xenei.jdbc4sparql.impl.NameUtils;
 
 @RunWith(Parameterized.class)
@@ -28,12 +28,22 @@ public class ColumnNameTests {
 	@Parameters(name = "catalog:{0} schema:{1} table:{2} col:{3}")
 	public static Collection<String[]> data() {
 
-		List<String[]> lst = new ArrayList<String[]>();
-		for (String catalog : new String[] { "", "catalog" }) {
-			for (String schema : new String[] { "", "schema" }) {
-				for (String table : new String[] { "", "table" }) {
-					for (String column : new String[] { "", "column" }) {
-						lst.add(new String[] { catalog, schema, table, column });
+		final List<String[]> lst = new ArrayList<String[]>();
+		for (final String catalog : new String[] {
+				"", "catalog"
+		}) {
+			for (final String schema : new String[] {
+					"", "schema"
+			}) {
+				for (final String table : new String[] {
+						"", "table"
+				}) {
+					for (final String column : new String[] {
+							"", "column"
+					}) {
+						lst.add(new String[] {
+								catalog, schema, table, column
+						});
 					}
 				}
 			}
@@ -42,23 +52,24 @@ public class ColumnNameTests {
 
 	}
 
-	public ColumnNameTests(String catalog, String schema, String table,
-			String column) {
+	public ColumnNameTests(final String catalog, final String schema,
+			final String table, final String column) {
 		this.catalog = catalog;
 		this.schema = schema;
 		this.table = table;
 		this.column = column;
 
 		columnName = new ColumnName(catalog, schema, table, column);
-		if (schema != null && schema.length() > 0) {
+		if ((schema != null) && (schema.length() > 0)) {
 			DBName = String.format("%s%s", schema, NameUtils.DB_DOT);
 			SPARQLName = String.format("%s%s", schema, NameUtils.SPARQL_DOT);
-		} else {
+		}
+		else {
 			DBName = "";
 			SPARQLName = "";
 		}
-		String ts = StringUtils.defaultString(table);
-		if (ts.length() > 0 || DBName.length() > 0) {
+		final String ts = StringUtils.defaultString(table);
+		if ((ts.length() > 0) || (DBName.length() > 0)) {
 			DBName += String.format("%s%s", ts, NameUtils.DB_DOT);
 			SPARQLName += String.format("%s%s", ts, NameUtils.SPARQL_DOT);
 
@@ -83,7 +94,7 @@ public class ColumnNameTests {
 
 	@Test
 	public void testTableFromColumn() {
-		TableName tableName = columnName.getTableName();
+		final TableName tableName = columnName.getTableName();
 		assertEquals(schema, tableName.getSchema());
 		assertEquals(table, tableName.getTable());
 		assertNull(tableName.getColumn());
@@ -97,7 +108,7 @@ public class ColumnNameTests {
 			columnName = new ColumnName("cat" + NameUtils.DB_DOT + "alog",
 					schema, table, column);
 			fail("Should have thrown IllegalArgumentException");
-		} catch (IllegalArgumentException expected) {
+		} catch (final IllegalArgumentException expected) {
 			assertEquals("Catalog name may not contain '.'",
 					expected.getMessage());
 		}
@@ -110,7 +121,7 @@ public class ColumnNameTests {
 			columnName = new ColumnName("cat" + NameUtils.SPARQL_DOT + "alog",
 					schema, table, column);
 			fail("Should have thrown IllegalArgumentException");
-		} catch (IllegalArgumentException expected) {
+		} catch (final IllegalArgumentException expected) {
 			assertEquals("Catalog name may not contain '"
 					+ NameUtils.SPARQL_DOT + "'", expected.getMessage());
 		}
@@ -122,7 +133,7 @@ public class ColumnNameTests {
 			columnName = new ColumnName(catalog, "sch" + NameUtils.DB_DOT
 					+ "ema", table, column);
 			fail("Should have thrown IllegalArgumentException");
-		} catch (IllegalArgumentException expected) {
+		} catch (final IllegalArgumentException expected) {
 			assertEquals("Schema name may not contain '.'",
 					expected.getMessage());
 		}
@@ -135,7 +146,7 @@ public class ColumnNameTests {
 			columnName = new ColumnName(catalog, "sch" + NameUtils.SPARQL_DOT
 					+ "ema", table, column);
 			fail("Should have thrown IllegalArgumentException");
-		} catch (IllegalArgumentException expected) {
+		} catch (final IllegalArgumentException expected) {
 			assertEquals("Schema name may not contain '" + NameUtils.SPARQL_DOT
 					+ "'", expected.getMessage());
 		}
@@ -147,7 +158,7 @@ public class ColumnNameTests {
 			columnName = new ColumnName(catalog, schema, "ta"
 					+ NameUtils.DB_DOT + "ble", column);
 			fail("Should have thrown IllegalArgumentException");
-		} catch (IllegalArgumentException expected) {
+		} catch (final IllegalArgumentException expected) {
 			assertEquals("Table name may not contain '.'",
 					expected.getMessage());
 		}
@@ -160,7 +171,7 @@ public class ColumnNameTests {
 			columnName = new ColumnName(catalog, schema, "ta"
 					+ NameUtils.SPARQL_DOT + "ble", column);
 			fail("Should have thrown IllegalArgumentException");
-		} catch (IllegalArgumentException expected) {
+		} catch (final IllegalArgumentException expected) {
 			assertEquals("Table name may not contain '" + NameUtils.SPARQL_DOT
 					+ "'", expected.getMessage());
 		}
@@ -172,7 +183,7 @@ public class ColumnNameTests {
 			columnName = new ColumnName(catalog, schema, table, "col"
 					+ NameUtils.DB_DOT + "umn");
 			fail("Should have thrown IllegalArgumentException");
-		} catch (IllegalArgumentException expected) {
+		} catch (final IllegalArgumentException expected) {
 			assertEquals("Column name may not contain '.'",
 					expected.getMessage());
 		}
@@ -185,7 +196,7 @@ public class ColumnNameTests {
 			columnName = new ColumnName(catalog, schema, table, "col"
 					+ NameUtils.SPARQL_DOT + "umn");
 			fail("Should have thrown IllegalArgumentException");
-		} catch (IllegalArgumentException expected) {
+		} catch (final IllegalArgumentException expected) {
 			assertEquals("Column name may not contain '" + NameUtils.SPARQL_DOT
 					+ "'", expected.getMessage());
 		}
@@ -206,7 +217,7 @@ public class ColumnNameTests {
 	@Test
 	public void testTableFromColumnFromTable() {
 		columnName = new ColumnName(columnName);
-		TableName tableName = columnName.getTableName();
+		final TableName tableName = columnName.getTableName();
 		assertEquals(schema, tableName.getSchema());
 		assertEquals(table, tableName.getTable());
 		assertNull(tableName.getColumn());
@@ -216,36 +227,39 @@ public class ColumnNameTests {
 			columnName = new ColumnName(new TableName("catalog", "schema2",
 					"table"));
 			fail("Expected IllegalArgumentException");
-		} catch (IllegalArgumentException e) {
+		} catch (final IllegalArgumentException e) {
 			assertEquals("Segment column may not be null", e.getMessage());
 		}
 
 		try {
 			columnName = new ColumnName(new SchemaName("catalog", "schema2"));
 			fail("Expected IllegalArgumentException");
-		} catch (IllegalArgumentException e) {
+		} catch (final IllegalArgumentException e) {
 			assertEquals("Segment table may not be null", e.getMessage());
 		}
 
 		try {
 			columnName = new ColumnName(new CatalogName("catalog"));
 			fail("Expected IllegalArgumentException");
-		} catch (IllegalArgumentException e) {
+		} catch (final IllegalArgumentException e) {
 			assertEquals("Segment schema may not be null", e.getMessage());
 		}
 	}
 
 	@Test
 	public void testColumnWithSegments() {
-		boolean tf[] = { true, false };
+		final boolean tf[] = {
+				true, false
+		};
 
 		NameSegments segments = null;
-		for (boolean schemaFlg : tf) {
-			for (boolean tableFlg : tf) {
-				for (boolean columnFlg : tf) {
-					segments = NameSegments.getInstance(false, schemaFlg, tableFlg,
-							columnFlg);
-					ColumnName result = new ColumnName(columnName, segments);
+		for (final boolean schemaFlg : tf) {
+			for (final boolean tableFlg : tf) {
+				for (final boolean columnFlg : tf) {
+					segments = NameSegments.getInstance(false, schemaFlg,
+							tableFlg, columnFlg);
+					final ColumnName result = new ColumnName(columnName,
+							segments);
 					assertEquals("Bad schema: " + segments.toString(),
 							schemaFlg ? schema : null, result.getSchema());
 					assertEquals("Bad table: " + segments.toString(),

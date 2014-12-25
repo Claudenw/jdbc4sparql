@@ -20,12 +20,10 @@ package org.xenei.jdbc4sparql.iface;
 import java.util.Comparator;
 import java.util.List;
 
-import org.xenei.jdbc4sparql.impl.rdf.RdfKeySegment;
-import org.xenei.jena.entities.ResourceWrapper;
 import org.xenei.jena.entities.annotations.Subject;
 
 @Subject(namespace = "http://org.xenei.jdbc4sparql/entity/Key#")
-public interface Key<T extends KeySegment> extends Comparator<Object[]> {
+public interface Key<T extends KeySegment> extends Comparator<Comparable<Object>[]> {
 
 	public String getId();
 
@@ -39,11 +37,12 @@ public interface Key<T extends KeySegment> extends Comparator<Object[]> {
 	public List<T> getSegments();
 
 	public boolean isUnique();
-	
+
 	public static class Utils {
 
-		public final static int compare(final List<? extends KeySegment> segments,
-				final Object[] data1, final Object[] data2) {
+		public final static int compare(
+				final List<? extends KeySegment> segments,
+				final Comparable<Object>[] data1, final Comparable<Object>[] data2) {
 			for (final KeySegment segment : segments) {
 				final int retval = segment.compare(data1, data2);
 				if (retval != 0) {
@@ -52,6 +51,6 @@ public interface Key<T extends KeySegment> extends Comparator<Object[]> {
 			}
 			return 0;
 		}
-		
+
 	}
 }

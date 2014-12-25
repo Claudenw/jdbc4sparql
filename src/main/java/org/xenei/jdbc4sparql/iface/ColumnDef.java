@@ -32,15 +32,15 @@ public interface ColumnDef {
 		 */
 		public static UUID createID(final ColumnDef def) {
 			final StringBuilder sb = new StringBuilder()
-					.append(def.getColumnClassName())
-					.append(def.getDisplaySize()).append(def.getNullable())
-					.append(def.getPrecision()).append(def.getScale())
-					.append(def.getType()).append(def.getTypeName())
-					.append(def.isAutoIncrement())
-					.append(def.isCaseSensitive()).append(def.isCurrency())
-					.append(def.isDefinitelyWritable())
-					.append(def.isReadOnly()).append(def.isSearchable())
-					.append(def.isSigned()).append(def.isWritable());
+			.append(def.getColumnClassName())
+			.append(def.getDisplaySize()).append(def.getNullable())
+			.append(def.getPrecision()).append(def.getScale())
+			.append(def.getType()).append(def.getTypeName())
+			.append(def.isAutoIncrement())
+			.append(def.isCaseSensitive()).append(def.isCurrency())
+			.append(def.isDefinitelyWritable())
+			.append(def.isReadOnly()).append(def.isSearchable())
+			.append(def.isSigned()).append(def.isWritable());
 			return UUID.nameUUIDFromBytes(sb.toString().getBytes());
 		}
 	}

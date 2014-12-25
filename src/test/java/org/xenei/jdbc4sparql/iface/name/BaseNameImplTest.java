@@ -1,6 +1,7 @@
 package org.xenei.jdbc4sparql.iface.name;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -12,11 +13,11 @@ public class BaseNameImplTest {
 	public static final String TABLE = "table";
 	public static final String COLUMN = "column";
 
-	protected FQNameNameImpl baseName;
+	protected FQNameImpl baseName;
 
 	@Before
 	public void setup() {
-		baseName = new FQNameNameImpl(CATALOG, SCHEMA, TABLE, COLUMN);
+		baseName = new FQNameImpl(CATALOG, SCHEMA, TABLE, COLUMN);
 	}
 
 	@Test
@@ -41,7 +42,7 @@ public class BaseNameImplTest {
 
 	@Test
 	public void testEquality() {
-		FQName bn2 = new FQNameNameImpl(CATALOG, SCHEMA, TABLE, COLUMN);
+		final FQName bn2 = new FQNameImpl(CATALOG, SCHEMA, TABLE, COLUMN);
 		assertEquals(baseName, bn2);
 		assertEquals(bn2, baseName);
 		assertEquals(baseName.hashCode(), bn2.hashCode());
@@ -49,35 +50,35 @@ public class BaseNameImplTest {
 
 	@Test
 	public void testInEquality() {
-		FQName bn2 = new FQNameNameImpl(CATALOG, SCHEMA, TABLE, COLUMN + "1");
+		FQName bn2 = new FQNameImpl(CATALOG, SCHEMA, TABLE, COLUMN + "1");
 		assertNotEquals(baseName, bn2);
 		assertNotEquals(bn2, baseName);
 
-		bn2 = new FQNameNameImpl(CATALOG, SCHEMA, TABLE + "1", COLUMN);
+		bn2 = new FQNameImpl(CATALOG, SCHEMA, TABLE + "1", COLUMN);
 		assertNotEquals(baseName, bn2);
 		assertNotEquals(bn2, baseName);
 
-		bn2 = new FQNameNameImpl(CATALOG, SCHEMA + "1", TABLE, COLUMN);
+		bn2 = new FQNameImpl(CATALOG, SCHEMA + "1", TABLE, COLUMN);
 		assertNotEquals(baseName, bn2);
 		assertNotEquals(bn2, baseName);
 
-		bn2 = new FQNameNameImpl(CATALOG + "1", SCHEMA, TABLE, COLUMN);
+		bn2 = new FQNameImpl(CATALOG + "1", SCHEMA, TABLE, COLUMN);
 		assertNotEquals(baseName, bn2);
 		assertNotEquals(bn2, baseName);
 
-		bn2 = new FQNameNameImpl(CATALOG, SCHEMA, TABLE, null);
+		bn2 = new FQNameImpl(CATALOG, SCHEMA, TABLE, null);
 		assertNotEquals(baseName, bn2);
 		assertNotEquals(bn2, baseName);
 
-		bn2 = new FQNameNameImpl(CATALOG, SCHEMA, null, COLUMN);
+		bn2 = new FQNameImpl(CATALOG, SCHEMA, null, COLUMN);
 		assertNotEquals(baseName, bn2);
 		assertNotEquals(bn2, baseName);
 
-		bn2 = new FQNameNameImpl(CATALOG, null, TABLE, COLUMN);
+		bn2 = new FQNameImpl(CATALOG, null, TABLE, COLUMN);
 		assertNotEquals(baseName, bn2);
 		assertNotEquals(bn2, baseName);
 
-		bn2 = new FQNameNameImpl(null, SCHEMA, TABLE, COLUMN);
+		bn2 = new FQNameImpl(null, SCHEMA, TABLE, COLUMN);
 		assertNotEquals(baseName, bn2);
 		assertNotEquals(bn2, baseName);
 	}

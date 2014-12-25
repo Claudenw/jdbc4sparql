@@ -1,8 +1,5 @@
 package org.xenei.jdbc4sparql.impl.rdf;
 
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.Resource;
-
 import java.sql.DatabaseMetaData;
 import java.sql.SQLDataException;
 import java.sql.Types;
@@ -17,6 +14,9 @@ import org.xenei.jena.entities.MissingAnnotation;
 import org.xenei.jena.entities.ResourceWrapper;
 import org.xenei.jena.entities.annotations.Predicate;
 import org.xenei.jena.entities.annotations.Subject;
+
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.Resource;
 
 @Subject(namespace = "http://org.xenei.jdbc4sparql/entity/ColumnDef#")
 public class RdfColumnDef implements ColumnDef, ResourceWrapper {
@@ -73,7 +73,8 @@ public class RdfColumnDef implements ColumnDef, ResourceWrapper {
 			Resource columnDef = null;
 			if (builder.hasResource(fqName)) {
 				columnDef = builder.getResource(fqName, typeClass);
-			} else {
+			}
+			else {
 				columnDef = builder.getResource(fqName, typeClass);
 
 				columnDef.addLiteral(
@@ -271,7 +272,7 @@ public class RdfColumnDef implements ColumnDef, ResourceWrapper {
 			this.type = type;
 			try {
 				this.javaType = TypeConverter.getJavaType(type);
-			} catch (SQLDataException e) {
+			} catch (final SQLDataException e) {
 				throw new IllegalArgumentException(String.format(
 						"SQL type %s is not supported", type));
 			}

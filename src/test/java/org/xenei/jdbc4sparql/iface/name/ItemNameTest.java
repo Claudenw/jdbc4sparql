@@ -1,6 +1,10 @@
 package org.xenei.jdbc4sparql.iface.name;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -46,7 +50,7 @@ public class ItemNameTest {
 
 	@Test
 	public void testGetBaseName() {
-		FQName base = itemName.getBaseName();
+		final FQName base = itemName.getBaseName();
 		assertEquals("catalog", base.getCatalog());
 		assertEquals("schema", base.getSchema());
 		assertEquals("table", base.getTable());
@@ -63,7 +67,7 @@ public class ItemNameTest {
 
 	@Test
 	public void testGetDBName() {
-		String testName = "catalog" + NameUtils.DB_DOT + "schema"
+		final String testName = "catalog" + NameUtils.DB_DOT + "schema"
 				+ NameUtils.DB_DOT + "table" + NameUtils.DB_DOT + "column";
 		assertEquals(testName, itemName.getDBName());
 	}
@@ -91,7 +95,7 @@ public class ItemNameTest {
 
 	@Test
 	public void testGetSPARQLName() {
-		String dbName = "catalog" + NameUtils.SPARQL_DOT + "schema"
+		final String dbName = "catalog" + NameUtils.SPARQL_DOT + "schema"
 				+ NameUtils.SPARQL_DOT + "table" + NameUtils.SPARQL_DOT
 				+ "column";
 		assertEquals(dbName, itemName.getSPARQLName());
@@ -173,7 +177,7 @@ public class ItemNameTest {
 		tn.setUsedSegments(NameSegments.FTTT);
 		assertTrue(tn.matches(itemName));
 	}
-	
+
 	@Test
 	public void testShorterMatches() {
 		itemName.setUsedSegments(NameSegments.TTTF);
@@ -212,18 +216,21 @@ public class ItemNameTest {
 	@Test
 	public void testEquality() {
 		ItemName itemName2;
-		boolean[] tf = { true, false };
-		for (boolean catalogFlg : tf) {
-			for (boolean schemaFlg : tf) {
-				for (boolean tableFlg : tf) {
-					for (boolean columnFlg : tf) {
+		final boolean[] tf = {
+				true, false
+		};
+		for (final boolean catalogFlg : tf) {
+			for (final boolean schemaFlg : tf) {
+				for (final boolean tableFlg : tf) {
+					for (final boolean columnFlg : tf) {
 						itemName2 = new SearchName(itemName,
 								NameSegments.getInstance(catalogFlg, schemaFlg,
 										tableFlg, columnFlg));
 						if (catalogFlg && schemaFlg && tableFlg && columnFlg) {
 							assertEquals(itemName, itemName2);
 							assertEquals(itemName2, itemName);
-						} else {
+						}
+						else {
 							assertNotEquals(itemName, itemName2);
 							assertNotEquals(itemName2, itemName);
 						}

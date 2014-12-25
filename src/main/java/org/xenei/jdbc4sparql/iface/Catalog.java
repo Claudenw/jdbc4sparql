@@ -17,15 +17,15 @@
  */
 package org.xenei.jdbc4sparql.iface;
 
-import com.hp.hpl.jena.graph.Node;
-import com.hp.hpl.jena.query.Query;
-import com.hp.hpl.jena.query.QuerySolution;
-
 import java.util.List;
 import java.util.Set;
 
 import org.xenei.jdbc4sparql.iface.name.CatalogName;
 import org.xenei.jdbc4sparql.sparql.items.NamedObject;
+
+import com.hp.hpl.jena.graph.Node;
+import com.hp.hpl.jena.query.Query;
+import com.hp.hpl.jena.query.QuerySolution;
 
 public interface Catalog extends NamedObject<CatalogName> {
 	/**
@@ -70,11 +70,11 @@ public interface Catalog extends NamedObject<CatalogName> {
 	 * @return
 	 */
 	Set<Schema> getSchemas();
-	
+
 	String getShortName();
-	
+
 	boolean isService();
-	
+
 	Node getServiceNode();
 
 }

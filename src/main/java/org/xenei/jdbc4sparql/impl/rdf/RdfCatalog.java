@@ -1,19 +1,5 @@
 package org.xenei.jdbc4sparql.impl.rdf;
 
-import com.hp.hpl.jena.graph.Node;
-import com.hp.hpl.jena.graph.NodeFactory;
-import com.hp.hpl.jena.query.Query;
-import com.hp.hpl.jena.query.QueryExecution;
-import com.hp.hpl.jena.query.QueryExecutionFactory;
-import com.hp.hpl.jena.query.QueryFactory;
-import com.hp.hpl.jena.query.QuerySolution;
-import com.hp.hpl.jena.query.ResultSet;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.util.iterator.WrappedIterator;
-import com.hp.hpl.jena.vocabulary.RDFS;
-
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashSet;
@@ -34,6 +20,20 @@ import org.xenei.jena.entities.MissingAnnotation;
 import org.xenei.jena.entities.ResourceWrapper;
 import org.xenei.jena.entities.annotations.Predicate;
 import org.xenei.jena.entities.annotations.Subject;
+
+import com.hp.hpl.jena.graph.Node;
+import com.hp.hpl.jena.graph.NodeFactory;
+import com.hp.hpl.jena.query.Query;
+import com.hp.hpl.jena.query.QueryExecution;
+import com.hp.hpl.jena.query.QueryExecutionFactory;
+import com.hp.hpl.jena.query.QueryFactory;
+import com.hp.hpl.jena.query.QuerySolution;
+import com.hp.hpl.jena.query.ResultSet;
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.util.iterator.WrappedIterator;
+import com.hp.hpl.jena.vocabulary.RDFS;
 
 @Subject(namespace = "http://org.xenei.jdbc4sparql/entity/Catalog#")
 public class RdfCatalog implements Catalog, ResourceWrapper {
@@ -80,7 +80,8 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 			Resource catalog = null;
 			if (builder.hasResource(fqName)) {
 				catalog = builder.getResource(fqName, typeClass);
-			} else {
+			}
+			else {
 				catalog = builder.getResource(fqName, typeClass);
 				catalog.addLiteral(RDFS.label, name);
 				if (sparqlEndpoint != null) {
@@ -198,7 +199,7 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 	}
 
 	public class ChangeListener extends
-			AbstractChangeListener<Catalog, RdfSchema> {
+	AbstractChangeListener<Catalog, RdfSchema> {
 
 		public ChangeListener() {
 			super(RdfCatalog.this.getResource(), RdfCatalog.class, "schemas",
@@ -254,7 +255,7 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 		final QueryExecution qexec = QueryExecutionFactory.create(query,
 				localModel);
 		try {
-			ResultSet rs = qexec.execSelect();
+			final ResultSet rs = qexec.execSelect();
 			final List<QuerySolution> retval = WrappedIterator.create(rs)
 					.toList();
 			return retval;
@@ -279,7 +280,8 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 		if (isService()) {
 			qexec = QueryExecutionFactory.sparqlService(getSparqlEndpoint(),
 					query);
-		} else {
+		}
+		else {
 			qexec = QueryExecutionFactory.create(query, localModel);
 		}
 		try {
@@ -343,10 +345,12 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 		throw new EntityManagerRequiredException();
 	}
 
+	@Override
 	public Node getServiceNode() {
 		return isService() ? NodeFactory.createURI(getSparqlEndpoint()) : null;
 	}
 
+	@Override
 	@Predicate(impl = true, namespace = "http://www.w3.org/2000/01/rdf-schema#", name = "label")
 	public String getShortName() {
 		throw new EntityManagerRequiredException();
@@ -373,6 +377,7 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 	// return retval;
 	// }
 
+	@Override
 	public boolean isService() {
 		return getSparqlEndpoint() != null;
 	}

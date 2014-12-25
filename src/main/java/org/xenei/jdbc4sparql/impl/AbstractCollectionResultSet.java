@@ -41,7 +41,8 @@ public abstract class AbstractCollectionResultSet extends AbstractResultSet {
 		if (pos < 0) {
 			this.position = data.size() - pos - 1;
 			;
-		} else {
+		}
+		else {
 			this.position = pos - 1;
 		}
 		fixupPosition();
@@ -185,13 +186,13 @@ public abstract class AbstractCollectionResultSet extends AbstractResultSet {
 	@Override
 	public boolean relative(final int rows) throws SQLException {
 		switch (getFetchDirection()) {
-		case ResultSet.FETCH_REVERSE:
-			position -= rows;
-			break;
-		case ResultSet.FETCH_FORWARD:
-		default:
-			position += rows;
-			break;
+			case ResultSet.FETCH_REVERSE:
+				position -= rows;
+				break;
+			case ResultSet.FETCH_FORWARD:
+			default:
+				position += rows;
+				break;
 		}
 		final boolean retval = isValidPosition();
 		fixupPosition();

@@ -1,8 +1,5 @@
 package org.xenei.jdbc4sparql.sparql;
 
-import com.hp.hpl.jena.graph.Node;
-import com.hp.hpl.jena.util.iterator.ExtendedIterator;
-
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -15,12 +12,14 @@ import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.name.ColumnName;
 import org.xenei.jdbc4sparql.iface.name.ItemName;
-import org.xenei.jdbc4sparql.iface.name.TableName;
 import org.xenei.jdbc4sparql.iface.name.NameSegments;
+import org.xenei.jdbc4sparql.iface.name.TableName;
 import org.xenei.jdbc4sparql.sparql.items.QueryColumnInfo;
 import org.xenei.jdbc4sparql.sparql.items.QueryItemCollection;
 import org.xenei.jdbc4sparql.sparql.items.QueryItemInfo;
 import org.xenei.jdbc4sparql.sparql.items.QueryTableInfo;
+
+import com.hp.hpl.jena.util.iterator.ExtendedIterator;
 
 /**
  * A collection of all tables and columns in the query. The column names are
@@ -29,10 +28,10 @@ import org.xenei.jdbc4sparql.sparql.items.QueryTableInfo;
 public class QueryInfoSet {
 
 	// the list of tables in the query indexed by SQL name.
-	private final QueryItemCollection<QueryTableInfo, Table,TableName> tablesInQuery;
+	private final QueryItemCollection<QueryTableInfo, Table, TableName> tablesInQuery;
 
 	// the list of columns in the query indexed by SQL name.
-	private final QueryItemCollection<QueryColumnInfo, Column,ColumnName> columnsInQuery;
+	private final QueryItemCollection<QueryColumnInfo, Column, ColumnName> columnsInQuery;
 
 	private static final Logger LOG = LoggerFactory
 			.getLogger(QueryInfoSet.class);
@@ -46,27 +45,27 @@ public class QueryInfoSet {
 	private boolean guidFlg;
 
 	public QueryInfoSet() {
-		this.tablesInQuery = new QueryItemCollection<QueryTableInfo, Table,TableName>();
-		this.columnsInQuery = new QueryItemCollection<QueryColumnInfo, Column,ColumnName>();
+		this.tablesInQuery = new QueryItemCollection<QueryTableInfo, Table, TableName>();
+		this.columnsInQuery = new QueryItemCollection<QueryColumnInfo, Column, ColumnName>();
 		this.segments = NameSegments.ALL;
 	}
 
-	public void addColumn( 
-			final QueryColumnInfo columnInfo) {
+	public void addColumn(final QueryColumnInfo columnInfo) {
 		columnInfo.getName().setUseGUID(guidFlg);
 		columnInfo.setSegments(segments);
-		if (LOG.isDebugEnabled())
+		if (LOG.isDebugEnabled()) {
 			QueryInfoSet.LOG.debug("adding column: {}", columnInfo);
+		}
 		columnsInQuery.add(columnInfo);
 	}
 
-	public void setUseGUID(boolean state) {
+	public void setUseGUID(final boolean state) {
 		if (this.guidFlg != state) {
 			this.guidFlg = state;
-			for (QueryItemInfo<Column,ColumnName> columnInfo : columnsInQuery) {
+			for (final QueryItemInfo<Column, ColumnName> columnInfo : columnsInQuery) {
 				columnInfo.getName().setUseGUID(state);
 			}
-			for (QueryItemInfo<Table,TableName> tableInfo : tablesInQuery) {
+			for (final QueryItemInfo<Table, TableName> tableInfo : tablesInQuery) {
 				tableInfo.getName().setUseGUID(state);
 			}
 		}
@@ -80,16 +79,17 @@ public class QueryInfoSet {
 		if (tablesInQuery.isEmpty()) {
 			throw new IllegalArgumentException("Must have at least one table");
 		}
-		for (final QueryItemInfo<Table,TableName> tableInfo : tablesInQuery) {
-			((QueryTableInfo)tableInfo).addRequiredColumns();
+		for (final QueryItemInfo<Table, TableName> tableInfo : tablesInQuery) {
+			((QueryTableInfo) tableInfo).addRequiredColumns();
 		}
 	}
 
 	public void addTable(final QueryTableInfo tbl) {
 		if (!tablesInQuery.contains(tbl)) {
 			tbl.getName().setUseGUID(guidFlg);
-			if (LOG.isDebugEnabled())
+			if (LOG.isDebugEnabled()) {
 				QueryInfoSet.LOG.debug("adding table: {}", tbl);
+			}
 			tablesInQuery.add(tbl);
 			tbl.setSegments(NameSegments.ALL);
 		}
@@ -115,30 +115,30 @@ public class QueryInfoSet {
 	 * @return columnInfo for column or null if not found.
 	 */
 	public QueryColumnInfo findColumn(final ColumnName name) {
-		return (QueryColumnInfo) columnsInQuery.get(name);
+		return columnsInQuery.get(name);
 	}
 
-//	/**
-//	 * Find the column in the query by its GUID. returns null if not found
-//	 * 
-//	 * @param name
-//	 *            The column name defining the GUID
-//	 * @return the QueryColumnInfo or null.
-//	 */
-//	public QueryColumnInfo findColumnByGUID(final ColumnName name) {
-//		return (QueryColumnInfo) columnsInQuery.findGUID(name);
-//	}
-//
-//	/**
-//	 * Find the column in the query by its GUID. returns null if not found
-//	 * 
-//	 * @param name
-//	 *            The column name defining the GUID
-//	 * @return the QueryColumnInfo or null.
-//	 */
-//	public QueryColumnInfo findColumnByGUID(final String guid) {
-//		return (QueryColumnInfo) columnsInQuery.findGUID(guid);
-//	}
+	// /**
+	// * Find the column in the query by its GUID. returns null if not found
+	// *
+	// * @param name
+	// * The column name defining the GUID
+	// * @return the QueryColumnInfo or null.
+	// */
+	// public QueryColumnInfo findColumnByGUID(final ColumnName name) {
+	// return (QueryColumnInfo) columnsInQuery.findGUID(name);
+	// }
+	//
+	/**
+	 * Find the column in the query by its GUID. returns null if not found
+	 *
+	 * @param name
+	 *            The column name defining the GUID
+	 * @return the QueryColumnInfo or null.
+	 */
+	public QueryColumnInfo findColumnByGUIDVar(final String guid) {
+		return columnsInQuery.findGUIDVar(guid);
+	}
 
 	/**
 	 * Force this infoset to use short names for columns.
@@ -151,31 +151,33 @@ public class QueryInfoSet {
 		}
 		if (tablesInQuery.size() == 1) {
 			segments = NameSegments.getInstance(false, false, false, true);
-		} else {
+		}
+		else {
 			boolean duplicateTable = false;
 			boolean duplicateColumn = false;
-			Set<String> names = new HashSet<String>();
+			final Set<String> names = new HashSet<String>();
 			// if there are duplicate table names and multiple schemas then we
 			// have to specify schema
-			for (QueryItemInfo<Table,TableName> qti : tablesInQuery) {
-				TableName sn = qti.getName().clone(
+			for (final QueryItemInfo<Table, TableName> qti : tablesInQuery) {
+				final TableName sn = qti.getName().clone(
 						NameSegments.getInstance(false, true, true, true));
 				duplicateTable |= names.contains(sn.getTable());
 				names.add(sn.getTable());
 			}
 			names.clear();
-			for (QueryColumnInfo qci : columnsInQuery) {
-				ColumnName sn = qci.getName().clone(
+			for (final QueryColumnInfo qci : columnsInQuery) {
+				final ColumnName sn = qci.getName().clone(
 						NameSegments.getInstance(false, true, true, true));
 				duplicateColumn |= names.contains(sn.getTable());
 				names.add(sn.getTable());
 			}
-			segments = NameSegments.getInstance(false, duplicateTable, duplicateTable
-					| duplicateColumn, true);
+			segments = NameSegments.getInstance(false, duplicateTable,
+					duplicateTable | duplicateColumn, true);
 		}
-		if (LOG.isDebugEnabled())
+		if (LOG.isDebugEnabled()) {
 			LOG.debug(String.format("Setting default segments to %s", segments));
-		for (QueryItemInfo<Table,TableName> qti : tablesInQuery) {
+		}
+		for (final QueryItemInfo<Table, TableName> qti : tablesInQuery) {
 			((QueryTableInfo) qti).setSegments(segments);
 		}
 
@@ -183,8 +185,8 @@ public class QueryInfoSet {
 
 	/**
 	 * Retrieves the column form the list of query columns.
-	 * 
-	 * Uses the match algorithm. 
+	 *
+	 * Uses the match algorithm.
 	 *
 	 * @param name
 	 *            The name to retrieve
@@ -194,7 +196,7 @@ public class QueryInfoSet {
 	 */
 	public QueryColumnInfo getColumn(final ColumnName name) {
 
-		final QueryColumnInfo retval = (QueryColumnInfo) columnsInQuery.get(name);
+		final QueryColumnInfo retval = columnsInQuery.get(name);
 		if (retval == null) {
 			throw new IllegalArgumentException(String.format(
 					SparqlQueryBuilder.NOT_FOUND_IN_QUERY, name));
@@ -204,7 +206,7 @@ public class QueryInfoSet {
 
 	/**
 	 * Get the index of the column in the column name list.
-	 * 
+	 *
 	 * @param name
 	 * @return the index (0 based) or -1 if not present
 	 */
@@ -214,11 +216,12 @@ public class QueryInfoSet {
 
 	/**
 	 * Get the list of columns.
-	 * 
+	 *
 	 * @return the list of columns
 	 */
-	public QueryItemCollection<QueryColumnInfo,Column,ColumnName> getColumns() {
-		return new QueryItemCollection<QueryColumnInfo,Column,ColumnName>(columnsInQuery.iterator().toList());
+	public QueryItemCollection<QueryColumnInfo, Column, ColumnName> getColumns() {
+		return new QueryItemCollection<QueryColumnInfo, Column, ColumnName>(
+				columnsInQuery.iterator().toList());
 	}
 
 	/**
@@ -234,8 +237,9 @@ public class QueryInfoSet {
 		return tablesInQuery.get(name);
 	}
 
-	public QueryItemCollection<QueryTableInfo,Table,TableName> getTables() {
-		return new QueryItemCollection<QueryTableInfo,Table,TableName>(tablesInQuery.iterator().toList());
+	public QueryItemCollection<QueryTableInfo, Table, TableName> getTables() {
+		return new QueryItemCollection<QueryTableInfo, Table, TableName>(
+				tablesInQuery.iterator().toList());
 	}
 
 	/**
@@ -248,11 +252,9 @@ public class QueryInfoSet {
 	public List<QueryColumnInfo> listColumns(final ItemName name) {
 		return columnsInQuery.match(name).toList();
 	}
-	
-	
-	public Set<Column> uniqueColumns()
-	{
-		return columnsInQuery.setNamedObject();
+
+	public Set<Column> uniqueColumns() {
+		return columnsInQuery.getNamedObjectSet();
 	}
 
 	public ExtendedIterator<QueryColumnInfo> iterateColumns(final ItemName name) {
@@ -261,13 +263,14 @@ public class QueryInfoSet {
 
 	public Collection<QueryTableInfo> listTables(final ItemName name) {
 		if (name.getUsedSegments().isColumn()) {
-			TableName searchName = new TableName(name);
-			NameSegments segs = name.getUsedSegments();
-			NameSegments newSegs = NameSegments.getInstance(segs.isCatalog(),
-					segs.isSchema(), segs.isTable(), false);
+			final TableName searchName = new TableName(name);
+			final NameSegments segs = name.getUsedSegments();
+			final NameSegments newSegs = NameSegments.getInstance(
+					segs.isCatalog(), segs.isSchema(), segs.isTable(), false);
 			searchName.setUsedSegments(newSegs);
 			return tablesInQuery.match(searchName).toList();
-		} else {
+		}
+		else {
 			return tablesInQuery.match(name).toList();
 		}
 
@@ -276,16 +279,18 @@ public class QueryInfoSet {
 	public NameSegments getSegments() {
 		return segments;
 	}
-	
+
 	/**
 	 * find the first QueryColumnInfo that references the Column
-	 * @param column The column to find.
+	 * 
+	 * @param column
+	 *            The column to find.
 	 * @return The first matching QueryColumnInfo or null if not found.
 	 */
-	public QueryColumnInfo findColumn( Column column )
-	{
-		Iterator<QueryColumnInfo> iter = columnsInQuery.match(column);
-		return iter.hasNext()?iter.next():null;
+	public QueryColumnInfo findColumn(final Column column) {
+		final Iterator<QueryColumnInfo> iter = columnsInQuery
+				.findBaseObject(column);
+		return iter.hasNext() ? iter.next() : null;
 	}
 
 	/**
@@ -305,7 +310,7 @@ public class QueryInfoSet {
 			QueryTableInfo tableInfo = null;
 			// table name may be wild so use list.
 			for (final QueryTableInfo testTableInfo : listTables(tName)) {
-				if (testTableInfo.getColumn(this, cName) != null) {
+				if (testTableInfo.getColumn(cName) != null) {
 					if (tableInfo != null) {
 						QueryInfoSet.LOG.info(String.format(
 								SparqlQueryBuilder.FOUND_IN_MULTIPLE_, cName,
@@ -317,29 +322,10 @@ public class QueryInfoSet {
 			}
 
 			if (tableInfo != null) {
-				retval = tableInfo.getColumn(this, cName);
+				retval = tableInfo.getColumn(cName);
 			}
 
 		}
 		return retval;
 	}
-	
-//	public QueryColumnInfo scanTablesForColumnByGUID(final ColumnName cName) {
-//		// check exact match
-//		QueryColumnInfo retval = findColumnByGUID(cName);
-//		if (retval == null) {
-//			// get the table and see if column is in it
-//			final TableName tName = cName.getTableName();
-//			// table name may be wild so use list.
-//			for (final QueryTableInfo testTableInfo : listTables(tName)) {
-//				retval = testTableInfo.getColumnByGUID( this, cName );
-//				if (retval != null)
-//				{
-//					return retval;
-//				}
-//			}
-//
-//		}
-//		return retval;
-//	}
 }

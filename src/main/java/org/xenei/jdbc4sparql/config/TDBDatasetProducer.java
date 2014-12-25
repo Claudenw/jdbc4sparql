@@ -1,9 +1,5 @@
 package org.xenei.jdbc4sparql.config;
 
-import com.hp.hpl.jena.query.Dataset;
-import com.hp.hpl.jena.tdb.TDBFactory;
-import com.hp.hpl.jena.tdb.transaction.DatasetGraphTransaction;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -24,6 +20,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xenei.jdbc4sparql.iface.DatasetProducer;
 import org.xenei.jdbc4sparql.impl.AbstractDatasetProducer;
+
+import com.hp.hpl.jena.query.Dataset;
+import com.hp.hpl.jena.tdb.TDBFactory;
+import com.hp.hpl.jena.tdb.transaction.DatasetGraphTransaction;
 
 public class TDBDatasetProducer extends AbstractDatasetProducer {
 	private final Lock metaDataLock = new ReentrantLock();
@@ -130,7 +130,8 @@ public class TDBDatasetProducer extends AbstractDatasetProducer {
 			IOException {
 		if ((e == null) || !e.getName().startsWith(prefix)) {
 			log.warn("No " + prefix + " files in configuration");
-		} else {
+		}
+		else {
 			final int prefixLen = prefix.length() + 1;
 			String name = null;
 			File f = null;
@@ -160,7 +161,8 @@ public class TDBDatasetProducer extends AbstractDatasetProducer {
 			final String nm = String.format("%s/%s", pth, f.getName());
 			if (f.isDirectory()) {
 				saveDir(out, f, nm);
-			} else {
+			}
+			else {
 				final ZipEntry e = new ZipEntry(nm);
 				out.putNextEntry(e);
 				try {
@@ -217,7 +219,7 @@ public class TDBDatasetProducer extends AbstractDatasetProducer {
 				metaData = TDBFactory.createDataset(metaDir.getAbsolutePath());
 				metaDataLoaded = true;
 			} catch (final Exception e1) { // must catch here as when we unlock
-											// app may stop on failure.
+				// app may stop on failure.
 				log.error("Error reading meta data stream", e1);
 				return;
 			} finally {
@@ -228,7 +230,7 @@ public class TDBDatasetProducer extends AbstractDatasetProducer {
 			localData = TDBFactory.createDataset(localDir.getAbsolutePath());
 			localDataLoaded = true;
 		} catch (final Exception e1) { // must catch here as when we unlock app
-										// may stop on failure.
+			// may stop on failure.
 			log.error("Error reading local data stream", e1);
 			return;
 		} finally {

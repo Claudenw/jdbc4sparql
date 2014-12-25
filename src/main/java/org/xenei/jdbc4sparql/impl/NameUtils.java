@@ -1,12 +1,12 @@
 package org.xenei.jdbc4sparql.impl;
 
-import com.hp.hpl.jena.sparql.core.Var;
-
 import java.util.UUID;
 
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.name.TableName;
 import org.xenei.jdbc4sparql.sparql.items.NamedObject;
+
+import com.hp.hpl.jena.sparql.core.Var;
 
 public class NameUtils {
 	// public static String convertDB2SPARQL( final String dbName )
@@ -47,6 +47,8 @@ public class NameUtils {
 
 	public static final String SPARQL_DOT = "\u00B7";
 
-	public static final String[] DOT_LIST = { DB_DOT, SPARQL_DOT };
+	public static final String[] DOT_LIST = {
+			DB_DOT, SPARQL_DOT
+	};
 
 }

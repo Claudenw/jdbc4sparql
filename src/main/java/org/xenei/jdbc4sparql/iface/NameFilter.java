@@ -17,14 +17,14 @@
  */
 package org.xenei.jdbc4sparql.iface;
 
-import com.hp.hpl.jena.util.iterator.WrappedIterator;
-
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
 import org.xenei.jdbc4sparql.sparql.items.NamedObject;
+
+import com.hp.hpl.jena.util.iterator.WrappedIterator;
 
 /**
  * Filters a namespacedObject by name.
@@ -33,7 +33,7 @@ import org.xenei.jdbc4sparql.sparql.items.NamedObject;
  *            a NamespacedObject
  */
 public class NameFilter<T extends NamedObject<?>> implements Iterator<T>,
-		Iterable<T> {
+Iterable<T> {
 	// the name pattern to match
 	private String namePattern;
 	// the iterator of the original collection.
@@ -95,7 +95,8 @@ public class NameFilter<T extends NamedObject<?>> implements Iterator<T>,
 	public T next() {
 		if (namePattern == null) {
 			return iter.next();
-		} else {
+		}
+		else {
 			final T retval = next;
 			next = null;
 			return retval;

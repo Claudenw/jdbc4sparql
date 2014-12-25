@@ -2,7 +2,7 @@ package org.xenei.jdbc4sparql.iface.name;
 
 /**
  * An immutable bitmap of name segments to be displayed.
- * 
+ *
  */
 public class NameSegments {
 
@@ -39,8 +39,10 @@ public class NameSegments {
 	public static final NameSegments TTTT = new NameSegments(true, true, true,
 			true);
 
-	private static final NameSegments[] LST = { FFFF, FFFT, FFTF, FFTT, FTFF,
-			FTFT, FTTF, FTTT, TFFF, TFFT, TFTF, TFTT, TTFF, TTFT, TTTF, TTTT };
+	private static final NameSegments[] LST = {
+			FFFF, FFFT, FFTF, FFTT, FTFF, FTFT, FTTF, FTTT, TFFF, TFFT, TFTF,
+			TFTT, TTFF, TTFT, TTTF, TTTT
+	};
 
 	/**
 	 * All segments on.
@@ -68,17 +70,17 @@ public class NameSegments {
 	public static final NameSegments COLUMN = FTTT;
 
 	// the catalog flag
-	private boolean catalog;
+	private final boolean catalog;
 	// the schema flag
-	private boolean schema;
+	private final boolean schema;
 	// the table flag
-	private boolean table;
+	private final boolean table;
 	// the column flag
-	private boolean column;
+	private final boolean column;
 
 	/**
 	 * Get an instance of the Name segments.
-	 * 
+	 *
 	 * @param catalog
 	 *            the display catalog flag.
 	 * @param schema
@@ -90,14 +92,14 @@ public class NameSegments {
 	 */
 	public static NameSegments getInstance(final boolean catalog,
 			final boolean schema, final boolean table, final boolean column) {
-		int idx = (catalog ? 8 : 0) + (schema ? 4 : 0) + (table ? 2 : 0)
+		final int idx = (catalog ? 8 : 0) + (schema ? 4 : 0) + (table ? 2 : 0)
 				+ (column ? 1 : 0);
 		return LST[idx];
 	}
 
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param catalog
 	 *            the display catalog flag.
 	 * @param schema
@@ -117,7 +119,7 @@ public class NameSegments {
 
 	/**
 	 * Get the catalog to display from the name.
-	 * 
+	 *
 	 * @param name
 	 *            The name to filter.
 	 * @return The catalog name or null if not displayed.
@@ -128,7 +130,7 @@ public class NameSegments {
 
 	/**
 	 * Get the column to display from the name.
-	 * 
+	 *
 	 * @param name
 	 *            The name to filter.
 	 * @return The column name or null if not displayed.
@@ -139,7 +141,7 @@ public class NameSegments {
 
 	/**
 	 * Get the schema to display from the name.
-	 * 
+	 *
 	 * @param name
 	 *            The name to filter.
 	 * @return The schema name or null if not displayed.
@@ -150,7 +152,7 @@ public class NameSegments {
 
 	/**
 	 * Get the table to display from the name.
-	 * 
+	 *
 	 * @param name
 	 *            The name to filter.
 	 * @return The table name or null if not displayed.
@@ -161,7 +163,7 @@ public class NameSegments {
 
 	/**
 	 * get the catalog flag state.
-	 * 
+	 *
 	 * @return true if the catalog is displayed, false otherwise.
 	 */
 	public boolean isCatalog() {
@@ -170,7 +172,7 @@ public class NameSegments {
 
 	/**
 	 * get the schema flag state.
-	 * 
+	 *
 	 * @return true if the schema is displayed, false otherwise.
 	 */
 	public boolean isSchema() {
@@ -179,7 +181,7 @@ public class NameSegments {
 
 	/**
 	 * get the table flag state.
-	 * 
+	 *
 	 * @return true if the table is displayed, false otherwise.
 	 */
 	public boolean isTable() {
@@ -188,7 +190,7 @@ public class NameSegments {
 
 	/**
 	 * get the column flag state.
-	 * 
+	 *
 	 * @return true if the column is displayed, false otherwise.
 	 */
 	public boolean isColumn() {
@@ -205,13 +207,13 @@ public class NameSegments {
 	 * Equality is determined by the flags matching.
 	 */
 	@Override
-	public boolean equals(Object o) {
+	public boolean equals(final Object o) {
 		if (o instanceof NameSegments) {
-			NameSegments other = (NameSegments) o;
-			return this.isCatalog() == other.isCatalog()
-					&& this.isSchema() == other.isSchema()
-					&& this.isTable() == other.isTable()
-					&& this.isColumn() == other.isColumn();
+			final NameSegments other = (NameSegments) o;
+			return (this.isCatalog() == other.isCatalog())
+					&& (this.isSchema() == other.isSchema())
+					&& (this.isTable() == other.isTable())
+					&& (this.isColumn() == other.isColumn());
 		}
 		return false;
 	}
@@ -222,15 +224,17 @@ public class NameSegments {
 				+ (isTable() ? 2 : 0) + (isColumn() ? 1 : 0);
 
 	}
-	
+
 	/**
-	 * And this name segment with the other.  All segments that are on in both will be on in 
-	 * result. All others will be off.
-	 * @param other The other segment to be ANDed with this one.
+	 * And this name segment with the other. All segments that are on in both
+	 * will be on in result. All others will be off.
+	 * 
+	 * @param other
+	 *            The other segment to be ANDed with this one.
 	 * @return merged NameSegments object
 	 */
-	NameSegments and(NameSegments other) {
-		int idx = hashCode() & other.hashCode();
+	NameSegments and(final NameSegments other) {
+		final int idx = hashCode() & other.hashCode();
 		return LST[idx];
 	}
 }

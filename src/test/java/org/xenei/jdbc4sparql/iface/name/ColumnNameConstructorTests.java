@@ -1,22 +1,23 @@
 package org.xenei.jdbc4sparql.iface.name;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
 public class ColumnNameConstructorTests {
 
-	private String catalog = "catalog";
-	private String schema = "schema";
-	private String table = "table";
-	private String column = "column";
+	private final String catalog = "catalog";
+	private final String schema = "schema";
+	private final String table = "table";
+	private final String column = "column";
 
 	@Test
 	public void testNullColumn() {
 		try {
 			new ColumnName(catalog, schema, table, null);
 			fail("Should have thrown IllegalArgumentException");
-		} catch (IllegalArgumentException e) {
+		} catch (final IllegalArgumentException e) {
 			assertEquals("Segment column may not be null", e.getMessage());
 		}
 	}
@@ -26,13 +27,13 @@ public class ColumnNameConstructorTests {
 		try {
 			new ColumnName(catalog, schema, null, column);
 			fail("Should have thrown IllegalArgumentException");
-		} catch (IllegalArgumentException e) {
+		} catch (final IllegalArgumentException e) {
 			assertEquals("Segment table may not be null", e.getMessage());
 		}
 		try {
 			new ColumnName(catalog, schema, null, null);
 			fail("Should have thrown IllegalArgumentException");
-		} catch (IllegalArgumentException e) {
+		} catch (final IllegalArgumentException e) {
 			assertEquals("Segment table may not be null", e.getMessage());
 		}
 	}
@@ -42,25 +43,25 @@ public class ColumnNameConstructorTests {
 		try {
 			new ColumnName(catalog, null, table, column);
 			fail("Should have thrown IllegalArgumentException");
-		} catch (IllegalArgumentException e) {
+		} catch (final IllegalArgumentException e) {
 			assertEquals("Segment schema may not be null", e.getMessage());
 		}
 		try {
 			new ColumnName(catalog, null, table, null);
 			fail("Should have thrown IllegalArgumentException");
-		} catch (IllegalArgumentException e) {
+		} catch (final IllegalArgumentException e) {
 			assertEquals("Segment schema may not be null", e.getMessage());
 		}
 		try {
 			new ColumnName(catalog, null, null, column);
 			fail("Should have thrown IllegalArgumentException");
-		} catch (IllegalArgumentException e) {
+		} catch (final IllegalArgumentException e) {
 			assertEquals("Segment schema may not be null", e.getMessage());
 		}
 		try {
 			new ColumnName(catalog, null, null, null);
 			fail("Should have thrown IllegalArgumentException");
-		} catch (IllegalArgumentException e) {
+		} catch (final IllegalArgumentException e) {
 			assertEquals("Segment schema may not be null", e.getMessage());
 		}
 	}
@@ -70,62 +71,63 @@ public class ColumnNameConstructorTests {
 		try {
 			new ColumnName(null, schema, table, column);
 			fail("Should have thrown IllegalArgumentException");
-		} catch (IllegalArgumentException e) {
+		} catch (final IllegalArgumentException e) {
 			assertEquals("Segment catalog may not be null", e.getMessage());
 		}
 		try {
 			new ColumnName(null, schema, table, null);
 			fail("Should have thrown IllegalArgumentException");
-		} catch (IllegalArgumentException e) {
+		} catch (final IllegalArgumentException e) {
 			assertEquals("Segment catalog may not be null", e.getMessage());
 		}
 		try {
 			new ColumnName(null, schema, null, column);
 			fail("Should have thrown IllegalArgumentException");
-		} catch (IllegalArgumentException e) {
+		} catch (final IllegalArgumentException e) {
 			assertEquals("Segment catalog may not be null", e.getMessage());
 		}
 		try {
 			new ColumnName(null, schema, null, null);
 			fail("Should have thrown IllegalArgumentException");
-		} catch (IllegalArgumentException e) {
+		} catch (final IllegalArgumentException e) {
 			assertEquals("Segment catalog may not be null", e.getMessage());
 		}
 		try {
 			new ColumnName(null, null, table, column);
 			fail("Should have thrown IllegalArgumentException");
-		} catch (IllegalArgumentException e) {
+		} catch (final IllegalArgumentException e) {
 			assertEquals("Segment catalog may not be null", e.getMessage());
 		}
 		try {
 			new ColumnName(null, null, table, null);
 			fail("Should have thrown IllegalArgumentException");
-		} catch (IllegalArgumentException e) {
+		} catch (final IllegalArgumentException e) {
 			assertEquals("Segment catalog may not be null", e.getMessage());
 		}
 		try {
 			new ColumnName(null, null, null, column);
 			fail("Should have thrown IllegalArgumentException");
-		} catch (IllegalArgumentException e) {
+		} catch (final IllegalArgumentException e) {
 			assertEquals("Segment catalog may not be null", e.getMessage());
 		}
 		try {
 			new ColumnName(null, null, null, null);
 			fail("Should have thrown IllegalArgumentException");
-		} catch (IllegalArgumentException e) {
+		} catch (final IllegalArgumentException e) {
 			assertEquals("Segment catalog may not be null", e.getMessage());
 		}
 	}
 
 	@Test
 	public void testGetInstance() {
-		ColumnName cName = new ColumnName("catalog", "schema", "table",
+		final ColumnName cName = new ColumnName("catalog", "schema", "table",
 				"column");
-		NameSegments segs[] = { NameSegments.TTTT, NameSegments.FTTT,
-				NameSegments.TFTT, NameSegments.FFTT, NameSegments.TFFT,
-				NameSegments.FFFT };
-		for (NameSegments seg : segs) {
-			ColumnName sn = cName.clone(seg);
+		final NameSegments segs[] = {
+				NameSegments.TTTT, NameSegments.FTTT, NameSegments.TFTT,
+				NameSegments.FFTT, NameSegments.TFFT, NameSegments.FFFT
+		};
+		for (final NameSegments seg : segs) {
+			final ColumnName sn = cName.clone(seg);
 			ColumnName result = ColumnName.getNameInstance("catalog2",
 					"schema2", "table2", sn.getSPARQLName());
 			ColumnName answer = result.clone(NameSegments.ALL);
@@ -134,7 +136,7 @@ public class ColumnNameConstructorTests {
 					: "schema2", answer.getSchema());
 			assertEquals(sn.getSPARQLName(),
 					seg.isSchema() || seg.isTable() ? "table" : "table2",
-					answer.getTable());
+							answer.getTable());
 			assertEquals(sn.getSPARQLName(), column, answer.getColumn());
 
 			result = ColumnName.getNameInstance("catalog2", "schema2",
@@ -145,7 +147,7 @@ public class ColumnNameConstructorTests {
 					: "schema2", answer.getSchema());
 			assertEquals(sn.getSPARQLName(),
 					seg.isSchema() || seg.isTable() ? "table" : "table2",
-					answer.getTable());
+							answer.getTable());
 			assertEquals(sn.getSPARQLName(), column, answer.getColumn());
 		}
 

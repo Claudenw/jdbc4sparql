@@ -53,10 +53,12 @@ public class DataTable extends AbstractWrappedTable {
 		final Key key = table.getTableDef().getSortKey();
 		if (key == null) {
 			data = new ArrayList<Object[]>();
-		} else {
+		}
+		else {
 			if (key.isUnique()) {
 				data = new TreeSet<Object[]>(key);
-			} else {
+			}
+			else {
 				// supress warning is for this conversion as TreeBag is not
 				// generic.
 				data = new SortedBag<Object[]>(key);
@@ -134,7 +136,8 @@ public class DataTable extends AbstractWrappedTable {
 					return rowData[columnOrdinal - 1];
 				}
 			};
-		} else if (data instanceof SortedBag) {
+		}
+		else if (data instanceof SortedBag) {
 			retval = new IteratorResultSet(data.iterator(), this) {
 
 				@Override
@@ -145,7 +148,8 @@ public class DataTable extends AbstractWrappedTable {
 					return rowData[columnOrdinal - 1];
 				}
 			};
-		} else {
+		}
+		else {
 			retval = new ListResultSet((List<?>) data, this) {
 
 				@Override

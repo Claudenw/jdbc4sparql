@@ -7,16 +7,18 @@ import org.apache.commons.lang.StringUtils;
  */
 public class SchemaName extends ItemName {
 	/**
-	 * Check the schema name.
-	 * Checks that the itemName schema and catalog name segments are not null.
-	 * @param name The ItemName to check.
+	 * Check the schema name. Checks that the itemName schema and catalog name
+	 * segments are not null.
+	 * 
+	 * @param name
+	 *            The ItemName to check.
 	 * @return the ItemName
-	 * @Throws IllegalArgumentException 
+	 * @Throws IllegalArgumentException
 	 */
-	static ItemName checkItemName(ItemName name) throws IllegalArgumentException {
-		if (name == null)
-		{
-			throw new IllegalArgumentException( "name may not be null");
+	static ItemName checkItemName(final ItemName name)
+			throws IllegalArgumentException {
+		if (name == null) {
+			throw new IllegalArgumentException("name may not be null");
 		}
 		CatalogName.checkItemName(name);
 		checkNotNull(name.getBaseName().getSchema(), "schema");
@@ -24,25 +26,31 @@ public class SchemaName extends ItemName {
 	}
 
 	/**
-	 * Ensure that the schema segment is on, and the table and column segments are off.
-	 * @param segments The segments to adjust
+	 * Ensure that the schema segment is on, and the table and column segments
+	 * are off.
+	 * 
+	 * @param segments
+	 *            The segments to adjust
 	 * @return the adjusted segments.
 	 * @Throws IllegalArgumentException if segments is null.
 	 */
-	private static NameSegments adjustSegments(NameSegments segments) throws IllegalArgumentException{
-		if (segments == null)
-		{
-			throw new IllegalArgumentException( "Segments may not be null");
+	private static NameSegments adjustSegments(final NameSegments segments)
+			throws IllegalArgumentException {
+		if (segments == null) {
+			throw new IllegalArgumentException("Segments may not be null");
 		}
 		if (segments.isSchema() && !segments.isTable() && !segments.isColumn()) {
 			return segments;
 		}
-		return NameSegments.getInstance(segments.isCatalog(), true, false, false);
+		return NameSegments.getInstance(segments.isCatalog(), true, false,
+				false);
 	}
 
 	/**
 	 * Create a SchmeaName from an ItemName.
-	 * @param name the ItemName, must not be null.
+	 * 
+	 * @param name
+	 *            the ItemName, must not be null.
 	 * @Throws IllegalArgumentException is name is null.
 	 */
 	public SchemaName(final ItemName name) throws IllegalArgumentException {
@@ -51,34 +59,47 @@ public class SchemaName extends ItemName {
 
 	/**
 	 * Create a SchmeaName from an ItemName with specific name segments.
-	 * @param name the ItemName, must not be null.
-	 * @param segments the name segments to use.
+	 * 
+	 * @param name
+	 *            the ItemName, must not be null.
+	 * @param segments
+	 *            the name segments to use.
 	 * @Throws IllegalArgumentException is name or segments are null.
 	 */
-	public SchemaName(final ItemName name, NameSegments segments) throws IllegalArgumentException {
+	public SchemaName(final ItemName name, final NameSegments segments)
+			throws IllegalArgumentException {
 		super(checkItemName(name), adjustSegments(segments));
 	}
 
 	/**
 	 * Create a SchemaNamefrom a catalog name string and a schema name string.
 	 * Uses the default namesegments for a schema.
-	 * @param catalog the catalog name string.
-	 * @param schema the schema name string.
-	 * @throws IllegalArgumentException if either string is null.
+	 * 
+	 * @param catalog
+	 *            the catalog name string.
+	 * @param schema
+	 *            the schema name string.
+	 * @throws IllegalArgumentException
+	 *             if either string is null.
 	 */
-	public SchemaName(final String catalog, final String schema) throws IllegalArgumentException {
-		super(new FQNameNameImpl(checkNotNull(catalog, "catalog"), checkNotNull(
+	public SchemaName(final String catalog, final String schema)
+			throws IllegalArgumentException {
+		super(new FQNameImpl(checkNotNull(catalog, "catalog"), checkNotNull(
 				schema, "schema"), null, null), NameSegments.SCHEMA);
 	}
 
 	/**
 	 * Create a table name in this schema.
-	 * @param tblName the table name string.
+	 * 
+	 * @param tblName
+	 *            the table name string.
 	 * @return the Table Name
-	 * @throws IllegalArgumentException if either name is null.
+	 * @throws IllegalArgumentException
+	 *             if either name is null.
 	 */
-	public TableName getTableName(final String tblName) throws IllegalArgumentException {
-		FQName baseName = getBaseName();
+	public TableName getTableName(final String tblName)
+			throws IllegalArgumentException {
+		final FQName baseName = getBaseName();
 		return new TableName(baseName.getCatalog(), baseName.getSchema(),
 				tblName);
 	}
@@ -97,7 +118,7 @@ public class SchemaName extends ItemName {
 	}
 
 	@Override
-	public SchemaName clone(NameSegments segs) {
+	public SchemaName clone(final NameSegments segs) {
 		return new SchemaName(this, segs);
 	}
 }

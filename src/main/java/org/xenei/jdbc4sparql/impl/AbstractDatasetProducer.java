@@ -1,9 +1,5 @@
 package org.xenei.jdbc4sparql.impl;
 
-import com.hp.hpl.jena.query.Dataset;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.impl.Util;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -24,6 +20,10 @@ import org.xenei.jdbc4sparql.iface.DatasetProducer;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.utils.NoCloseZipInputStream;
 
+import com.hp.hpl.jena.query.Dataset;
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.impl.Util;
+
 /**
  * Interface that defines the dataset producer.
  *
@@ -39,11 +39,12 @@ abstract public class AbstractDatasetProducer implements DatasetProducer {
 		String name = StringUtils.defaultString(modelName);
 		if (StringUtils.isEmpty(name)) {
 			name = RdfCatalog.Builder.getFQName(name);
-		} else {
+		}
+		else {
 			final int i = Util.splitNamespace(name);
 			if (i == 1) {
 				if (XMLChar.isNCNameStart(name.charAt(0))) {// we have a short
-															// name
+					// name
 					name = RdfCatalog.Builder.getFQName(name);
 				}
 			}
@@ -156,14 +157,16 @@ abstract public class AbstractDatasetProducer implements DatasetProducer {
 
 		if (e.getName().startsWith(DatasetProducer.META_PREFIX)) {
 			loadMeta(zis, e);
-		} else {
+		}
+		else {
 			throw new IllegalStateException("Entry must start with "
 					+ DatasetProducer.META_PREFIX);
 		}
 		e = zis.getNextEntry();
 		if (e.getName().startsWith(DatasetProducer.LOCAL_PREFIX)) {
 			loadLocal(zis, e);
-		} else {
+		}
+		else {
 			throw new IllegalStateException("Entry must start with "
 					+ DatasetProducer.LOCAL_PREFIX);
 		}
@@ -176,7 +179,8 @@ abstract public class AbstractDatasetProducer implements DatasetProducer {
 
 			RDFDataMgr.read(ds, new NoCloseZipInputStream(zis),
 					format.getLang());
-		} else {
+		}
+		else {
 			throw new IllegalArgumentException("Entry name must be "
 					+ createFN(prefix));
 		}
@@ -192,7 +196,7 @@ abstract public class AbstractDatasetProducer implements DatasetProducer {
 
 	@Override
 	final public void save(final File f) throws FileNotFoundException,
-			IOException {
+	IOException {
 		save(new FileOutputStream(f));
 	}
 

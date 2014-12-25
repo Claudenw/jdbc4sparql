@@ -1,5 +1,11 @@
 package org.xenei.jdbc4sparql.impl.rdf;
 
+import java.util.List;
+
+import org.xenei.jena.entities.EntityManager;
+import org.xenei.jena.entities.EntityManagerFactory;
+import org.xenei.jena.entities.MissingAnnotation;
+
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelChangedListener;
 import com.hp.hpl.jena.rdf.model.Property;
@@ -9,14 +15,8 @@ import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 import com.hp.hpl.jena.vocabulary.RDF;
 
-import java.util.List;
-
-import org.xenei.jena.entities.EntityManager;
-import org.xenei.jena.entities.EntityManagerFactory;
-import org.xenei.jena.entities.MissingAnnotation;
-
 public abstract class AbstractChangeListener<S, T> implements
-		ModelChangedListener {
+ModelChangedListener {
 
 	private final ResourceBuilder rb;
 	private final Resource s;

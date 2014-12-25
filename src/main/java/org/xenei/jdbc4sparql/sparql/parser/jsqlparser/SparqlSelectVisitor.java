@@ -19,16 +19,6 @@
  */
 package org.xenei.jdbc4sparql.sparql.parser.jsqlparser;
 
-import com.hp.hpl.jena.graph.Node;
-import com.hp.hpl.jena.query.Query;
-import com.hp.hpl.jena.sparql.core.Var;
-import com.hp.hpl.jena.sparql.expr.E_Bound;
-import com.hp.hpl.jena.sparql.expr.E_Equals;
-import com.hp.hpl.jena.sparql.expr.Expr;
-import com.hp.hpl.jena.sparql.expr.ExprFunction;
-import com.hp.hpl.jena.sparql.expr.ExprFunction2;
-import com.hp.hpl.jena.sparql.expr.ExprVar;
-
 import java.sql.SQLDataException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -56,6 +46,16 @@ import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 import org.xenei.jdbc4sparql.sparql.items.QueryColumnInfo;
 import org.xenei.jdbc4sparql.sparql.items.QueryTableInfo;
 
+import com.hp.hpl.jena.graph.Node;
+import com.hp.hpl.jena.query.Query;
+import com.hp.hpl.jena.sparql.core.Var;
+import com.hp.hpl.jena.sparql.expr.E_Bound;
+import com.hp.hpl.jena.sparql.expr.E_Equals;
+import com.hp.hpl.jena.sparql.expr.Expr;
+import com.hp.hpl.jena.sparql.expr.ExprFunction;
+import com.hp.hpl.jena.sparql.expr.ExprFunction2;
+import com.hp.hpl.jena.sparql.expr.ExprVar;
+
 /**
  * Implementation of SelectVisitor and OrderByVisitor that merge the SQL
  * commands into the SparqlQueryBuilder.
@@ -79,8 +79,7 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor {
 							.getColumn(((ExprVar) eq.getArg1()).asVar());
 					if (ci1 != null) {
 						final QueryColumnInfo ci2 = queryBuilder
-								.getColumn(((ExprVar) eq.getArg2())
-										.asVar());
+								.getColumn(((ExprVar) eq.getArg2()).asVar());
 						if (ci2 != null) {
 							final ColumnName ci1a = isMapped(ci1);
 							final ColumnName ci2a = isMapped(ci2);
@@ -91,7 +90,8 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor {
 								if (ci1a != null) {
 									// first one is aliased
 									n = addAlias(ci1, ci1a);
-								} else {
+								}
+								else {
 									n = addAlias(ci2, ci2a);
 								}
 								stack.push(new E_Bound(new ExprVar(n)));
@@ -125,8 +125,9 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor {
 
 	private void applyOuterExpr(final Expr aExpr, final ItemName mapFrom,
 			final ItemName mapTo) {
-		if (LOG.isDebugEnabled())
+		if (LOG.isDebugEnabled()) {
 			SparqlSelectVisitor.LOG.debug("apply outer expr {}", aExpr);
+		}
 		final Expr expr = aExpr;
 		if (expr instanceof ExprFunction) {
 			if (applyOuterExprSub(aExpr, aExpr, mapFrom, mapTo)) {
@@ -138,9 +139,10 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor {
 
 	private boolean applyOuterExprSub(final Expr aExpr, final Expr toApply,
 			final ItemName mapFrom, final ItemName mapTo) {
-		if (LOG.isDebugEnabled())
+		if (LOG.isDebugEnabled()) {
 			SparqlSelectVisitor.LOG.debug("apply outer expr sub {} {}", aExpr,
-				toApply);
+					toApply);
+		}
 		final Expr expr = aExpr;
 		if (expr instanceof ExprFunction) {
 			for (final Expr subExpr : ((ExprFunction) expr).getArgs()) {
@@ -180,16 +182,20 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor {
 		final String fmt = "%s INNER JOIN Is not supported";
 		if (join.isRight()) { // this should never happen anyway
 			throw new UnsupportedOperationException(String.format(fmt, "RIGHT"));
-		} else if (join.isNatural()) { // this is one case we will not support
-										// as it is generally
-										// considered bad.
+		}
+		else if (join.isNatural()) { // this is one case we will not support
+			// as it is generally
+			// considered bad.
 			throw new UnsupportedOperationException(String.format(fmt,
 					"NATURAL"));
-		} else if (join.isFull()) { // this should never happen anyway
+		}
+		else if (join.isFull()) { // this should never happen anyway
 			throw new UnsupportedOperationException(String.format(fmt, "FULL"));
-		} else if (join.isLeft()) { // this should never happen anyway
+		}
+		else if (join.isLeft()) { // this should never happen anyway
 			throw new UnsupportedOperationException(String.format(fmt, "LEFT"));
-		} else {
+		}
+		else {
 			final SparqlFromVisitor fromVisitor = new SparqlFromVisitor(
 					queryBuilder);
 			join.getRightItem().accept(fromVisitor);
@@ -223,15 +229,18 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor {
 
 	// take apart the join and figure out how to merge it.
 	private void deparseJoin(final Join join, final TableName tableName) {
-		if (LOG.isDebugEnabled())
+		if (LOG.isDebugEnabled()) {
 			SparqlSelectVisitor.LOG.debug("deparse join {}", join);
+		}
 		if (join.isSimple()) {
 			final SparqlFromVisitor fromVisitor = new SparqlFromVisitor(
 					queryBuilder);
 			join.getRightItem().accept(fromVisitor);
-		} else if (join.isOuter()) {
+		}
+		else if (join.isOuter()) {
 			deparseOuterJoin(join, tableName);
-		} else {
+		}
+		else {
 			deparseInnerJoin(join, tableName);
 		}
 	}
@@ -241,22 +250,26 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor {
 		if (limit == null) {
 			return;
 		}
-		if (LOG.isDebugEnabled())
+		if (LOG.isDebugEnabled()) {
 			SparqlSelectVisitor.LOG.debug("deparse limit {}", limit);
+		}
 		// LIMIT n OFFSET skip
 		if (limit.isOffsetJdbcParameter()) {
 			throw new UnsupportedOperationException(
 					"LIMIT with OFFSET JDBC Parameter is not supported");
-		} else if (limit.getOffset() != 0) {
+		}
+		else if (limit.getOffset() != 0) {
 			queryBuilder.setOffset(limit.getOffset());
 		}
 		if (limit.isRowCountJdbcParameter()) {
 			throw new UnsupportedOperationException(
 					"LIMIT with JDBC Parameter is not supported");
 			// buffer.append("?");
-		} else if (limit.getRowCount() != 0) {
+		}
+		else if (limit.getRowCount() != 0) {
 			queryBuilder.setLimit(limit.getRowCount());
-		} else {
+		}
+		else {
 			throw new UnsupportedOperationException(
 					"LIMIT with no parameter is not supported");
 		}
@@ -266,8 +279,10 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor {
 		if (orderByElements == null) {
 			return;
 		}
-		if (LOG.isDebugEnabled())
-			SparqlSelectVisitor.LOG.debug("deparse orderby {}", orderByElements);
+		if (LOG.isDebugEnabled()) {
+			SparqlSelectVisitor.LOG
+					.debug("deparse orderby {}", orderByElements);
+		}
 		for (final Object name : orderByElements) {
 			final OrderByElement orderByElement = (OrderByElement) name;
 			orderByElement.accept(this);
@@ -279,14 +294,17 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor {
 
 		if (join.isRight()) {
 			throw new UnsupportedOperationException(String.format(fmt, "RIGHT"));
-		} else if (join.isNatural()) { // this is one case we will not support
-										// as it is generally
-										// considered bad.
+		}
+		else if (join.isNatural()) { // this is one case we will not support
+			// as it is generally
+			// considered bad.
 			throw new UnsupportedOperationException(String.format(fmt,
 					"NATURAL"));
-		} else if (join.isFull()) {
+		}
+		else if (join.isFull()) {
 			throw new UnsupportedOperationException(String.format(fmt, "FULL"));
-		} else {
+		}
+		else {
 			// handles left and not specified
 			final SparqlFromVisitor fromVisitor = new SparqlFromVisitor(
 					queryBuilder, SparqlQueryBuilder.OPTIONAL);
@@ -332,8 +350,9 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor {
 
 	@Override
 	public void visit(final OrderByElement orderBy) {
-		if (LOG.isDebugEnabled())
+		if (LOG.isDebugEnabled()) {
 			SparqlSelectVisitor.LOG.debug("visit orderby: {}", orderBy);
+		}
 		final SparqlExprVisitor expressionVisitor = new SparqlExprVisitor(
 				queryBuilder, SparqlQueryBuilder.REQUIRED);
 		orderBy.getExpression().accept(expressionVisitor);
@@ -346,8 +365,9 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor {
 
 	@Override
 	public void visit(final PlainSelect plainSelect) {
-		if (LOG.isDebugEnabled())
+		if (LOG.isDebugEnabled()) {
 			SparqlSelectVisitor.LOG.debug("visit plainSelect: {}", plainSelect);
+		}
 		TableName lastTableName = null;
 		final SparqlExprVisitor expressionVisitor = new SparqlExprVisitor(
 				queryBuilder, SparqlQueryBuilder.OPTIONAL);
@@ -449,7 +469,7 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor {
 
 		try {
 			queryBuilder.addUnion(unionBuilders);
-		} catch (SQLDataException e) {
+		} catch (final SQLDataException e) {
 			throw new IllegalStateException(e);
 		}
 

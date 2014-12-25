@@ -1,10 +1,10 @@
 package org.xenei.jdbc4sparql.iface.name;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 import org.junit.Test;
-import org.xenei.jdbc4sparql.iface.name.CatalogName;
-import org.xenei.jdbc4sparql.iface.name.ItemName;
 import org.xenei.jdbc4sparql.impl.NameUtils;
 
 public class CatalogNameTests {
@@ -39,8 +39,8 @@ public class CatalogNameTests {
 
 	@Test
 	public void testCatalogFromOtherItemName() {
-		final ItemName itemName = new SearchName("catalog",
-				"schema", "table", "column");
+		final ItemName itemName = new SearchName("catalog", "schema", "table",
+				"column");
 		catalogName = new CatalogName(itemName);
 		assertEquals("catalog", catalogName.getCatalog());
 		assertNull(catalogName.getSchema());

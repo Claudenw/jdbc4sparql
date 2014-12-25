@@ -1,25 +1,28 @@
 package org.xenei.jdbc4sparql.iface.name;
 
 import java.util.Map;
-import java.util.UUID;
 
-import org.apache.commons.lang3.StringUtils;
 import org.xenei.jdbc4sparql.impl.NameUtils;
 
 /**
  * An implementation of FQName.
  *
  */
-public class FQNameNameImpl implements FQName {
+public class FQNameImpl implements FQName {
 	/**
-	 * A method to verify that a segment is not null and does not
-	 * contain the JDBC or SPARQL "dot" characters.  Used in constructors to verify values.
-	 * @param segment The name of the segment.
-	 * @param value the value of the segment.
+	 * A method to verify that a segment is not null and does not contain the
+	 * JDBC or SPARQL "dot" characters. Used in constructors to verify values.
+	 *
+	 * @param segment
+	 *            The name of the segment.
+	 * @param value
+	 *            the value of the segment.
 	 * @return the value.
-	 * @throws IllegalArgumentException if the value is null.
+	 * @throws IllegalArgumentException
+	 *             if the value is null.
 	 */
-	protected static String verifyOK(final String segment, final String value) throws IllegalArgumentException {
+	protected static String verifyOK(final String segment, final String value)
+			throws IllegalArgumentException {
 		if (value != null) {
 			for (final String badChar : NameUtils.DOT_LIST) {
 				if (value.contains(badChar)) {
@@ -46,20 +49,27 @@ public class FQNameNameImpl implements FQName {
 	private transient Integer _hashCode;
 
 	/**
-	 * Constructor.  No argument may be null.
-	 * @param catalog catalog name.
-	 * @param schema schema name.
-	 * @param table table name.
-	 * @param col column name.
-	 * @throws IllegalArgumentException if any segment is null.
+	 * Constructor. No argument may be null.
+	 *
+	 * @param catalog
+	 *            catalog name.
+	 * @param schema
+	 *            schema name.
+	 * @param table
+	 *            table name.
+	 * @param col
+	 *            column name.
+	 * @throws IllegalArgumentException
+	 *             if any segment is null.
 	 */
-	protected FQNameNameImpl(final String catalog, final String schema,
-			final String table, final String col)  throws IllegalArgumentException {
+	protected FQNameImpl(final String catalog, final String schema,
+			final String table, final String col)
+					throws IllegalArgumentException {
 		this.catalog = verifyOK("Catalog", catalog);
 		this.schema = verifyOK("Schema", schema);
 		this.table = verifyOK("Table", table);
 		this.col = verifyOK("Column", col);
-		guid = FQName.Comparator.makeGUID( catalog, schema, table, col);
+		guid = FQName.Comparator.makeGUID(catalog, schema, table, col);
 	}
 
 	/**
@@ -74,7 +84,7 @@ public class FQNameNameImpl implements FQName {
 	 */
 	public <T> T findGUID(final Map<? extends GUIDObject, T> map) {
 
-		for (GUIDObject name : map.keySet()) {
+		for (final GUIDObject name : map.keySet()) {
 			if (name.getGUID().equals(this.getGUID())) {
 				return map.get(name);
 			}
@@ -109,7 +119,7 @@ public class FQNameNameImpl implements FQName {
 
 	/**
 	 * Get the name as a UUID based on the real name.
-	 * 
+	 *
 	 * @return the UUID based name
 	 */
 	@Override
@@ -136,7 +146,7 @@ public class FQNameNameImpl implements FQName {
 	}
 
 	@Override
-	public boolean equals(Object o) {
+	public boolean equals(final Object o) {
 		return FQName.Comparator.equals(this, o);
 	}
 

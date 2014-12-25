@@ -1,6 +1,8 @@
 package org.xenei.jdbc4sparql.iface.name;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -11,18 +13,22 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.xenei.jdbc4sparql.iface.name.SchemaName;
-import org.xenei.jdbc4sparql.iface.name.TableName;
 import org.xenei.jdbc4sparql.impl.NameUtils;
 
 @RunWith(Parameterized.class)
 public class SchemaNameTests {
 	@Parameters(name = "schema:{0}")
 	public static Collection<String[]> data() {
-		List<String[]> lst = new ArrayList<String[]>();
-		for (String catalog : new String[] { "", "catalog" }) {
-			for (String schema : new String[] { "", "schema" }) {
-				lst.add(new String[] { catalog, schema });
+		final List<String[]> lst = new ArrayList<String[]>();
+		for (final String catalog : new String[] {
+				"", "catalog"
+		}) {
+			for (final String schema : new String[] {
+					"", "schema"
+			}) {
+				lst.add(new String[] {
+						catalog, schema
+				});
 			}
 		}
 		return lst;
@@ -45,7 +51,8 @@ public class SchemaNameTests {
 			DBName = schema;
 			SPARQLName = schema;
 
-		} else {
+		}
+		else {
 			DBName = "";
 			SPARQLName = "";
 
@@ -145,25 +152,28 @@ public class SchemaNameTests {
 		try {
 			tableName = schemaName.getTableName(null);
 			fail("Should have thrown IllegalArgumentException");
-		} catch (IllegalArgumentException e) {
+		} catch (final IllegalArgumentException e) {
 			assertEquals("Segment table may not be null", e.getMessage());
 		}
 	}
 
 	@Test
 	public void testSchemaWithSegments() {
-		boolean tf[] = { true, false };
+		final boolean tf[] = {
+				true, false
+		};
 
 		NameSegments segments = null;
-		for (boolean schemaFlg : tf) {
+		for (final boolean schemaFlg : tf) {
 
-			for (boolean tableFlg : tf) {
+			for (final boolean tableFlg : tf) {
 
-				for (boolean columnFlg : tf) {
-					segments = NameSegments.getInstance(false, schemaFlg, tableFlg,
-							columnFlg);
+				for (final boolean columnFlg : tf) {
+					segments = NameSegments.getInstance(false, schemaFlg,
+							tableFlg, columnFlg);
 
-					SchemaName result = new SchemaName(schemaName, segments);
+					final SchemaName result = new SchemaName(schemaName,
+							segments);
 					assertEquals("Bad schema: " + segments.toString(), schema,
 							result.getSchema()); // always returns the schema
 					assertNull("Bad table: " + segments.toString(),

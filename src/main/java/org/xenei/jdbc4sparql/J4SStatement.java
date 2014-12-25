@@ -54,17 +54,18 @@ public class J4SStatement implements Statement {
 	public J4SStatement(final J4SConnection connection,
 			final RdfCatalog catalog, final int resultSetType,
 			final int resultSetConcurrency, final int resultSetHoldability)
-			throws SQLException {
-		if (LOG.isDebugEnabled())
+					throws SQLException {
+		if (LOG.isDebugEnabled()) {
 			J4SStatement.LOG.debug("Creating statement");
+		}
 		this.connection = connection;
 		this.catalog = catalog;
 		if (connection.getSchema() != null) {
 			this.schema = catalog.getSchema(connection.getSchema());
-		} else {
-			Set<Schema> schemas = catalog.getSchemas();
-			if (schemas.size() == 1)
-			{
+		}
+		else {
+			final Set<Schema> schemas = catalog.getSchemas();
+			if (schemas.size() == 1) {
 				this.schema = schemas.iterator().next();
 			}
 		}
@@ -115,14 +116,17 @@ public class J4SStatement implements Statement {
 	@Override
 	public boolean execute(final String sql) throws SQLException {
 		resultSet = null;
-		if (LOG.isDebugEnabled())
+		if (LOG.isDebugEnabled()) {
 			J4SStatement.LOG.debug("execute {}", sql);
+		}
 		final String[] parts = sql.trim().split("\\s");
 		if (parts[0].equalsIgnoreCase("use")) {
 			executeUse(parts);
-		} else if (parts[0].equalsIgnoreCase("show")) {
+		}
+		else if (parts[0].equalsIgnoreCase("show")) {
 			resultSet = executeShow(parts);
-		} else {
+		}
+		else {
 			final SparqlView view = new SparqlView(parse(sql));
 			resultSet = view.getResultSet();
 			resultSet.setFetchDirection(getFetchDirection());
@@ -225,7 +229,8 @@ public class J4SStatement implements Statement {
 			if (catalog instanceof RdfCatalog) {
 				this.catalog = (RdfCatalog) catalog;
 				connection.setCatalog(name);
-			} else {
+			}
+			else {
 				throw new SQLException(String.format(
 						"Catalog '%s' does not support statements", name));
 			}
@@ -350,17 +355,17 @@ public class J4SStatement implements Statement {
 	@Override
 	public void setFetchDirection(final int direction) throws SQLException {
 		switch (direction) {
-		case ResultSet.FETCH_REVERSE:
-			fetchDirection = direction;
-			break;
+			case ResultSet.FETCH_REVERSE:
+				fetchDirection = direction;
+				break;
 
-		case ResultSet.FETCH_UNKNOWN:
-		case ResultSet.FETCH_FORWARD:
-			fetchDirection = ResultSet.FETCH_FORWARD;
-			break;
+			case ResultSet.FETCH_UNKNOWN:
+			case ResultSet.FETCH_FORWARD:
+				fetchDirection = ResultSet.FETCH_FORWARD;
+				break;
 
-		default:
-			throw new SQLException("invalid fetch direciton value");
+			default:
+				throw new SQLException("invalid fetch direciton value");
 		}
 	}
 

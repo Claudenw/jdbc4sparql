@@ -39,9 +39,10 @@ public class J4SUrl {
 	public static final String SUB_PROTOCOL = "J4S";
 	public static final String TYPE_SPARQL = "sparql";
 	public static final String TYPE_CONFIG = "config";
-	public static final String[] ARGS = { J4SPropertyNames.CATALOG_PROPERTY,
-			J4SPropertyNames.TYPE_PROPERTY, J4SPropertyNames.BUILDER_PROPERTY,
-			J4SPropertyNames.PARSER_PROPERTY };
+	public static final String[] ARGS = {
+			J4SPropertyNames.CATALOG_PROPERTY, J4SPropertyNames.TYPE_PROPERTY,
+			J4SPropertyNames.BUILDER_PROPERTY, J4SPropertyNames.PARSER_PROPERTY
+	};
 
 	private URI endpoint;
 	private SparqlParser parser;
@@ -67,9 +68,11 @@ public class J4SUrl {
 		pos += J4SUrl.SUB_PROTOCOL.length();
 		if (urlStr.charAt(pos) == '?') {
 			parseJ4SArgs(urlStr, pos + 1);
-		} else if (urlStr.charAt(pos) == ':') {
+		}
+		else if (urlStr.charAt(pos) == ':') {
 			parseJ4SEndpoint(urlStr, pos + 1);
-		} else {
+		}
+		else {
 			throw new IllegalArgumentException(
 					"Not a valid J4S JDBC URL -- missing endpoint");
 		}
@@ -190,14 +193,15 @@ public class J4SUrl {
 			if (!found) {
 				throw new IllegalArgumentException(
 						"Not a valid J4S JDBC URL -- '" + arg
-								+ "' is not a recognized argument");
+						+ "' is not a recognized argument");
 			}
 			properties.put(arg,
 					StringUtils.defaultIfBlank(matcher.group(4), ""));
 			pos += matcher.group(1).length();
 			if (":".equals(matcher.group(5))) {
 				matcher = pattern.matcher("");
-			} else {
+			}
+			else {
 				matcher = pattern.matcher(urlStr.substring(pos));
 			}
 		}
@@ -210,15 +214,17 @@ public class J4SUrl {
 			if (type.equalsIgnoreCase(J4SUrl.TYPE_SPARQL)) {
 				properties.setProperty(J4SPropertyNames.TYPE_PROPERTY,
 						J4SUrl.TYPE_SPARQL);
-			} else {
+			}
+			else {
 				final Lang l = RDFLanguages.nameToLang(type);
 				if (l != null) {
 					properties.setProperty(J4SPropertyNames.TYPE_PROPERTY,
 							l.getName());
-				} else {
+				}
+				else {
 					throw new IllegalArgumentException(
 							"Not a valid J4S JDBC URL -- '" + type
-									+ "' is not a recognized type value");
+							+ "' is not a recognized type value");
 				}
 			}
 		}
@@ -255,7 +261,7 @@ public class J4SUrl {
 			int i = 0;
 			for (final Object key : properties.keySet()) {
 				sb.append(key.toString()).append("=")
-						.append(properties.getProperty(key.toString()));
+				.append(properties.getProperty(key.toString()));
 				if (++i < limit) {
 					sb.append("&");
 				}

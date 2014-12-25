@@ -1,11 +1,5 @@
 package org.xenei.jdbc4sparql.impl.rdf;
 
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.Property;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.shared.Lock;
-import com.hp.hpl.jena.vocabulary.RDFS;
-
 import java.sql.DatabaseMetaData;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,9 +21,15 @@ import org.xenei.jena.entities.ResourceWrapper;
 import org.xenei.jena.entities.annotations.Predicate;
 import org.xenei.jena.entities.annotations.Subject;
 
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.Property;
+import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.shared.Lock;
+import com.hp.hpl.jena.vocabulary.RDFS;
+
 @Subject(namespace = "http://org.xenei.jdbc4sparql/entity/Column#")
 public class RdfColumn extends RdfNamespacedObject implements Column,
-		ResourceWrapper {
+ResourceWrapper {
 	public static class Builder implements Column {
 		public static RdfColumn fixupTable(final RdfTable table,
 				final RdfColumn column) {
@@ -64,7 +64,8 @@ public class RdfColumn extends RdfNamespacedObject implements Column,
 			Resource column = null;
 			if (builder.hasResource(getFQName())) {
 				column = builder.getResource(getFQName(), typeClass);
-			} else {
+			}
+			else {
 				column = builder.getResource(getFQName(), typeClass);
 
 				column.addLiteral(RDFS.label, name);
@@ -95,9 +96,11 @@ public class RdfColumn extends RdfNamespacedObject implements Column,
 				RdfTable tbl = null;
 				if (table instanceof RdfTable.Builder) {
 					tbl = ((RdfTable.Builder) table).build(model);
-				} else if (table instanceof RdfTable) {
+				}
+				else if (table instanceof RdfTable) {
 					tbl = (RdfTable) table;
-				} else {
+				}
+				else {
 					throw new IllegalArgumentException(
 							"table not an rdf table or builder");
 				}
@@ -147,8 +150,8 @@ public class RdfColumn extends RdfNamespacedObject implements Column,
 		public String getFQName() {
 			final ResourceWrapper rw = (ResourceWrapper) getColumnDef();
 			final StringBuilder sb = new StringBuilder()
-					.append(rw.getResource().getURI()).append(" ").append(name)
-					.append(" ").append(getQuerySegmentFmt());
+			.append(rw.getResource().getURI()).append(" ").append(name)
+			.append(" ").append(getQuerySegmentFmt());
 			return String.format("%s/instance/UUID-%s",
 					ResourceBuilder.getFQName(RdfColumn.class),
 					UUID.nameUUIDFromBytes(sb.toString().getBytes()));
@@ -168,7 +171,8 @@ public class RdfColumn extends RdfNamespacedObject implements Column,
 				for (final String seg : querySegments) {
 					sb.append(seg).append(eol);
 				}
-			} else {
+			}
+			else {
 				sb.append("# no segment provided").append(eol);
 			}
 			return sb.toString();

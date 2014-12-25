@@ -1,14 +1,16 @@
 package org.xenei.jdbc4sparql.impl.rdf;
 
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import static org.mockito.Mockito.*;
 import org.xenei.jdbc4sparql.iface.Schema;
+
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
 
 public class SchemaBuilderTest {
 
@@ -20,8 +22,8 @@ public class SchemaBuilderTest {
 	public void setUp() throws Exception {
 		model = ModelFactory.createDefaultModel();
 		final RdfTableDef.Builder builder = new RdfTableDef.Builder()
-				.addColumnDef(
-						RdfColumnDef.Builder.getStringBuilder().build(model))
+		.addColumnDef(
+				RdfColumnDef.Builder.getStringBuilder().build(model))
 				.addColumnDef(
 						RdfColumnDef.Builder.getIntegerBuilder().build(model));
 		tableBldr = new RdfTable.Builder().setName("testTable")

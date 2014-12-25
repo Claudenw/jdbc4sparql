@@ -17,12 +17,6 @@
  */
 package org.xenei.jdbc4sparql.sparql.parser;
 
-import com.hp.hpl.jena.query.Query;
-import com.hp.hpl.jena.query.QueryException;
-import com.hp.hpl.jena.sparql.lang.sparql_11.ParseException;
-import com.hp.hpl.jena.sparql.lang.sparql_11.SPARQLParser11;
-import com.hp.hpl.jena.sparql.syntax.Element;
-
 import java.io.Reader;
 import java.io.StringReader;
 import java.sql.SQLException;
@@ -38,6 +32,12 @@ import org.apache.commons.discovery.resource.names.DiscoverServiceNames;
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
+
+import com.hp.hpl.jena.query.Query;
+import com.hp.hpl.jena.query.QueryException;
+import com.hp.hpl.jena.sparql.lang.sparql_11.ParseException;
+import com.hp.hpl.jena.sparql.lang.sparql_11.SPARQLParser11;
+import com.hp.hpl.jena.sparql.syntax.Element;
 
 /**
  * An interface that defines the SparqlParser.
@@ -123,7 +123,8 @@ public interface SparqlParser {
 						throw new IllegalStateException(clazz
 								+ " could not be instantiated.", e);
 					}
-				} else {
+				}
+				else {
 					throw new IllegalArgumentException(clazz
 							+ " does not implement SparqlParser.");
 				}
@@ -184,7 +185,7 @@ public interface SparqlParser {
 		 *             on error.
 		 */
 		public static Element parse(final String qstr) throws ParseException,
-				QueryException {
+		QueryException {
 
 			final Query query = new Query();
 

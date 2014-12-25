@@ -1,15 +1,5 @@
 package org.xenei.jdbc4sparql.impl.rdf;
 
-import com.hp.hpl.jena.query.Query;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.Property;
-import com.hp.hpl.jena.rdf.model.RDFList;
-import com.hp.hpl.jena.rdf.model.RDFNode;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.ResourceFactory;
-import com.hp.hpl.jena.shared.Lock;
-import com.hp.hpl.jena.vocabulary.RDFS;
-
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,9 +29,19 @@ import org.xenei.jena.entities.ResourceWrapper;
 import org.xenei.jena.entities.annotations.Predicate;
 import org.xenei.jena.entities.annotations.Subject;
 
+import com.hp.hpl.jena.query.Query;
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.Property;
+import com.hp.hpl.jena.rdf.model.RDFList;
+import com.hp.hpl.jena.rdf.model.RDFNode;
+import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.rdf.model.ResourceFactory;
+import com.hp.hpl.jena.shared.Lock;
+import com.hp.hpl.jena.vocabulary.RDFS;
+
 @Subject(namespace = "http://org.xenei.jdbc4sparql/entity/Table#")
 public class RdfTable extends RdfNamespacedObject implements Table,
-		ResourceWrapper {
+ResourceWrapper {
 	public static class Builder implements Table {
 		public static RdfTable fixupSchema(final RdfSchema schema,
 				final RdfTable table) {
@@ -84,7 +84,8 @@ public class RdfTable extends RdfNamespacedObject implements Table,
 			Resource table = null;
 			if (builder.hasResource(fqName)) {
 				table = builder.getResource(fqName, typeClass);
-			} else {
+			}
+			else {
 
 				table = builder.getResource(fqName, typeClass);
 
@@ -125,7 +126,8 @@ public class RdfTable extends RdfNamespacedObject implements Table,
 
 					if (lst == null) {
 						lst = model.createList().with(col.getResource());
-					} else {
+					}
+					else {
 						lst.add(col.getResource());
 					}
 				}
@@ -233,14 +235,14 @@ public class RdfTable extends RdfNamespacedObject implements Table,
 
 		public String getFQName() {
 			final StringBuilder sb = new StringBuilder()
-					.append(schema.getResource().getURI()).append(" ")
-					.append(name).append(" ").append(getQuerySegmentFmt());
+			.append(schema.getResource().getURI()).append(" ")
+			.append(name).append(" ").append(getQuerySegmentFmt());
 
 			return String
 					.format("%s/instance/N%s", ResourceBuilder
 							.getFQName(RdfTable.class),
 							UUID.nameUUIDFromBytes(sb.toString().getBytes())
-									.toString());
+							.toString());
 		}
 
 		@Override
@@ -258,7 +260,8 @@ public class RdfTable extends RdfNamespacedObject implements Table,
 				for (final String seg : querySegments) {
 					sb.append(seg).append(eol);
 				}
-			} else {
+			}
+			else {
 				sb.append("{ # no query statements provided }").append(eol);
 			}
 
@@ -317,8 +320,8 @@ public class RdfTable extends RdfNamespacedObject implements Table,
 						columns.length - 1));
 			}
 			final RdfColumn.Builder builder = new RdfColumn.Builder()
-					.setColumnDef(tableDef.getColumnDef(idx)).setName(name)
-					.setTable(this);
+			.setColumnDef(tableDef.getColumnDef(idx)).setName(name)
+			.setTable(this);
 
 			columns[idx] = builder;
 			return this;
@@ -385,7 +388,7 @@ public class RdfTable extends RdfNamespacedObject implements Table,
 			final Property p = model.createProperty(
 					ResourceBuilder.getNamespace(RdfTable.class), "column");
 			tbl.getRequiredProperty(p).getResource().as(RDFList.class)
-					.removeList();
+			.removeList();
 
 			// delete the column objects
 			for (final Column col : cols) {
@@ -506,7 +509,7 @@ public class RdfTable extends RdfNamespacedObject implements Table,
 			final RdfCatalog catalog = getCatalog();
 			queryBuilder = new SparqlQueryBuilder(catalogs, parser, catalog,
 					schema);
-			QueryTableInfo tableInfo = queryBuilder.addTable(getName(),
+			final QueryTableInfo tableInfo = queryBuilder.addTable(getName(),
 					getName(), SparqlQueryBuilder.REQUIRED);
 			queryBuilder.setSegmentCount();
 			queryBuilder.addRequiredColumns();
@@ -515,7 +518,8 @@ public class RdfTable extends RdfNamespacedObject implements Table,
 
 			if (key != null) {
 				queryBuilder.setKey(key);
-			} else {
+			}
+			else {
 				if (readTableDef().isDistinct()) {
 					queryBuilder.setDistinct();
 				}
