@@ -133,7 +133,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData {
 	@Override
 	public ResultSet getBestRowIdentifier(final String arg0, final String arg1,
 			final String arg2, final int arg3, final boolean arg4)
-					throws SQLException {
+			throws SQLException {
 		final DataTable table = new DataTable(
 				metaSchema.getTable(MetaCatalogBuilder.BEST_ROW_TABLE));
 		// TODO populate table here.
@@ -360,7 +360,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData {
 	@Override
 	public ResultSet getIndexInfo(final String arg0, final String arg1,
 			final String arg2, final boolean arg3, final boolean arg4)
-					throws SQLException {
+			throws SQLException {
 		final DataTable table = new DataTable(
 				metaSchema.getTable(MetaCatalogBuilder.INDEXINFO_TABLE));
 		// TODO populate table here.
@@ -507,7 +507,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData {
 	@Override
 	public ResultSet getPrimaryKeys(final String catalogPattern,
 			final String schemaPattern, final String tableNamePattern)
-					throws SQLException {
+			throws SQLException {
 		final DataTable table = new DataTable(
 				metaSchema.getTable(MetaCatalogBuilder.PRIMARY_KEY_TABLE));
 		for (final Catalog catalog : new NameFilter<Catalog>(catalogPattern,
@@ -527,7 +527,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData {
 									tbl.getColumn(seg.getIdx()).getName(), // COLUMN_NAME
 									new Short((short) (seg.getIdx() + 1)), // KEY_SEQ
 									pk.getKeyName()
-							// PK_NAME
+									// PK_NAME
 							};
 							table.addData(data);
 						}
@@ -720,7 +720,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData {
 	@Override
 	public ResultSet getTablePrivileges(final String catalogPattern,
 			final String schemaPattern, final String tablePattern)
-					throws SQLException {
+			throws SQLException {
 		final DataTable table = new DataTable(
 				metaSchema.getTable(MetaCatalogBuilder.TABLE_PRIVILEGES_TABLE));
 		for (final Catalog catalog : new NameFilter<Catalog>(catalogPattern,
@@ -774,9 +774,9 @@ public class J4SDatabaseMetaData implements DatabaseMetaData {
 				query.append(hasWhere ? " AND (" : "(");
 				for (int i = 0; i < types.length; i++) {
 					query.append(i > 0 ? " OR " : "")
-					.append(types.length > 1 ? "(" : "")
-					.append(String.format("TABLE_TYPE LIKE '%s'",
-							escapeString(types[i])))
+							.append(types.length > 1 ? "(" : "")
+							.append(String.format("TABLE_TYPE LIKE '%s'",
+									escapeString(types[i])))
 							.append(types.length > 1 ? ")" : "");
 				}
 				query.append(")");
@@ -798,7 +798,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData {
 	public ResultSet getTableTypes() throws SQLException {
 		return ((RdfTable) metaSchema
 				.getTable(MetaCatalogBuilder.TABLE_TYPES_TABLE)).getResultSet(
-						connection.getCatalogs(), parser);
+				connection.getCatalogs(), parser);
 	}
 
 	@Override
@@ -811,13 +811,13 @@ public class J4SDatabaseMetaData implements DatabaseMetaData {
 	public ResultSet getTypeInfo() throws SQLException {
 		return ((RdfTable) metaSchema
 				.getTable(MetaCatalogBuilder.TYPEINFO_TABLE)).getResultSet(
-						connection.getCatalogs(), parser);
+				connection.getCatalogs(), parser);
 	}
 
 	@Override
 	public ResultSet getUDTs(final String catalog, final String schemaPattern,
 			final String typeNamePattern, final int[] types)
-					throws SQLException {
+			throws SQLException {
 		final DataTable table = new DataTable(
 				metaSchema.getTable(MetaCatalogBuilder.UDT_TABLES));
 		// TODO populate table here.
@@ -1294,7 +1294,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData {
 	@Override
 	public boolean supportsSchemasInDataManipulation() throws SQLException {
 		J4SDatabaseMetaData.LOG
-		.debug("supportsSchemasInDataManipulation: true ");
+				.debug("supportsSchemasInDataManipulation: true ");
 		return true;
 	}
 
@@ -1319,7 +1319,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData {
 	@Override
 	public boolean supportsSchemasInTableDefinitions() throws SQLException {
 		J4SDatabaseMetaData.LOG
-		.debug("supportsSchemasInTableDefinitions: true ");
+				.debug("supportsSchemasInTableDefinitions: true ");
 		return true;
 	}
 

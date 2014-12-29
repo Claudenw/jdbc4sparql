@@ -23,7 +23,8 @@ import java.util.List;
 import org.xenei.jena.entities.annotations.Subject;
 
 @Subject(namespace = "http://org.xenei.jdbc4sparql/entity/Key#")
-public interface Key<T extends KeySegment> extends Comparator<Comparable<Object>[]> {
+public interface Key<T extends KeySegment> extends
+		Comparator<Comparable<Object>[]> {
 
 	public String getId();
 
@@ -42,7 +43,8 @@ public interface Key<T extends KeySegment> extends Comparator<Comparable<Object>
 
 		public final static int compare(
 				final List<? extends KeySegment> segments,
-				final Comparable<Object>[] data1, final Comparable<Object>[] data2) {
+				final Comparable<Object>[] data1,
+				final Comparable<Object>[] data2) {
 			for (final KeySegment segment : segments) {
 				final int retval = segment.compare(data1, data2);
 				if (retval != 0) {

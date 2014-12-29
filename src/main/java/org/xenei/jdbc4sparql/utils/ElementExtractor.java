@@ -26,7 +26,7 @@ import com.hp.hpl.jena.sparql.syntax.ElementVisitor;
  * Class for test classes to extract element types from query.
  */
 public class ElementExtractor implements ElementVisitor {
-	private final List<Element> extracted = new ArrayList<Element>();
+	private List<Element> extracted = new ArrayList<Element>();
 	private Class<? extends Element> matchType;
 
 	/**
@@ -47,12 +47,16 @@ public class ElementExtractor implements ElementVisitor {
 	 * @return this ElementExtractor for chaining
 	 */
 	public ElementExtractor reset() {
-		extracted.clear();
+		extracted = new ArrayList<Element>();
 		return this;
 	}
 
 	public List<Element> getExtracted() {
 		return extracted;
+	}
+
+	public ElementExtractor() {
+		;
 	}
 
 	public ElementExtractor(final Class<? extends Element> clazz) {

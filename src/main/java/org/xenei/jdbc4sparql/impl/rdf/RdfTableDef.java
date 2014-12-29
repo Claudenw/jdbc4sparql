@@ -23,7 +23,7 @@ import com.hp.hpl.jena.rdf.model.Resource;
 
 @Subject(namespace = "http://org.xenei.jdbc4sparql/entity/TableDef#")
 public class RdfTableDef extends RdfNamespacedObject implements TableDef,
-ResourceWrapper {
+		ResourceWrapper {
 	public static class Builder implements TableDef {
 		private boolean distinct = false;
 		private final List<ColumnDef> columnDefs = new ArrayList<ColumnDef>();
@@ -137,7 +137,7 @@ ResourceWrapper {
 			final StringBuilder sb = new StringBuilder();
 			for (final ColumnDef cd : columnDefs) {
 				sb.append(((ResourceWrapper) cd).getResource().getURI())
-				.append(" ");
+						.append(" ");
 			}
 			if (primaryKey != null) {
 				sb.append(primaryKey.getId()).append(" ");

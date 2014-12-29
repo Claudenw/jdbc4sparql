@@ -9,6 +9,8 @@ import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 
 import org.xenei.jdbc4sparql.iface.name.ColumnName;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
+import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlExprVisitor.AliasInfo;
+import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.proxies.ExprInfoFactory;
 
 import com.hp.hpl.jena.sparql.expr.E_StrLength;
 import com.hp.hpl.jena.sparql.expr.E_StrLowerCase;
@@ -20,7 +22,7 @@ import com.hp.hpl.jena.sparql.expr.nodevalue.NodeValueString;
 
 public class StringFunctionHandler extends AbstractFunctionHandler {
 	public static final String[] STRING_FUNCTIONS = {
-			"LENGTH", "SUBSTRING", "UCASE", "LCASE", "REPLACE"
+		"LENGTH", "SUBSTRING", "UCASE", "LCASE", "REPLACE"
 	};
 	private static final int LENGTH = 0;
 	private static final int SUBSTRING = 1;
@@ -45,7 +47,7 @@ public class StringFunctionHandler extends AbstractFunctionHandler {
 	}
 
 	@Override
-	public FuncInfo handle(final Function func, final String alias)
+	public Expr handle(final Function func, final AliasInfo alias)
 			throws SQLException {
 		int i = Arrays.asList(StringFunctionHandler.STRING_FUNCTIONS).indexOf(
 				func.getName().toUpperCase());
@@ -85,7 +87,7 @@ public class StringFunctionHandler extends AbstractFunctionHandler {
 		}
 	}
 
-	protected FuncInfo handleReplace(final Function func, final String alias)
+	protected Expr handleReplace(final Function func, final AliasInfo alias)
 			throws SQLException {
 
 		final ExpressionList l = func.getParameters();
@@ -122,12 +124,13 @@ public class StringFunctionHandler extends AbstractFunctionHandler {
 
 		final Expr expr = new E_StrReplace(arg1, arg2, arg3, null);
 		// final ColumnName colName = tblName.getColumnName(func.getName());
-		final ColumnName colName = tblName.getColumnName(alias);
+		final ColumnName colName = tblName.getColumnName(alias.getAlias());
 		builder.registerFunction(colName, java.sql.Types.VARCHAR);
-		return new FuncInfo(expr, colName, exprVisitor.getColumns());
+		return ExprInfoFactory.getInstance(expr, exprVisitor.getColumns(),
+				colName);
 	}
 
-	protected FuncInfo handleSubString(final Function func, final String alias)
+	protected Expr handleSubString(final Function func, final AliasInfo alias)
 			throws SQLException {
 		final ExpressionList l = func.getParameters();
 		Expr expr3 = null;
@@ -160,9 +163,10 @@ public class StringFunctionHandler extends AbstractFunctionHandler {
 
 		final Expr expr = new E_StrSubstring(expr1, expr2, expr3);
 		// final ColumnName colName = tblName.getColumnName(func.getName());
-		final ColumnName colName = tblName.getColumnName(alias);
+		final ColumnName colName = tblName.getColumnName(alias.getAlias());
 		builder.registerFunction(colName, java.sql.Types.VARCHAR);
-		return new FuncInfo(expr, colName, exprVisitor.getColumns());
+		return ExprInfoFactory.getInstance(expr, exprVisitor.getColumns(),
+				colName);
 
 	}
 }

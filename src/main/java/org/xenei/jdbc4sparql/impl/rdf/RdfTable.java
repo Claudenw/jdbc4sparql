@@ -41,7 +41,7 @@ import com.hp.hpl.jena.vocabulary.RDFS;
 
 @Subject(namespace = "http://org.xenei.jdbc4sparql/entity/Table#")
 public class RdfTable extends RdfNamespacedObject implements Table,
-ResourceWrapper {
+		ResourceWrapper {
 	public static class Builder implements Table {
 		public static RdfTable fixupSchema(final RdfSchema schema,
 				final RdfTable table) {
@@ -235,14 +235,14 @@ ResourceWrapper {
 
 		public String getFQName() {
 			final StringBuilder sb = new StringBuilder()
-			.append(schema.getResource().getURI()).append(" ")
-			.append(name).append(" ").append(getQuerySegmentFmt());
+					.append(schema.getResource().getURI()).append(" ")
+					.append(name).append(" ").append(getQuerySegmentFmt());
 
 			return String
 					.format("%s/instance/N%s", ResourceBuilder
 							.getFQName(RdfTable.class),
 							UUID.nameUUIDFromBytes(sb.toString().getBytes())
-							.toString());
+									.toString());
 		}
 
 		@Override
@@ -320,8 +320,8 @@ ResourceWrapper {
 						columns.length - 1));
 			}
 			final RdfColumn.Builder builder = new RdfColumn.Builder()
-			.setColumnDef(tableDef.getColumnDef(idx)).setName(name)
-			.setTable(this);
+					.setColumnDef(tableDef.getColumnDef(idx)).setName(name)
+					.setTable(this);
 
 			columns[idx] = builder;
 			return this;
@@ -388,7 +388,7 @@ ResourceWrapper {
 			final Property p = model.createProperty(
 					ResourceBuilder.getNamespace(RdfTable.class), "column");
 			tbl.getRequiredProperty(p).getResource().as(RDFList.class)
-			.removeList();
+					.removeList();
 
 			// delete the column objects
 			for (final Column col : cols) {
@@ -512,7 +512,7 @@ ResourceWrapper {
 			final QueryTableInfo tableInfo = queryBuilder.addTable(getName(),
 					getName(), SparqlQueryBuilder.REQUIRED);
 			queryBuilder.setSegmentCount();
-			queryBuilder.addRequiredColumns();
+			queryBuilder.addDefinedColumns();
 			queryBuilder.addTableColumns(tableInfo);
 			final RdfKey key = getKey();
 

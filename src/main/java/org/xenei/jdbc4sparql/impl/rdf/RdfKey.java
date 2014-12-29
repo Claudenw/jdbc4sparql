@@ -110,7 +110,8 @@ public class RdfKey implements Key<RdfKeySegment>, ResourceWrapper {
 		}
 
 		@Override
-		public int compare(final Comparable<Object>[] data1, final Comparable<Object>[] data2) {
+		public int compare(final Comparable<Object>[] data1,
+				final Comparable<Object>[] data2) {
 			return Utils.compare(getSegments(), data1, data2);
 		}
 
@@ -153,7 +154,8 @@ public class RdfKey implements Key<RdfKeySegment>, ResourceWrapper {
 	private List<RdfKeySegment> segments;
 
 	@Override
-	public final int compare(final Comparable<Object>[] data1, final Comparable<Object>[] data2) {
+	public final int compare(final Comparable<Object>[] data1,
+			final Comparable<Object>[] data2) {
 		return Utils.compare(getSegments(), data1, data2);
 	}
 

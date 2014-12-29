@@ -85,7 +85,7 @@ public class SparqlParserImpl implements SparqlParser {
 	@Override
 	public SparqlQueryBuilder parse(final Map<String, Catalog> catalogs,
 			final Catalog catalog, final Schema schema, final String sqlQuery)
-					throws SQLException {
+			throws SQLException {
 		if (LOG.isDebugEnabled()) {
 			SparqlParserImpl.LOG.debug("catalog: '{}' parsing SQL: {}",
 					catalog.getName(), sqlQuery);

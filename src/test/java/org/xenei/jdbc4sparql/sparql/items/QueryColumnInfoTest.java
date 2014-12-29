@@ -18,12 +18,8 @@ import org.xenei.jdbc4sparql.iface.name.ColumnName;
 import org.xenei.jdbc4sparql.iface.name.ItemName;
 import org.xenei.jdbc4sparql.iface.name.NameSegments;
 import org.xenei.jdbc4sparql.impl.NameUtils;
-import org.xenei.jdbc4sparql.sparql.CheckTypeF;
-import org.xenei.jdbc4sparql.sparql.ForceTypeF;
 
 import com.hp.hpl.jena.sparql.core.Var;
-import com.hp.hpl.jena.sparql.expr.ExprVar;
-import com.hp.hpl.jena.sparql.syntax.ElementBind;
 
 public class QueryColumnInfoTest {
 
@@ -114,42 +110,15 @@ public class QueryColumnInfoTest {
 		final ColumnName alias = new ColumnName("", "", "", "alias");
 		final QueryColumnInfo aliasInfo = columnInfo.createAlias(alias);
 		assertEquals(alias, aliasInfo.getName());
-		final CheckTypeF cf = aliasInfo.getTypeFilter();
-		assertEquals(columnInfo.getTypeFilter(), cf);
+
 		assertNotEquals(columnInfo.getGUID(), alias.getGUID());
-		assertEquals(columnInfo.getGUIDVar(), cf.getArg().asVar());
-
-		final ForceTypeF ff = columnInfo.getDataFilter();
-		assertEquals(columnInfo.getDataFilter(), ff);
-		final ElementBind bind = ff.getBinding(aliasInfo);
-		assertEquals(aliasInfo.getVar(), bind.getVar());
-
-		final Var v = ((ExprVar) ((ForceTypeF) bind.getExpr()).getArg())
-				.asVar();
-		assertEquals(columnInfo.getGUIDVar(), v);
+		assertEquals(columnInfo.getGUID(), aliasInfo.getGUID());
 
 	}
 
 	@Test
 	public void testGetColumn() {
 		assertEquals(column, columnInfo.getColumn());
-	}
-
-	@Test
-	public void testGetTypeFilter() throws SQLDataException {
-		final CheckTypeF f = columnInfo.getTypeFilter();
-		assertEquals(columnInfo, f.getColumnInfo());
-		assertEquals(columnInfo.getGUIDVar(), f.getArg().asVar());
-	}
-
-	@Test
-	public void testGetDataFilter() throws SQLDataException {
-		final ForceTypeF f = columnInfo.getDataFilter();
-		final ElementBind bind = f.getBinding(columnInfo);
-		assertEquals(columnInfo.getVar(), bind.getVar());
-		final Var v = ((ExprVar) ((ForceTypeF) bind.getExpr()).getArg())
-				.asVar();
-		assertEquals(columnInfo.getGUIDVar(), v);
 	}
 
 }

@@ -12,6 +12,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
+import java.sql.SQLDataException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -286,7 +287,7 @@ public class SparqlQueryBuilderTest {
 	@Test
 	public void testAddRequiredColumns() throws Exception {
 		builder.addTable(table, tName, false);
-		builder.addRequiredColumns();
+		builder.addDefinedColumns();
 
 		final QueryInfoSet infoSet = getInfoSet();
 		final QueryItemCollection<QueryTableInfo, Table, TableName> tableInfoList = infoSet
@@ -298,34 +299,28 @@ public class SparqlQueryBuilderTest {
 
 		final QueryItemCollection<QueryColumnInfo, Column, ColumnName> columnInfoList = infoSet
 				.getColumns();
-		assertEquals(1, columnInfoList.size());
-		final QueryColumnInfo columnInfo = columnInfoList.get(0);
+		assertEquals(2, columnInfoList.size());
+		QueryColumnInfo columnInfo = columnInfoList.get(0);
 		assertEquals(colName, columnInfo.getName());
 		assertEquals(column, columnInfo.getColumn());
+
+		columnInfo = columnInfoList.get(1);
+		assertEquals(col2Name, columnInfo.getName());
+		assertEquals(column2, columnInfo.getColumn());
 
 		final Query query = getQuery();
 		final ElementExtractor extractor = new ElementExtractor(
 				ElementPathBlock.class);
 		query.getQueryPattern().visit(extractor);
 		final List<Element> lst = extractor.getExtracted();
-		assertEquals(1, lst.size());
+		assertEquals(3, lst.size());
 
-		final Var tVar = Var.alloc(tName.getGUID());
-		final List<TriplePath> etb = ((ElementPathBlock) lst.get(0))
-				.getPattern().getList();
-		assertEquals(2, etb.size());
-		TriplePath t = new TriplePath(new Triple(tVar,
-				NodeFactory.createURI("a"), NodeFactory.createLiteral("table")));
-		assertTrue(etb.contains(t));
-		t = new TriplePath(new Triple(tVar, NodeFactory.createURI("of"),
-				Var.alloc(colName.getGUID())));
-		assertTrue(etb.contains(t));
 	}
 
 	@Test
 	public void testAddColumnToQuery() throws Exception {
 		builder.addTable(table, tName, false);
-		builder.addRequiredColumns();
+		builder.addDefinedColumns();
 		builder.setSegmentCount();
 		builder.addColumnToQuery(col2Name, true);
 		QueryTableInfo tableInfo = builder.getTable(tName);
@@ -355,20 +350,23 @@ public class SparqlQueryBuilderTest {
 				ElementPathBlock.class);
 		query.getQueryPattern().visit(extractor);
 		List<Element> lst = extractor.getExtracted();
-		assertEquals(2, lst.size());
+		assertEquals(3, lst.size());
 
 		List<TriplePath> etb = ((ElementPathBlock) lst.get(0)).getPattern()
 				.getList();
-		assertEquals(2, etb.size());
+		assertEquals(1, etb.size());
 		final Var tVar = Var.alloc(tName.getGUID());
 		TriplePath t = new TriplePath(new Triple(tVar,
 				NodeFactory.createURI("a"), NodeFactory.createLiteral("table")));
 		assertTrue(etb.contains(t));
+
+		etb = ((ElementPathBlock) lst.get(1)).getPattern().getList();
+		assertEquals(1, etb.size());
 		t = new TriplePath(new Triple(tVar, NodeFactory.createURI("of"),
 				Var.alloc(colName.getGUID())));
 		assertTrue(etb.contains(t));
 
-		etb = ((ElementPathBlock) lst.get(1)).getPattern().getList();
+		etb = ((ElementPathBlock) lst.get(2)).getPattern().getList();
 		assertEquals(1, etb.size());
 		t = new TriplePath(new Triple(tVar, NodeFactory.createURI("of"),
 				Var.alloc(col2Name.getGUID())));
@@ -400,7 +398,7 @@ public class SparqlQueryBuilderTest {
 		alias.setUsedSegments(NameSegments.FFFT);
 
 		builder.addTable(table, tName, false);
-		builder.addRequiredColumns();
+		builder.addDefinedColumns();
 		builder.setSegmentCount();
 		builder.addAlias(col2Name, alias);
 		builder.addVar(alias);
@@ -521,11 +519,11 @@ public class SparqlQueryBuilderTest {
 	public void testAddUnion() throws Exception {
 		final List<SparqlQueryBuilder> builders = new ArrayList<SparqlQueryBuilder>();
 		final SparqlQueryBuilder builder1 = createBuilder("table1");
-		builder1.addRequiredColumns();
+		builder1.addDefinedColumns();
 		builder1.setAllColumns();
 
 		final SparqlQueryBuilder builder2 = createBuilder("table2");
-		builder2.addRequiredColumns();
+		builder2.addDefinedColumns();
 		builder2.setAllColumns();
 
 		builders.add(builder1);
@@ -551,24 +549,42 @@ public class SparqlQueryBuilderTest {
 	public void testUsing() throws Exception {
 		// setup a second table
 		final TableName tName2 = sName.getTableName("testTable2");
+		final ColumnName colName_2 = tName2.getColumnName("testColumn");
+		final ColumnName col2Name_2 = tName2.getColumnName("testColumn2");
+
+		final Column column_2 = mock(Column.class);
+		when(column_2.getName()).thenReturn(colName_2);
+		when(column_2.hasQuerySegments()).thenReturn(true);
+		when(column_2.getQuerySegmentFmt()).thenReturn("%1$s <of> %2$s . ");
+		when(column_2.getColumnDef()).thenReturn(colDef);
+
+		final Column column2_2 = mock(Column.class);
+		when(column2_2.getName()).thenReturn(col2Name_2);
+		when(column2_2.hasQuerySegments()).thenReturn(true);
+		when(column2_2.getQuerySegmentFmt()).thenReturn("%1$s <of> %2$s . ");
+		when(column2_2.getColumnDef()).thenReturn(colDef);
+		when(column2_2.isOptional()).thenReturn(true);
 
 		final Table table2 = mock(Table.class);
 		when(table2.getName()).thenReturn(tName2);
 		when(table2.getQuerySegmentFmt()).thenReturn("%1$s <a> 'table' . ");
-		when(table2.getColumn(eq(colName.getShortName()))).thenReturn(column);
-		when(table2.getColumn(eq(col2Name.getShortName()))).thenReturn(column2);
+		when(table2.getColumn(eq(colName_2.getShortName()))).thenReturn(
+				column_2);
+		when(table2.getColumn(eq(col2Name_2.getShortName()))).thenReturn(
+				column2_2);
 
-		cols = new ArrayList<Column>();
-		cols.add(column);
-		cols.add(column2);
-		when(table2.getColumns()).thenAnswer(new ColumnAnswer(cols));
+		final List<Column> cols_2 = new ArrayList<Column>();
+		cols_2.add(column_2);
+		cols_2.add(column2_2);
+		when(table2.getColumns()).thenAnswer(new ColumnAnswer(cols_2));
+		when(table2.getColumnList()).thenReturn(cols_2);
 
 		// setup complete
 
 		builder.addTable(table, tName, false);
 		builder.addTable(table2, tName2, false);
 		builder.addUsing(colName.getShortName());
-		builder.addRequiredColumns();
+		builder.addDefinedColumns();
 		builder.setAllColumns();
 
 		final Field f = SparqlQueryBuilder.class
@@ -662,9 +678,6 @@ public class SparqlQueryBuilderTest {
 		assertTrue(cd instanceof FunctionColumnDef);
 		assertEquals(java.sql.Types.INTEGER, cd.getType());
 		assertFalse(col.hasQuerySegments());
-		assertNotNull(columnInfo.getTypeFilter());
-		assertNotNull(columnInfo.getDataFilter());
-
 	}
 
 	@Test
@@ -683,9 +696,6 @@ public class SparqlQueryBuilderTest {
 		assertTrue(cd instanceof FunctionColumnDef);
 		assertEquals(java.sql.Types.INTEGER, cd.getType());
 		assertFalse(col.hasQuerySegments());
-		assertNotNull(columnInfo.getTypeFilter());
-		assertNotNull(columnInfo.getDataFilter());
-
 	}
 
 	@Test
@@ -708,9 +718,6 @@ public class SparqlQueryBuilderTest {
 		assertTrue(cd instanceof FunctionColumnDef);
 		assertEquals(java.sql.Types.INTEGER, cd.getType());
 		assertFalse(col.hasQuerySegments());
-		assertNotNull(cols.get(0).getTypeFilter());
-		assertNotNull(cols.get(0).getDataFilter());
-
 	}
 
 	@Test
@@ -735,9 +742,9 @@ public class SparqlQueryBuilderTest {
 	}
 
 	@Test
-	public void testGetColumn_ColumnName() {
+	public void testGetColumn_ColumnName() throws SQLDataException {
 		builder.addTable(table, tName, false);
-		builder.addRequiredColumns();
+		builder.addDefinedColumns();
 		final QueryColumnInfo columnInfo = builder.getColumn(colName);
 		assertNotNull(columnInfo);
 		assertEquals(colName, columnInfo.getName());
@@ -747,7 +754,7 @@ public class SparqlQueryBuilderTest {
 	@Test
 	public void testGetColumnCount() throws Exception {
 		builder.addTable(table, tName, false);
-		builder.addRequiredColumns();
+		builder.addDefinedColumns();
 		builder.setAllColumns();
 		builder.build();
 		assertEquals(2, builder.getColumnCount());
@@ -756,7 +763,7 @@ public class SparqlQueryBuilderTest {
 	@Test
 	public void testGetColumn_Int() throws Exception {
 		builder.addTable(table, tName, false);
-		builder.addRequiredColumns();
+		builder.addDefinedColumns();
 		builder.setAllColumns();
 		builder.build();
 		final QueryColumnInfo columnInfo = builder.getColumn(0);
@@ -768,7 +775,7 @@ public class SparqlQueryBuilderTest {
 	@Test
 	public void testGetColumnIndex() throws Exception {
 		builder.addTable(table, tName, false);
-		builder.addRequiredColumns();
+		builder.addDefinedColumns();
 		builder.setAllColumns();
 		builder.build();
 		final int i = builder.getColumnIndex(colName.getSPARQLName());
@@ -845,7 +852,7 @@ public class SparqlQueryBuilderTest {
 	@Test
 	public void testSetAllColumns() throws Exception {
 		builder.addTable(table, tName, false);
-		builder.addRequiredColumns();
+		builder.addDefinedColumns();
 		builder.setAllColumns();
 
 		final QueryInfoSet infoSet = getInfoSet();
@@ -878,13 +885,14 @@ public class SparqlQueryBuilderTest {
 	@Test
 	public void testSetKey() throws Exception {
 		builder.addTable(table, tName, false);
-		builder.addRequiredColumns();
+		builder.addDefinedColumns();
 		builder.setAllColumns();
 
 		final KeySegment segment = new KeySegment() {
 
 			@Override
-			public int compare(final Comparable<Object>[] o1, final Comparable<Object>[] o2) {
+			public int compare(final Comparable<Object>[] o1,
+					final Comparable<Object>[] o2) {
 				return Utils.compare(getIdx(), isAscending(), o1, o2);
 			}
 
@@ -907,7 +915,8 @@ public class SparqlQueryBuilderTest {
 		final Key key = new Key<KeySegment>() {
 
 			@Override
-			public int compare(final Comparable<Object>[] o1, final Comparable<Object>[] o2) {
+			public int compare(final Comparable<Object>[] o1,
+					final Comparable<Object>[] o2) {
 				return Utils.compare(getSegments(), o1, o2);
 			}
 
@@ -925,7 +934,7 @@ public class SparqlQueryBuilderTest {
 			@Override
 			public List<KeySegment> getSegments() {
 				return Arrays.asList(new KeySegment[] {
-					segment
+						segment
 				});
 			}
 
@@ -969,13 +978,14 @@ public class SparqlQueryBuilderTest {
 	@Test
 	public void testSetOrderBy() throws Exception {
 		builder.addTable(table, tName, false);
-		builder.addRequiredColumns();
+		builder.addDefinedColumns();
 		builder.setAllColumns();
 
 		final KeySegment segment = new KeySegment() {
 
 			@Override
-			public int compare(final Comparable<Object>[] o1, final Comparable<Object>[] o2) {
+			public int compare(final Comparable<Object>[] o1,
+					final Comparable<Object>[] o2) {
 				return Utils.compare(getIdx(), isAscending(), o1, o2);
 			}
 
@@ -998,7 +1008,8 @@ public class SparqlQueryBuilderTest {
 		final Key key = new Key<KeySegment>() {
 
 			@Override
-			public int compare(final Comparable<Object>[] o1, final Comparable<Object>[] o2) {
+			public int compare(final Comparable<Object>[] o1,
+					final Comparable<Object>[] o2) {
 				return Utils.compare(getSegments(), o1, o2);
 			}
 
@@ -1016,7 +1027,7 @@ public class SparqlQueryBuilderTest {
 			@Override
 			public List<KeySegment> getSegments() {
 				return Arrays.asList(new KeySegment[] {
-					segment
+						segment
 				});
 			}
 

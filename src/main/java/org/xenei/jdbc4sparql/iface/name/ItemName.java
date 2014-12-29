@@ -22,24 +22,24 @@ public abstract class ItemName implements GUIDObject {
 		@Override
 		public int compare(final ItemName arg0, final ItemName arg1) {
 			return new CompareToBuilder()
-			.append(arg0.getCatalog(), arg1.getCatalog())
-			.append(arg0.getSchema(), arg1.getSchema())
-			.append(arg0.getTable(), arg1.getTable())
-			.append(arg0.getColumn(), arg1.getColumn()).toComparison();
+					.append(arg0.getCatalog(), arg1.getCatalog())
+					.append(arg0.getSchema(), arg1.getSchema())
+					.append(arg0.getTable(), arg1.getTable())
+					.append(arg0.getColumn(), arg1.getColumn()).toComparison();
 		}
 	};
 
 	/**
 	 * Filters an ExtendedIterator for items that match this name using the
 	 * compare filter.
-	 * 
+	 *
 	 * @author claude
 	 *
 	 * @param <T>
 	 *            and ItemName implementation.
 	 */
 	public static class Filter<T extends ItemName> extends
-	com.hp.hpl.jena.util.iterator.Filter<T> {
+			com.hp.hpl.jena.util.iterator.Filter<T> {
 		private final ItemName compareTo;
 
 		public Filter(final ItemName compareTo) {
@@ -56,7 +56,7 @@ public abstract class ItemName implements GUIDObject {
 	 * Verify that a segment is not null. Similar to FQNameImpl.verifyOK except
 	 * that it does not check for the presence of the JDBC or SPARQL "Dot"
 	 * characters. Used in constructors to verify values.
-	 * 
+	 *
 	 * @param value
 	 *            value.
 	 * @param segment
@@ -74,7 +74,7 @@ public abstract class ItemName implements GUIDObject {
 	}
 
 	// the base name for the object.
-	private final FQName baseName;
+	private final FQName fqName;
 	// the bitmap of the used segments.
 	private NameSegments usedSegments;
 	// if true then this object reports its name as it's GUID.
@@ -114,7 +114,7 @@ public abstract class ItemName implements GUIDObject {
 	/**
 	 * Constructor. Creates an Item name with the associated name segments and a
 	 * Column name segment pattern. None of the column segments may be null.
-	 * 
+	 *
 	 * @param catalog
 	 * @param schema
 	 * @param table
@@ -123,14 +123,14 @@ public abstract class ItemName implements GUIDObject {
 	 */
 	protected ItemName(final String catalog, final String schema,
 			final String table, final String column)
-			throws IllegalArgumentException {
+					throws IllegalArgumentException {
 		this(catalog, schema, table, column, NameSegments.COLUMN);
 	}
 
 	/**
 	 * Constructor. Creates an ItemName with the associated name segments and
 	 * segment pattern. None of the arguments may be null.
-	 * 
+	 *
 	 * @param catalog
 	 * @param schema
 	 * @param table
@@ -140,8 +140,8 @@ public abstract class ItemName implements GUIDObject {
 	 */
 	protected ItemName(final String catalog, final String schema,
 			final String table, final String column, final NameSegments segs)
-			throws IllegalArgumentException {
-		baseName = new FQNameImpl(catalog, schema, table, column);
+					throws IllegalArgumentException {
+		fqName = new FQNameImpl(catalog, schema, table, column);
 		if (segs == null) {
 			throw new IllegalArgumentException("segs may not be null.");
 		}
@@ -151,7 +151,7 @@ public abstract class ItemName implements GUIDObject {
 	/**
 	 * Constructor. Creates an ItemName from the base name of the provided name
 	 * as along with the segments. none of the values may be null.
-	 * 
+	 *
 	 * @param name
 	 *            The base name
 	 * @param segments
@@ -166,7 +166,7 @@ public abstract class ItemName implements GUIDObject {
 		if (segments == null) {
 			throw new IllegalArgumentException("segments may not be null.");
 		}
-		this.baseName = name.baseName;
+		this.fqName = name.fqName;
 		this.useGUID = name.useGUID;
 		this.usedSegments = segments;
 	}
@@ -174,7 +174,7 @@ public abstract class ItemName implements GUIDObject {
 	/**
 	 * Constructor. Creates an ItemName from a FQName and a name segments. None
 	 * of the values may be null.
-	 * 
+	 *
 	 * @param name
 	 *            THe FQName for the base name.
 	 * @param segments
@@ -183,13 +183,13 @@ public abstract class ItemName implements GUIDObject {
 	 */
 	protected ItemName(final FQName name, final NameSegments segments)
 			throws IllegalArgumentException {
-		this.baseName = name;
+		this.fqName = name;
 		this.usedSegments = segments;
 	}
 
 	/**
 	 * If set true this item will refer to itself by its GUID.
-	 * 
+	 *
 	 * @param state
 	 */
 	public void setUseGUID(final boolean state) {
@@ -199,7 +199,7 @@ public abstract class ItemName implements GUIDObject {
 	/**
 	 * Change the used segments. This effectively changes the name of the object
 	 * as seen in the query.
-	 * 
+	 *
 	 * @param usedSegments
 	 *            the name segments to use.
 	 */
@@ -209,7 +209,7 @@ public abstract class ItemName implements GUIDObject {
 
 	/**
 	 * Get the namesegments.
-	 * 
+	 *
 	 * @return The current name segments.
 	 */
 	public NameSegments getUsedSegments() {
@@ -227,11 +227,11 @@ public abstract class ItemName implements GUIDObject {
 
 	/**
 	 * Get the base name for this item name.
-	 * 
+	 *
 	 * @return
 	 */
-	protected FQName getBaseName() {
-		return baseName;
+	protected FQName getFQName() {
+		return fqName;
 	}
 
 	/**
@@ -240,7 +240,7 @@ public abstract class ItemName implements GUIDObject {
 	 * @return
 	 */
 	public String getColumn() {
-		return usedSegments.getColumn(baseName);
+		return usedSegments.getColumn(fqName);
 	}
 
 	/**
@@ -254,11 +254,11 @@ public abstract class ItemName implements GUIDObject {
 
 	/**
 	 * Get the catalog name segment.
-	 * 
+	 *
 	 * @return The catalog name string.
 	 */
 	public String getCatalog() {
-		return usedSegments.getCatalog(baseName);
+		return usedSegments.getCatalog(fqName);
 	}
 
 	/**
@@ -267,13 +267,13 @@ public abstract class ItemName implements GUIDObject {
 	 * @return the schema segment string.
 	 */
 	public String getSchema() {
-		return usedSegments.getSchema(baseName);
+		return usedSegments.getSchema(fqName);
 	}
 
 	/**
 	 * Get the shrot name. This is the last name segment generally used by the
 	 * ItemName type. (e.g. the columnName for a column object).
-	 * 
+	 *
 	 * @return the short name for the object.
 	 */
 	abstract public String getShortName();
@@ -294,7 +294,7 @@ public abstract class ItemName implements GUIDObject {
 	 */
 	@Override
 	public String getGUID() {
-		return baseName.getGUID();
+		return fqName.getGUID();
 	}
 
 	/**
@@ -303,12 +303,12 @@ public abstract class ItemName implements GUIDObject {
 	 * @return the table name string
 	 */
 	public String getTable() {
-		return usedSegments.getTable(baseName);
+		return usedSegments.getTable(fqName);
 	}
 
 	/**
 	 * See if any displayed name segment is the wild value (null).
-	 * 
+	 *
 	 * @return true if this has a wildcard (null) segment
 	 */
 	public boolean hasWild() {
@@ -318,7 +318,7 @@ public abstract class ItemName implements GUIDObject {
 
 	/**
 	 * See if this is the wild card.
-	 * 
+	 *
 	 * @return true if this is a complete wildcard name (e.g. all segments are
 	 *         null)
 	 */
@@ -329,7 +329,7 @@ public abstract class ItemName implements GUIDObject {
 
 	/**
 	 * See if we are using the GUID as the name.
-	 * 
+	 *
 	 * @return true if GUID is used as the name.
 	 */
 	public boolean isUseGUID() {
@@ -342,7 +342,7 @@ public abstract class ItemName implements GUIDObject {
 	 * AND the usedSegments from this ItemName with the usedSegments from that
 	 * ItemName. Any values that are then selected are compared from both
 	 * ItemNames.
-	 * 
+	 *
 	 * @param that
 	 *            the other ItemName.
 	 * @return true if they match, false otherwise.
@@ -354,20 +354,20 @@ public abstract class ItemName implements GUIDObject {
 		final NameSegments matchSegs = usedSegments.and(that.getUsedSegments());
 		final EqualsBuilder eb = new EqualsBuilder();
 		if (matchSegs.isCatalog()) {
-			eb.append(matchSegs.getCatalog(this.baseName),
-					matchSegs.getCatalog(that.getBaseName()));
+			eb.append(matchSegs.getCatalog(this.fqName),
+					matchSegs.getCatalog(that.getFQName()));
 		}
 		if (matchSegs.isSchema()) {
-			eb.append(matchSegs.getSchema(this.baseName),
-					matchSegs.getSchema(that.getBaseName()));
+			eb.append(matchSegs.getSchema(this.fqName),
+					matchSegs.getSchema(that.getFQName()));
 		}
 		if (matchSegs.isTable()) {
-			eb.append(matchSegs.getTable(this.baseName),
-					matchSegs.getTable(that.getBaseName()));
+			eb.append(matchSegs.getTable(this.fqName),
+					matchSegs.getTable(that.getFQName()));
 		}
 		if (matchSegs.isColumn()) {
-			eb.append(matchSegs.getColumn(this.baseName),
-					matchSegs.getColumn(that.getBaseName()));
+			eb.append(matchSegs.getColumn(this.fqName),
+					matchSegs.getColumn(that.getFQName()));
 		}
 		return eb.isEquals();
 	}
@@ -396,7 +396,7 @@ public abstract class ItemName implements GUIDObject {
 
 	/**
 	 * Clone this name but change the segments being used.
-	 * 
+	 *
 	 * @param segs
 	 * @return
 	 */

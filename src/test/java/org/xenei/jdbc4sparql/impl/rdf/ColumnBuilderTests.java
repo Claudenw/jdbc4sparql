@@ -38,7 +38,7 @@ public class ColumnBuilderTests {
 	@Test
 	public void testStandardCreation() {
 		final RdfColumn.Builder builder = new RdfColumn.Builder()
-		.setColumnDef(columnDef).setName("test").setTable(mockTable);
+				.setColumnDef(columnDef).setName("test").setTable(mockTable);
 		final Column cd = builder.build(model);
 		Assert.assertEquals("test", cd.getName().getShortName());
 		Assert.assertEquals(false, cd.getColumnDef().isAutoIncrement());

@@ -43,8 +43,8 @@ public interface KeySegment extends Comparator<Comparable<Object>[]> {
 			}
 			else {
 				return data1[idx].compareTo(data2[idx]);
-//				retval = Comparable.class.cast(data1[idx])
-//						.compareTo(data2[idx]);
+				// retval = Comparable.class.cast(data1[idx])
+				// .compareTo(data2[idx]);
 			}
 			return isAscending ? retval : -1 * retval;
 		}

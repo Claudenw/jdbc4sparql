@@ -64,7 +64,6 @@ public class StringFunctionTests extends AbstractJ4SSetup {
 	@Test
 	public void testLengthFunction() throws Exception {
 
-		// count all the rows
 		ResultSet rset = stmt
 				.executeQuery("select Length('foo') from fooTable");
 		ResultSetMetaData rsm = rset.getMetaData();

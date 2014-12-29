@@ -40,7 +40,7 @@ public interface TableDef {
 	 * @return
 	 */
 
-	public Key getPrimaryKey();
+	public Key<?> getPrimaryKey();
 
 	/**
 	 * Get the table sort order key. returns null if the table is not sorted.
@@ -48,7 +48,7 @@ public interface TableDef {
 	 * @return
 	 */
 
-	public Key getSortKey();
+	public Key<?> getSortKey();
 
 	public TableDef getSuperTableDef();
 

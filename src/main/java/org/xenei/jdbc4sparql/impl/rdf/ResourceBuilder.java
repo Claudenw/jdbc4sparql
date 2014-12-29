@@ -57,7 +57,7 @@ public class ResourceBuilder {
 				throw new IllegalStateException(String.format(
 						"Object %s is of type %s not %s", retval.getURI(),
 						retval.getRequiredProperty(RDF.type).getResource()
-						.getURI(), type.getURI()));
+								.getURI(), type.getURI()));
 			}
 		}
 		else {

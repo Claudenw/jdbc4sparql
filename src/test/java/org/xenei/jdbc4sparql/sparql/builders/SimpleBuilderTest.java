@@ -17,13 +17,6 @@
  */
 package org.xenei.jdbc4sparql.sparql.builders;
 
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.rdf.model.Property;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.vocabulary.RDF;
-import com.hp.hpl.jena.vocabulary.RDFS;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -39,6 +32,13 @@ import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlParserImpl;
+
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.rdf.model.Property;
+import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.vocabulary.RDF;
+import com.hp.hpl.jena.vocabulary.RDFS;
 
 public class SimpleBuilderTest {
 	private static final String NS = "http://example.com/jdbc4sparql#";
@@ -81,8 +81,9 @@ public class SimpleBuilderTest {
 	public void buildRdfTableTest() throws SQLException {
 		final Set<RdfTable> tables = builder.getTables(schema);
 		final Map<String, Integer> counter = new HashMap<String, Integer>();
-		final String[] columnNames = { "StringCol", "NullableStringCol",
-				"IntCol", "NullableIntCol" };
+		final String[] columnNames = {
+				"StringCol", "NullableStringCol", "IntCol", "NullableIntCol"
+		};
 		for (final RdfTable tbl : tables) {
 			// schema.addTables(tbl);
 			final ResultSet rs = tbl.getResultSet(catalogs, parser);

@@ -7,7 +7,7 @@ package org.xenei.jdbc4sparql.iface.name;
 public interface GUIDObject {
 	/**
 	 * Return the GUID as a string.
-	 * 
+	 *
 	 * @return the GUID string.
 	 */
 	public String getGUID();

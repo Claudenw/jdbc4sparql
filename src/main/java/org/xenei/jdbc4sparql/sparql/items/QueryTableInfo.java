@@ -53,7 +53,7 @@ public class QueryTableInfo extends QueryItemInfo<Table, TableName> {
 
 	/**
 	 * Verify that the table object is not null.
-	 * 
+	 *
 	 * @param table
 	 *            The table to check
 	 * @return the table param
@@ -69,7 +69,7 @@ public class QueryTableInfo extends QueryItemInfo<Table, TableName> {
 
 	/**
 	 * Create QueryTableInfo.
-	 * 
+	 *
 	 * @param infoSet
 	 *            The QueryInfoSet to add the table to.
 	 * @param queryElementGroup
@@ -89,7 +89,7 @@ public class QueryTableInfo extends QueryItemInfo<Table, TableName> {
 
 	/**
 	 * Constructor
-	 * 
+	 *
 	 * @param infoSet
 	 *            The QueryInfoSet to add the table to.
 	 * @param queryElementGroup
@@ -152,9 +152,7 @@ public class QueryTableInfo extends QueryItemInfo<Table, TableName> {
 	}
 
 	/**
-	 * Adds the column to the columns defined in the query. If shortName is true
-	 * then only the column name is used as the name, otherwise the SQL name for
-	 * the column is used.
+	 * Adds the column to the columns defined in the query.
 	 *
 	 * @param column
 	 *            The column to add.
@@ -166,7 +164,7 @@ public class QueryTableInfo extends QueryItemInfo<Table, TableName> {
 
 	/**
 	 * Adds the column to the columns defined in the query. Result will be
-	 * optional if the RdfColumn is optional.
+	 * optional if the Column is optional.
 	 *
 	 * @param column
 	 *            The column to add
@@ -178,22 +176,39 @@ public class QueryTableInfo extends QueryItemInfo<Table, TableName> {
 	 */
 	public QueryColumnInfo addColumnToQuery(final Column column,
 			final ColumnName cName, final boolean optional) {
-		final QueryColumnInfo columnInfo = new QueryColumnInfo(column,
-				getName().getColumnName(cName.getShortName()), optional);
-		infoSet.addColumn(columnInfo);
+
+		QueryColumnInfo columnInfo = new QueryColumnInfo(column, getName()
+				.getColumnName(column.getName().getShortName()), optional);
+
+		// see if this is an alias
+		if (!column.getName().getGUID().equals(cName.getGUID())) {
+			columnInfo = columnInfo.createAlias(cName);
+		}
+
 		if (LOG.isDebugEnabled()) {
 			QueryTableInfo.LOG.debug("Adding column: {} as {} ({})",
-					columnInfo, columnInfo.getGUID(),
+					columnInfo, columnInfo.getGUIDVar(),
 					columnInfo.isOptional() ? "optional" : "required");
 		}
 
-		if (column.hasQuerySegments() && optional) {
-			eg.addElement(new ElementOptional(getQuerySegments(
-					columnInfo.getColumn(), getGUIDVar(),
-					columnInfo.getGUIDVar())));
+		// only add to group if it was not already in the column list.
+		if (infoSet.addColumn(columnInfo) && column.hasQuerySegments()) {
+			if (!columnInfo.isAlias()) {
+				Element el = getQuerySegments(columnInfo.getColumn(),
+						getGUIDVar(), columnInfo.getGUIDVar());
+				if ((el instanceof ElementGroup)
+						&& (((ElementGroup) el).getElements().size() == 1)) {
+					final ElementGroup subGroup = (ElementGroup) el;
+					el = subGroup.getElements().get(0);
+				}
+				if (optional) {
+					eg.addElement(new ElementOptional(el));
+				}
+				else {
+					eg.addElement(el);
+				}
+			}
 		}
-		// dataFilterList.add( columnInfo );
-
 		return columnInfo;
 	}
 
@@ -229,17 +244,20 @@ public class QueryTableInfo extends QueryItemInfo<Table, TableName> {
 
 	/**
 	 * Add the column to the datafilter.
-	 * 
+	 *
 	 * @param columnInfo
 	 *            The columninfo to add.
 	 */
 	public void addDataFilter(final QueryColumnInfo columnInfo) {
+		if (columnInfo == null) {
+			throw new IllegalArgumentException("ColumnInfo may not be null");
+		}
 		dataFilterList.add(columnInfo);
 	}
 
 	/**
 	 * Add a filter to this table.
-	 * 
+	 *
 	 * @param expr
 	 *            The expression to add.
 	 */
@@ -252,53 +270,64 @@ public class QueryTableInfo extends QueryItemInfo<Table, TableName> {
 	}
 
 	/**
-	 * Adds the required columns to the query. Also adds the table definition.
+	 * Adds the defined column and table definition to the query.
+	 * <p>
+	 * Columns that are in a SQL "USING" clause are added to the datafilter
+	 * list.
+	 * </p>
+	 * 
+	 * @param columnsInUsing
+	 *            columns that are in a SQL "Using" clause.
+	 * @throws SQLDataException
 	 */
-	public void addRequiredColumns() {
+	public void addDefinedColumns(final List<String> columnsInUsing)
+			throws SQLDataException {
 		if (LOG.isDebugEnabled()) {
-			QueryTableInfo.LOG.debug("adding required columns for {}",
-					getName());
+			QueryTableInfo.LOG
+			.debug("adding defined columns for {}", getName());
 		}
-		final String eol = System.getProperty("line.separator");
-		final StringBuilder queryFmt = new StringBuilder("{ ")
-		.append(StringUtils.defaultString(getTable()
-						.getQuerySegmentFmt(), ""));
 
+		// add the table definition
+		if (StringUtils.isNotBlank(getTable().getQuerySegmentFmt())) {
+			final String queryFmt = new StringBuilder("{ ")
+			.append(getTable().getQuerySegmentFmt()).append("}")
+			.toString();
+			final String queryStr = String.format(queryFmt, getGUIDVar());
+			try {
+				final ElementGroup subGroup = (ElementGroup) SparqlParser.Util
+						.parse(queryStr);
+				for (final Element subEl : subGroup.getElements()) {
+					eg.addElement(subEl);
+				}
+			} catch (final ParseException e) {
+				throw new IllegalStateException(getTable().getName()
+						+ " query segment " + queryStr, e);
+			} catch (final QueryException e) {
+				throw new IllegalStateException(getTable().getName()
+						+ " query segment " + queryStr, e);
+			}
+		}
+
+		// add the column definitions
 		for (final Iterator<Column> colIter = getTable().getColumns(); colIter
 				.hasNext();) {
 			final Column column = colIter.next();
-			if (!column.isOptional()) {
+			if (columnsInUsing.contains(column.getName().getShortName())) {
+				final QueryColumnInfo columnInfo = getColumn(column.getName());
+				if (columnInfo == null) {
+					throw new SQLDataException(String.format(
+							"Column in USING (%s) is not found in table %s",
+							column.getName().getShortName(), this.getName()));
+				}
+				addDataFilter(columnInfo);
+			}
+			else {
 				addColumnToQuery(column);
 			}
 		}
 
-		// now add all the columns specified in the infoSet that are not
-		// optional
-
-		for (final QueryColumnInfo columnInfo : infoSet.listColumns(getName())) {
-			if (!columnInfo.isOptional()) {
-				final String fmt = columnInfo.getColumn().getQuerySegmentFmt();
-				if (StringUtils.isNotBlank(fmt)) {
-					queryFmt.append(
-							String.format(fmt, getGUIDVar(),
-									columnInfo.getGUIDVar())).append(eol);
-				}
-			}
-		}
-		queryFmt.append("}");
-		final String queryStr = String
-				.format(queryFmt.toString(), getGUIDVar());
-		try {
-			eg.addElement(SparqlParser.Util.parse(queryStr));
-		} catch (final ParseException e) {
-			throw new IllegalStateException(getTable().getName()
-					+ " query segment " + queryStr, e);
-		} catch (final QueryException e) {
-			throw new IllegalStateException(getTable().getName()
-					+ " query segment " + queryStr, e);
-		}
 		if (LOG.isDebugEnabled()) {
-			QueryTableInfo.LOG.debug("finished adding required columns for {}",
+			QueryTableInfo.LOG.debug("finished adding defined columns for {}",
 					getName());
 		}
 	}
@@ -310,10 +339,18 @@ public class QueryTableInfo extends QueryItemInfo<Table, TableName> {
 	 *            The query to add the columns to
 	 *
 	 */
-	public void addTableColumns(final Query query) {
+	public void addTableColumns(final Query query,
+			final List<String> columnsInUsing) {
 		final Iterator<Column> iter = getTable().getColumns();
 		while (iter.hasNext()) {
-			final QueryColumnInfo columnInfo = addColumnToQuery(iter.next());
+			final Column column = iter.next();
+			QueryColumnInfo columnInfo = null;
+			if (columnsInUsing.contains(column.getName().getShortName())) {
+				columnInfo = infoSet.getColumn(column.getName());
+			}
+			else {
+				columnInfo = addColumnToQuery(column);
+			}
 			final Var v = columnInfo.getVar();
 			if (!query.getResultVars().contains(v.toString())) {
 				addDataFilter(columnInfo);
@@ -324,7 +361,7 @@ public class QueryTableInfo extends QueryItemInfo<Table, TableName> {
 
 	/**
 	 * Add the filters for the columns in the table.
-	 * 
+	 *
 	 * @param infoSet
 	 * @throws SQLDataException
 	 */
@@ -339,7 +376,7 @@ public class QueryTableInfo extends QueryItemInfo<Table, TableName> {
 			}
 		}
 
-		addTypeFilters(columnInfoList, dataFilterList, eg, egWrapper);
+		addTypeFilters(infoSet, columnInfoList, dataFilterList, eg, egWrapper);
 	}
 
 	/**
@@ -362,7 +399,7 @@ public class QueryTableInfo extends QueryItemInfo<Table, TableName> {
 	 *            The ElementGroup for the type filters.
 	 * @throws SQLDataException
 	 */
-	public static void addTypeFilters(
+	public static void addTypeFilters(final QueryInfoSet infoSet,
 			final Collection<QueryColumnInfo> typeFilterList,
 			final Collection<QueryColumnInfo> dataFilterList,
 			final ElementGroup filterGroup, final ElementGroup typeGroup)
@@ -370,9 +407,10 @@ public class QueryTableInfo extends QueryItemInfo<Table, TableName> {
 
 		Expr expr = null;
 		for (final QueryColumnInfo columnInfo : typeFilterList) {
-			final CheckTypeF f = columnInfo.getTypeFilter();
+			final CheckTypeF f = infoSet.getCheckTypeF(columnInfo);
 			if (LOG.isDebugEnabled()) {
-				QueryTableInfo.LOG.debug("Adding filter: {}", f);
+				QueryTableInfo.LOG.debug("Adding filter: {} ({})", f,
+						columnInfo);
 			}
 			if (expr == null) {
 				expr = f;
@@ -386,7 +424,7 @@ public class QueryTableInfo extends QueryItemInfo<Table, TableName> {
 		}
 
 		for (final QueryColumnInfo columnInfo : dataFilterList) {
-			final ForceTypeF f = columnInfo.getDataFilter();
+			final ForceTypeF f = infoSet.getForceTypeF(columnInfo);
 			final ElementBind bind = f.getBinding(columnInfo);
 			if (LOG.isDebugEnabled()) {
 				QueryTableInfo.LOG.debug("Adding binding: {}", bind);
@@ -447,7 +485,7 @@ public class QueryTableInfo extends QueryItemInfo<Table, TableName> {
 
 	/**
 	 * Get the element query segments for the
-	 * 
+	 *
 	 * @param column
 	 *            The column to add query segments for.
 	 * @param tableVar
@@ -474,7 +512,7 @@ public class QueryTableInfo extends QueryItemInfo<Table, TableName> {
 
 	/**
 	 * Get the SQL name for the table.
-	 * 
+	 *
 	 * @return The name.
 	 */
 	public String getSQLName() {
@@ -483,7 +521,7 @@ public class QueryTableInfo extends QueryItemInfo<Table, TableName> {
 
 	/**
 	 * Get the table this QueryTableInfo wraps.
-	 * 
+	 *
 	 * @return The innter table.
 	 */
 	public Table getTable() {

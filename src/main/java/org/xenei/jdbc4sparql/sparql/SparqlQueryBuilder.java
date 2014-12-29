@@ -117,6 +117,9 @@ public class SparqlQueryBuilder {
 	// sparql schema for default tables
 	private final Schema schema;
 
+	// the count of aliases used in this query.
+	private int aliasCount;
+
 	// the list of columns not to be included in the "all columns" result.
 	// perhaps this should store column so that tables may be checked in case
 	// tables are added to the query later. But I don't think so.
@@ -153,6 +156,7 @@ public class SparqlQueryBuilder {
 		if (parser == null) {
 			throw new IllegalArgumentException("SparqlParser may not be null");
 		}
+		this.aliasCount = 0;
 		this.catalogs = catalogs;
 		this.parser = parser;
 		this.catalog = catalog;
@@ -212,6 +216,10 @@ public class SparqlQueryBuilder {
 		tableInfo.addDataFilter(aliasInfo);
 		infoSet.addColumn(aliasInfo);
 		return aliasInfo;
+	}
+
+	public int getAliasCount() {
+		return aliasCount++;
 	}
 
 	/**
@@ -294,8 +302,8 @@ public class SparqlQueryBuilder {
 				: Query.ORDER_DESCENDING);
 	}
 
-	public void addRequiredColumns() {
-		infoSet.addRequiredColumns();
+	public void addDefinedColumns() throws SQLDataException {
+		infoSet.addDefinedColumns(columnsInUsing);
 	}
 
 	public QueryTableInfo addTable(final Table table, final TableName name,
@@ -353,7 +361,7 @@ public class SparqlQueryBuilder {
 	}
 
 	public void addTableColumns(final QueryTableInfo tableInfo) {
-		tableInfo.addTableColumns(query);
+		tableInfo.addTableColumns(query, columnsInUsing);
 	}
 
 	public void addUnion(final List<SparqlQueryBuilder> unionBuilders)
@@ -543,8 +551,8 @@ public class SparqlQueryBuilder {
 								}
 							}).toList();
 					try {
-						QueryTableInfo.addTypeFilters(typeFilters, typeFilters,
-								filterGroup, typeGroup);
+						QueryTableInfo.addTypeFilters(infoSet, typeFilters,
+								typeFilters, filterGroup, typeGroup);
 					} catch (final SQLDataException e1) {
 						throw new IllegalStateException(e1.getMessage(), e1);
 					}
@@ -552,7 +560,7 @@ public class SparqlQueryBuilder {
 						if (!serviceCall.getProjectVars().contains(
 								columnInfo.getGUIDVar())) {
 							serviceCall.addProjectVars(Arrays.asList(new Var[] {
-								columnInfo.getGUIDVar()
+									columnInfo.getGUIDVar()
 							}));
 						}
 					}
@@ -565,14 +573,16 @@ public class SparqlQueryBuilder {
 					for (final QueryColumnInfo columnInfo : infoSet
 							.listColumns(new SearchName(null, null, null,
 									columnName))) {
-						final CheckTypeF ctf = columnInfo.getTypeFilter();
+						final CheckTypeF ctf = infoSet
+								.getCheckTypeF(columnInfo);
 						if (LOG.isDebugEnabled()) {
 							LOG.debug("Adding filter: {}", ctf);
 						}
 						filterGroup.addElementFilter(new ElementFilter(ctf));
 
 						if (first == null) {
-							final ForceTypeF ftf = columnInfo.getDataFilter();
+							final ForceTypeF ftf = infoSet
+									.getForceTypeF(columnInfo);
 							final ElementBind bind = ftf.getBinding(columnInfo);
 							if (LOG.isDebugEnabled()) {
 								LOG.debug("Adding binding: {}", bind);
@@ -582,8 +592,8 @@ public class SparqlQueryBuilder {
 						}
 						else {
 							final E_Equals eq = new E_Equals(
-									first.getDataFilter(),
-									columnInfo.getDataFilter());
+									infoSet.getForceTypeF(first),
+									infoSet.getForceTypeF(columnInfo));
 							if (expr == null) {
 								expr = eq;
 							}
@@ -766,8 +776,8 @@ public class SparqlQueryBuilder {
 				columnNameArg.getCatalog(), VirtualCatalog.NAME),
 				StringUtils.defaultString(columnNameArg.getSchema(),
 						VirtualSchema.NAME), StringUtils.defaultString(
-								columnNameArg.getTable(), VirtualTable.NAME),
-								columnNameArg.getShortName());
+						columnNameArg.getTable(), VirtualTable.NAME),
+				columnNameArg.getShortName());
 		QueryTableInfo tableInfo = infoSet.getTable(columnName.getTableName());
 		Column column = null;
 		if (tableInfo == null) {

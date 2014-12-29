@@ -10,7 +10,7 @@ import net.sf.jsqlparser.JSQLParserException;
 public class SQLDisplay {
 
 	public static void listFunctions() throws ClassNotFoundException,
-			SQLException {
+	SQLException {
 
 		Class.forName(SQLDisplay.DRIVER);
 		final Connection connection = DriverManager.getConnection(
@@ -22,7 +22,7 @@ public class SQLDisplay {
 	}
 
 	public static void listNumericFunctions() throws ClassNotFoundException,
-			SQLException {
+	SQLException {
 
 		Class.forName(SQLDisplay.DRIVER);
 		final Connection connection = DriverManager.getConnection(
@@ -38,7 +38,7 @@ public class SQLDisplay {
 	}
 
 	public static void listSQLKeywords() throws ClassNotFoundException,
-			SQLException {
+	SQLException {
 
 		Class.forName(SQLDisplay.DRIVER);
 		final Connection connection = DriverManager.getConnection(
@@ -53,7 +53,7 @@ public class SQLDisplay {
 	}
 
 	public static void listStringFunctions() throws ClassNotFoundException,
-			SQLException {
+	SQLException {
 
 		Class.forName(SQLDisplay.DRIVER);
 		final Connection connection = DriverManager.getConnection(
@@ -68,7 +68,7 @@ public class SQLDisplay {
 	}
 
 	public static void listSystemFunctions() throws ClassNotFoundException,
-			SQLException {
+	SQLException {
 
 		Class.forName(SQLDisplay.DRIVER);
 		final Connection connection = DriverManager.getConnection(

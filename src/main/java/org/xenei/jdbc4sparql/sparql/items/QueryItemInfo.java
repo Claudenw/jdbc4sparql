@@ -13,10 +13,10 @@ import com.hp.hpl.jena.sparql.core.Var;
  *            The type of the name for query item.
  */
 public class QueryItemInfo<T extends NamedObject<N>, N extends ItemName>
-implements NamedObject<N>, GUIDObject {
+		implements NamedObject<N>, GUIDObject {
 	private final T baseObject;
 	private final N name;
-	private final Var baseVar;
+	private final Var guidVar;
 	private boolean optional;
 
 	protected QueryItemInfo(final T baseObject, final N name,
@@ -29,7 +29,7 @@ implements NamedObject<N>, GUIDObject {
 		}
 		this.baseObject = baseObject;
 		this.name = name;
-		this.baseVar = Var.alloc(this.name.getGUID());
+		this.guidVar = Var.alloc(this.name.getGUID());
 		this.optional = optional;
 
 	}
@@ -54,12 +54,12 @@ implements NamedObject<N>, GUIDObject {
 	}
 
 	/**
-	 * Get the alias variable for this column
+	 * Get the GUID variable based on the name of this column.
 	 *
-	 * @return The variable based on the alias from the columnName
+	 * @return The var for is column.
 	 */
 	public Var getGUIDVar() {
-		return baseVar;
+		return guidVar;
 	}
 
 	/**

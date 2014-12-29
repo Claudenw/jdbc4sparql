@@ -25,7 +25,9 @@ import org.xenei.jdbc4sparql.iface.name.ColumnName;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 import org.xenei.jdbc4sparql.sparql.items.QueryColumnInfo;
-import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.functions.AbstractFunctionHandler.FuncInfo;
+import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlExprVisitor;
+import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlExprVisitor.AliasInfo;
+import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.proxies.ExprInfo;
 
 import com.hp.hpl.jena.sparql.expr.E_StrLength;
 import com.hp.hpl.jena.sparql.expr.E_StrLowerCase;
@@ -47,7 +49,7 @@ public class StringFunctionHandlerTests {
 	private ExpressionList expressionList;
 	private String text;
 	private List<Expression> lst2;
-	private String alias;
+	private AliasInfo alias;
 
 	public StringFunctionHandlerTests() {
 		final QueryColumnInfo colInfo = mock(QueryColumnInfo.class);
@@ -72,16 +74,18 @@ public class StringFunctionHandlerTests {
 		lst2 = new ArrayList<Expression>();
 		lst2.add(stringValue);
 		expressionList = new ExpressionList(lst2);
-		alias = "Alias";
+		final SparqlExprVisitor visitor = new SparqlExprVisitor(builder, false,
+				false);
+		alias = visitor.new AliasInfo("Alias", false);
 	}
 
 	@Test
 	public void testLCaseFunction() throws SQLException {
 		func.setName("LCASE");
 		func.setParameters(expressionList);
-		FuncInfo funcInfo = handler.handle(func, alias);
-		assertEquals(alias, funcInfo.columnName.getShortName());
-		Expr expr = funcInfo.expr;
+		ExprInfo exprInfo = (ExprInfo) handler.handle(func, alias);
+		assertEquals(alias.getAlias(), exprInfo.getName().getShortName());
+		Expr expr = exprInfo.getExpr();
 		assertTrue(expr instanceof E_StrLowerCase);
 		E_StrLowerCase expr2 = (E_StrLowerCase) expr;
 		assertTrue(expr2.getArg() instanceof NodeValueString);
@@ -90,9 +94,9 @@ public class StringFunctionHandlerTests {
 
 		func.setName("lower");
 		func.setParameters(expressionList);
-		funcInfo = handler.handle(func, alias);
-		assertEquals(alias, funcInfo.columnName.getShortName());
-		expr = funcInfo.expr;
+		exprInfo = (ExprInfo) handler.handle(func, alias);
+		assertEquals(alias.getAlias(), exprInfo.getName().getShortName());
+		expr = exprInfo.getExpr();
 		assertTrue(expr instanceof E_StrLowerCase);
 		expr2 = (E_StrLowerCase) expr;
 		assertTrue(expr2.getArg() instanceof NodeValueString);
@@ -104,9 +108,9 @@ public class StringFunctionHandlerTests {
 	public void testLengthFunction() throws SQLException {
 		func.setName("length");
 		func.setParameters(expressionList);
-		FuncInfo funcInfo = handler.handle(func, alias);
-		assertEquals(alias, funcInfo.columnName.getShortName());
-		Expr expr = funcInfo.expr;
+		ExprInfo exprInfo = (ExprInfo) handler.handle(func, alias);
+		assertEquals(alias.getAlias(), exprInfo.getName().getShortName());
+		Expr expr = exprInfo.getExpr();
 		assertTrue(expr instanceof E_StrLength);
 		E_StrLength expr2 = (E_StrLength) expr;
 		List<Expr> lst = expr2.getArgs();
@@ -118,9 +122,9 @@ public class StringFunctionHandlerTests {
 
 		func.setName("len");
 		func.setParameters(expressionList);
-		funcInfo = handler.handle(func, alias);
-		assertEquals(alias, funcInfo.columnName.getShortName());
-		expr = funcInfo.expr;
+		exprInfo = (ExprInfo) handler.handle(func, alias);
+		assertEquals(alias.getAlias(), exprInfo.getName().getShortName());
+		expr = exprInfo.getExpr();
 		assertTrue(expr instanceof E_StrLength);
 		expr2 = (E_StrLength) expr;
 		lst = expr2.getArgs();
@@ -137,9 +141,9 @@ public class StringFunctionHandlerTests {
 		lst2.add(new StringValue("'A'"));
 		lst2.add(new StringValue("'The '"));
 		func.setParameters(expressionList);
-		final FuncInfo funcInfo = handler.handle(func, alias);
-		assertEquals(alias, funcInfo.columnName.getShortName());
-		final Expr expr = funcInfo.expr;
+		final ExprInfo exprInfo = (ExprInfo) handler.handle(func, alias);
+		assertEquals(alias.getAlias(), exprInfo.getName().getShortName());
+		final Expr expr = exprInfo.getExpr();
 		assertTrue(expr instanceof E_StrReplace);
 		final E_StrReplace expr2 = (E_StrReplace) expr;
 
@@ -166,9 +170,9 @@ public class StringFunctionHandlerTests {
 		lst2.add(new LongValue("2"));
 		func.setParameters(expressionList);
 
-		FuncInfo funcInfo = handler.handle(func, alias);
-		assertEquals(alias, funcInfo.columnName.getShortName());
-		Expr expr = funcInfo.expr;
+		ExprInfo exprInfo = (ExprInfo) handler.handle(func, alias);
+		assertEquals(alias.getAlias(), exprInfo.getName().getShortName());
+		Expr expr = exprInfo.getExpr();
 		assertTrue(expr instanceof E_StrSubstring);
 		E_StrSubstring expr2 = (E_StrSubstring) expr;
 		List<Expr> lst = expr2.getArgs();
@@ -184,9 +188,9 @@ public class StringFunctionHandlerTests {
 
 		lst2.add(new LongValue("5"));
 		func.setParameters(expressionList);
-		funcInfo = handler.handle(func, alias);
-		assertEquals(alias, funcInfo.columnName.getShortName());
-		expr = funcInfo.expr;
+		exprInfo = (ExprInfo) handler.handle(func, alias);
+		assertEquals(alias.getAlias(), exprInfo.getName().getShortName());
+		expr = exprInfo.getExpr();
 		assertTrue(expr instanceof E_StrSubstring);
 		expr2 = (E_StrSubstring) expr;
 		lst = expr2.getArgs();
@@ -210,9 +214,9 @@ public class StringFunctionHandlerTests {
 	public void testUCaseFunction() throws SQLException {
 		func.setName("UCASE");
 		func.setParameters(expressionList);
-		FuncInfo funcInfo = handler.handle(func, alias);
-		assertEquals(alias, funcInfo.columnName.getShortName());
-		Expr expr = funcInfo.expr;
+		ExprInfo exprInfo = (ExprInfo) handler.handle(func, alias);
+		assertEquals(alias.getAlias(), exprInfo.getName().getShortName());
+		Expr expr = exprInfo.getExpr();
 		assertTrue(expr instanceof E_StrUpperCase);
 		E_StrUpperCase expr2 = (E_StrUpperCase) expr;
 		assertTrue(expr2.getArg() instanceof NodeValueString);
@@ -221,9 +225,9 @@ public class StringFunctionHandlerTests {
 
 		func.setName("upper");
 		func.setParameters(expressionList);
-		funcInfo = handler.handle(func, alias);
-		assertEquals(alias, funcInfo.columnName.getShortName());
-		expr = funcInfo.expr;
+		exprInfo = (ExprInfo) handler.handle(func, alias);
+		assertEquals(alias.getAlias(), exprInfo.getName().getShortName());
+		expr = exprInfo.getExpr();
 		assertTrue(expr instanceof E_StrUpperCase);
 		expr2 = (E_StrUpperCase) expr;
 		assertTrue(expr2.getArg() instanceof NodeValueString);

@@ -48,7 +48,7 @@ public class NameUtils {
 	public static final String SPARQL_DOT = "\u00B7";
 
 	public static final String[] DOT_LIST = {
-			DB_DOT, SPARQL_DOT
+		DB_DOT, SPARQL_DOT
 	};
 
 }

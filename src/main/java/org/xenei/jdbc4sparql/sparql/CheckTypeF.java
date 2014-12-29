@@ -36,7 +36,8 @@ public class CheckTypeF extends ExprFunction1 {
 		return columnInfo;
 	}
 
-	public CheckTypeF(final QueryColumnInfo columnInfo) throws SQLDataException {
+	/* package private */CheckTypeF(final QueryColumnInfo columnInfo)
+			throws SQLDataException {
 		super(new ExprVar(checkColumnInfo(columnInfo).getGUIDVar()),
 				"checkTypeF");
 
@@ -79,8 +80,10 @@ public class CheckTypeF extends ExprFunction1 {
 			final boolean retval = columnInfo.getColumn().getColumnDef()
 					.getNullable() == ResultSetMetaData.columnNullable;
 			if (LOG.isDebugEnabled()) {
-				LOG.debug("{} ({}) of {} ", this, columnInfo.getName(), binding);
-				LOG.debug("with value  {} is {}", n, retval);
+				// LOG.debug("{} ({}) of {} ", this, columnInfo.getName(),
+				// binding);
+				LOG.debug("{} with value {} is {}", columnInfo.getName(), n,
+						retval);
 			}
 			return retval ? NodeValue.TRUE : NodeValue.FALSE;
 		}

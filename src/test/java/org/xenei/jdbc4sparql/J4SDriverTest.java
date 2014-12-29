@@ -67,7 +67,7 @@ public class J4SDriverTest {
 
 	@Test
 	public void testTestDriverLoadingIdPwd() throws ClassNotFoundException,
-			SQLException {
+	SQLException {
 		conn = DriverManager.getConnection(url, "myschema", "mypassw");
 		verifyCorrect();
 	}
@@ -84,7 +84,7 @@ public class J4SDriverTest {
 
 	@Test
 	public void testTestDriverLoadingNoProps() throws ClassNotFoundException,
-			SQLException {
+	SQLException {
 		conn = DriverManager.getConnection(url);
 		verifyCorrect();
 	}

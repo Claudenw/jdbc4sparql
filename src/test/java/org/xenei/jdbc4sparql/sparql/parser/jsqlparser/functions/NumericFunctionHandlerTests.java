@@ -31,8 +31,10 @@ import org.xenei.jdbc4sparql.sparql.QueryInfoSet;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 import org.xenei.jdbc4sparql.sparql.items.QueryColumnInfo;
 import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
+import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlExprVisitor;
+import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlExprVisitor.AliasInfo;
 import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlExprVisitor.ExprColumn;
-import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.functions.AbstractFunctionHandler.FuncInfo;
+import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.proxies.ExprInfo;
 
 import com.hp.hpl.jena.sparql.expr.E_NumAbs;
 import com.hp.hpl.jena.sparql.expr.E_NumCeiling;
@@ -74,7 +76,7 @@ public class NumericFunctionHandlerTests {
 	private Schema schema;
 	private SchemaName schemaName;
 
-	private String alias;
+	private AliasInfo alias;
 
 	public NumericFunctionHandlerTests() {
 	}
@@ -82,7 +84,6 @@ public class NumericFunctionHandlerTests {
 	@Before
 	public void setup() throws Exception {
 
-		alias = "Alias";
 		tbl = new net.sf.jsqlparser.schema.Table("testSchema", "testTable");
 		col = new net.sf.jsqlparser.schema.Column(tbl, "testCol");
 
@@ -121,6 +122,9 @@ public class NumericFunctionHandlerTests {
 		queryBuilder = new SparqlQueryBuilder(catalogs, parser, catalog, schema);
 		queryBuilder.addTable(table, tableName, false);
 
+		final SparqlExprVisitor visitor = new SparqlExprVisitor(queryBuilder,
+				false, false);
+		alias = visitor.new AliasInfo("Alias", false);
 		func = new Function();
 		handler = new NumericFunctionHandler(queryBuilder);
 		lst2 = new ArrayList<Expression>();
@@ -133,9 +137,9 @@ public class NumericFunctionHandlerTests {
 		lst2.add(new DoubleValue("2.5"));
 		func.setParameters(expressionList);
 
-		final FuncInfo funcInfo = handler.handle(func, alias);
-		assertEquals(alias, funcInfo.columnName.getShortName());
-		final Expr expr = funcInfo.expr;
+		final ExprInfo exprInfo = (ExprInfo) handler.handle(func, alias);
+		assertEquals(alias.getAlias(), exprInfo.getName().getShortName());
+		final Expr expr = exprInfo.getExpr();
 		assertTrue(expr instanceof E_NumAbs);
 		final E_NumAbs expr2 = (E_NumAbs) expr;
 		final List<Expr> lst = expr2.getArgs();
@@ -152,9 +156,9 @@ public class NumericFunctionHandlerTests {
 		lst2.add(new DoubleValue("2.5"));
 		func.setParameters(expressionList);
 
-		final FuncInfo funcInfo = handler.handle(func, alias);
-		assertEquals(alias, funcInfo.columnName.getShortName());
-		final Expr expr = funcInfo.expr;
+		final ExprInfo exprInfo = (ExprInfo) handler.handle(func, alias);
+		assertEquals(alias.getAlias(), exprInfo.getName().getShortName());
+		final Expr expr = exprInfo.getExpr();
 		assertTrue(expr instanceof E_NumCeiling);
 		final E_NumCeiling expr2 = (E_NumCeiling) expr;
 		final List<Expr> lst = expr2.getArgs();
@@ -171,9 +175,9 @@ public class NumericFunctionHandlerTests {
 		lst2.add(col);
 		func.setParameters(expressionList);
 
-		final FuncInfo funcInfo = handler.handle(func, alias);
-		assertEquals(alias, funcInfo.columnName.getShortName());
-		final Expr expr = funcInfo.expr;
+		final ExprInfo exprInfo = (ExprInfo) handler.handle(func, alias);
+		assertEquals(alias.getAlias(), exprInfo.getName().getShortName());
+		final Expr expr = exprInfo.getExpr();
 		assertTrue(expr instanceof ExprAggregator);
 		final ExprAggregator agg = (ExprAggregator) expr;
 		assertTrue(agg.getAggregator() instanceof AggCountVar);
@@ -189,9 +193,9 @@ public class NumericFunctionHandlerTests {
 		lst2.add(new DoubleValue("2.5"));
 		func.setParameters(expressionList);
 
-		final FuncInfo funcInfo = handler.handle(func, alias);
-		assertEquals(alias, funcInfo.columnName.getShortName());
-		final Expr expr = funcInfo.expr;
+		final ExprInfo exprInfo = (ExprInfo) handler.handle(func, alias);
+		assertEquals(alias.getAlias(), exprInfo.getName().getShortName());
+		final Expr expr = exprInfo.getExpr();
 		assertTrue(expr instanceof E_NumFloor);
 		final E_NumFloor expr2 = (E_NumFloor) expr;
 		final List<Expr> lst = expr2.getArgs();
@@ -207,9 +211,9 @@ public class NumericFunctionHandlerTests {
 		func.setName("max");
 		lst2.add(col);
 		func.setParameters(expressionList);
-		final FuncInfo funcInfo = handler.handle(func, alias);
-		assertEquals(alias, funcInfo.columnName.getShortName());
-		final Expr expr = funcInfo.expr;
+		final ExprInfo exprInfo = (ExprInfo) handler.handle(func, alias);
+		assertEquals(alias.getAlias(), exprInfo.getName().getShortName());
+		final Expr expr = exprInfo.getExpr();
 		assertTrue(expr instanceof ExprAggregator);
 		final ExprAggregator agg = (ExprAggregator) expr;
 		assertTrue(agg.getAggregator() instanceof AggMax);
@@ -225,9 +229,9 @@ public class NumericFunctionHandlerTests {
 		lst2.add(col);
 		func.setParameters(expressionList);
 
-		final FuncInfo funcInfo = handler.handle(func, alias);
-		assertEquals(alias, funcInfo.columnName.getShortName());
-		final Expr expr = funcInfo.expr;
+		final ExprInfo exprInfo = (ExprInfo) handler.handle(func, alias);
+		assertEquals(alias.getAlias(), exprInfo.getName().getShortName());
+		final Expr expr = exprInfo.getExpr();
 		assertTrue(expr instanceof ExprAggregator);
 		final ExprAggregator agg = (ExprAggregator) expr;
 		assertTrue(agg.getAggregator() instanceof AggMin);
@@ -242,9 +246,9 @@ public class NumericFunctionHandlerTests {
 
 		func.setName("rand");
 		// func.setParameters(expressionList);
-		final FuncInfo funcInfo = handler.handle(func, alias);
-		assertEquals(alias, funcInfo.columnName.getShortName());
-		final Expr expr = funcInfo.expr;
+		final ExprInfo exprInfo = (ExprInfo) handler.handle(func, alias);
+		assertEquals(alias.getAlias(), exprInfo.getName().getShortName());
+		final Expr expr = exprInfo.getExpr();
 		assertTrue(expr instanceof E_Random);
 		final E_Random expr2 = (E_Random) expr;
 		final List<Expr> lst = expr2.getArgs();
@@ -257,9 +261,9 @@ public class NumericFunctionHandlerTests {
 		lst2.add(new DoubleValue("2.5"));
 		func.setParameters(expressionList);
 
-		final FuncInfo funcInfo = handler.handle(func, alias);
-		assertEquals(alias, funcInfo.columnName.getShortName());
-		final Expr expr = funcInfo.expr;
+		final ExprInfo exprInfo = (ExprInfo) handler.handle(func, alias);
+		assertEquals(alias.getAlias(), exprInfo.getName().getShortName());
+		final Expr expr = exprInfo.getExpr();
 		assertTrue(expr instanceof E_NumRound);
 		final E_NumRound expr2 = (E_NumRound) expr;
 		final List<Expr> lst = expr2.getArgs();
@@ -276,9 +280,9 @@ public class NumericFunctionHandlerTests {
 		lst2.add(col);
 		func.setParameters(expressionList);
 
-		final FuncInfo funcInfo = handler.handle(func, alias);
-		assertEquals(alias, funcInfo.columnName.getShortName());
-		final Expr expr = funcInfo.expr;
+		final ExprInfo exprInfo = (ExprInfo) handler.handle(func, alias);
+		assertEquals(alias.getAlias(), exprInfo.getName().getShortName());
+		final Expr expr = exprInfo.getExpr();
 		assertTrue(expr instanceof ExprAggregator);
 		final ExprAggregator agg = (ExprAggregator) expr;
 		assertTrue(agg.getAggregator() instanceof AggSum);

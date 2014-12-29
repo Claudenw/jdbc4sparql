@@ -91,8 +91,8 @@ public class RemoteSparqlVisitorTest {
 		final Model model = ModelFactory.createDefaultModel();
 		final Model localModel = ModelFactory.createDefaultModel();
 		final RdfCatalog catalog = new RdfCatalog.Builder()
-		.setSparqlEndpoint(new URL("http://example.com/sparql"))
-		.setLocalModel(localModel).setName(CATALOG_NAME).build(model);
+				.setSparqlEndpoint(new URL("http://example.com/sparql"))
+				.setLocalModel(localModel).setName(CATALOG_NAME).build(model);
 
 		catalogs.put(catalog.getShortName(), catalog);
 
@@ -101,16 +101,16 @@ public class RemoteSparqlVisitorTest {
 
 		// create the foo table
 		final RdfTableDef tableDef = new RdfTableDef.Builder()
-		.addColumnDef(
-				MetaCatalogBuilder.getNonNullStringBuilder().build(
-						model))
-						.addColumnDef(
-								MetaCatalogBuilder.getNullStringBuilder().build(model))
-								.addColumnDef(
-										MetaCatalogBuilder.getNonNullIntBuilder().build(model))
-										.addColumnDef(
-												MetaCatalogBuilder.getNullIntBuilder().build(model))
-												.build(model);
+				.addColumnDef(
+						MetaCatalogBuilder.getNonNullStringBuilder().build(
+								model))
+				.addColumnDef(
+						MetaCatalogBuilder.getNullStringBuilder().build(model))
+				.addColumnDef(
+						MetaCatalogBuilder.getNonNullIntBuilder().build(model))
+				.addColumnDef(
+						MetaCatalogBuilder.getNullIntBuilder().build(model))
+				.build(model);
 
 		RdfTable.Builder bldr = new RdfTable.Builder().setTableDef(tableDef)
 				.setColumn(0, "StringCol").setColumn(1, "NullableStringCol")

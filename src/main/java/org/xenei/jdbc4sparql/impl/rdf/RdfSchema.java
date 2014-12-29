@@ -26,7 +26,7 @@ import com.hp.hpl.jena.vocabulary.RDFS;
 
 @Subject(namespace = "http://org.xenei.jdbc4sparql/entity/Schema#")
 public class RdfSchema extends RdfNamespacedObject implements Schema,
-ResourceWrapper {
+		ResourceWrapper {
 	public static class Builder implements Schema {
 		public static RdfSchema fixupCatalog(final RdfCatalog catalog,
 				final RdfSchema schema) {
@@ -101,14 +101,14 @@ ResourceWrapper {
 
 		private String getFQName() {
 			final StringBuilder sb = new StringBuilder()
-			.append(catalog.getResource().getURI()).append(" ")
-			.append(name);
+					.append(catalog.getResource().getURI()).append(" ")
+					.append(name);
 
 			return String
 					.format("%s/instance/N%s", ResourceBuilder
 							.getFQName(RdfSchema.class),
 
-							UUID.nameUUIDFromBytes(sb.toString().getBytes()).toString());
+					UUID.nameUUIDFromBytes(sb.toString().getBytes()).toString());
 		}
 
 		@Override
@@ -140,7 +140,7 @@ ResourceWrapper {
 	}
 
 	public class ChangeListener extends
-	AbstractChangeListener<Schema, RdfTable> {
+			AbstractChangeListener<Schema, RdfTable> {
 		public ChangeListener() {
 			super(RdfSchema.this.getResource(), RdfSchema.class, "tables",
 					RdfTable.class);

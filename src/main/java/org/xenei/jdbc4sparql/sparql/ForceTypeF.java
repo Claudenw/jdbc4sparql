@@ -23,11 +23,10 @@ public class ForceTypeF extends ExprFunction1 {
 		if (checkTypeF == null) {
 			throw new IllegalArgumentException("checkTypeF may not be null");
 		}
-		return new ExprVar(checkTypeF.getColumnInfo().getColumn().getName()
-				.getGUID());
+		return new ExprVar(checkTypeF.getArg(1).asVar());
 	}
 
-	public ForceTypeF(final CheckTypeF checkFunc) {
+	/* package private */ForceTypeF(final CheckTypeF checkFunc) {
 		super(checkCheckTypeF(checkFunc), "forceTypeF");
 		this.checkFunc = checkFunc;
 	}
@@ -52,7 +51,8 @@ public class ForceTypeF extends ExprFunction1 {
 		final Object value = checkFunc.getValue();
 		final NodeValue retval = TypeConverter.getNodeValue(value);
 		if (LOG.isDebugEnabled()) {
-			LOG.debug("{} of {} ({}) is {}", this, v, value, retval);
+			LOG.debug("{} of {} ({}) is {}", checkFunc.getColumnInfo()
+					.getName(), v, value, retval);
 		}
 		return retval;
 	}

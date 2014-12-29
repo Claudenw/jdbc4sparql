@@ -21,6 +21,7 @@ package org.xenei.jdbc4sparql.sparql.parser.jsqlparser;
 
 import java.sql.SQLException;
 
+import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.AllTableColumns;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
@@ -37,7 +38,7 @@ import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 import org.xenei.jdbc4sparql.sparql.items.QueryColumnInfo;
 import org.xenei.jdbc4sparql.sparql.items.QueryTableInfo;
 import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlExprVisitor.ExprColumn;
-import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.functions.AbstractFunctionHandler.FuncInfo;
+import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.proxies.ExprInfo;
 
 import com.hp.hpl.jena.sparql.expr.Expr;
 
@@ -82,17 +83,16 @@ class SparqlSelectItemVisitor implements SelectItemVisitor {
 					allTableColumns.toString());
 		}
 		TableName name = null;
+		final String defaultCatalog = queryBuilder.getCatalogName();
+		final String defaultSchema = queryBuilder.getDefaultSchema().getName()
+				.getShortName();
 		if (allTableColumns.getTable().getAlias() != null) {
-			final String defaultCatalog = queryBuilder.getCatalogName();
-			final String defaultSchema = queryBuilder.getDefaultSchema()
-					.getName().getShortName();
 			name = TableName.getNameInstance(defaultCatalog, defaultSchema,
 					allTableColumns.getTable().getAlias());
 		}
 		else {
-			name = new TableName(queryBuilder.getCatalogName(), allTableColumns
-					.getTable().getSchemaName(), allTableColumns.getTable()
-					.getName());
+			name = new TableName(defaultCatalog, defaultSchema, allTableColumns
+					.getTable().getName());
 		}
 
 		final QueryTableInfo tableInfo = queryBuilder.getTable(name);
@@ -105,19 +105,29 @@ class SparqlSelectItemVisitor implements SelectItemVisitor {
 			SparqlSelectItemVisitor.LOG.debug("visit Select {}",
 					selectExpressionItem);
 		}
+		final String alias = selectExpressionItem.getAlias();
+		// alias required if not a column
+		boolean aliasRequired = true;
+		if (selectExpressionItem.getExpression() instanceof Column) {
+			// alias is required if a column and an alias is provided.
+			aliasRequired = alias != null;
+		}
+
 		final SparqlExprVisitor v = new SparqlExprVisitor(queryBuilder,
-				SparqlQueryBuilder.OPTIONAL, selectExpressionItem.getAlias());
+				SparqlQueryBuilder.OPTIONAL, aliasRequired, alias);
 		selectExpressionItem.getExpression().accept(v);
 
-		final Expr expr = v.getResult();
-		if (expr instanceof FuncInfo) {
-			final FuncInfo funcInfo = (FuncInfo) expr;
-			queryBuilder.addVar(funcInfo.expr, funcInfo.columnName);
-			for (final ExprColumn column : funcInfo.getColumns()) {
+		Expr expr = v.getResult();
+		if (expr instanceof ExprInfo) {
+			final ExprInfo exprInfo = (ExprInfo) expr;
+			queryBuilder.addVar(exprInfo.getExpr(), exprInfo.getName()
+					.getSPARQLName());
+			for (final ExprColumn column : exprInfo.getColumns()) {
 				final QueryColumnInfo paramColumnInfo = column.getColumnInfo();
 				queryBuilder.getTable(paramColumnInfo.getName().getTableName())
-						.addDataFilter(paramColumnInfo);
+				.addDataFilter(paramColumnInfo);
 			}
+			expr = exprInfo.getExpr();
 		}
 		else if (expr instanceof ExprColumn) {
 			final ExprColumn exprColumn = (ExprColumn) expr;

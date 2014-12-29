@@ -30,6 +30,7 @@ import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.CaseExpression;
 import net.sf.jsqlparser.expression.DateValue;
 import net.sf.jsqlparser.expression.DoubleValue;
+import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.InverseExpression;
@@ -70,11 +71,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xenei.jdbc4sparql.iface.name.ColumnName;
-import org.xenei.jdbc4sparql.iface.name.TableName;
+import org.xenei.jdbc4sparql.iface.name.NameSegments;
+import org.xenei.jdbc4sparql.impl.virtual.VirtualSchema;
+import org.xenei.jdbc4sparql.impl.virtual.VirtualTable;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 import org.xenei.jdbc4sparql.sparql.items.QueryColumnInfo;
 import org.xenei.jdbc4sparql.sparql.items.QueryTableInfo;
-import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.functions.AbstractFunctionHandler.FuncInfo;
+import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.proxies.ExprInfoFactory;
 
 import com.hp.hpl.jena.datatypes.xsd.XSDDatatype;
 import com.hp.hpl.jena.graph.Node;
@@ -117,7 +120,7 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 
 	private final boolean optionalColumns;
 
-	private String alias;
+	private final AliasInfo alias;
 
 	private static Logger LOG = LoggerFactory
 			.getLogger(SparqlExprVisitor.class);
@@ -129,10 +132,11 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 	 *            The SparqlQueryBuilder to use.
 	 */
 	public SparqlExprVisitor(final SparqlQueryBuilder builder,
-			final boolean optionalColumns, final String alias) {
+			final boolean optionalColumns, final boolean aliasRequired,
+			final String alias) {
 		this.builder = builder;
 		this.optionalColumns = optionalColumns;
-		this.alias = alias;
+		this.alias = new AliasInfo(alias, aliasRequired);
 		stack = new Stack<Expr>();
 		columns = new HashSet<ExprColumn>();
 	}
@@ -144,8 +148,8 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 	 *            The SparqlQueryBuilder to use.
 	 */
 	public SparqlExprVisitor(final SparqlQueryBuilder builder,
-			final boolean optionalColumns) {
-		this(builder, optionalColumns, null);
+			final boolean optionalColumns, final boolean aliasRequired) {
+		this(builder, optionalColumns, aliasRequired, null);
 	}
 
 	public Set<ExprColumn> getColumns() {
@@ -161,16 +165,18 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 		return stack.pop();
 	}
 
-	public String getAlias() {
-		return alias;
-	}
-
 	/**
 	 *
 	 * @return True if the stack is empty (no result).
 	 */
 	public boolean isEmpty() {
 		return stack.isEmpty();
+	}
+
+	private void logVisit(final String part, final Expression name) {
+		final String aliasLog = alias == null ? "" : String.format(" as %s",
+				alias);
+		SparqlExprVisitor.LOG.debug("visit {}: {}{}", part, name, aliasLog);
 	}
 
 	// process a binary expression.
@@ -181,13 +187,36 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 		biExpr.getLeftExpression().accept(this);
 	}
 
+	private AliasInfo getAlias() {
+		if (alias.isUsed()) {
+			return alias;
+		}
+		// must copy default alias not calculated alias.
+		final AliasInfo retval = new AliasInfo(alias.alias,
+				alias.isAliasRequired());
+		alias.setUsed(true);
+		alias.aliasRequired = false;
+		return retval;
+	}
+
+	private Expr processAlias(final Expr expr, final AliasInfo alias) {
+		if (alias.isAliasRequired()) {
+			final ColumnName cName = new ColumnName(builder.getCatalogName(),
+					VirtualSchema.NAME, VirtualTable.NAME, alias.getAlias());
+			return ExprInfoFactory.getInstance(expr, columns, cName);
+
+		}
+		return expr;
+	}
+
 	@Override
 	public void visit(final Addition addition) {
 		if (LOG.isDebugEnabled()) {
-			SparqlExprVisitor.LOG.debug("visit Addition: {}", addition);
+			logVisit("Addition", addition);
 		}
+		final AliasInfo exprAlias = getAlias();
 		process(addition);
-		stack.push(new E_Add(stack.pop(), stack.pop()));
+		stack.push(processAlias(new E_Add(stack.pop(), stack.pop()), exprAlias));
 	}
 
 	@Override
@@ -198,10 +227,12 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 	@Override
 	public void visit(final AndExpression andExpression) {
 		if (LOG.isDebugEnabled()) {
-			SparqlExprVisitor.LOG.debug("visit And: {}", andExpression);
+			logVisit("And", andExpression);
 		}
+		final AliasInfo exprAlias = getAlias();
 		process(andExpression);
-		stack.push(new E_LogicalAnd(stack.pop(), stack.pop()));
+		stack.push(processAlias(new E_LogicalAnd(stack.pop(), stack.pop()),
+				exprAlias));
 	}
 
 	@Override
@@ -212,8 +243,9 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 	@Override
 	public void visit(final Between between) {
 		if (LOG.isDebugEnabled()) {
-			SparqlExprVisitor.LOG.debug("visit Between: {}", between);
+			logVisit("Between", between);
 		}
+		final AliasInfo exprAlias = getAlias();
 		between.getBetweenExpressionEnd().accept(this);
 		between.getBetweenExpressionStart().accept(this);
 		between.getLeftExpression().accept(this);
@@ -221,7 +253,7 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 		final Expr a = stack.pop();
 		final Expr left = new E_LessThanOrEqual(stack.pop(), a);
 		final Expr right = new E_GreaterThanOrEqual(a, stack.pop());
-		stack.push(new E_LogicalAnd(left, right));
+		stack.push(processAlias(new E_LogicalAnd(left, right), exprAlias));
 	}
 
 	@Override
@@ -247,23 +279,39 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 	@Override
 	public void visit(final Column tableColumn) {
 		if (LOG.isDebugEnabled()) {
-			final String aliasLog = alias == null ? "" : String.format(
-					" as %s", alias);
-			SparqlExprVisitor.LOG.debug("visit Column: {}{}", tableColumn,
-					aliasLog);
+			logVisit("Column", tableColumn);
 		}
 		final String schema = StringUtils.defaultString(tableColumn.getTable()
 				.getSchemaName(), builder.getDefaultSchemaName());
 		final String table = StringUtils.defaultString(tableColumn.getTable()
 				.getName(), builder.getDefaultTableName());
-		final ColumnName cName = new ColumnName(builder.getCatalogName(),
-				schema, table, tableColumn.getColumnName());
-		final TableName tName = cName.getTableName();
-		final QueryTableInfo tableInfo = builder.getTable(tName);
-		QueryColumnInfo columnInfo = tableInfo.getColumn(cName);
-		if (alias != null) {
-			final ColumnName aliasName = ColumnName.getNameInstance(cName,
-					alias);
+		QueryColumnInfo columnInfo = null;
+		QueryTableInfo tableInfo = null;
+		if ((table == null) || (schema == null)) {
+			final ColumnName cName = new ColumnName(builder.getCatalogName(),
+					StringUtils.defaultString(schema),
+					StringUtils.defaultString(table),
+					tableColumn.getColumnName());
+			// find the column by name -- must only be one or it throws an
+			// exception.
+			columnInfo = builder.getColumn(cName.clone(NameSegments.FFFT));
+		}
+		else {
+			// column name will not be in infoSet yet if we are processing a
+			// join.
+			final ColumnName cName = new ColumnName(builder.getCatalogName(),
+					schema, table, tableColumn.getColumnName());
+			try {
+				columnInfo = builder.addColumn(cName, optionalColumns);
+			} catch (final SQLException e) {
+				throw new IllegalStateException(e.getMessage(), e);
+			}
+		}
+		tableInfo = builder.getTable(columnInfo.getName().getTableName());
+		final AliasInfo exprAlias = getAlias();
+		if (exprAlias.isAliasRequired() && !exprAlias.isUsed()) {
+			final ColumnName aliasName = ColumnName.getNameInstance(
+					columnInfo.getName(), exprAlias.getAlias());
 			columnInfo = tableInfo.addColumnToQuery(columnInfo.getColumn(),
 					aliasName, optionalColumns);
 		}
@@ -284,37 +332,42 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 	@Override
 	public void visit(final DateValue dateValue) {
 		if (LOG.isDebugEnabled()) {
-			SparqlExprVisitor.LOG.debug("visit DateValue: {}", dateValue);
+			logVisit("DateValue", dateValue);
 		}
 		final String val = dateValue.getValue().toString();
 		final Node n = NodeFactory.createLiteral(val, XSDDatatype.XSDdate);
-		stack.push(new NodeValueDT(val, n));
+		stack.push(processAlias(new NodeValueDT(val, n), getAlias()));
 	}
 
 	@Override
 	public void visit(final Division division) {
 		if (LOG.isDebugEnabled()) {
-			SparqlExprVisitor.LOG.debug("visit Division: {}", division);
+			logVisit("Division", division);
 		}
+		final AliasInfo exprAlias = getAlias();
 		process(division);
-		stack.push(new E_Divide(stack.pop(), stack.pop()));
+		stack.push(processAlias(new E_Divide(stack.pop(), stack.pop()),
+				exprAlias));
 	}
 
 	@Override
 	public void visit(final DoubleValue doubleValue) {
 		if (LOG.isDebugEnabled()) {
-			SparqlExprVisitor.LOG.debug("visit DoubleValue: {}", doubleValue);
+			logVisit("DoubleValue", doubleValue);
 		}
-		stack.push(new NodeValueDouble(doubleValue.getValue()));
+		stack.push(processAlias(new NodeValueDouble(doubleValue.getValue()),
+				getAlias()));
 	}
 
 	@Override
 	public void visit(final EqualsTo equalsTo) {
 		if (LOG.isDebugEnabled()) {
-			SparqlExprVisitor.LOG.debug("visit EqualsTo: {}", equalsTo);
+			logVisit("EqualsTo", equalsTo);
 		}
+		final AliasInfo exprAlias = getAlias();
 		process(equalsTo);
-		stack.push(new E_Equals(stack.pop(), stack.pop()));
+		stack.push(processAlias(new E_Equals(stack.pop(), stack.pop()),
+				exprAlias));
 	}
 
 	@Override
@@ -325,16 +378,13 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 	@Override
 	public void visit(final Function function) {
 		if (LOG.isDebugEnabled()) {
-			SparqlExprVisitor.LOG.debug("visit Function: {}", function);
+			logVisit("Function", function);
 		}
 		final StandardFunctionHandler sfh = new StandardFunctionHandler(builder);
 		try {
-			if (alias == null) {
-				alias = function.toString().replaceAll("[^A-Za-z0-9]", "_");
-			}
 
-			final FuncInfo funcInfo = sfh.handle(function, alias);
-			stack.push(funcInfo);
+			final Expr exprInfo = sfh.handle(function, getAlias());
+			stack.push(exprInfo);
 		} catch (final SQLException e) {
 			throw new UnsupportedOperationException(String.format(
 					"function %s is not supported (%s)", function.getName(),
@@ -345,33 +395,37 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 	@Override
 	public void visit(final GreaterThan greaterThan) {
 		if (LOG.isDebugEnabled()) {
-			SparqlExprVisitor.LOG.debug("visit GreaterThan: {}", greaterThan);
+			logVisit("GreaterThan", greaterThan);
 		}
+		final AliasInfo exprAlias = getAlias();
 		process(greaterThan);
-		stack.push(new E_GreaterThan(stack.pop(), stack.pop()));
+		stack.push(processAlias(new E_GreaterThan(stack.pop(), stack.pop()),
+				exprAlias));
 	}
 
 	@Override
 	public void visit(final GreaterThanEquals greaterThanEquals) {
 		if (LOG.isDebugEnabled()) {
-			SparqlExprVisitor.LOG.debug("visit GreaterThanEquals: {}",
-					greaterThanEquals);
+			logVisit("GreaterThanEquals", greaterThanEquals);
 		}
+		final AliasInfo exprAlias = getAlias();
 		process(greaterThanEquals);
-		stack.push(new E_GreaterThanOrEqual(stack.pop(), stack.pop()));
+		stack.push(processAlias(
+				new E_GreaterThanOrEqual(stack.pop(), stack.pop()), exprAlias));
 	}
 
 	@Override
 	public void visit(final InExpression inExpression) {
 		if (LOG.isDebugEnabled()) {
-			SparqlExprVisitor.LOG.debug("visit InExpression: {}", inExpression);
+			logVisit("InExpression", inExpression);
 		}
-
+		final AliasInfo exprAlias = getAlias();
 		final SparqlItemsListVisitor listVisitor = new SparqlItemsListVisitor(
 				builder);
 		inExpression.getItemsList().accept(listVisitor);
 		inExpression.getLeftExpression().accept(this);
-		stack.push(new E_OneOf(stack.pop(), listVisitor.getResult()));
+		stack.push(processAlias(
+				new E_OneOf(stack.pop(), listVisitor.getResult()), exprAlias));
 	}
 
 	@Override
@@ -383,17 +437,28 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 	@Override
 	public void visit(final IsNullExpression isNullExpression) {
 		if (LOG.isDebugEnabled()) {
-			SparqlExprVisitor.LOG.debug("visit isNull: {}", isNullExpression);
+			logVisit("isNull", isNullExpression);
+		}
+		final AliasInfo exprAlias = getAlias();
+		isNullExpression.getLeftExpression().accept(this);
+		ExprFunction func = null;
+		final Expr expr = stack.pop();
+		if (expr instanceof ExprColumn) {
+			func = new E_Bound(new ExprVar(((ExprColumn) expr).getColumnInfo()
+					.getGUIDVar()));
+		}
+		else {
+			func = new E_Bound(expr);
 		}
 
-		isNullExpression.getLeftExpression().accept(this);
-		ExprFunction func = new E_Bound(stack.pop());
-
-		if (isNullExpression.isNot()) {
+		// SQL has is NULL = T when empty
+		// SPARQL has bound()= F when empty
+		// so this NOT check looks backward at first.
+		if (!isNullExpression.isNot()) {
 			func = new E_LogicalNot(func);
 
 		}
-		stack.push(func);
+		stack.push(processAlias(func, exprAlias));
 	}
 
 	@Override
@@ -405,9 +470,9 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 	@Override
 	public void visit(final LikeExpression likeExpression) {
 		if (LOG.isDebugEnabled()) {
-			SparqlExprVisitor.LOG.debug("visit LikeExpression: {}",
-					likeExpression);
+			logVisit("LikeExpression", likeExpression);
 		}
+		final AliasInfo exprAlias = getAlias();
 		process(likeExpression);
 		final Expr left = stack.pop();
 		final Expr right = stack.pop();
@@ -415,10 +480,11 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 			final RegexNodeValue rnv = RegexNodeValue
 					.create(((NodeValueString) right).getString());
 			if (rnv.isWildcard()) {
-				stack.push(new E_Regex(left, rnv, new NodeValueString("")));
+				stack.push(processAlias(new E_Regex(left, rnv,
+						new NodeValueString("")), exprAlias));
 			}
 			else {
-				stack.push(new E_Equals(left, rnv));
+				stack.push(processAlias(new E_Equals(left, rnv), exprAlias));
 			}
 		}
 		else {
@@ -430,9 +496,10 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 	@Override
 	public void visit(final LongValue longValue) {
 		if (LOG.isDebugEnabled()) {
-			SparqlExprVisitor.LOG.debug("visit Long: {}", longValue);
+			logVisit("Long", longValue);
 		}
-		stack.push(new NodeValueInteger(longValue.getValue()));
+		stack.push(processAlias(new NodeValueInteger(longValue.getValue()),
+				getAlias()));
 	}
 
 	@Override
@@ -443,45 +510,51 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 	@Override
 	public void visit(final MinorThan minorThan) {
 		if (LOG.isDebugEnabled()) {
-			SparqlExprVisitor.LOG.debug("visit MinorThan: {}", minorThan);
+			logVisit("MinorThan", minorThan);
 		}
+		final AliasInfo exprAlias = getAlias();
 		process(minorThan);
-		stack.push(new E_LessThan(stack.pop(), stack.pop()));
+		stack.push(processAlias(new E_LessThan(stack.pop(), stack.pop()),
+				exprAlias));
 	}
 
 	@Override
 	public void visit(final MinorThanEquals minorThanEquals) {
 		if (LOG.isDebugEnabled()) {
-			SparqlExprVisitor.LOG.debug("visit MinorThanEquals: {}",
-					minorThanEquals);
+			logVisit("MinorThanEquals", minorThanEquals);
 		}
+		final AliasInfo exprAlias = getAlias();
 		process(minorThanEquals);
-		stack.push(new E_LessThanOrEqual(stack.pop(), stack.pop()));
+		stack.push(processAlias(
+				new E_LessThanOrEqual(stack.pop(), stack.pop()), exprAlias));
 	}
 
 	@Override
 	public void visit(final Multiplication multiplication) {
 		if (LOG.isDebugEnabled()) {
-			SparqlExprVisitor.LOG.debug("visit Multiplication: {}",
-					multiplication);
+			logVisit("Multiplication", multiplication);
 		}
+		final AliasInfo exprAlias = getAlias();
 		process(multiplication);
-		stack.push(new E_Multiply(stack.pop(), stack.pop()));
+		stack.push(processAlias(new E_Multiply(stack.pop(), stack.pop()),
+				exprAlias));
 	}
 
 	@Override
 	public void visit(final NotEqualsTo notEqualsTo) {
 		if (LOG.isDebugEnabled()) {
-			SparqlExprVisitor.LOG.debug("visit not equals: {}", notEqualsTo);
+			logVisit("Not Equals", notEqualsTo);
 		}
+		final AliasInfo exprAlias = getAlias();
 		process(notEqualsTo);
-		stack.push(new E_NotEquals(stack.pop(), stack.pop()));
+		stack.push(processAlias(new E_NotEquals(stack.pop(), stack.pop()),
+				exprAlias));
 	}
 
 	@Override
 	public void visit(final NullValue nullValue) {
 		if (LOG.isDebugEnabled()) {
-			SparqlExprVisitor.LOG.debug("visit null value: {}", nullValue);
+			logVisit("Null Value", nullValue);
 		}
 		throw new UnsupportedOperationException(
 				"Figure out how to process NULL");
@@ -490,16 +563,18 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 	@Override
 	public void visit(final OrExpression orExpression) {
 		if (LOG.isDebugEnabled()) {
-			SparqlExprVisitor.LOG.debug("visit orExpression: {}", orExpression);
+			logVisit("Or Expression", orExpression);
 		}
+		final AliasInfo exprAlias = getAlias();
 		process(orExpression);
-		stack.push(new E_LogicalOr(stack.pop(), stack.pop()));
+		stack.push(processAlias(new E_LogicalOr(stack.pop(), stack.pop()),
+				exprAlias));
 	}
 
 	@Override
 	public void visit(final Parenthesis parenthesis) {
 		if (LOG.isDebugEnabled()) {
-			SparqlExprVisitor.LOG.debug("visit Parenthesis: {}", parenthesis);
+			logVisit("Parenthesis", parenthesis);
 		}
 		parenthesis.getExpression().accept(this);
 	}
@@ -507,9 +582,10 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 	@Override
 	public void visit(final StringValue stringValue) {
 		if (LOG.isDebugEnabled()) {
-			SparqlExprVisitor.LOG.debug("visit String Value: {}", stringValue);
+			logVisit("String Value", stringValue);
 		}
-		stack.push(new NodeValueString(stringValue.getValue()));
+		stack.push(processAlias(new NodeValueString(stringValue.getValue()),
+				getAlias()));
 	}
 
 	@Override
@@ -520,31 +596,33 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 	@Override
 	public void visit(final Subtraction subtraction) {
 		if (LOG.isDebugEnabled()) {
-			SparqlExprVisitor.LOG.debug("visit Subtraction: {}", subtraction);
+			logVisit("Subtraction", subtraction);
 		}
+		final AliasInfo exprAlias = getAlias();
 		process(subtraction);
-		stack.push(new E_Subtract(stack.pop(), stack.pop()));
+		stack.push(processAlias(new E_Subtract(stack.pop(), stack.pop()),
+				exprAlias));
 	}
 
 	@Override
 	public void visit(final TimestampValue timestampValue) {
 		if (LOG.isDebugEnabled()) {
-			SparqlExprVisitor.LOG.debug("visit Timestamp: {}", timestampValue);
+			logVisit("Timestamp", timestampValue);
 		}
 		final String parts[] = timestampValue.getValue().toString().split(" ");
 		final String val = String.format("%sT%s", parts[0], parts[1]);
 		final Node n = NodeFactory.createLiteral(val, XSDDatatype.XSDdateTime);
-		stack.push(new NodeValueDT(val, n));
+		stack.push(processAlias(new NodeValueDT(val, n), getAlias()));
 	}
 
 	@Override
 	public void visit(final TimeValue timeValue) {
 		if (LOG.isDebugEnabled()) {
-			SparqlExprVisitor.LOG.debug("visit TimeValue: {}", timeValue);
+			logVisit("TimeValue", timeValue);
 		}
 		final String val = timeValue.getValue().toString();
 		final Node n = NodeFactory.createLiteral(val, XSDDatatype.XSDtime);
-		stack.push(new NodeValueDT(val, n));
+		stack.push(processAlias(new NodeValueDT(val, n), getAlias()));
 	}
 
 	@Override
@@ -566,13 +644,48 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 
 		/**
 		 * Get the enclosed column Info.
-		 * 
+		 *
 		 * @return the QueryColumnInfo
 		 */
 		public QueryColumnInfo getColumnInfo() {
 			return columnInfo;
 		}
 
+	}
+
+	public class AliasInfo {
+		private String alias;
+		private boolean aliasRequired;
+		private boolean used;
+
+		public AliasInfo(final String alias, final boolean aliasRequired) {
+			this.alias = alias;
+			this.aliasRequired = aliasRequired;
+			this.used = false;
+		}
+
+		public String getAlias() {
+			if (StringUtils.isBlank(alias)) {
+				alias = makeAlias();
+			}
+			return alias;
+		}
+
+		public boolean isAliasRequired() {
+			return aliasRequired;
+		}
+
+		private String makeAlias() {
+			return String.format("var%s", builder.getAliasCount());
+		}
+
+		public boolean isUsed() {
+			return used;
+		}
+
+		public void setUsed(final boolean used) {
+			this.used = used;
+		}
 	}
 
 }

@@ -33,7 +33,7 @@ import com.hp.hpl.jena.util.iterator.WrappedIterator;
  *            a NamespacedObject
  */
 public class NameFilter<T extends NamedObject<?>> implements Iterator<T>,
-Iterable<T> {
+		Iterable<T> {
 	// the name pattern to match
 	private String namePattern;
 	// the iterator of the original collection.

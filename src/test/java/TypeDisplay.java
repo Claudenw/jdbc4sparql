@@ -1,19 +1,19 @@
 import java.sql.SQLException;
 import java.util.Iterator;
 
+import net.sf.jsqlparser.JSQLParserException;
+
 import com.hp.hpl.jena.datatypes.RDFDatatype;
 import com.hp.hpl.jena.datatypes.TypeMapper;
-
-import net.sf.jsqlparser.JSQLParserException;
 
 public class TypeDisplay {
 
 	public static void listSPARQLTypes() throws ClassNotFoundException,
-			SQLException {
-		Iterator<RDFDatatype> iter = TypeMapper.getInstance().listTypes();
+	SQLException {
+		final Iterator<RDFDatatype> iter = TypeMapper.getInstance().listTypes();
 		while (iter.hasNext()) {
-			RDFDatatype dt = iter.next();
-			Class<?> cls = dt.getJavaClass();
+			final RDFDatatype dt = iter.next();
+			final Class<?> cls = dt.getJavaClass();
 			System.out.println(String.format(
 					"new SPARQLToJava(\"%s\", %s.class),", dt.getURI(),
 					cls == null ? "String" : cls.getSimpleName()));

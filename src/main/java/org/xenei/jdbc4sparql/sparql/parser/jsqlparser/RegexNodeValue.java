@@ -103,8 +103,7 @@ class RegexNodeValue extends NodeValueString {
 			sb.append(workingToken.toString());
 		}
 		sb.append("$");
-		// final RegexNodeValue retval = new RegexNodeValue(
-		// wildcard ? sb.toString() : workingToken.toString(), wildcard);
+
 		return new RegexNodeValue(
 				(escaping > 0) && (wildcard > 0) ? sb.toString()
 						: plainSb.toString(), wildcard > 0);

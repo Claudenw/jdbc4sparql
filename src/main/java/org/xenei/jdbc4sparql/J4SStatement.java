@@ -54,7 +54,7 @@ public class J4SStatement implements Statement {
 	public J4SStatement(final J4SConnection connection,
 			final RdfCatalog catalog, final int resultSetType,
 			final int resultSetConcurrency, final int resultSetHoldability)
-					throws SQLException {
+			throws SQLException {
 		if (LOG.isDebugEnabled()) {
 			J4SStatement.LOG.debug("Creating statement");
 		}

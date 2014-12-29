@@ -14,6 +14,8 @@ import org.xenei.jdbc4sparql.impl.virtual.VirtualCatalog;
 import org.xenei.jdbc4sparql.impl.virtual.VirtualSchema;
 import org.xenei.jdbc4sparql.impl.virtual.VirtualTable;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
+import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlExprVisitor.AliasInfo;
+import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.proxies.ExprInfoFactory;
 
 import com.hp.hpl.jena.sparql.expr.E_NumAbs;
 import com.hp.hpl.jena.sparql.expr.E_NumCeiling;
@@ -37,8 +39,8 @@ import com.hp.hpl.jena.sparql.expr.aggregate.AggregatorBase;
 
 public class NumericFunctionHandler extends AbstractFunctionHandler {
 	public static final String[] NUMERIC_FUNCTIONS = {
-			"MAX", "MIN", "COUNT", "SUM", "ABS", "ROUND", "CEIL", "FLOOR",
-			"RAND"
+		"MAX", "MIN", "COUNT", "SUM", "ABS", "ROUND", "CEIL", "FLOOR",
+		"RAND"
 	};
 	private static final int MAX = 0;
 	private static final int MIN = 1;
@@ -55,7 +57,7 @@ public class NumericFunctionHandler extends AbstractFunctionHandler {
 	}
 
 	@Override
-	public FuncInfo handle(final Function func, final String alias)
+	public Expr handle(final Function func, final AliasInfo alias)
 			throws SQLException {
 		final int i = Arrays.asList(NumericFunctionHandler.NUMERIC_FUNCTIONS)
 				.indexOf(func.getName().toUpperCase());
@@ -101,12 +103,12 @@ public class NumericFunctionHandler extends AbstractFunctionHandler {
 		}
 	}
 
-	private FuncInfo handleAggregate(
+	private Expr handleAggregate(
 			final Class<? extends AggregatorBase> allDistinct,
 			final Class<? extends AggregatorBase> all,
 			final Class<? extends AggregatorBase> varDistinct,
 			final Class<? extends AggregatorBase> var, final Function func,
-			final String alias) throws SQLException {
+			final AliasInfo alias) throws SQLException {
 		Aggregator agg = null;
 		final ExpressionList l = func.getParameters();
 		if (l == null) {
@@ -134,8 +136,8 @@ public class NumericFunctionHandler extends AbstractFunctionHandler {
 			try {
 				final Constructor<? extends AggregatorBase> c = func
 						.isDistinct() ? varDistinct.getConstructor(Expr.class)
-								: var.getConstructor(Expr.class);
-						agg = c.newInstance(exprVisitor.getResult());
+						: var.getConstructor(Expr.class);
+				agg = c.newInstance(exprVisitor.getResult());
 			} catch (final NoSuchMethodException e) {
 				throw new IllegalArgumentException(e.getMessage(), e);
 
@@ -153,19 +155,21 @@ public class NumericFunctionHandler extends AbstractFunctionHandler {
 
 			}
 		}
+		final String aliasStr = alias.getAlias();
 		final ExprAggregator expr = builder.register(agg,
-				java.sql.Types.NUMERIC, alias);
+				java.sql.Types.NUMERIC, aliasStr);
 		final ColumnName columnName = ColumnName.getNameInstance(
 				VirtualCatalog.NAME, VirtualSchema.NAME, VirtualTable.NAME,
-				alias);
-		return new FuncInfo(expr, columnName, exprVisitor.getColumns());
+				aliasStr);
+		return ExprInfoFactory.getInstance(expr, exprVisitor.getColumns(),
+				columnName);
 
 	}
 
-	private FuncInfo handleAggregate(
+	private Expr handleAggregate(
 			final Class<? extends AggregatorBase> varDistinct,
 			final Class<? extends AggregatorBase> var, final Function func,
-			final String alias) throws SQLException {
+			final AliasInfo alias) throws SQLException {
 		Aggregator agg = null;
 		final ExpressionList l = func.getParameters();
 		if (l == null) {
@@ -181,8 +185,8 @@ public class NumericFunctionHandler extends AbstractFunctionHandler {
 			try {
 				final Constructor<? extends AggregatorBase> c = func
 						.isDistinct() ? varDistinct.getConstructor(Expr.class)
-								: var.getConstructor(Expr.class);
-						agg = c.newInstance(exprVisitor.getResult());
+						: var.getConstructor(Expr.class);
+				agg = c.newInstance(exprVisitor.getResult());
 			} catch (final NoSuchMethodException e) {
 				throw new IllegalArgumentException(e.getMessage(), e);
 
@@ -200,11 +204,13 @@ public class NumericFunctionHandler extends AbstractFunctionHandler {
 
 			}
 		}
+		final String aliasStr = alias.getAlias();
 		final ExprAggregator expr = builder.register(agg,
-				java.sql.Types.NUMERIC, alias);
+				java.sql.Types.NUMERIC, aliasStr);
 		final ColumnName columnName = ColumnName.getNameInstance(
 				VirtualCatalog.NAME, VirtualSchema.NAME, VirtualTable.NAME,
-				alias);
-		return new FuncInfo(expr, columnName, exprVisitor.getColumns());
+				aliasStr);
+		return ExprInfoFactory.getInstance(expr, exprVisitor.getColumns(),
+				columnName);
 	}
 }

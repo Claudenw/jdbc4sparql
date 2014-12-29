@@ -10,7 +10,9 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.sql.SQLDataException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -21,6 +23,7 @@ import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.xenei.jdbc4sparql.iface.Column;
+import org.xenei.jdbc4sparql.iface.ColumnDef;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.name.CatalogName;
 import org.xenei.jdbc4sparql.iface.name.ColumnName;
@@ -65,6 +68,10 @@ public class QueryInfoSetTest {
 		cName = new ColumnName("catalog", "schema", "table", "column");
 		when(column.getName()).thenReturn(cName);
 		when(column.getQuerySegmentFmt()).thenReturn(" { %s <b> %s } ");
+		when(column.hasQuerySegments()).thenReturn(true);
+		final ColumnDef colDef = mock(ColumnDef.class);
+		when(column.getColumnDef()).thenReturn(colDef);
+		when(colDef.getType()).thenReturn(java.sql.Types.VARCHAR);
 
 		table = mock(Table.class);
 		tName = new TableName("catalog", "schema", "table");
@@ -80,6 +87,7 @@ public class QueryInfoSetTest {
 		cName2 = new ColumnName("catalog", "schema2", "table", "column");
 		when(column2.getName()).thenReturn(cName2);
 		when(column2.getQuerySegmentFmt()).thenReturn(" { %s <b> %s } ");
+		when(column2.hasQuerySegments()).thenReturn(true);
 
 		table2 = mock(Table.class);
 		tName2 = new TableName("catalog", "schema2", "table");
@@ -116,12 +124,12 @@ public class QueryInfoSetTest {
 	}
 
 	@Test
-	public void testAddRequiredColumns() {
+	public void testAddDefinedColumns() throws SQLDataException {
 		final ElementGroup queryElementGroup = new ElementGroup();
 		final QueryTableInfo tableInfo = new QueryTableInfo(queryInfo,
 				queryElementGroup, table, false);
 		queryInfo.addTable(tableInfo);
-		queryInfo.addRequiredColumns();
+		queryInfo.addDefinedColumns(Collections.<String> emptyList());
 
 		final ElementExtractor extractor = new ElementExtractor(
 				ElementPathBlock.class);
@@ -194,7 +202,7 @@ public class QueryInfoSetTest {
 	}
 
 	@Test
-	public void testContainsColumn() {
+	public void testContainsColumn() throws SQLDataException {
 		assertFalse(queryInfo.containsColumn(cName2));
 		queryInfo.addColumn(new QueryColumnInfo(column2));
 		assertTrue(queryInfo.containsColumn(cName2));
@@ -203,7 +211,8 @@ public class QueryInfoSetTest {
 		final QueryTableInfo tableInfo = new QueryTableInfo(queryInfo,
 				queryElementGroup, table, false);
 		queryInfo.addTable(tableInfo);
-		queryInfo.addRequiredColumns();
+		queryInfo.addDefinedColumns(Collections.<String> emptyList());
+		;
 		assertTrue(queryInfo.containsColumn(cName));
 
 		assertTrue(queryInfo.containsColumn(new TableName("catalog", "schema2",
@@ -220,7 +229,7 @@ public class QueryInfoSetTest {
 	}
 
 	@Test
-	public void testFindColumn() {
+	public void testFindColumn() throws SQLDataException {
 		assertNull(queryInfo.findColumn(cName2));
 		queryInfo.addColumn(new QueryColumnInfo(column2));
 		assertEquals(cName2, queryInfo.findColumn(cName2).getName());
@@ -231,7 +240,7 @@ public class QueryInfoSetTest {
 		final QueryTableInfo tableInfo = new QueryTableInfo(queryInfo,
 				queryElementGroup, table, false);
 		queryInfo.addTable(tableInfo);
-		queryInfo.addRequiredColumns();
+		queryInfo.addDefinedColumns(Collections.<String> emptyList());
 		assertEquals(cName, queryInfo.findColumn(cName).getName());
 
 		assertNull(queryInfo.findColumn(new ColumnName("catalog", "schema2",
@@ -260,7 +269,7 @@ public class QueryInfoSetTest {
 	// }
 
 	@Test
-	public void testGetColumnByName_ColumnName() {
+	public void testGetColumnByName_ColumnName() throws SQLDataException {
 		try {
 			queryInfo.getColumn(cName2);
 			fail("Should have thrown IllegalArgumentException");
@@ -276,7 +285,7 @@ public class QueryInfoSetTest {
 		final QueryTableInfo tableInfo = new QueryTableInfo(queryInfo,
 				queryElementGroup, table, false);
 		queryInfo.addTable(tableInfo);
-		queryInfo.addRequiredColumns();
+		queryInfo.addDefinedColumns(Collections.<String> emptyList());
 		assertEquals(cName, queryInfo.getColumn(cName).getName());
 
 		try {
@@ -288,7 +297,7 @@ public class QueryInfoSetTest {
 	}
 
 	@Test
-	public void testGetColumnIndex() {
+	public void testGetColumnIndex() throws SQLDataException {
 
 		assertEquals(-1, queryInfo.getColumnIndex(cName2));
 
@@ -300,7 +309,7 @@ public class QueryInfoSetTest {
 		final QueryTableInfo tableInfo = new QueryTableInfo(queryInfo,
 				queryElementGroup, table, false);
 		queryInfo.addTable(tableInfo);
-		queryInfo.addRequiredColumns();
+		queryInfo.addDefinedColumns(Collections.<String> emptyList());
 		assertEquals(1, queryInfo.getColumnIndex(cName));
 
 		assertEquals(-1, queryInfo.getColumnIndex(new ColumnName("catalog",
@@ -308,7 +317,7 @@ public class QueryInfoSetTest {
 	}
 
 	@Test
-	public void testGetColumns() {
+	public void testGetColumns() throws SQLDataException {
 		assertEquals(0, queryInfo.getColumns().size());
 		final QueryColumnInfo colInfo1 = new QueryColumnInfo(column2);
 		queryInfo.addColumn(colInfo1);
@@ -318,7 +327,7 @@ public class QueryInfoSetTest {
 		final QueryTableInfo tableInfo = new QueryTableInfo(queryInfo,
 				queryElementGroup, table, false);
 		queryInfo.addTable(tableInfo);
-		queryInfo.addRequiredColumns();
+		queryInfo.addDefinedColumns(Collections.<String> emptyList());
 		final QueryItemCollection<QueryColumnInfo, Column, ColumnName> cols = queryInfo
 				.getColumns();
 		assertEquals(2, cols.size());
@@ -375,7 +384,7 @@ public class QueryInfoSetTest {
 	}
 
 	@Test
-	public void testListColumns() {
+	public void testListColumns() throws SQLDataException {
 		assertEquals(0, queryInfo.listColumns(cName).size());
 		assertEquals(0, queryInfo.listColumns(tName).size());
 		assertEquals(0, queryInfo.listColumns(cName2).size());
@@ -393,7 +402,7 @@ public class QueryInfoSetTest {
 		final QueryTableInfo tableInfo = new QueryTableInfo(queryInfo,
 				queryElementGroup, table, false);
 		queryInfo.addTable(tableInfo);
-		queryInfo.addRequiredColumns();
+		queryInfo.addDefinedColumns(Collections.<String> emptyList());
 		assertEquals(1, queryInfo.listColumns(cName).size());
 		assertEquals(1, queryInfo.listColumns(tName).size());
 		assertEquals(1, queryInfo.listColumns(cName2).size());
@@ -403,7 +412,7 @@ public class QueryInfoSetTest {
 	}
 
 	@Test
-	public void testListTables() {
+	public void testListTables() throws SQLDataException {
 		assertEquals(0, queryInfo.listTables(cName).size());
 		assertEquals(0, queryInfo.listTables(tName).size());
 		assertEquals(0, queryInfo.listTables(cName2).size());
@@ -421,7 +430,7 @@ public class QueryInfoSetTest {
 		final QueryTableInfo tableInfo = new QueryTableInfo(queryInfo,
 				queryElementGroup, table, false);
 		queryInfo.addTable(tableInfo);
-		queryInfo.addRequiredColumns();
+		queryInfo.addDefinedColumns(Collections.<String> emptyList());
 		assertEquals(1, queryInfo.listTables(cName).size());
 		assertEquals(1, queryInfo.listTables(tName).size());
 		assertEquals(0, queryInfo.listTables(cName2).size());
@@ -432,7 +441,7 @@ public class QueryInfoSetTest {
 		final QueryTableInfo tableInfo2 = new QueryTableInfo(queryInfo,
 				queryElementGroup2, table2, false);
 		queryInfo.addTable(tableInfo2);
-		queryInfo.addRequiredColumns();
+		queryInfo.addDefinedColumns(Collections.<String> emptyList());
 		assertEquals(1, queryInfo.listTables(cName).size());
 		assertEquals(1, queryInfo.listTables(tName).size());
 		assertEquals(1, queryInfo.listTables(cName2).size());
@@ -491,7 +500,7 @@ public class QueryInfoSetTest {
 	}
 
 	@Test
-	public void testSetMinimumColumnSegments() {
+	public void testSetMinimumColumnSegments() throws SQLDataException {
 
 		queryInfo.addColumn(new QueryColumnInfo(column2));
 
@@ -499,7 +508,7 @@ public class QueryInfoSetTest {
 		final QueryTableInfo tableInfo = new QueryTableInfo(queryInfo,
 				queryElementGroup, table, false);
 		queryInfo.addTable(tableInfo);
-		queryInfo.addRequiredColumns();
+		queryInfo.addDefinedColumns(Collections.<String> emptyList());
 
 		queryInfo.setMinimumColumnSegments();
 		NameSegments expected = NameSegments.FFTF;
@@ -549,7 +558,7 @@ public class QueryInfoSetTest {
 	// }
 	//
 	@Test
-	public void testFindColumnByGUIDVar_String() {
+	public void testFindColumnByGUIDVar_String() throws SQLDataException {
 		QueryColumnInfo colInfo = queryInfo
 				.findColumnByGUIDVar(cName.getGUID());
 		assertNull(colInfo);
@@ -558,7 +567,7 @@ public class QueryInfoSetTest {
 		final QueryTableInfo tableInfo = new QueryTableInfo(queryInfo,
 				queryElementGroup, table, false);
 		queryInfo.addTable(tableInfo);
-		queryInfo.addRequiredColumns();
+		queryInfo.addDefinedColumns(Collections.<String> emptyList());
 
 		colInfo = queryInfo.findColumnByGUIDVar(cName.getGUID());
 		assertNotNull(colInfo);
@@ -602,4 +611,26 @@ public class QueryInfoSetTest {
 	// assertEquals( cName.getGUID(), colInfo.getName().getGUID() );
 	// assertEquals( cName.getGUID(), colInfo.getGUID() );
 	// }
+
+	@Test
+	public void testGetForceTypeF() throws SQLDataException {
+		final QueryColumnInfo columnInfo = new QueryColumnInfo(column, false);
+		final ForceTypeF f = queryInfo.getForceTypeF(columnInfo);
+		assertNotNull(f);
+		final QueryColumnInfo alias = columnInfo.createAlias(tName
+				.getColumnName("alias"));
+		final ForceTypeF f2 = queryInfo.getForceTypeF(alias);
+		assertEquals(f, f2);
+	}
+
+	@Test
+	public void testGetCheckTypeF() throws SQLDataException {
+		final QueryColumnInfo columnInfo = new QueryColumnInfo(column, false);
+		final CheckTypeF f = queryInfo.getCheckTypeF(columnInfo);
+		assertNotNull(f);
+		final QueryColumnInfo alias = columnInfo.createAlias(tName
+				.getColumnName("alias"));
+		final CheckTypeF f2 = queryInfo.getCheckTypeF(alias);
+		assertEquals(f, f2);
+	}
 }

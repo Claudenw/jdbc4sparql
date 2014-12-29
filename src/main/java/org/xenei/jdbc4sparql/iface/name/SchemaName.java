@@ -9,7 +9,7 @@ public class SchemaName extends ItemName {
 	/**
 	 * Check the schema name. Checks that the itemName schema and catalog name
 	 * segments are not null.
-	 * 
+	 *
 	 * @param name
 	 *            The ItemName to check.
 	 * @return the ItemName
@@ -21,14 +21,14 @@ public class SchemaName extends ItemName {
 			throw new IllegalArgumentException("name may not be null");
 		}
 		CatalogName.checkItemName(name);
-		checkNotNull(name.getBaseName().getSchema(), "schema");
+		checkNotNull(name.getFQName().getSchema(), "schema");
 		return name;
 	}
 
 	/**
 	 * Ensure that the schema segment is on, and the table and column segments
 	 * are off.
-	 * 
+	 *
 	 * @param segments
 	 *            The segments to adjust
 	 * @return the adjusted segments.
@@ -48,7 +48,7 @@ public class SchemaName extends ItemName {
 
 	/**
 	 * Create a SchmeaName from an ItemName.
-	 * 
+	 *
 	 * @param name
 	 *            the ItemName, must not be null.
 	 * @Throws IllegalArgumentException is name is null.
@@ -59,7 +59,7 @@ public class SchemaName extends ItemName {
 
 	/**
 	 * Create a SchmeaName from an ItemName with specific name segments.
-	 * 
+	 *
 	 * @param name
 	 *            the ItemName, must not be null.
 	 * @param segments
@@ -74,7 +74,7 @@ public class SchemaName extends ItemName {
 	/**
 	 * Create a SchemaNamefrom a catalog name string and a schema name string.
 	 * Uses the default namesegments for a schema.
-	 * 
+	 *
 	 * @param catalog
 	 *            the catalog name string.
 	 * @param schema
@@ -90,7 +90,7 @@ public class SchemaName extends ItemName {
 
 	/**
 	 * Create a table name in this schema.
-	 * 
+	 *
 	 * @param tblName
 	 *            the table name string.
 	 * @return the Table Name
@@ -99,7 +99,7 @@ public class SchemaName extends ItemName {
 	 */
 	public TableName getTableName(final String tblName)
 			throws IllegalArgumentException {
-		final FQName baseName = getBaseName();
+		final FQName baseName = getFQName();
 		return new TableName(baseName.getCatalog(), baseName.getSchema(),
 				tblName);
 	}

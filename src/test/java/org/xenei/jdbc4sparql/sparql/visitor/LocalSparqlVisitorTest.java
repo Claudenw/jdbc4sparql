@@ -56,7 +56,9 @@ import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.sparql.core.TriplePath;
 import com.hp.hpl.jena.sparql.core.Var;
 import com.hp.hpl.jena.sparql.core.VarExprList;
+import com.hp.hpl.jena.sparql.expr.E_Bound;
 import com.hp.hpl.jena.sparql.expr.E_Equals;
+import com.hp.hpl.jena.sparql.expr.E_LogicalNot;
 import com.hp.hpl.jena.sparql.expr.E_NotEquals;
 import com.hp.hpl.jena.sparql.expr.Expr;
 import com.hp.hpl.jena.sparql.expr.ExprVar;
@@ -87,7 +89,7 @@ public class LocalSparqlVisitorTest {
 		final Model model = ModelFactory.createDefaultModel();
 		final Model localModel = ModelFactory.createDefaultModel();
 		final RdfCatalog catalog = new RdfCatalog.Builder()
-		.setLocalModel(localModel).setName("testCatalog").build(model);
+				.setLocalModel(localModel).setName("testCatalog").build(model);
 		catalogs.put(catalog.getShortName(), catalog);
 
 		final RdfSchema schema = new RdfSchema.Builder().setCatalog(catalog)
@@ -95,16 +97,16 @@ public class LocalSparqlVisitorTest {
 
 		// create the foo table
 		final RdfTableDef tableDef = new RdfTableDef.Builder()
-		.addColumnDef(
-				MetaCatalogBuilder.getNonNullStringBuilder().build(
-						model))
-						.addColumnDef(
-								MetaCatalogBuilder.getNullStringBuilder().build(model))
-								.addColumnDef(
-										MetaCatalogBuilder.getNonNullIntBuilder().build(model))
-										.addColumnDef(
-												MetaCatalogBuilder.getNullIntBuilder().build(model))
-												.build(model);
+				.addColumnDef(
+						MetaCatalogBuilder.getNonNullStringBuilder().build(
+								model))
+				.addColumnDef(
+						MetaCatalogBuilder.getNullStringBuilder().build(model))
+				.addColumnDef(
+						MetaCatalogBuilder.getNonNullIntBuilder().build(model))
+				.addColumnDef(
+						MetaCatalogBuilder.getNullIntBuilder().build(model))
+				.build(model);
 
 		RdfTable.Builder bldr = new RdfTable.Builder().setTableDef(tableDef)
 				.setColumn(0, "StringCol").setColumn(1, "NullableStringCol")
@@ -373,15 +375,17 @@ public class LocalSparqlVisitorTest {
 
 		q.getQueryPattern().visit(
 				extractor.reset().setMatchType(ElementPathBlock.class));
-		// main + 2 optional
-		Assert.assertEquals(3, extractor.getExtracted().size());
-		final ElementPathBlock epb = (ElementPathBlock) extractor
-				.getExtracted().get(0);
-		final Iterator<TriplePath> iter = epb.patternElts();
-		while (iter.hasNext()) {
-			final TriplePath t = iter.next();
-			Assert.assertTrue(t.getSubject().isVariable());
-			Assert.assertEquals(tableName.getGUID(), t.getSubject().getName());
+		// 4 columns + table
+		Assert.assertEquals(5, extractor.getExtracted().size());
+		for (final Element el : extractor.getExtracted()) {
+			final ElementPathBlock epb = (ElementPathBlock) el;
+			final Iterator<TriplePath> iter = epb.patternElts();
+			while (iter.hasNext()) {
+				final TriplePath t = iter.next();
+				Assert.assertTrue(t.getSubject().isVariable());
+				Assert.assertEquals(tableName.getGUID(), t.getSubject()
+						.getName());
+			}
 		}
 	}
 
@@ -429,5 +433,47 @@ public class LocalSparqlVisitorTest {
 				((ExprVar) (expr2.getArg1())).getVarName());
 		Assert.assertEquals("bar" + NameUtils.SPARQL_DOT + "BarIntCol",
 				((ExprVar) (expr2.getArg2())).getVarName());
+	}
+
+	@Test
+	public void testCountNullableColumn() throws Exception {
+		final String query = "select count(NullableIntCol) from foo";
+		final Statement stmt = parserManager.parse(new StringReader(query));
+		stmt.accept(sv);
+		final Query q = sv.getBuilder().build();
+
+		final ElementExtractor extractor = new ElementExtractor(
+				ElementFilter.class);
+		q.getQueryPattern().visit(extractor);
+
+		// one for table
+		Assert.assertEquals(1, extractor.getExtracted().size());
+
+	}
+
+	@Test
+	public void testColumnByNotNull() throws Exception {
+		final String query = "select IntCol from foo WHERE NullableIntCol IS NULL";
+		final Statement stmt = parserManager.parse(new StringReader(query));
+		stmt.accept(sv);
+		final Query q = sv.getBuilder().build();
+
+		final ElementExtractor extractor = new ElementExtractor(
+				ElementFilter.class);
+		q.getQueryPattern().visit(extractor);
+		// one for table + one real filter
+		Assert.assertEquals(2, extractor.getExtracted().size());
+		Expr expr = ((ElementFilter) extractor.getExtracted().get(1)).getExpr();
+
+		Assert.assertTrue(expr instanceof E_LogicalNot);
+		expr = ((E_LogicalNot) expr).getArg();
+		Assert.assertTrue(expr instanceof E_Bound);
+		Assert.assertEquals("v_39a47853_59fe_3101_9dc3_57a586635865",
+				((E_Bound) expr).getArg().asVar().getName());
+
+		q.getQueryPattern().visit(
+				extractor.reset().setMatchType(ElementBind.class));
+		Assert.assertEquals(2, extractor.getExtracted().size());
+
 	}
 }

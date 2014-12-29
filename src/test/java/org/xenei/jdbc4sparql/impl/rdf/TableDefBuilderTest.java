@@ -15,16 +15,16 @@ public class TableDefBuilderTest {
 	private RdfKey getPrimaryKey() {
 		new RdfTableDef.Builder();
 		final RdfKey.Builder builder = new RdfKey.Builder()
-		.addSegment(new RdfKeySegment.Builder().build(model))
-		.setUnique(true).setKeyName("PK");
+				.addSegment(new RdfKeySegment.Builder().build(model))
+				.setUnique(true).setKeyName("PK");
 		return builder.build(model);
 	}
 
 	private RdfKey getSortKey() {
 		new RdfTableDef.Builder();
 		final RdfKey.Builder builder = new RdfKey.Builder()
-		.addSegment(new RdfKeySegment.Builder().setIdx(1).build(model))
-		.setUnique(false).setKeyName("SK");
+				.addSegment(new RdfKeySegment.Builder().setIdx(1).build(model))
+				.setUnique(false).setKeyName("SK");
 		return builder.build(model);
 	}
 
@@ -42,9 +42,9 @@ public class TableDefBuilderTest {
 	public void testBadPrimaryKey() {
 		try {
 			new RdfTableDef.Builder()
-			.addColumnDef(
-					RdfColumnDef.Builder.getStringBuilder()
-					.build(model))
+					.addColumnDef(
+							RdfColumnDef.Builder.getStringBuilder()
+									.build(model))
 					.addColumnDef(
 							RdfColumnDef.Builder.getIntegerBuilder().build(
 									model)).setPrimaryKey(getSortKey());
@@ -57,8 +57,8 @@ public class TableDefBuilderTest {
 	@Test
 	public void testDefault() {
 		final RdfTableDef.Builder builder = new RdfTableDef.Builder()
-		.addColumnDef(
-				RdfColumnDef.Builder.getStringBuilder().build(model))
+				.addColumnDef(
+						RdfColumnDef.Builder.getStringBuilder().build(model))
 				.addColumnDef(
 						RdfColumnDef.Builder.getIntegerBuilder().build(model));
 		final TableDef tableDef = builder.build(model);
@@ -80,11 +80,11 @@ public class TableDefBuilderTest {
 	@Test
 	public void testPrimaryKey() {
 		final RdfTableDef.Builder builder = new RdfTableDef.Builder()
-		.addColumnDef(
-				RdfColumnDef.Builder.getStringBuilder().build(model))
+				.addColumnDef(
+						RdfColumnDef.Builder.getStringBuilder().build(model))
 				.addColumnDef(
 						RdfColumnDef.Builder.getIntegerBuilder().build(model))
-						.setPrimaryKey(getPrimaryKey());
+				.setPrimaryKey(getPrimaryKey());
 		final TableDef tableDef = builder.build(model);
 
 		Assert.assertEquals(2, tableDef.getColumnCount());
@@ -104,11 +104,11 @@ public class TableDefBuilderTest {
 	@Test
 	public void testSortKey() {
 		final RdfTableDef.Builder builder = new RdfTableDef.Builder()
-		.addColumnDef(
-				RdfColumnDef.Builder.getStringBuilder().build(model))
+				.addColumnDef(
+						RdfColumnDef.Builder.getStringBuilder().build(model))
 				.addColumnDef(
 						RdfColumnDef.Builder.getIntegerBuilder().build(model))
-						.setSortKey(getSortKey());
+				.setSortKey(getSortKey());
 		final TableDef tableDef = builder.build(model);
 
 		Assert.assertEquals(2, tableDef.getColumnCount());
@@ -134,11 +134,11 @@ public class TableDefBuilderTest {
 		final RdfTableDef tableDef2 = builder.build(model);
 
 		builder = new RdfTableDef.Builder()
-		.addColumnDef(
-				RdfColumnDef.Builder.getStringBuilder().build(model))
+				.addColumnDef(
+						RdfColumnDef.Builder.getStringBuilder().build(model))
 				.addColumnDef(
 						RdfColumnDef.Builder.getIntegerBuilder().build(model))
-						.setSuperTableDef(tableDef2);
+				.setSuperTableDef(tableDef2);
 		final TableDef tableDef = builder.build(model);
 
 		Assert.assertEquals(2, tableDef.getColumnCount());

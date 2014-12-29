@@ -199,7 +199,7 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 	}
 
 	public class ChangeListener extends
-	AbstractChangeListener<Catalog, RdfSchema> {
+			AbstractChangeListener<Catalog, RdfSchema> {
 
 		public ChangeListener() {
 			super(RdfCatalog.this.getResource(), RdfCatalog.class, "schemas",

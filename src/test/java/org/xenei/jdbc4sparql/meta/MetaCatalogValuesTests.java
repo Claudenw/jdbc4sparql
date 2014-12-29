@@ -77,7 +77,7 @@ public class MetaCatalogValuesTests {
 		final String[] names = {
 				"SCOPE", "COLUMN_NAME", "DATA_TYPE", "TYPE_NAME",
 				"COLUMN_SIZE", "BUFFER_LENGTH", "DECIMAL_DIGITS",
-		"PSEUDO_COLUMN"
+				"PSEUDO_COLUMN"
 		};
 		verifyNames(MetaCatalogBuilder.BEST_ROW_TABLE, names);
 	}
@@ -85,7 +85,7 @@ public class MetaCatalogValuesTests {
 	@Test
 	public void testCatalogsTable() {
 		final String[] names = {
-			"TABLE_CAT"
+				"TABLE_CAT"
 		};
 		verifyNames(MetaCatalogBuilder.CATALOGS_TABLE, names);
 	}
@@ -126,16 +126,9 @@ public class MetaCatalogValuesTests {
 				parser);
 		Assert.assertTrue(rs.first());
 		while (!rs.isAfterLast()) {
-			System.out
-			.println(String.format("%s : %s : %s : %s : %d : %s",
-					rs.getString("TABLE_CAT"),
-					rs.getString("TABLE_SCHEM"),
-					rs.getString("TABLE_NAME"),
-					rs.getString("COLUMN_NAME"),
-					rs.getInt("ORDINAL_POSITION"),
-					rs.getString("IS_NULLABLE")));
 			rs.next();
 		}
+		rs.close();
 	}
 
 	@Test
@@ -274,18 +267,15 @@ public class MetaCatalogValuesTests {
 				parser);
 		Assert.assertTrue(rs.first());
 		while (!rs.isAfterLast()) {
-			System.out.println(String.format("%s : %s : %s",
-					rs.getString("TABLE_CAT"), rs.getString("TABLE_SCHEM"),
-					rs.getString("TABLE_NAME")));
 			rs.next();
 		}
-
+		rs.close();
 	}
 
 	@Test
 	public void testTableTypesTable() {
 		final String[] names = {
-			"TABLE_TYPE"
+				"TABLE_TYPE"
 		};
 		verifyNames(MetaCatalogBuilder.TABLE_TYPES_TABLE, names);
 	}
@@ -317,7 +307,7 @@ public class MetaCatalogValuesTests {
 		final String[] names = {
 				"SCOPE", "COLUMN_NAME", "DATA_TYPE", "TYPE_NAME",
 				"COLUMN_SIZE", "BUFFER_LENGTH", "DECIMAL_DIGITS",
-		"PSEUDO_COLUMN"
+				"PSEUDO_COLUMN"
 		};
 		verifyNames(MetaCatalogBuilder.VERSION_COLUMNS_TABLE, names);
 	}

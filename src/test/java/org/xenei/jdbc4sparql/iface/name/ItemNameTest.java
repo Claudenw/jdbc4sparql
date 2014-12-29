@@ -50,7 +50,7 @@ public class ItemNameTest {
 
 	@Test
 	public void testGetBaseName() {
-		final FQName base = itemName.getBaseName();
+		final FQName base = itemName.getFQName();
 		assertEquals("catalog", base.getCatalog());
 		assertEquals("schema", base.getSchema());
 		assertEquals("table", base.getTable());
@@ -103,9 +103,9 @@ public class ItemNameTest {
 
 	@Test
 	public void testGetGUID() {
-		assertEquals(itemName.getBaseName().getGUID(), itemName.getGUID());
+		assertEquals(itemName.getFQName().getGUID(), itemName.getGUID());
 		itemName.setUsedSegments(NameSegments.FTFF);
-		assertEquals(itemName.getBaseName().getGUID(), itemName.getGUID());
+		assertEquals(itemName.getFQName().getGUID(), itemName.getGUID());
 	}
 
 	@Test

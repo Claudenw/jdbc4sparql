@@ -40,8 +40,8 @@ public class NameSegments {
 			true);
 
 	private static final NameSegments[] LST = {
-			FFFF, FFFT, FFTF, FFTT, FTFF, FTFT, FTTF, FTTT, TFFF, TFFT, TFTF,
-			TFTT, TTFF, TTFT, TTTF, TTTT
+		FFFF, FFFT, FFTF, FFTT, FTFF, FTFT, FTTF, FTTT, TFFF, TFFT, TFTF,
+		TFTT, TTFF, TTFT, TTTF, TTTT
 	};
 
 	/**
@@ -228,7 +228,7 @@ public class NameSegments {
 	/**
 	 * And this name segment with the other. All segments that are on in both
 	 * will be on in result. All others will be off.
-	 * 
+	 *
 	 * @param other
 	 *            The other segment to be ANDed with this one.
 	 * @return merged NameSegments object

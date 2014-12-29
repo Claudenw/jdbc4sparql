@@ -7,7 +7,9 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.sql.SQLDataException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.Before;
@@ -150,7 +152,7 @@ public class QueryTableInfoTest {
 	}
 
 	@Test
-	public void testAddRequiredColumns() {
+	public void testAddDefinedColumns() throws SQLDataException {
 		when(table.getQuerySegmentFmt()).thenReturn("{ ?tbl <a> %s }");
 		Column column;
 		ColumnName columnName;
@@ -159,12 +161,13 @@ public class QueryTableInfoTest {
 		column = mock(Column.class);
 		when(column.getName()).thenReturn(columnName);
 		when(column.getQuerySegmentFmt()).thenReturn(" { %s <b> %s } ");
+		when(column.hasQuerySegments()).thenReturn(true);
 
 		final List<Column> cols = new ArrayList<Column>();
 		cols.add(column);
 		when(table.getColumns()).thenReturn(cols.iterator());
 
-		tableInfo.addRequiredColumns();
+		tableInfo.addDefinedColumns(Collections.<String> emptyList());
 
 		final ElementExtractor extractor = new ElementExtractor(
 				ElementPathBlock.class);

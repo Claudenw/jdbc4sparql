@@ -46,7 +46,7 @@ public class NumberFunctionTests extends AbstractJ4SSetup {
 
 	@Test
 	public void testAbsIntFunction() throws Exception {
-		List<Integer> lst = new ArrayList<Integer>();
+		final List<Integer> lst = new ArrayList<Integer>();
 		final ResultSet rset = stmt
 				.executeQuery("select abs( IntCol ) From fooTable");
 		final ResultSetMetaData rsm = rset.getMetaData();
@@ -62,7 +62,7 @@ public class NumberFunctionTests extends AbstractJ4SSetup {
 
 	@Test
 	public void testAbsDoubleFunction() throws Exception {
-		List<Double> lst = new ArrayList<Double>();
+		final List<Double> lst = new ArrayList<Double>();
 		final ResultSet rset = stmt
 				.executeQuery("select abs( DoubleCol ) From fooTable");
 		final ResultSetMetaData rsm = rset.getMetaData();
@@ -81,7 +81,7 @@ public class NumberFunctionTests extends AbstractJ4SSetup {
 
 	@Test
 	public void testCeilFunction() throws Exception {
-		List<Integer> lst = new ArrayList<Integer>();
+		final List<Integer> lst = new ArrayList<Integer>();
 		final ResultSet rset = stmt
 				.executeQuery("select ceil( DoubleCol ) From fooTable");
 		final ResultSetMetaData rsm = rset.getMetaData();
@@ -129,7 +129,7 @@ public class NumberFunctionTests extends AbstractJ4SSetup {
 
 	@Test
 	public void testFloorFunction() throws Exception {
-		List<Integer> lst = new ArrayList<Integer>();
+		final List<Integer> lst = new ArrayList<Integer>();
 		final ResultSet rset = stmt
 				.executeQuery("select floor( DoubleCol ) From fooTable");
 		final ResultSetMetaData rsm = rset.getMetaData();
@@ -192,7 +192,7 @@ public class NumberFunctionTests extends AbstractJ4SSetup {
 
 	@Test
 	public void testRoundFunction() throws Exception {
-		List<Integer> lst = new ArrayList<Integer>();
+		final List<Integer> lst = new ArrayList<Integer>();
 		final ResultSet rset = stmt
 				.executeQuery("select round( DoubleCol ) From fooTable");
 		final ResultSetMetaData rsm = rset.getMetaData();
@@ -224,7 +224,7 @@ public class NumberFunctionTests extends AbstractJ4SSetup {
 		final ResultSetMetaData rsm = rset.getMetaData();
 		Assert.assertEquals(1, rsm.getColumnCount());
 		rset.next();
-		double d = rset.getDouble(1);
+		final double d = rset.getDouble(1);
 		Assert.assertTrue(d > 0.0);
 		Assert.assertTrue(d < 1.0);
 		rset.close();

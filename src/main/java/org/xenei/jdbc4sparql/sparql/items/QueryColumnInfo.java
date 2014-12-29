@@ -1,18 +1,18 @@
 package org.xenei.jdbc4sparql.sparql.items;
 
-import java.sql.SQLDataException;
-
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.name.ColumnName;
 import org.xenei.jdbc4sparql.iface.name.NameSegments;
-import org.xenei.jdbc4sparql.sparql.CheckTypeF;
-import org.xenei.jdbc4sparql.sparql.ForceTypeF;
+
+import com.hp.hpl.jena.sparql.core.Var;
 
 /**
  * A column in a table in the query. This class maps the column to an alias
  * name. This may be a column in a base table or a function.
  */
 public class QueryColumnInfo extends QueryItemInfo<Column, ColumnName> {
+
+	private QueryColumnInfo aliasFor;
 
 	private static Column checkColumn(final Column column) {
 		if (column == null) {
@@ -26,8 +26,6 @@ public class QueryColumnInfo extends QueryItemInfo<Column, ColumnName> {
 				segments.isSchema(), segments.isSchema() || segments.isTable(),
 				true);
 	}
-
-	private CheckTypeF typeFilter;
 
 	public QueryColumnInfo(final Column column) {
 		this(column, column.isOptional());
@@ -43,6 +41,7 @@ public class QueryColumnInfo extends QueryItemInfo<Column, ColumnName> {
 	 */
 	public QueryColumnInfo(final Column column, final boolean optional) {
 		super(column, checkColumn(column).getName(), optional);
+		aliasFor = null;
 	}
 
 	public QueryColumnInfo(final Column column, final ColumnName alias) {
@@ -52,15 +51,40 @@ public class QueryColumnInfo extends QueryItemInfo<Column, ColumnName> {
 	public QueryColumnInfo(final Column column, final ColumnName alias,
 			final boolean optional) {
 		super(column, alias, optional);
-
+		aliasFor = null;
 	}
 
-	public QueryColumnInfo createAlias(final ColumnName alias)
-			throws SQLDataException {
+	public QueryColumnInfo createAlias(final ColumnName alias) {
 		final QueryColumnInfo retval = new QueryColumnInfo(this.getColumn(),
 				alias);
-		retval.typeFilter = getTypeFilter();
+		retval.aliasFor = this;
 		return retval;
+	}
+
+	/**
+	 * Returns true if this ItemInfo is an alias for another ItemInfo
+	 * 
+	 * @return true if alias, false otherwise.
+	 */
+	public boolean isAlias() {
+		return aliasFor != null;
+	}
+
+	public QueryColumnInfo getAliasFor() {
+		return aliasFor;
+	}
+
+	/**
+	 * Get the GUID variable based on the name of this column.
+	 *
+	 * If this column is an alias for another column returns the GUIDVar for
+	 * that column.
+	 *
+	 * @return The var for is column.
+	 */
+	@Override
+	public Var getGUIDVar() {
+		return aliasFor != null ? aliasFor.getGUIDVar() : super.getGUIDVar();
 	}
 
 	@Override
@@ -75,17 +99,6 @@ public class QueryColumnInfo extends QueryItemInfo<Column, ColumnName> {
 
 	public Column getColumn() {
 		return getBaseObject();
-	}
-
-	public ForceTypeF getDataFilter() throws SQLDataException {
-		return new ForceTypeF(getTypeFilter());
-	}
-
-	public CheckTypeF getTypeFilter() throws SQLDataException {
-		if (typeFilter == null) {
-			typeFilter = new CheckTypeF(this);
-		}
-		return typeFilter;
 	}
 
 	@Override

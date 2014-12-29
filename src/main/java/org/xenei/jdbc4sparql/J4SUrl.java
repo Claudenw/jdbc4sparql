@@ -40,8 +40,8 @@ public class J4SUrl {
 	public static final String TYPE_SPARQL = "sparql";
 	public static final String TYPE_CONFIG = "config";
 	public static final String[] ARGS = {
-			J4SPropertyNames.CATALOG_PROPERTY, J4SPropertyNames.TYPE_PROPERTY,
-			J4SPropertyNames.BUILDER_PROPERTY, J4SPropertyNames.PARSER_PROPERTY
+		J4SPropertyNames.CATALOG_PROPERTY, J4SPropertyNames.TYPE_PROPERTY,
+		J4SPropertyNames.BUILDER_PROPERTY, J4SPropertyNames.PARSER_PROPERTY
 	};
 
 	private URI endpoint;
@@ -193,7 +193,7 @@ public class J4SUrl {
 			if (!found) {
 				throw new IllegalArgumentException(
 						"Not a valid J4S JDBC URL -- '" + arg
-						+ "' is not a recognized argument");
+								+ "' is not a recognized argument");
 			}
 			properties.put(arg,
 					StringUtils.defaultIfBlank(matcher.group(4), ""));
@@ -224,7 +224,7 @@ public class J4SUrl {
 				else {
 					throw new IllegalArgumentException(
 							"Not a valid J4S JDBC URL -- '" + type
-							+ "' is not a recognized type value");
+									+ "' is not a recognized type value");
 				}
 			}
 		}
@@ -261,7 +261,7 @@ public class J4SUrl {
 			int i = 0;
 			for (final Object key : properties.keySet()) {
 				sb.append(key.toString()).append("=")
-				.append(properties.getProperty(key.toString()));
+						.append(properties.getProperty(key.toString()));
 				if (++i < limit) {
 					sb.append("&");
 				}

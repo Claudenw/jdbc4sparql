@@ -9,7 +9,7 @@ public class CatalogName extends ItemName {
 	/**
 	 * Check the catalog name. Checks that the itemName catalog name segment is
 	 * not null.
-	 * 
+	 *
 	 * @param name
 	 *            The ItemName to check.
 	 * @return the ItemName
@@ -20,13 +20,13 @@ public class CatalogName extends ItemName {
 		if (name == null) {
 			throw new IllegalArgumentException("name may not be null");
 		}
-		checkNotNull(name.getBaseName().getCatalog(), "catalog");
+		checkNotNull(name.getFQName().getCatalog(), "catalog");
 		return name;
 	}
 
 	/**
 	 * Create a CatalogName from an ItemName.
-	 * 
+	 *
 	 * @param name
 	 *            the ItemName, must not be null.
 	 * @Throws IllegalArgumentException is name is null.
@@ -38,7 +38,7 @@ public class CatalogName extends ItemName {
 	/**
 	 * Create a CatalogName from a catalog name string. Uses the default
 	 * namesegments for a catalog.
-	 * 
+	 *
 	 * @param catalog
 	 *            the catalog name string.
 	 * @throws IllegalArgumentException
@@ -52,14 +52,14 @@ public class CatalogName extends ItemName {
 
 	/**
 	 * Create a schemas name in this catalog.
-	 * 
+	 *
 	 * @param column
 	 *            the columnName string
 	 * @return the ColumnName
 	 * @throws IllegalArgumentException
 	 */
 	public SchemaName getSchemaName(final String name) {
-		return new SchemaName(getBaseName().getCatalog(), name);
+		return new SchemaName(getFQName().getCatalog(), name);
 	}
 
 	@Override

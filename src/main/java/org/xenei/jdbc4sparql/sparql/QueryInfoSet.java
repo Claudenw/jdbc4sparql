@@ -1,9 +1,12 @@
 package org.xenei.jdbc4sparql.sparql;
 
+import java.sql.SQLDataException;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -19,6 +22,7 @@ import org.xenei.jdbc4sparql.sparql.items.QueryItemCollection;
 import org.xenei.jdbc4sparql.sparql.items.QueryItemInfo;
 import org.xenei.jdbc4sparql.sparql.items.QueryTableInfo;
 
+import com.hp.hpl.jena.sparql.core.Var;
 import com.hp.hpl.jena.util.iterator.ExtendedIterator;
 
 /**
@@ -44,19 +48,54 @@ public class QueryInfoSet {
 
 	private boolean guidFlg;
 
+	private final Map<Var, CheckTypeF> typeCheckMap;
+	private final Map<Var, ForceTypeF> forceTypeMap;
+
 	public QueryInfoSet() {
 		this.tablesInQuery = new QueryItemCollection<QueryTableInfo, Table, TableName>();
 		this.columnsInQuery = new QueryItemCollection<QueryColumnInfo, Column, ColumnName>();
 		this.segments = NameSegments.ALL;
+		this.forceTypeMap = new HashMap<Var, ForceTypeF>();
+		this.typeCheckMap = new HashMap<Var, CheckTypeF>();
 	}
 
-	public void addColumn(final QueryColumnInfo columnInfo) {
+	public CheckTypeF getCheckTypeF(final QueryColumnInfo columnInfo)
+			throws SQLDataException {
+		final Var idx = columnInfo.getGUIDVar();
+		CheckTypeF retval = typeCheckMap.get(idx);
+		if (retval == null) {
+			if (LOG.isDebugEnabled()) {
+				QueryInfoSet.LOG.debug("creating CheckTypeF for column: {} {}",
+						columnInfo.getName(), columnInfo.getGUIDVar());
+			}
+			retval = new CheckTypeF(columnInfo);
+			typeCheckMap.put(idx, retval);
+		}
+		return retval;
+	}
+
+	public ForceTypeF getForceTypeF(final QueryColumnInfo columnInfo)
+			throws SQLDataException {
+		final Var idx = columnInfo.getGUIDVar();
+		ForceTypeF retval = forceTypeMap.get(idx);
+		if (retval == null) {
+			if (LOG.isDebugEnabled()) {
+				QueryInfoSet.LOG.debug("creating ForceTypeF for column: {} {}",
+						columnInfo.getName(), columnInfo.getGUIDVar());
+			}
+			retval = new ForceTypeF(getCheckTypeF(columnInfo));
+			forceTypeMap.put(idx, retval);
+		}
+		return retval;
+	}
+
+	public boolean addColumn(final QueryColumnInfo columnInfo) {
 		columnInfo.getName().setUseGUID(guidFlg);
 		columnInfo.setSegments(segments);
 		if (LOG.isDebugEnabled()) {
 			QueryInfoSet.LOG.debug("adding column: {}", columnInfo);
 		}
-		columnsInQuery.add(columnInfo);
+		return columnsInQuery.add(columnInfo);
 	}
 
 	public void setUseGUID(final boolean state) {
@@ -75,12 +114,13 @@ public class QueryInfoSet {
 		return guidFlg;
 	}
 
-	public void addRequiredColumns() {
+	public void addDefinedColumns(final List<String> columnsInUsing)
+			throws SQLDataException {
 		if (tablesInQuery.isEmpty()) {
 			throw new IllegalArgumentException("Must have at least one table");
 		}
 		for (final QueryItemInfo<Table, TableName> tableInfo : tablesInQuery) {
-			((QueryTableInfo) tableInfo).addRequiredColumns();
+			((QueryTableInfo) tableInfo).addDefinedColumns(columnsInUsing);
 		}
 	}
 
@@ -282,7 +322,7 @@ public class QueryInfoSet {
 
 	/**
 	 * find the first QueryColumnInfo that references the Column
-	 * 
+	 *
 	 * @param column
 	 *            The column to find.
 	 * @return The first matching QueryColumnInfo or null if not found.

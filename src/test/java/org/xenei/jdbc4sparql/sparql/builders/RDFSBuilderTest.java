@@ -17,9 +17,6 @@
  */
 package org.xenei.jdbc4sparql.sparql.builders;
 
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
-
 import java.net.URL;
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -33,6 +30,9 @@ import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
+
 public class RDFSBuilderTest {
 	private RdfCatalog catalog;
 	private RdfSchema schema;
@@ -43,9 +43,11 @@ public class RDFSBuilderTest {
 
 	private SchemaBuilder builder;
 
-	private final String[] tableNames = { "Project", "Version", "Repository",
-			"Agent", "Document", "Group", "Image", "Online_Account", "Person",
-			"Spatial_Thing", "Concept", "Thing" };
+	private final String[] tableNames = {
+			"Project", "Version", "Repository", "Agent", "Document", "Group",
+			"Image", "Online_Account", "Person", "Spatial_Thing", "Concept",
+			"Thing"
+	};
 
 	@Test
 	public void buildRdfTableTest() throws SQLException {

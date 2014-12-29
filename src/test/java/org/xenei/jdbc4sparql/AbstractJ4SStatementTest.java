@@ -18,7 +18,7 @@ public abstract class AbstractJ4SStatementTest extends AbstractJ4SSetup {
 
 	@Test
 	public void testBadValueInEqualsConst() throws ClassNotFoundException,
-			SQLException {
+	SQLException {
 		final ResultSet rset = stmt
 				.executeQuery("select fooTable.IntCol, barTable.IntCol from fooTable inner, barTable where fooTable.StringCol=barTable.StringCol and fooTable.IntCol='Foo3String'");
 		try {
@@ -30,7 +30,7 @@ public abstract class AbstractJ4SStatementTest extends AbstractJ4SSetup {
 
 	@Test
 	public void testColumnEqualConst() throws ClassNotFoundException,
-			SQLException {
+	SQLException {
 		final List<String> colNames = getColumnNames("fooTable");
 		final ResultSet rset = stmt
 				.executeQuery("select * from fooTable where StringCol='Foo2String'");
@@ -43,7 +43,7 @@ public abstract class AbstractJ4SStatementTest extends AbstractJ4SSetup {
 			}
 			final String s = sb.toString();
 			Assert.assertTrue(s.contains("[StringCol]=Foo2String"));
-			Assert.assertTrue(s.contains("[IntCol]=5"));
+			Assert.assertTrue(s.contains("[IntCol]=4"));
 			Assert.assertTrue(s
 					.contains("[type]=http://example.com/jdbc4sparql#fooTable"));
 			Assert.assertTrue(s.contains("[NullableStringCol]=null"));
@@ -58,13 +58,18 @@ public abstract class AbstractJ4SStatementTest extends AbstractJ4SSetup {
 	@Test
 	public void testFullRetrieval() throws ClassNotFoundException, SQLException {
 		final String[][] results = {
-				{ "[StringCol]=FooString",
-						"[NullableStringCol]=FooNullableFooString",
-						"[NullableIntCol]=6", "[IntCol]=5",
-						"[type]=http://example.com/jdbc4sparql#fooTable" },
-				{ "[StringCol]=Foo2String", "[NullableStringCol]=null",
-						"[NullableIntCol]=null", "[IntCol]=5",
-						"[type]=http://example.com/jdbc4sparql#fooTable" } };
+				{
+						"[StringCol]=FooString",
+					"[NullableStringCol]=FooNullableFooString",
+					"[NullableIntCol]=6", "[IntCol]=5",
+				"[type]=http://example.com/jdbc4sparql#fooTable"
+				},
+				{
+						"[StringCol]=Foo2String", "[NullableStringCol]=null",
+					"[NullableIntCol]=null", "[IntCol]=4",
+				"[type]=http://example.com/jdbc4sparql#fooTable"
+				}
+		};
 
 		// get the column names.
 		final List<String> colNames = getColumnNames("fooTable");
@@ -126,13 +131,18 @@ public abstract class AbstractJ4SStatementTest extends AbstractJ4SSetup {
 	@Test
 	public void testSelectAllTableAlias() throws Exception {
 		final String[][] results = {
-				{ "[StringCol]=FooString",
-						"[NullableStringCol]=FooNullableFooString",
-						"[NullableIntCol]=6", "[IntCol]=5",
-						"[type]=http://example.com/jdbc4sparql#fooTable" },
-				{ "[StringCol]=Foo2String", "[NullableStringCol]=null",
-						"[NullableIntCol]=null", "[IntCol]=5",
-						"[type]=http://example.com/jdbc4sparql#fooTable" } };
+				{
+						"[StringCol]=FooString",
+					"[NullableStringCol]=FooNullableFooString",
+					"[NullableIntCol]=6", "[IntCol]=5",
+				"[type]=http://example.com/jdbc4sparql#fooTable"
+				},
+				{
+						"[StringCol]=Foo2String", "[NullableStringCol]=null",
+					"[NullableIntCol]=null", "[IntCol]=5",
+				"[type]=http://example.com/jdbc4sparql#fooTable"
+				}
+		};
 
 		// get the column names.
 		final List<String> colNames = getColumnNames("fooTable");
@@ -155,13 +165,10 @@ public abstract class AbstractJ4SStatementTest extends AbstractJ4SSetup {
 	public void testTableAlias() throws ClassNotFoundException, SQLException {
 		final ResultSet rset = stmt
 				.executeQuery("select IntCol from fooTable tbl where StringCol='Foo2String'");
-		int i = 0;
-		while (rset.next()) {
-			Assert.assertEquals(5, rset.getInt("IntCol"));
-			new StringBuilder();
-			i++;
-		}
-		Assert.assertEquals(1, i);
+
+		Assert.assertTrue(rset.next());
+		Assert.assertEquals(5, rset.getInt("IntCol"));
+		Assert.assertFalse(rset.next());
 		rset.close();
 	}
 
@@ -251,9 +258,7 @@ public abstract class AbstractJ4SStatementTest extends AbstractJ4SSetup {
 				.executeQuery("select min(NullableIntCol) from fooTable WHERE NullableIntCol IS NOT NULL ");
 		final ResultSetMetaData rsm = rset.getMetaData();
 		Assert.assertEquals(1, rsm.getColumnCount());
-		while (rset.next()) {
-			System.out.println(rset.getLong(1));
-		}
+		Assert.assertTrue(rset.next());
 		Assert.assertEquals(6L, rset.getLong(1));
 		rset.close();
 	}
@@ -263,7 +268,6 @@ public abstract class AbstractJ4SStatementTest extends AbstractJ4SSetup {
 		final ResultSet rset = stmt
 				.executeQuery("select IntCol from fooTable WHERE NullableIntCol IS NOT NULL ");
 		Assert.assertTrue(rset.next());
-		System.out.println(rset.getLong(1));
 		Assert.assertEquals(5, rset.getLong(1));
 		Assert.assertFalse(rset.next());
 		rset.close();
@@ -274,8 +278,6 @@ public abstract class AbstractJ4SStatementTest extends AbstractJ4SSetup {
 		final ResultSet rset = stmt
 				.executeQuery("select IntCol from fooTable WHERE NullableIntCol IS NULL ");
 		Assert.assertTrue(rset.next());
-
-		System.out.println(rset.getLong(1));
 		Assert.assertEquals(4, rset.getLong(1));
 		Assert.assertFalse(rset.next());
 		rset.close();

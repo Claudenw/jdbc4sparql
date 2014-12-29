@@ -57,7 +57,7 @@ public class MetaCatalogTests {
 		final String[] names = {
 				"SCOPE", "COLUMN_NAME", "DATA_TYPE", "TYPE_NAME",
 				"COLUMN_SIZE", "BUFFER_LENGTH", "DECIMAL_DIGITS",
-		"PSEUDO_COLUMN"
+				"PSEUDO_COLUMN"
 		};
 		verifyNames(MetaCatalogBuilder.BEST_ROW_TABLE, names);
 	}
@@ -65,7 +65,7 @@ public class MetaCatalogTests {
 	@Test
 	public void testCatalogsTable() {
 		final String[] names = {
-			"TABLE_CAT"
+				"TABLE_CAT"
 		};
 		verifyNames(MetaCatalogBuilder.CATALOGS_TABLE, names);
 	}
@@ -235,7 +235,7 @@ public class MetaCatalogTests {
 	@Test
 	public void testTableTypesTable() {
 		final String[] names = {
-			"TABLE_TYPE"
+				"TABLE_TYPE"
 		};
 		verifyNames(MetaCatalogBuilder.TABLE_TYPES_TABLE, names);
 	}
@@ -267,7 +267,7 @@ public class MetaCatalogTests {
 		final String[] names = {
 				"SCOPE", "COLUMN_NAME", "DATA_TYPE", "TYPE_NAME",
 				"COLUMN_SIZE", "BUFFER_LENGTH", "DECIMAL_DIGITS",
-		"PSEUDO_COLUMN"
+				"PSEUDO_COLUMN"
 		};
 		verifyNames(MetaCatalogBuilder.VERSION_COLUMNS_TABLE, names);
 	}

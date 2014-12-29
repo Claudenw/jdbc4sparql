@@ -17,7 +17,7 @@ public class ColumnName extends ItemName {
 	 * contains both a JDBC and a SPARQL "dot" character an
 	 * IllegalArgumentException is thrown. if the catalog, the final schema name
 	 * or name are null an IllegalArgumentException is thrown.
-	 * 
+	 *
 	 * @param item
 	 *            The ItemName instance to create a column name in.
 	 * @param name
@@ -27,7 +27,7 @@ public class ColumnName extends ItemName {
 	 */
 	public static ColumnName getNameInstance(final ItemName item,
 			final String name) throws IllegalArgumentException {
-		final FQName bn = item.getBaseName();
+		final FQName bn = item.getFQName();
 		final ColumnName retval = getNameInstance(bn.getCatalog(),
 				bn.getSchema(), bn.getTable(), name);
 		retval.setUsedSegments(adjustSegments(item.getUsedSegments()));
@@ -45,7 +45,7 @@ public class ColumnName extends ItemName {
 	 * null. if the name contains both a JDBC and a SPARQL "dot" character an
 	 * IllegalArgumentException is thrown. if the catalog, the final schema name
 	 * or name are null an IllegalArgumentException is thrown.
-	 * 
+	 *
 	 * @param catalog
 	 *            The catalog name string. May not be null.
 	 * @param schema
@@ -59,7 +59,7 @@ public class ColumnName extends ItemName {
 	 */
 	public static ColumnName getNameInstance(final String catalog,
 			final String schema, final String table, final String name)
-			throws IllegalArgumentException {
+					throws IllegalArgumentException {
 		checkNotNull(name, "column");
 		if (name.contains(NameUtils.DB_DOT)
 				&& name.contains(NameUtils.SPARQL_DOT)) {
@@ -95,7 +95,7 @@ public class ColumnName extends ItemName {
 	/**
 	 * Check the column name. Checks that the itemName column, table, schema and
 	 * catalog name segments are not null.
-	 * 
+	 *
 	 * @param name
 	 *            The ItemName to check.
 	 * @return the ItemName
@@ -107,13 +107,13 @@ public class ColumnName extends ItemName {
 			throw new IllegalArgumentException("name may not be null");
 		}
 		TableName.checkItemName(name);
-		checkNotNull(name.getBaseName().getColumn(), "column");
+		checkNotNull(name.getFQName().getColumn(), "column");
 		return name;
 	}
 
 	/**
 	 * Ensure that the column segment is on.
-	 * 
+	 *
 	 * @param segments
 	 *            The segments to adjust
 	 * @return the adjusted segments.
@@ -133,7 +133,7 @@ public class ColumnName extends ItemName {
 
 	/**
 	 * Create a ColumnName from an ItemName.
-	 * 
+	 *
 	 * @param name
 	 *            the ItemName, must not be null.
 	 * @Throws IllegalArgumentException is name is null.
@@ -144,7 +144,7 @@ public class ColumnName extends ItemName {
 
 	/**
 	 * Create a ColumnName from an ItemName with specific name segments.
-	 * 
+	 *
 	 * @param name
 	 *            the ItemName, must not be null.
 	 * @param segments
@@ -160,7 +160,7 @@ public class ColumnName extends ItemName {
 	 * Create a TableName from a catalog name string, a schema name string and a
 	 * table name string and a column name string. Uses the default namesegments
 	 * for a column.
-	 * 
+	 *
 	 * @param catalog
 	 *            the catalog name string.
 	 * @param schema
@@ -174,10 +174,33 @@ public class ColumnName extends ItemName {
 	 */
 	public ColumnName(final String catalog, final String schema,
 			final String table, final String column)
-			throws IllegalArgumentException {
+					throws IllegalArgumentException {
+		this(catalog, schema, table, column, NameSegments.COLUMN);
+	}
+
+	/**
+	 * Create a TableName from a catalog name string, a schema name string and a
+	 * table name string and a column name string.
+	 *
+	 * @param catalog
+	 *            the catalog name string.
+	 * @param schema
+	 *            the schema name string.
+	 * @param table
+	 *            the table name string.
+	 * @param column
+	 *            the column name string.
+	 * @param segments
+	 *            The name segments to use.
+	 * @throws IllegalArgumentException
+	 *             if any string is null.
+	 */
+	public ColumnName(final String catalog, final String schema,
+			final String table, final String column, final NameSegments segments)
+					throws IllegalArgumentException {
 		super(new FQNameImpl(checkNotNull(catalog, "catalog"), checkNotNull(
 				schema, "schema"), checkNotNull(table, "table"), checkNotNull(
-						column, "column")), NameSegments.COLUMN);
+				column, "column")), segments);
 	}
 
 	@Override
@@ -187,7 +210,7 @@ public class ColumnName extends ItemName {
 
 	/**
 	 * Returns the TableName object for column
-	 * 
+	 *
 	 * @return the TableName.
 	 */
 	public TableName getTableName() {

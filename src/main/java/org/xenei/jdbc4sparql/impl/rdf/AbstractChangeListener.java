@@ -16,7 +16,7 @@ import com.hp.hpl.jena.rdf.model.StmtIterator;
 import com.hp.hpl.jena.vocabulary.RDF;
 
 public abstract class AbstractChangeListener<S, T> implements
-ModelChangedListener {
+		ModelChangedListener {
 
 	private final ResourceBuilder rb;
 	private final Resource s;

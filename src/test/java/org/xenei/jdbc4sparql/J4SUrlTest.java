@@ -30,7 +30,7 @@ public class J4SUrlTest {
 		Assert.assertEquals("example_com", url.getCatalog());
 		Assert.assertEquals(
 				"org.xenei.jdbc4sparql.sparql.builders.SimpleBuilder", url
-						.getBuilder().getClass().getName());
+				.getBuilder().getClass().getName());
 		Assert.assertEquals("http://example.com/test.file", url.getEndpoint()
 				.toString());
 
@@ -39,7 +39,7 @@ public class J4SUrlTest {
 		Assert.assertEquals("example_com", url.getCatalog());
 		Assert.assertEquals(
 				"org.xenei.jdbc4sparql.sparql.builders.SimpleBuilder", url
-						.getBuilder().getClass().getName());
+				.getBuilder().getClass().getName());
 		Assert.assertEquals("http://example.com/test.file", url.getEndpoint()
 				.toString());
 
@@ -63,7 +63,7 @@ public class J4SUrlTest {
 		Assert.assertEquals("example_com", url.getCatalog());
 		Assert.assertEquals(
 				"org.xenei.jdbc4sparql.sparql.builders.SimpleBuilder", url
-						.getBuilder().getClass().getName());
+				.getBuilder().getClass().getName());
 		Assert.assertEquals("http://example.com/test.file", url.getEndpoint()
 				.toString());
 

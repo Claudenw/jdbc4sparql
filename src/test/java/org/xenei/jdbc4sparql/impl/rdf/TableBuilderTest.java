@@ -28,8 +28,8 @@ public class TableBuilderTest {
 	public void setUp() throws Exception {
 		model = ModelFactory.createDefaultModel();
 		final RdfTableDef.Builder builder = new RdfTableDef.Builder()
-		.addColumnDef(
-				RdfColumnDef.Builder.getStringBuilder().build(model))
+				.addColumnDef(
+						RdfColumnDef.Builder.getStringBuilder().build(model))
 				.addColumnDef(
 						RdfColumnDef.Builder.getIntegerBuilder().build(model));
 		tableDef = builder.build(model);
@@ -48,9 +48,9 @@ public class TableBuilderTest {
 	@Test
 	public void testDefaultBuilder() throws Exception {
 		final RdfTable.Builder builder = new RdfTable.Builder()
-		.setTableDef(tableDef).setName("table")
-		.setColumn(0, "StringCol").setColumn(1, "IntCol")
-		.setSchema(mockSchema).setType("testing Table");
+				.setTableDef(tableDef).setName("table")
+				.setColumn(0, "StringCol").setColumn(1, "IntCol")
+				.setSchema(mockSchema).setType("testing Table");
 		final RdfTable table = builder.build(model);
 
 		Assert.assertEquals(2, table.getColumnCount());

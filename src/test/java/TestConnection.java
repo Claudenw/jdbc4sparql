@@ -1,5 +1,3 @@
-import com.hp.hpl.jena.sparql.lang.sparql_11.ParseException;
-
 import java.sql.ResultSet;
 import java.util.Properties;
 
@@ -7,6 +5,8 @@ import org.xenei.jdbc4sparql.J4SConnection;
 import org.xenei.jdbc4sparql.J4SConnectionTest;
 import org.xenei.jdbc4sparql.J4SDriver;
 import org.xenei.jdbc4sparql.J4SUrl;
+
+import com.hp.hpl.jena.sparql.lang.sparql_11.ParseException;
 
 public class TestConnection {
 
@@ -26,7 +26,8 @@ public class TestConnection {
 		String urlStr = null;
 		if (args.length > 0) {
 			urlStr = args[0];
-		} else {
+		}
+		else {
 			J4SConnectionTest.class.getResource("./J4SStatementTest.ttl");
 			urlStr = "jdbc:j4s:file:/tmp/configBuilder.zip";
 		}

@@ -92,8 +92,8 @@ public class SimpleBuilder implements SchemaBuilder {
 			final int scale = calculateSize(catalog, tableQuerySegment,
 					columnQuerySegment);
 			builder.setType(Types.VARCHAR)
-			.setNullable(DatabaseMetaData.columnNullable)
-			.setScale(scale).setReadOnly(true);
+					.setNullable(DatabaseMetaData.columnNullable)
+					.setScale(scale).setReadOnly(true);
 			tableDefBuilder.addColumnDef(builder.build(model));
 		}
 		return colNames;
@@ -110,19 +110,19 @@ public class SimpleBuilder implements SchemaBuilder {
 		final Iterator<Integer> iter = WrappedIterator.create(
 				results.iterator()).mapWith(new Map1<QuerySolution, Integer>() {
 
-					@Override
-					public Integer map1(final QuerySolution o) {
-						final RDFNode node = o.get("col");
-						if (node == null) {
-							return 0;
-						}
-						if (node.isLiteral()) {
-							return TypeConverter.getJavaValue(node.asLiteral())
-									.toString().length();
-						}
-						return node.toString().length();
-					}
-				});
+			@Override
+			public Integer map1(final QuerySolution o) {
+				final RDFNode node = o.get("col");
+				if (node == null) {
+					return 0;
+				}
+				if (node.isLiteral()) {
+					return TypeConverter.getJavaValue(node.asLiteral())
+							.toString().length();
+				}
+				return node.toString().length();
+			}
+		});
 		int retval = 0;
 		while (iter.hasNext()) {
 			final Integer i = iter.next();
@@ -151,17 +151,17 @@ public class SimpleBuilder implements SchemaBuilder {
 			if (colNames.size() > 0) {
 				final RdfTableDef tableDef = builder.build(model);
 				final RdfTable.Builder tblBuilder = new RdfTable.Builder()
-				.setTableDef(tableDef)
-				.addQuerySegment(tableQuerySegment)
-				.setName(tName.getLocalName()).setSchema(schema)
-				.setRemarks("created by " + SimpleBuilder.BUILDER_NAME);
+						.setTableDef(tableDef)
+						.addQuerySegment(tableQuerySegment)
+						.setName(tName.getLocalName()).setSchema(schema)
+						.setRemarks("created by " + SimpleBuilder.BUILDER_NAME);
 
 				if (colNames.keySet().size() != tableDef.getColumnCount()) {
 					throw new IllegalArgumentException(
 							String.format(
 									"There must be %s column names, %s provided",
 									tableDef.getColumnCount(), colNames
-									.keySet().size()));
+											.keySet().size()));
 				}
 				final Iterator<String> iter = colNames.keySet().iterator();
 				int i = 0;
@@ -169,11 +169,11 @@ public class SimpleBuilder implements SchemaBuilder {
 
 					final String cName = iter.next();
 					tblBuilder
-					.setColumn(i, cName)
-					.getColumn(i)
-					.addQuerySegment(colNames.get(cName))
-					.setRemarks(
-							"created by " + SimpleBuilder.BUILDER_NAME);
+							.setColumn(i, cName)
+							.getColumn(i)
+							.addQuerySegment(colNames.get(cName))
+							.setRemarks(
+									"created by " + SimpleBuilder.BUILDER_NAME);
 					i++;
 				}
 				retval.add(tblBuilder.build(model));

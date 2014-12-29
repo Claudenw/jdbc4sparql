@@ -89,6 +89,7 @@ import com.hp.hpl.jena.sparql.expr.E_GreaterThanOrEqual;
 import com.hp.hpl.jena.sparql.expr.E_LessThan;
 import com.hp.hpl.jena.sparql.expr.E_LessThanOrEqual;
 import com.hp.hpl.jena.sparql.expr.E_LogicalAnd;
+import com.hp.hpl.jena.sparql.expr.E_LogicalNot;
 import com.hp.hpl.jena.sparql.expr.E_LogicalOr;
 import com.hp.hpl.jena.sparql.expr.E_Multiply;
 import com.hp.hpl.jena.sparql.expr.E_NotEquals;
@@ -257,7 +258,7 @@ public class SparqlExprVisitorTest {
 		when(queryBuilder.getTable(Matchers.any(TableName.class))).thenReturn(
 				tableInfo);
 
-		visitor = new SparqlExprVisitor(queryBuilder, false);
+		visitor = new SparqlExprVisitor(queryBuilder, false, false);
 
 	}
 
@@ -515,11 +516,11 @@ public class SparqlExprVisitorTest {
 		Assert.assertTrue(eOr.getArg2() instanceof E_Equals);
 		Assert.assertEquals("two",
 				((NodeValueString) ((E_Equals) eOr.getArg2()).getArg1())
-				.asString());
+						.asString());
 		Assert.assertTrue(eOr.getArg1() instanceof E_Equals);
 		Assert.assertEquals("one",
 				((NodeValueString) ((E_Equals) eOr.getArg1()).getArg1())
-				.asString());
+						.asString());
 
 	}
 
@@ -639,9 +640,18 @@ public class SparqlExprVisitorTest {
 		final TestableExpression expression = new TestableExpression();
 		isNull.setLeftExpression(expression);
 		visitor.visit(isNull);
-		final Expr result = visitor.getResult();
+		Expr result = visitor.getResult();
+		assertTrue(result instanceof E_LogicalNot);
+		result = ((E_LogicalNot) result).getArg();
 		assertTrue(result instanceof E_Bound);
-		final E_Bound bound = (E_Bound) result;
+		E_Bound bound = (E_Bound) result;
+		assertEquals(expression.getExpr(), bound.getArg());
+
+		isNull.setNot(true);
+		visitor.visit(isNull);
+		result = visitor.getResult();
+		assertTrue(result instanceof E_Bound);
+		bound = (E_Bound) result;
 		assertEquals(expression.getExpr(), bound.getArg());
 	}
 

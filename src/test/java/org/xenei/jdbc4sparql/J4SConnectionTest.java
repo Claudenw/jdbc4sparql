@@ -418,7 +418,7 @@ public class J4SConnectionTest {
 		connection = new J4SConnection(driver, url, properties);
 		try {
 			connection
-					.prepareStatement("select foo from aTable", new String[3]);
+			.prepareStatement("select foo from aTable", new String[3]);
 			Assert.fail("Should have thrown SQLFeatureNotSupportedException");
 		} catch (final SQLFeatureNotSupportedException expected) {
 		}

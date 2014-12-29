@@ -136,7 +136,7 @@ public class ColumnNameConstructorTests {
 					: "schema2", answer.getSchema());
 			assertEquals(sn.getSPARQLName(),
 					seg.isSchema() || seg.isTable() ? "table" : "table2",
-							answer.getTable());
+					answer.getTable());
 			assertEquals(sn.getSPARQLName(), column, answer.getColumn());
 
 			result = ColumnName.getNameInstance("catalog2", "schema2",
@@ -147,7 +147,7 @@ public class ColumnNameConstructorTests {
 					: "schema2", answer.getSchema());
 			assertEquals(sn.getSPARQLName(),
 					seg.isSchema() || seg.isTable() ? "table" : "table2",
-							answer.getTable());
+					answer.getTable());
 			assertEquals(sn.getSPARQLName(), column, answer.getColumn());
 		}
 

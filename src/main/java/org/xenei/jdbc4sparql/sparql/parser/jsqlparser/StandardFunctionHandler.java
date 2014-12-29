@@ -7,11 +7,13 @@ import java.util.List;
 import net.sf.jsqlparser.expression.Function;
 
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
+import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlExprVisitor.AliasInfo;
 import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.functions.AbstractFunctionHandler;
-import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.functions.AbstractFunctionHandler.FuncInfo;
 import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.functions.NumericFunctionHandler;
 import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.functions.StringFunctionHandler;
 import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.functions.SystemFunctionHandler;
+
+import com.hp.hpl.jena.sparql.expr.Expr;
 
 public class StandardFunctionHandler {
 
@@ -24,12 +26,12 @@ public class StandardFunctionHandler {
 		handlers.add(new SystemFunctionHandler(builder));
 	}
 
-	public FuncInfo handle(final Function func, final String alias)
+	public Expr handle(final Function func, final AliasInfo alias)
 			throws SQLException {
 		for (final AbstractFunctionHandler handler : handlers) {
-			final FuncInfo funcInfo = handler.handle(func, alias);
-			if (funcInfo != null) {
-				return funcInfo;
+			final Expr exprInfo = handler.handle(func, alias);
+			if (exprInfo != null) {
+				return exprInfo;
 			}
 		}
 		throw new IllegalArgumentException(String.format(

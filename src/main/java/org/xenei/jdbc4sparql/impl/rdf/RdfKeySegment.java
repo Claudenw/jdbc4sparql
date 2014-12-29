@@ -66,7 +66,8 @@ public class RdfKeySegment implements KeySegment, ResourceWrapper {
 		}
 
 		@Override
-		public int compare(final Comparable<Object>[] data1, final Comparable<Object>[] data2) {
+		public int compare(final Comparable<Object>[] data1,
+				final Comparable<Object>[] data2) {
 			return Utils.compare(getIdx(), isAscending(), data1, data2);
 		}
 
@@ -101,7 +102,8 @@ public class RdfKeySegment implements KeySegment, ResourceWrapper {
 	}
 
 	@Override
-	public final int compare(final Comparable<Object>[] data1, final Comparable<Object>[] data2) {
+	public final int compare(final Comparable<Object>[] data1,
+			final Comparable<Object>[] data2) {
 		return Utils.compare(getIdx(), isAscending(), data1, data2);
 	}
 

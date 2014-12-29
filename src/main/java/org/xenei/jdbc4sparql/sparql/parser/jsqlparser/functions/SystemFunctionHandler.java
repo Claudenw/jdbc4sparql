@@ -2,20 +2,21 @@ package org.xenei.jdbc4sparql.sparql.parser.jsqlparser.functions;
 
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.Collections;
 
 import net.sf.jsqlparser.expression.Function;
 
 import org.xenei.jdbc4sparql.J4SDriver;
 import org.xenei.jdbc4sparql.iface.name.ColumnName;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
-import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlExprVisitor.ExprColumn;
+import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlExprVisitor.AliasInfo;
+import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.proxies.ExprInfoFactory;
 
+import com.hp.hpl.jena.sparql.expr.Expr;
 import com.hp.hpl.jena.sparql.expr.nodevalue.NodeValueString;
 
 public class SystemFunctionHandler extends AbstractFunctionHandler {
 	public static final String[] SYSTEM_FUNCTIONS = {
-			"CATALOG", "VERSION"
+		"CATALOG", "VERSION"
 	};
 	private static final int CATALOG = 0;
 	private static final int VERSION = 1;
@@ -25,7 +26,7 @@ public class SystemFunctionHandler extends AbstractFunctionHandler {
 	}
 
 	@Override
-	public FuncInfo handle(final Function func, final String alias)
+	public Expr handle(final Function func, final AliasInfo alias)
 			throws SQLException {
 
 		final int i = Arrays.asList(SystemFunctionHandler.SYSTEM_FUNCTIONS)
@@ -37,18 +38,16 @@ public class SystemFunctionHandler extends AbstractFunctionHandler {
 				str = new NodeValueString(builder.getCatalog().getName()
 						.getShortName());
 				// colName = tblName.getColumnName(func.getName());
-				colName = tblName.getColumnName(alias);
+				colName = tblName.getColumnName(alias.getAlias());
 				builder.registerFunction(colName, java.sql.Types.VARCHAR);
-				return new FuncInfo(str, colName,
-						Collections.<ExprColumn> emptySet());
+				return ExprInfoFactory.getInstance(str, colName);
 
 			case VERSION:
 				str = new NodeValueString(J4SDriver.getVersion());
 				// colName = tblName.getColumnName(func.getName());
-				colName = tblName.getColumnName(alias);
+				colName = tblName.getColumnName(alias.getAlias());
 				builder.registerFunction(colName, java.sql.Types.VARCHAR);
-				return new FuncInfo(str, colName,
-						Collections.<ExprColumn> emptySet());
+				return ExprInfoFactory.getInstance(str, colName);
 			default:
 				return null;
 		}

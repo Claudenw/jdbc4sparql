@@ -26,10 +26,11 @@ public abstract class AbstractJ4SSetup {
 				conn.getSchema(), table, null);
 		final List<String> colNames = new ArrayList<String>();
 		while (rs.next()) {
-			if (LOG.isDebugEnabled())
+			if (LOG.isDebugEnabled()) {
 				AbstractJ4SSetup.LOG.debug(String.format("%s %s %s %s",
-					rs.getString(1), rs.getString(2), rs.getString(3),
-					rs.getString(4)));
+						rs.getString(1), rs.getString(2), rs.getString(3),
+						rs.getString(4)));
+			}
 			colNames.add(rs.getString(4));
 		}
 		return colNames;

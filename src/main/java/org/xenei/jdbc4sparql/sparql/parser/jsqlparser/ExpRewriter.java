@@ -155,7 +155,7 @@ public abstract class ExpRewriter implements ExprVisitor {
 					ItemName mapTo = aliasMap.get(qi);
 					mapTo = new ColumnName(mapTo.getCatalog(),
 							mapTo.getSchema(), mapTo.getTable(), ci.getName()
-							.getColumn());
+									.getColumn());
 					stack.push(new ExprVar(mapTo.getSPARQLName()));
 					return;
 				}

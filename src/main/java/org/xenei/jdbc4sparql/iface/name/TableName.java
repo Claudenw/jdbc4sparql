@@ -17,7 +17,7 @@ public class TableName extends ItemName {
 	 * JDBC and a SPARQL "dot" character an IllegalArgumentException is thrown.
 	 * if the catalog, the final schema name or name are null an
 	 * IllegalArgumentException is thrown.
-	 * 
+	 *
 	 * @param catalog
 	 *            The default catalog name string. may not be null.
 	 * @param schema
@@ -31,7 +31,7 @@ public class TableName extends ItemName {
 	 */
 	public static TableName getNameInstance(final String catalog,
 			final String schema, final String name)
-			throws IllegalArgumentException {
+					throws IllegalArgumentException {
 		if (name == null) {
 			throw new IllegalArgumentException("name must be provided");
 		}
@@ -62,7 +62,7 @@ public class TableName extends ItemName {
 
 	/**
 	 * Ensure that the table segment is on and the column segment is off.
-	 * 
+	 *
 	 * @param segments
 	 *            The segments to adjust
 	 * @return the adjusted segments.
@@ -83,7 +83,7 @@ public class TableName extends ItemName {
 	/**
 	 * Check the table name. Checks that the itemName table, schema and catalog
 	 * name segments are not null.
-	 * 
+	 *
 	 * @param name
 	 *            The ItemName to check.
 	 * @return the ItemName
@@ -95,13 +95,13 @@ public class TableName extends ItemName {
 			throw new IllegalArgumentException("name may not be null");
 		}
 		SchemaName.checkItemName(name);
-		checkNotNull(name.getBaseName().getTable(), "table");
+		checkNotNull(name.getFQName().getTable(), "table");
 		return name;
 	}
 
 	/**
 	 * Create a TableName from an ItemName.
-	 * 
+	 *
 	 * @param name
 	 *            the ItemName, must not be null.
 	 * @Throws IllegalArgumentException is name is null.
@@ -112,7 +112,7 @@ public class TableName extends ItemName {
 
 	/**
 	 * Create a TableName from an ItemName with specific name segments.
-	 * 
+	 *
 	 * @param name
 	 *            the ItemName, must not be null.
 	 * @param segments
@@ -127,7 +127,7 @@ public class TableName extends ItemName {
 	/**
 	 * Create a TableName from a catalog name string, a schema name string and a
 	 * table name string. Uses the default namesegments for a table.
-	 * 
+	 *
 	 * @param catalog
 	 *            the catalog name string.
 	 * @param schema
@@ -161,7 +161,7 @@ public class TableName extends ItemName {
 
 	/**
 	 * Create a column name int this table.
-	 * 
+	 *
 	 * @param column
 	 *            the columnName string
 	 * @return the ColumnName
