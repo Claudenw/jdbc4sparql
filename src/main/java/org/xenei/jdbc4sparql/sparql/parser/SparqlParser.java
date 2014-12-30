@@ -185,7 +185,7 @@ public interface SparqlParser {
 		 *             on error.
 		 */
 		public static Element parse(final String qstr) throws ParseException,
-				QueryException {
+		QueryException {
 
 			final Query query = new Query();
 

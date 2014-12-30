@@ -1,10 +1,5 @@
 package org.xenei.jdbc4sparql.example;
 
-import com.hp.hpl.jena.query.Dataset;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.tdb.TDBFactory;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -30,10 +25,15 @@ import org.xenei.jdbc4sparql.J4SUrl;
 import org.xenei.jdbc4sparql.config.TDBDatasetProducer;
 import org.xenei.jena.entities.MissingAnnotation;
 
+import com.hp.hpl.jena.query.Dataset;
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.tdb.TDBFactory;
+
 public class ConfigBuilder {
 
 	private static File gatherSchema(final CommandLine cmd) throws IOException,
-			URISyntaxException {
+	URISyntaxException {
 
 		final File dir = File.createTempFile("configBldr", "schema");
 		dir.delete();
@@ -125,9 +125,9 @@ public class ConfigBuilder {
 	 * @throws ParseException
 	 */
 	public static void main(final String[] args) throws URISyntaxException,
-			IOException, SQLException, ClassNotFoundException,
-			InstantiationException, IllegalAccessException, MissingAnnotation,
-			ParseException {
+	IOException, SQLException, ClassNotFoundException,
+	InstantiationException, IllegalAccessException, MissingAnnotation,
+	ParseException {
 		final Options options = ConfigBuilder.getOptions();
 		final CommandLineParser parser = new BasicParser();
 		final CommandLine cmd = parser.parse(options, args);
@@ -165,7 +165,7 @@ public class ConfigBuilder {
 		final FileOutputStream fos2 = new FileOutputStream(outfile);
 		System.out.println("Writing metadata to " + outfile.getCanonicalPath());
 		connection.getDatasetProducer().getMetaDatasetUnionModel()
-				.write(fos2, "N-TRIPLE");
+		.write(fos2, "N-TRIPLE");
 
 		metaData.getColumns(null, null, null, null);
 		System.out.println("Writing configuration to "

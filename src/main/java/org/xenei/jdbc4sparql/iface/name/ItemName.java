@@ -22,10 +22,10 @@ public abstract class ItemName implements GUIDObject {
 		@Override
 		public int compare(final ItemName arg0, final ItemName arg1) {
 			return new CompareToBuilder()
-					.append(arg0.getCatalog(), arg1.getCatalog())
-					.append(arg0.getSchema(), arg1.getSchema())
-					.append(arg0.getTable(), arg1.getTable())
-					.append(arg0.getColumn(), arg1.getColumn()).toComparison();
+			.append(arg0.getCatalog(), arg1.getCatalog())
+			.append(arg0.getSchema(), arg1.getSchema())
+			.append(arg0.getTable(), arg1.getTable())
+			.append(arg0.getColumn(), arg1.getColumn()).toComparison();
 		}
 	};
 
@@ -39,7 +39,7 @@ public abstract class ItemName implements GUIDObject {
 	 *            and ItemName implementation.
 	 */
 	public static class Filter<T extends ItemName> extends
-			com.hp.hpl.jena.util.iterator.Filter<T> {
+	com.hp.hpl.jena.util.iterator.Filter<T> {
 		private final ItemName compareTo;
 
 		public Filter(final ItemName compareTo) {
@@ -123,7 +123,7 @@ public abstract class ItemName implements GUIDObject {
 	 */
 	protected ItemName(final String catalog, final String schema,
 			final String table, final String column)
-					throws IllegalArgumentException {
+			throws IllegalArgumentException {
 		this(catalog, schema, table, column, NameSegments.COLUMN);
 	}
 
@@ -140,7 +140,7 @@ public abstract class ItemName implements GUIDObject {
 	 */
 	protected ItemName(final String catalog, final String schema,
 			final String table, final String column, final NameSegments segs)
-					throws IllegalArgumentException {
+			throws IllegalArgumentException {
 		fqName = new FQNameImpl(catalog, schema, table, column);
 		if (segs == null) {
 			throw new IllegalArgumentException("segs may not be null.");

@@ -16,7 +16,7 @@ import com.hp.hpl.jena.sparql.expr.nodevalue.NodeValueString;
 
 public class SystemFunctionHandler extends AbstractFunctionHandler {
 	public static final String[] SYSTEM_FUNCTIONS = {
-		"CATALOG", "VERSION"
+			"CATALOG", "VERSION"
 	};
 	private static final int CATALOG = 0;
 	private static final int VERSION = 1;

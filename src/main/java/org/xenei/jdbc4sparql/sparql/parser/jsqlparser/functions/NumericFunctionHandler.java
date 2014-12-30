@@ -39,8 +39,8 @@ import com.hp.hpl.jena.sparql.expr.aggregate.AggregatorBase;
 
 public class NumericFunctionHandler extends AbstractFunctionHandler {
 	public static final String[] NUMERIC_FUNCTIONS = {
-		"MAX", "MIN", "COUNT", "SUM", "ABS", "ROUND", "CEIL", "FLOOR",
-		"RAND"
+			"MAX", "MIN", "COUNT", "SUM", "ABS", "ROUND", "CEIL", "FLOOR",
+			"RAND"
 	};
 	private static final int MAX = 0;
 	private static final int MIN = 1;
@@ -136,8 +136,8 @@ public class NumericFunctionHandler extends AbstractFunctionHandler {
 			try {
 				final Constructor<? extends AggregatorBase> c = func
 						.isDistinct() ? varDistinct.getConstructor(Expr.class)
-						: var.getConstructor(Expr.class);
-				agg = c.newInstance(exprVisitor.getResult());
+								: var.getConstructor(Expr.class);
+						agg = c.newInstance(exprVisitor.getResult());
 			} catch (final NoSuchMethodException e) {
 				throw new IllegalArgumentException(e.getMessage(), e);
 
@@ -185,8 +185,8 @@ public class NumericFunctionHandler extends AbstractFunctionHandler {
 			try {
 				final Constructor<? extends AggregatorBase> c = func
 						.isDistinct() ? varDistinct.getConstructor(Expr.class)
-						: var.getConstructor(Expr.class);
-				agg = c.newInstance(exprVisitor.getResult());
+								: var.getConstructor(Expr.class);
+						agg = c.newInstance(exprVisitor.getResult());
 			} catch (final NoSuchMethodException e) {
 				throw new IllegalArgumentException(e.getMessage(), e);
 

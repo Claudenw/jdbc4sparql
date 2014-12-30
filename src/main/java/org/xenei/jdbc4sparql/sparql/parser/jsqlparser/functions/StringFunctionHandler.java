@@ -22,7 +22,7 @@ import com.hp.hpl.jena.sparql.expr.nodevalue.NodeValueString;
 
 public class StringFunctionHandler extends AbstractFunctionHandler {
 	public static final String[] STRING_FUNCTIONS = {
-		"LENGTH", "SUBSTRING", "UCASE", "LCASE", "REPLACE"
+			"LENGTH", "SUBSTRING", "UCASE", "LCASE", "REPLACE"
 	};
 	private static final int LENGTH = 0;
 	private static final int SUBSTRING = 1;

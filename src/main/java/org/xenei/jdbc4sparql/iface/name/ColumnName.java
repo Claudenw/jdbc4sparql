@@ -59,7 +59,7 @@ public class ColumnName extends ItemName {
 	 */
 	public static ColumnName getNameInstance(final String catalog,
 			final String schema, final String table, final String name)
-					throws IllegalArgumentException {
+			throws IllegalArgumentException {
 		checkNotNull(name, "column");
 		if (name.contains(NameUtils.DB_DOT)
 				&& name.contains(NameUtils.SPARQL_DOT)) {
@@ -174,7 +174,7 @@ public class ColumnName extends ItemName {
 	 */
 	public ColumnName(final String catalog, final String schema,
 			final String table, final String column)
-					throws IllegalArgumentException {
+			throws IllegalArgumentException {
 		this(catalog, schema, table, column, NameSegments.COLUMN);
 	}
 
@@ -197,10 +197,10 @@ public class ColumnName extends ItemName {
 	 */
 	public ColumnName(final String catalog, final String schema,
 			final String table, final String column, final NameSegments segments)
-					throws IllegalArgumentException {
+			throws IllegalArgumentException {
 		super(new FQNameImpl(checkNotNull(catalog, "catalog"), checkNotNull(
 				schema, "schema"), checkNotNull(table, "table"), checkNotNull(
-				column, "column")), segments);
+						column, "column")), segments);
 	}
 
 	@Override

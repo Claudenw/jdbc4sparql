@@ -62,12 +62,12 @@ public abstract class AbstractJ4SStatementTest extends AbstractJ4SSetup {
 						"[StringCol]=FooString",
 					"[NullableStringCol]=FooNullableFooString",
 					"[NullableIntCol]=6", "[IntCol]=5",
-				"[type]=http://example.com/jdbc4sparql#fooTable"
+					"[type]=http://example.com/jdbc4sparql#fooTable"
 				},
 				{
 						"[StringCol]=Foo2String", "[NullableStringCol]=null",
 					"[NullableIntCol]=null", "[IntCol]=4",
-				"[type]=http://example.com/jdbc4sparql#fooTable"
+					"[type]=http://example.com/jdbc4sparql#fooTable"
 				}
 		};
 
@@ -135,12 +135,12 @@ public abstract class AbstractJ4SStatementTest extends AbstractJ4SSetup {
 						"[StringCol]=FooString",
 					"[NullableStringCol]=FooNullableFooString",
 					"[NullableIntCol]=6", "[IntCol]=5",
-				"[type]=http://example.com/jdbc4sparql#fooTable"
+					"[type]=http://example.com/jdbc4sparql#fooTable"
 				},
 				{
 						"[StringCol]=Foo2String", "[NullableStringCol]=null",
 					"[NullableIntCol]=null", "[IntCol]=5",
-				"[type]=http://example.com/jdbc4sparql#fooTable"
+					"[type]=http://example.com/jdbc4sparql#fooTable"
 				}
 		};
 

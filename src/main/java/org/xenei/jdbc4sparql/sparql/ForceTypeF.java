@@ -5,60 +5,47 @@ import org.slf4j.LoggerFactory;
 import org.xenei.jdbc4sparql.iface.TypeConverter;
 import org.xenei.jdbc4sparql.sparql.items.QueryColumnInfo;
 
-import com.hp.hpl.jena.sparql.expr.Expr;
-import com.hp.hpl.jena.sparql.expr.ExprFunction1;
-import com.hp.hpl.jena.sparql.expr.ExprVar;
+import com.hp.hpl.jena.sparql.engine.binding.Binding;
+import com.hp.hpl.jena.sparql.expr.E_Function;
+import com.hp.hpl.jena.sparql.expr.ExprEvalException;
+import com.hp.hpl.jena.sparql.expr.ExprList;
 import com.hp.hpl.jena.sparql.expr.NodeValue;
+import com.hp.hpl.jena.sparql.expr.nodevalue.NodeValueBoolean;
+import com.hp.hpl.jena.sparql.function.FunctionEnv;
 import com.hp.hpl.jena.sparql.syntax.ElementBind;
 
 /**
  * A local filter that removes any values that are null and not allowed to be
  * null or that can not be converted to the expected column value type.
  */
-public class ForceTypeF extends ExprFunction1 {
-	private final CheckTypeF checkFunc;
+public class ForceTypeF extends CheckTypeF {
 	private static final Logger LOG = LoggerFactory.getLogger(ForceTypeF.class);
+	public static final String IRI = "java:"
+			+ ForceTypeF.class.getCanonicalName();
 
-	private static Expr checkCheckTypeF(final CheckTypeF checkTypeF) {
-		if (checkTypeF == null) {
-			throw new IllegalArgumentException("checkTypeF may not be null");
-		}
-		return new ExprVar(checkTypeF.getArg(1).asVar());
+	public static E_Function getFunction(final QueryColumnInfo columnInfo) {
+		return new E_Function(IRI, getExprList(columnInfo));
 	}
 
-	/* package private */ForceTypeF(final CheckTypeF checkFunc) {
-		super(checkCheckTypeF(checkFunc), "forceTypeF");
-		this.checkFunc = checkFunc;
-	}
-
-	@Override
-	public Expr copy(final Expr expr) {
-		return new ForceTypeF(checkFunc);
+	public static ElementBind getBinding(final QueryColumnInfo columnInfo) {
+		return new ElementBind(columnInfo.getVar(), getFunction(columnInfo));
 	}
 
 	@Override
-	public boolean equals(final Object o) {
-		if (o instanceof ForceTypeF) {
-			final ForceTypeF cf = (ForceTypeF) o;
-			return checkFunc.equals(cf.checkFunc)
-					&& getArg().asVar().equals(cf.getArg().asVar());
+	public NodeValue exec(final Binding binding, final ExprList args,
+			final String uri, final FunctionEnv env) {
+		if (((NodeValueBoolean) super.exec(binding, args, uri, env))
+				.getBoolean()) {
+			final NodeValue retval = TypeConverter.getNodeValue(super
+					.getValue());
+			if (LOG.isDebugEnabled()) {
+				LOG.debug("ForceTypeF is {}", retval);
+			}
+			return retval;
 		}
-		return false;
-	}
+		throw new ExprEvalException(
+				"CheckTypeF for ForceTypeF did not return true.");
 
-	@Override
-	public NodeValue eval(final NodeValue v) {
-		final Object value = checkFunc.getValue();
-		final NodeValue retval = TypeConverter.getNodeValue(value);
-		if (LOG.isDebugEnabled()) {
-			LOG.debug("{} of {} ({}) is {}", checkFunc.getColumnInfo()
-					.getName(), v, value, retval);
-		}
-		return retval;
-	}
-
-	public ElementBind getBinding(final QueryColumnInfo columnInfo) {
-		return new ElementBind(columnInfo.getVar(), this);
 	}
 
 }

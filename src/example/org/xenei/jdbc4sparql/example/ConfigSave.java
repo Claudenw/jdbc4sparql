@@ -1,7 +1,5 @@
 package org.xenei.jdbc4sparql.example;
 
-import com.hp.hpl.jena.sparql.lang.sparql_11.ParseException;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.net.URL;
@@ -10,6 +8,8 @@ import java.util.Properties;
 import org.xenei.jdbc4sparql.J4SConnection;
 import org.xenei.jdbc4sparql.J4SDriver;
 import org.xenei.jdbc4sparql.J4SUrl;
+
+import com.hp.hpl.jena.sparql.lang.sparql_11.ParseException;
 
 public class ConfigSave {
 
@@ -29,7 +29,8 @@ public class ConfigSave {
 		String urlStr = null;
 		if (args.length > 0) {
 			urlStr = args[0];
-		} else {
+		}
+		else {
 			final URL fUrl = new URL(
 					"file:/home/claude/XeneiWorkspace/jdbc4sparql/target/test-classes/org/xenei/jdbc4sparql/J4SStatementTest.ttl");
 			urlStr = "jdbc:j4s?builder=org.xenei.jdbc4sparql.sparql.builders.SimpleNullableBuilder&type=turtle:"
@@ -43,7 +44,8 @@ public class ConfigSave {
 		File f = null;
 		if (args.length == 2) {
 			f = new File(args[1]);
-		} else {
+		}
+		else {
 			f = new File(new File(System.getProperty("java.io.tmpdir")),
 					"config.zip");
 		}

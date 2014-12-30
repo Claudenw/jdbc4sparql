@@ -188,8 +188,8 @@ public class J4SConnection implements Connection {
 	}
 
 	private void configureCatalogMap() throws IOException,
-			InstantiationException, IllegalAccessException,
-			ClassNotFoundException, MissingAnnotation, SQLException {
+	InstantiationException, IllegalAccessException,
+	ClassNotFoundException, MissingAnnotation, SQLException {
 		// if this is a config file just read the file.
 		if (url.getType().equals(J4SUrl.TYPE_CONFIG)) {
 			loadConfig(url.getEndpoint().toURL());
@@ -220,8 +220,8 @@ public class J4SConnection implements Connection {
 			// if a SPARQL endpoint the driver URL has the endpoint URL.
 			if (url.getType().equals(J4SUrl.TYPE_SPARQL)) {
 				catalog = new RdfCatalog.Builder()
-						.setSparqlEndpoint(url.getEndpoint().toURL())
-						.setName(getCatalog()).build(model);
+				.setSparqlEndpoint(url.getEndpoint().toURL())
+				.setName(getCatalog()).build(model);
 			}
 			else {
 				final Model dataModel = dsProducer
@@ -233,7 +233,7 @@ public class J4SConnection implements Connection {
 			}
 
 			final RdfSchema schema = new RdfSchema.Builder()
-					.setCatalog(catalog).setName(schemaName).build(model);
+			.setCatalog(catalog).setName(schemaName).build(model);
 
 			catalogMap.put(catalog.getName().getShortName(), catalog);
 
@@ -288,7 +288,7 @@ public class J4SConnection implements Connection {
 	@Override
 	public Statement createStatement(final int resultSetType,
 			final int resultSetConcurrency, final int resultSetHoldability)
-			throws SQLException {
+					throws SQLException {
 		final Catalog catalog = catalogMap.get(getCatalog());
 		if (catalog instanceof RdfCatalog) {
 			return new J4SStatement(this, (RdfCatalog) catalog, resultSetType,
@@ -398,7 +398,7 @@ public class J4SConnection implements Connection {
 	}
 
 	private void loadConfig(final URL url) throws IOException,
-			MissingAnnotation {
+	MissingAnnotation {
 		// config specifies producer
 		dsProducer = DatasetProducer.Loader.load(properties, url);
 		mergeProperties(dsProducer.getProperties());

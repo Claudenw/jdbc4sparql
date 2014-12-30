@@ -64,7 +64,7 @@ public class FQNameImpl implements FQName {
 	 */
 	protected FQNameImpl(final String catalog, final String schema,
 			final String table, final String col)
-			throws IllegalArgumentException {
+					throws IllegalArgumentException {
 		this.catalog = verifyOK("Catalog", catalog);
 		this.schema = verifyOK("Schema", schema);
 		this.table = verifyOK("Table", table);

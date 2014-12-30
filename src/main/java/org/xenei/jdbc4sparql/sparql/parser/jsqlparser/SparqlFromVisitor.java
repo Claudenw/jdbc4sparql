@@ -77,7 +77,7 @@ class SparqlFromVisitor implements FromItemVisitor {
 							defaultSchema), table.getName());
 			name = (table.getAlias() != null) ? TableName.getNameInstance(
 					defaultCatalog, defaultSchema, table.getAlias()) : tName;
-					builder.addTable(tName, name, optional);
+			builder.addTable(tName, name, optional);
 
 		} catch (final SQLException e) {
 			throw new RuntimeException(e);

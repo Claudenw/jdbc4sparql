@@ -54,6 +54,7 @@ import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.sparql.core.Var;
 import com.hp.hpl.jena.sparql.core.VarExprList;
 import com.hp.hpl.jena.sparql.expr.E_Equals;
+import com.hp.hpl.jena.sparql.expr.E_Function;
 import com.hp.hpl.jena.sparql.expr.E_LogicalAnd;
 import com.hp.hpl.jena.sparql.expr.Expr;
 import com.hp.hpl.jena.sparql.expr.ExprAggregator;
@@ -560,7 +561,7 @@ public class SparqlQueryBuilder {
 						if (!serviceCall.getProjectVars().contains(
 								columnInfo.getGUIDVar())) {
 							serviceCall.addProjectVars(Arrays.asList(new Var[] {
-									columnInfo.getGUIDVar()
+								columnInfo.getGUIDVar()
 							}));
 						}
 					}
@@ -573,17 +574,18 @@ public class SparqlQueryBuilder {
 					for (final QueryColumnInfo columnInfo : infoSet
 							.listColumns(new SearchName(null, null, null,
 									columnName))) {
-						final CheckTypeF ctf = infoSet
-								.getCheckTypeF(columnInfo);
+
+						final E_Function func = CheckTypeF
+								.getFunction(columnInfo);
 						if (LOG.isDebugEnabled()) {
-							LOG.debug("Adding filter: {}", ctf);
+							LOG.debug("Adding filter: {}", func);
 						}
-						filterGroup.addElementFilter(new ElementFilter(ctf));
+						filterGroup.addElementFilter(new ElementFilter(func));
 
 						if (first == null) {
-							final ForceTypeF ftf = infoSet
-									.getForceTypeF(columnInfo);
-							final ElementBind bind = ftf.getBinding(columnInfo);
+
+							final ElementBind bind = ForceTypeF
+									.getBinding(columnInfo);
 							if (LOG.isDebugEnabled()) {
 								LOG.debug("Adding binding: {}", bind);
 							}
@@ -592,8 +594,8 @@ public class SparqlQueryBuilder {
 						}
 						else {
 							final E_Equals eq = new E_Equals(
-									infoSet.getForceTypeF(first),
-									infoSet.getForceTypeF(columnInfo));
+									ForceTypeF.getFunction(first),
+									ForceTypeF.getFunction(columnInfo));
 							if (expr == null) {
 								expr = eq;
 							}
@@ -776,8 +778,8 @@ public class SparqlQueryBuilder {
 				columnNameArg.getCatalog(), VirtualCatalog.NAME),
 				StringUtils.defaultString(columnNameArg.getSchema(),
 						VirtualSchema.NAME), StringUtils.defaultString(
-						columnNameArg.getTable(), VirtualTable.NAME),
-				columnNameArg.getShortName());
+								columnNameArg.getTable(), VirtualTable.NAME),
+								columnNameArg.getShortName());
 		QueryTableInfo tableInfo = infoSet.getTable(columnName.getTableName());
 		Column column = null;
 		if (tableInfo == null) {

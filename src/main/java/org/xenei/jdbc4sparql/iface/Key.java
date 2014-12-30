@@ -24,7 +24,7 @@ import org.xenei.jena.entities.annotations.Subject;
 
 @Subject(namespace = "http://org.xenei.jdbc4sparql/entity/Key#")
 public interface Key<T extends KeySegment> extends
-		Comparator<Comparable<Object>[]> {
+Comparator<Comparable<Object>[]> {
 
 	public String getId();
 

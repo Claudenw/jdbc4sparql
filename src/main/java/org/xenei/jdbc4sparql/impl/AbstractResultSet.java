@@ -188,7 +188,7 @@ public abstract class AbstractResultSet implements ResultSet {
 			throws SQLException {
 		if (LOG.isDebugEnabled()) {
 			AbstractResultSet.LOG
-			.debug("getting binary stream {}", columnLabel);
+					.debug("getting binary stream {}", columnLabel);
 		}
 		return extractData(getColumnIndex(columnLabel), InputStream.class);
 	}
@@ -844,7 +844,7 @@ public abstract class AbstractResultSet implements ResultSet {
 	@Override
 	public void updateBlob(final int columnIndex,
 			final InputStream inputStream, final long length)
-			throws SQLException {
+					throws SQLException {
 		throw new SQLFeatureNotSupportedException();
 	}
 
@@ -863,7 +863,7 @@ public abstract class AbstractResultSet implements ResultSet {
 	@Override
 	public void updateBlob(final String columnLabel,
 			final InputStream inputStream, final long length)
-			throws SQLException {
+					throws SQLException {
 		throw new SQLFeatureNotSupportedException();
 	}
 

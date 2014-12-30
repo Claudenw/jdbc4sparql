@@ -25,11 +25,11 @@ public interface FQName extends GUIDObject {
 		@Override
 		public int compare(final FQName fqName1, final FQName fqName2) {
 			return new CompareToBuilder()
-					.append(fqName1.getCatalog(), fqName2.getCatalog())
-					.append(fqName1.getSchema(), fqName2.getSchema())
-					.append(fqName1.getTable(), fqName2.getTable())
-					.append(fqName1.getColumn(), fqName2.getColumn())
-			.toComparison();
+			.append(fqName1.getCatalog(), fqName2.getCatalog())
+			.append(fqName1.getSchema(), fqName2.getSchema())
+			.append(fqName1.getTable(), fqName2.getTable())
+			.append(fqName1.getColumn(), fqName2.getColumn())
+					.toComparison();
 		}
 
 		/**
@@ -79,8 +79,8 @@ public interface FQName extends GUIDObject {
 					+ StringUtils.defaultString(table)
 					+ StringUtils.defaultString(column);
 			return "v_"
-					+ (UUID.nameUUIDFromBytes(t.getBytes()).toString().replace(
-					"-", "_"));
+			+ (UUID.nameUUIDFromBytes(t.getBytes()).toString().replace(
+							"-", "_"));
 		}
 	}
 

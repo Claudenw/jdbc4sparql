@@ -40,14 +40,14 @@ public abstract class AbstractFunctionHandler {
 			final String count) {
 		return new IllegalArgumentException(String.format(
 				"No arguments provided to %s function, %s expected", func
-				.getName().toUpperCase(), count));
+						.getName().toUpperCase(), count));
 	}
 
 	protected IllegalArgumentException getToManyArgumentEx(final Function func,
 			final String count) {
 		return new IllegalArgumentException(String.format(
 				"To many arguments provided to %s function, %s expected", func
-				.getName().toUpperCase(), count));
+						.getName().toUpperCase(), count));
 	}
 
 	protected IllegalArgumentException getWrongArgumentCountEx(
@@ -70,7 +70,7 @@ public abstract class AbstractFunctionHandler {
 
 	protected Expr handleExpr0(final Class<? extends ExprFunction0> clazz,
 			final Function func, final int type, final AliasInfo alias)
-			throws SQLException {
+					throws SQLException {
 		final ExpressionList l = func.getParameters();
 		if (l != null) {
 			throw getToManyArgumentEx(func, "zero");
@@ -91,7 +91,7 @@ public abstract class AbstractFunctionHandler {
 
 	protected Expr handleExpr1(final Class<? extends ExprFunction1> clazz,
 			final Function func, final int type, final AliasInfo alias)
-			throws SQLException {
+					throws SQLException {
 		final ExpressionList l = func.getParameters();
 		if (l == null) {
 			throw getNoArgumentEx(func, "one");

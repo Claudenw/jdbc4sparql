@@ -29,7 +29,7 @@ import com.hp.hpl.jena.util.iterator.WrappedIterator;
  * @param <T>
  */
 public class QueryItemCollection<I extends QueryItemInfo<T, N>, T extends NamedObject<N>, N extends ItemName>
-		implements Collection<I> {
+implements Collection<I> {
 
 	private List<I> lst;
 
@@ -348,7 +348,7 @@ public class QueryItemCollection<I extends QueryItemInfo<T, N>, T extends NamedO
 			if (iter.hasNext()) {
 				throw new IllegalArgumentException(String.format(
 						SparqlQueryBuilder.FOUND_IN_MULTIPLE_, name, lst.get(0)
-								.getClass()));
+						.getClass()));
 			}
 			return retval;
 		}
@@ -371,7 +371,7 @@ public class QueryItemCollection<I extends QueryItemInfo<T, N>, T extends NamedO
 			if (iter.hasNext()) {
 				throw new IllegalArgumentException(String.format(
 						SparqlQueryBuilder.FOUND_IN_MULTIPLE_, namedObject, lst
-								.get(0).getClass()));
+						.get(0).getClass()));
 			}
 			return retval;
 		}
@@ -487,7 +487,7 @@ public class QueryItemCollection<I extends QueryItemInfo<T, N>, T extends NamedO
 	}
 
 	public static class ItemNameFilter<I extends QueryItemInfo<?, ?>> extends
-			Filter<I> {
+	Filter<I> {
 
 		protected Collection<ItemName> others;
 
@@ -534,7 +534,7 @@ public class QueryItemCollection<I extends QueryItemInfo<T, N>, T extends NamedO
 	}
 
 	public class BaseObjectFilter<I extends QueryItemInfo<?, ?>> extends
-			Filter<I> {
+	Filter<I> {
 
 		protected Collection<T> others;
 

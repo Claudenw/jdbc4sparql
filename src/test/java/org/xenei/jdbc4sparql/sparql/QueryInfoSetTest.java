@@ -612,25 +612,25 @@ public class QueryInfoSetTest {
 	// assertEquals( cName.getGUID(), colInfo.getGUID() );
 	// }
 
-	@Test
-	public void testGetForceTypeF() throws SQLDataException {
-		final QueryColumnInfo columnInfo = new QueryColumnInfo(column, false);
-		final ForceTypeF f = queryInfo.getForceTypeF(columnInfo);
-		assertNotNull(f);
-		final QueryColumnInfo alias = columnInfo.createAlias(tName
-				.getColumnName("alias"));
-		final ForceTypeF f2 = queryInfo.getForceTypeF(alias);
-		assertEquals(f, f2);
-	}
-
-	@Test
-	public void testGetCheckTypeF() throws SQLDataException {
-		final QueryColumnInfo columnInfo = new QueryColumnInfo(column, false);
-		final CheckTypeF f = queryInfo.getCheckTypeF(columnInfo);
-		assertNotNull(f);
-		final QueryColumnInfo alias = columnInfo.createAlias(tName
-				.getColumnName("alias"));
-		final CheckTypeF f2 = queryInfo.getCheckTypeF(alias);
-		assertEquals(f, f2);
-	}
+	// @Test
+	// public void testGetForceTypeF() throws SQLDataException {
+	// final QueryColumnInfo columnInfo = new QueryColumnInfo(column, false);
+	// final ForceTypeF f = queryInfo.getForceTypeF(columnInfo);
+	// assertNotNull(f);
+	// final QueryColumnInfo alias = columnInfo.createAlias(tName
+	// .getColumnName("alias"));
+	// final ForceTypeF f2 = queryInfo.getForceTypeF(alias);
+	// assertEquals(f, f2);
+	// }
+	//
+	// @Test
+	// public void testGetCheckTypeF() throws SQLDataException {
+	// final QueryColumnInfo columnInfo = new QueryColumnInfo(column, false);
+	// final CheckTypeF f = queryInfo.getCheckTypeF(columnInfo);
+	// assertNotNull(f);
+	// final QueryColumnInfo alias = columnInfo.createAlias(tName
+	// .getColumnName("alias"));
+	// final CheckTypeF f2 = queryInfo.getCheckTypeF(alias);
+	// assertEquals(f, f2);
+	// }
 }

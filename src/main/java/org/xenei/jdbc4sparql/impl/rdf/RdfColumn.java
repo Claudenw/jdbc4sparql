@@ -29,7 +29,7 @@ import com.hp.hpl.jena.vocabulary.RDFS;
 
 @Subject(namespace = "http://org.xenei.jdbc4sparql/entity/Column#")
 public class RdfColumn extends RdfNamespacedObject implements Column,
-		ResourceWrapper {
+ResourceWrapper {
 	public static class Builder implements Column {
 		public static RdfColumn fixupTable(final RdfTable table,
 				final RdfColumn column) {
@@ -150,8 +150,8 @@ public class RdfColumn extends RdfNamespacedObject implements Column,
 		public String getFQName() {
 			final ResourceWrapper rw = (ResourceWrapper) getColumnDef();
 			final StringBuilder sb = new StringBuilder()
-					.append(rw.getResource().getURI()).append(" ").append(name)
-					.append(" ").append(getQuerySegmentFmt());
+			.append(rw.getResource().getURI()).append(" ").append(name)
+			.append(" ").append(getQuerySegmentFmt());
 			return String.format("%s/instance/UUID-%s",
 					ResourceBuilder.getFQName(RdfColumn.class),
 					UUID.nameUUIDFromBytes(sb.toString().getBytes()));
@@ -323,4 +323,8 @@ public class RdfColumn extends RdfNamespacedObject implements Column,
 		return getColumnDef().getNullable() != DatabaseMetaData.columnNoNulls;
 	}
 
+	@Override
+	public String toString() {
+		return getName().toString();
+	}
 }

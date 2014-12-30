@@ -44,6 +44,7 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.sparql.core.TriplePath;
 import com.hp.hpl.jena.sparql.core.Var;
+import com.hp.hpl.jena.sparql.expr.E_Function;
 import com.hp.hpl.jena.sparql.expr.Expr;
 import com.hp.hpl.jena.sparql.syntax.Element;
 import com.hp.hpl.jena.sparql.syntax.ElementBind;
@@ -235,9 +236,9 @@ public class SparqlParserTest {
 		for (final Element el : w.lst) {
 			final ElementBind bind = (ElementBind) el;
 			final Expr expr = bind.getExpr();
-			assertTrue("Not a ForceTypeF expression",
-					expr instanceof ForceTypeF);
-			final String name = ((ForceTypeF) expr).getArg().getVarName();
+			assertTrue("Not an E_Function", expr instanceof E_Function);
+			assertEquals(ForceTypeF.IRI, ((E_Function) expr).getFunctionIRI());
+			final String name = ((E_Function) expr).getArg(1).getVarName();
 			assertTrue("Missing " + name, cols.contains(name));
 		}
 	}

@@ -40,8 +40,8 @@ public class NameSegments {
 			true);
 
 	private static final NameSegments[] LST = {
-		FFFF, FFFT, FFTF, FFTT, FTFF, FTFT, FTTF, FTTT, TFFF, TFFT, TFTF,
-		TFTT, TTFF, TTFT, TTTF, TTTT
+			FFFF, FFFT, FFTF, FFTT, FTFF, FTFT, FTTF, FTTT, TFFF, TFFT, TFTF,
+			TFTT, TTFF, TTFT, TTTF, TTTT
 	};
 
 	/**

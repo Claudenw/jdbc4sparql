@@ -20,7 +20,6 @@ public class ExprInfoFactory {
 			final Collection<ExprColumn> columns, final ColumnName name) {
 
 		final Class<?>[] clazz = new Class[1];
-		// clazz[0] = Expr.class;
 		clazz[0] = ExprInfo.class;
 
 		final Enhancer e = new Enhancer();

@@ -43,8 +43,8 @@ public class SQLClient {
 	}
 
 	public static void main(final String[] args) throws URISyntaxException,
-			IOException, SQLException, ClassNotFoundException,
-			InstantiationException, IllegalAccessException, MissingAnnotation {
+	IOException, SQLException, ClassNotFoundException,
+	InstantiationException, IllegalAccessException, MissingAnnotation {
 		// final File outFile = ConfigBuilder.gatherSchema(Arrays.asList(args)
 		// .subList(1, args.length));
 

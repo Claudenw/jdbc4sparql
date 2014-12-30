@@ -13,7 +13,7 @@ import com.hp.hpl.jena.sparql.core.Var;
  *            The type of the name for query item.
  */
 public class QueryItemInfo<T extends NamedObject<N>, N extends ItemName>
-		implements NamedObject<N>, GUIDObject {
+implements NamedObject<N>, GUIDObject {
 	private final T baseObject;
 	private final N name;
 	private final Var guidVar;

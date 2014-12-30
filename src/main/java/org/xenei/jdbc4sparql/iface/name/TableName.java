@@ -31,7 +31,7 @@ public class TableName extends ItemName {
 	 */
 	public static TableName getNameInstance(final String catalog,
 			final String schema, final String name)
-					throws IllegalArgumentException {
+			throws IllegalArgumentException {
 		if (name == null) {
 			throw new IllegalArgumentException("name must be provided");
 		}

@@ -26,6 +26,7 @@ import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.query.QueryException;
 import com.hp.hpl.jena.sparql.core.Var;
+import com.hp.hpl.jena.sparql.expr.E_Function;
 import com.hp.hpl.jena.sparql.expr.E_LogicalAnd;
 import com.hp.hpl.jena.sparql.expr.Expr;
 import com.hp.hpl.jena.sparql.lang.sparql_11.ParseException;
@@ -105,7 +106,7 @@ public class QueryTableInfo extends QueryItemInfo<Table, TableName> {
 	public QueryTableInfo(final QueryInfoSet infoSet,
 			final ElementGroup queryElementGroup, final Table table,
 			final TableName alias, final boolean optional)
-			throws IllegalArgumentException {
+					throws IllegalArgumentException {
 		super(table, alias, optional);
 		this.infoSet = infoSet;
 		// this.table = checkTable(table);
@@ -275,7 +276,7 @@ public class QueryTableInfo extends QueryItemInfo<Table, TableName> {
 	 * Columns that are in a SQL "USING" clause are added to the datafilter
 	 * list.
 	 * </p>
-	 * 
+	 *
 	 * @param columnsInUsing
 	 *            columns that are in a SQL "Using" clause.
 	 * @throws SQLDataException
@@ -284,14 +285,14 @@ public class QueryTableInfo extends QueryItemInfo<Table, TableName> {
 			throws SQLDataException {
 		if (LOG.isDebugEnabled()) {
 			QueryTableInfo.LOG
-			.debug("adding defined columns for {}", getName());
+					.debug("adding defined columns for {}", getName());
 		}
 
 		// add the table definition
 		if (StringUtils.isNotBlank(getTable().getQuerySegmentFmt())) {
 			final String queryFmt = new StringBuilder("{ ")
-			.append(getTable().getQuerySegmentFmt()).append("}")
-			.toString();
+					.append(getTable().getQuerySegmentFmt()).append("}")
+					.toString();
 			final String queryStr = String.format(queryFmt, getGUIDVar());
 			try {
 				final ElementGroup subGroup = (ElementGroup) SparqlParser.Util
@@ -403,11 +404,11 @@ public class QueryTableInfo extends QueryItemInfo<Table, TableName> {
 			final Collection<QueryColumnInfo> typeFilterList,
 			final Collection<QueryColumnInfo> dataFilterList,
 			final ElementGroup filterGroup, final ElementGroup typeGroup)
-					throws SQLDataException {
+			throws SQLDataException {
 
 		Expr expr = null;
 		for (final QueryColumnInfo columnInfo : typeFilterList) {
-			final CheckTypeF f = infoSet.getCheckTypeF(columnInfo);
+			final E_Function f = CheckTypeF.getFunction(columnInfo);
 			if (LOG.isDebugEnabled()) {
 				QueryTableInfo.LOG.debug("Adding filter: {} ({})", f,
 						columnInfo);
@@ -424,8 +425,7 @@ public class QueryTableInfo extends QueryItemInfo<Table, TableName> {
 		}
 
 		for (final QueryColumnInfo columnInfo : dataFilterList) {
-			final ForceTypeF f = infoSet.getForceTypeF(columnInfo);
-			final ElementBind bind = f.getBinding(columnInfo);
+			final ElementBind bind = ForceTypeF.getBinding(columnInfo);
 			if (LOG.isDebugEnabled()) {
 				QueryTableInfo.LOG.debug("Adding binding: {}", bind);
 			}

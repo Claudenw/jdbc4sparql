@@ -9,15 +9,6 @@ import org.xenei.jdbc4sparql.sparql.items.NamedObject;
 import com.hp.hpl.jena.sparql.core.Var;
 
 public class NameUtils {
-	// public static String convertDB2SPARQL( final String dbName )
-	// {
-	// return dbName.replace(NameUtils.DB_DOT, NameUtils.SPARQL_DOT);
-	// }
-	//
-	// public static String convertSPARQL2DB( final String dbName )
-	// {
-	// return dbName.replace(NameUtils.SPARQL_DOT, NameUtils.DB_DOT);
-	// }
 
 	public static String createUUIDName() {
 		return ("v_" + UUID.randomUUID().toString()).replace("-", "_");
@@ -48,7 +39,7 @@ public class NameUtils {
 	public static final String SPARQL_DOT = "\u00B7";
 
 	public static final String[] DOT_LIST = {
-		DB_DOT, SPARQL_DOT
+			DB_DOT, SPARQL_DOT
 	};
 
 }

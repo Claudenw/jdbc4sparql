@@ -199,7 +199,7 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 	}
 
 	public class ChangeListener extends
-			AbstractChangeListener<Catalog, RdfSchema> {
+	AbstractChangeListener<Catalog, RdfSchema> {
 
 		public ChangeListener() {
 			super(RdfCatalog.this.getResource(), RdfCatalog.class, "schemas",
@@ -361,22 +361,6 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 		throw new EntityManagerRequiredException();
 	}
 
-	// /**
-	// * Create a sparql schema that has an empty namespace.
-	// *
-	// * @return The Schema.
-	// */
-	// public Schema getViewSchema()
-	// {
-	// Schema retval = getSchema("");
-	// if (retval == null)
-	// {
-	// retval = new RdfSchema.Builder().setName("").setCatalog(this)
-	// .build(this.getResource().getModel());
-	// }
-	// return retval;
-	// }
-
 	@Override
 	public boolean isService() {
 		return getSparqlEndpoint() != null;
@@ -389,4 +373,8 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 		return schemaList;
 	}
 
+	@Override
+	public String toString() {
+		return getName().toString();
+	}
 }

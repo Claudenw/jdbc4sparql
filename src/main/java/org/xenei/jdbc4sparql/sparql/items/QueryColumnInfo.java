@@ -63,7 +63,7 @@ public class QueryColumnInfo extends QueryItemInfo<Column, ColumnName> {
 
 	/**
 	 * Returns true if this ItemInfo is an alias for another ItemInfo
-	 * 
+	 *
 	 * @return true if alias, false otherwise.
 	 */
 	public boolean isAlias() {

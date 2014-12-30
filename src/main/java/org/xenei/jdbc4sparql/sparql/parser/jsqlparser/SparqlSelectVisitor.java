@@ -210,7 +210,7 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor {
 							.getColumnInfo();
 					queryBuilder.getTable(
 							paramColumnInfo.getName().getTableName())
-					.addDataFilter(paramColumnInfo);
+							.addDataFilter(paramColumnInfo);
 
 				}
 			}
@@ -276,7 +276,7 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor {
 		}
 		if (LOG.isDebugEnabled()) {
 			SparqlSelectVisitor.LOG
-			.debug("deparse orderby {}", orderByElements);
+					.debug("deparse orderby {}", orderByElements);
 		}
 		for (final Object name : orderByElements) {
 			final OrderByElement orderByElement = (OrderByElement) name;
@@ -412,7 +412,7 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor {
 			for (final ExprColumn exprCol : expressionVisitor.getColumns()) {
 				final QueryColumnInfo paramColumnInfo = exprCol.getColumnInfo();
 				queryBuilder.getTable(paramColumnInfo.getName().getTableName())
-				.addDataFilter(paramColumnInfo);
+						.addDataFilter(paramColumnInfo);
 			}
 		}
 
