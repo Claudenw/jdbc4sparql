@@ -274,7 +274,7 @@ public class J4SDatabaseMetaDataQueryTests {
 		LoggingConfig.setConsole(Level.DEBUG);
 		LoggingConfig.setRootLogger(Level.INFO);
 		LoggingConfig.setLogger("com.hp.hpl.jena.", Level.INFO);
-		LoggingConfig.setLogger("org.xenei.jdbc4sparql", Level.DEBUG);
+		//LoggingConfig.setLogger("org.xenei.jdbc4sparql", Level.DEBUG);
 		final J4SDriver driver = new J4SDriver();
 		final URL url = J4SDatabaseMetaDataQueryTests.class
 				.getResource("J4SStatementTest.zip");

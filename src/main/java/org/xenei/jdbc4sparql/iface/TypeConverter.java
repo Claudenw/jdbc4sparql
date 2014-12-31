@@ -288,7 +288,7 @@ public final class TypeConverter {
 	private static final SPARQLToJava[] SPARQL_TO_JAVA = {
 		// convert types
 		new SPARQLToJava(
-				"http://www.w3.org/2001/XMLSchema#normalizedString",
+				"http://www.w3.org/2001/XMLSchema#string",
 				String.class),
 				new SPARQLToJava("http://www.w3.org/2001/XMLSchema#integer",
 						BigInteger.class),
@@ -341,7 +341,7 @@ public final class TypeConverter {
 																																																		String.class),
 																																																		new SPARQLToJava("http://www.w3.org/2001/XMLSchema#gYear",
 																																																				String.class),
-																																																				new SPARQLToJava("http://www.w3.org/2001/XMLSchema#string",
+																																																				new SPARQLToJava("http://www.w3.org/2001/XMLSchema#normalizedString",
 																																																						String.class),
 																																																						new SPARQLToJava("http://www.w3.org/2001/XMLSchema#date",
 																																																								String.class),

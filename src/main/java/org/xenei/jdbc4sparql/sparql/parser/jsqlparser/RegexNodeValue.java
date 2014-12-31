@@ -31,15 +31,6 @@ class RegexNodeValue extends NodeValueString {
 		CONVERSION.put("%", "(.+)");
 	}
 
-	// private static boolean hasWildcard(final String part) {
-	// String tst = " " + part + " ";
-	// int barCnt = tst.split("_").length - 1;
-	// int escBarCnt = tst.split("\\\\_").length - 1;
-	// int pctCnt = tst.split("%").length - 1;
-	// int escPctCnt = tst.split("\\\\%").length - 1;
-	// return (barCnt > escBarCnt) || (pctCnt > escPctCnt);
-	// }
-
 	public static RegexNodeValue create(final String part) {
 		final StringTokenizer tokenizer = new StringTokenizer(part, PATTERN,
 				true);
