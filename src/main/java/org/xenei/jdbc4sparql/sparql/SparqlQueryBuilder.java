@@ -185,9 +185,10 @@ public class SparqlQueryBuilder {
 	 * Set the use GUID flag;
 	 *
 	 * @param state
+	 * @return the last state.
 	 */
-	public void setUseGUID(final boolean state) {
-		this.infoSet.setUseGUID(state);
+	public boolean setUseGUID(final boolean state) {
+		return this.infoSet.setUseGUID(state);
 	}
 
 	public QueryColumnInfo addAlias(final ColumnName orig,
@@ -553,7 +554,7 @@ public class SparqlQueryBuilder {
 							}).toList();
 					try {
 						QueryTableInfo.addTypeFilters(infoSet, typeFilters,
-								typeFilters, filterGroup, typeGroup);
+								typeFilters, null, filterGroup, typeGroup); // TODO fix me
 					} catch (final SQLDataException e1) {
 						throw new IllegalStateException(e1.getMessage(), e1);
 					}

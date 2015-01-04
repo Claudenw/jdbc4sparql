@@ -167,7 +167,7 @@ public abstract class AbstractJ4SStatementTest extends AbstractJ4SSetup {
 				.executeQuery("select IntCol from fooTable tbl where StringCol='Foo2String'");
 
 		Assert.assertTrue(rset.next());
-		Assert.assertEquals(5, rset.getInt("IntCol"));
+		Assert.assertEquals(4, rset.getInt("IntCol"));
 		Assert.assertFalse(rset.next());
 		rset.close();
 	}

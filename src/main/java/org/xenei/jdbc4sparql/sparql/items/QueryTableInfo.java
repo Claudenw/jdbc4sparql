@@ -50,6 +50,8 @@ public class QueryTableInfo extends QueryItemInfo<Table, TableName> {
 	// list of bindings to add at the end of the query
 	private final Set<QueryColumnInfo> dataFilterList;
 
+	private final Set<Element> joinElementList;
+	
 	private static Logger LOG = LoggerFactory.getLogger(QueryTableInfo.class);
 
 	/**
@@ -114,6 +116,7 @@ public class QueryTableInfo extends QueryItemInfo<Table, TableName> {
 		this.eg = new ElementGroup();
 		egWrapper.addElement(eg);
 		this.dataFilterList = new HashSet<QueryColumnInfo>();
+		this.joinElementList = new HashSet<Element>();
 
 		if (queryElementGroup == null) {
 			if (LOG.isDebugEnabled()) {
@@ -266,7 +269,21 @@ public class QueryTableInfo extends QueryItemInfo<Table, TableName> {
 		if (LOG.isDebugEnabled()) {
 			QueryTableInfo.LOG.debug("Adding filter: {}", expr);
 		}
-		eg.addElementFilter(new ElementFilter(expr));
+		egWrapper.addElementFilter(new ElementFilter(expr));
+
+	}
+	
+	/**
+	 * Add a filter to this table.
+	 *
+	 * @param expr
+	 *            The expression to add.
+	 */
+	public void addJoinElement(final Expr expr) {
+		if (LOG.isDebugEnabled()) {
+			QueryTableInfo.LOG.debug("Adding join element: {}", expr);
+		}
+		joinElementList.add(new ElementFilter(expr));
 
 	}
 
@@ -377,7 +394,7 @@ public class QueryTableInfo extends QueryItemInfo<Table, TableName> {
 			}
 		}
 
-		addTypeFilters(infoSet, columnInfoList, dataFilterList, eg, egWrapper);
+		addTypeFilters(infoSet, columnInfoList, dataFilterList, joinElementList, eg, egWrapper);
 	}
 
 	/**
@@ -403,6 +420,7 @@ public class QueryTableInfo extends QueryItemInfo<Table, TableName> {
 	public static void addTypeFilters(final QueryInfoSet infoSet,
 			final Collection<QueryColumnInfo> typeFilterList,
 			final Collection<QueryColumnInfo> dataFilterList,
+			final Collection<Element> joinFilterList,
 			final ElementGroup filterGroup, final ElementGroup typeGroup)
 			throws SQLDataException {
 
@@ -430,6 +448,11 @@ public class QueryTableInfo extends QueryItemInfo<Table, TableName> {
 				QueryTableInfo.LOG.debug("Adding binding: {}", bind);
 			}
 			typeGroup.addElement(bind);
+		}
+		
+		for (final Element element : joinFilterList )
+		{
+			typeGroup.addElement( element );
 		}
 	}
 

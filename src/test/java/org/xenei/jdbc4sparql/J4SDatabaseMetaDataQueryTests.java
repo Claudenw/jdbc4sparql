@@ -366,6 +366,7 @@ public class J4SDatabaseMetaDataQueryTests {
 		};
 
 		connection.setCatalog(MetaCatalogBuilder.LOCAL_NAME);
+		connection.setSchema(MetaCatalogBuilder.SCHEMA_NAME);
 		final Statement stmt = connection.createStatement();
 		try {
 			Assert.assertTrue(stmt

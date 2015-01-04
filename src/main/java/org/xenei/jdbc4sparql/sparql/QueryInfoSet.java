@@ -60,7 +60,8 @@ public class QueryInfoSet {
 		return columnsInQuery.add(columnInfo);
 	}
 
-	public void setUseGUID(final boolean state) {
+	public boolean setUseGUID(final boolean state) {
+		boolean retval = this.guidFlg;
 		if (this.guidFlg != state) {
 			this.guidFlg = state;
 			for (final QueryItemInfo<Column, ColumnName> columnInfo : columnsInQuery) {
@@ -70,6 +71,7 @@ public class QueryInfoSet {
 				tableInfo.getName().setUseGUID(state);
 			}
 		}
+		return retval;
 	}
 
 	public boolean useGUID() {

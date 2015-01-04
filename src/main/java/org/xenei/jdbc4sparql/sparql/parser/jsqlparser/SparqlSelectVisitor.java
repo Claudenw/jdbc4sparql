@@ -62,52 +62,6 @@ import com.hp.hpl.jena.sparql.expr.ExprVar;
  * commands into the SparqlQueryBuilder.
  */
 public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor {
-	private abstract static class JoinRewriter extends ExpRewriter {
-		JoinRewriter(final SparqlQueryBuilder queryBuilder) {
-			super(queryBuilder);
-		}
-
-		protected abstract Node addAlias(final QueryColumnInfo columnInfo,
-				final ColumnName alias);
-
-		@Override
-		public void visit(final ExprFunction2 func) {
-			if (func instanceof E_Equals) {
-				final E_Equals eq = (E_Equals) func;
-				if ((eq.getArg1() instanceof ExprVar)
-						&& (eq.getArg2() instanceof ExprVar)) {
-					final QueryColumnInfo ci1 = queryBuilder
-							.getColumn(((ExprVar) eq.getArg1()).asVar());
-					if (ci1 != null) {
-						final QueryColumnInfo ci2 = queryBuilder
-								.getColumn(((ExprVar) eq.getArg2()).asVar());
-						if (ci2 != null) {
-							final ColumnName ci1a = isMapped(ci1);
-							final ColumnName ci2a = isMapped(ci2);
-							if (((ci1a != null) && (ci2a == null))
-									|| ((ci1a == null) && (ci2a != null))) {
-								Node n = null;
-								// equals and one of the columns is aliased.
-								if (ci1a != null) {
-									// first one is aliased
-									n = addAlias(ci1, ci1a);
-								}
-								else {
-									n = addAlias(ci2, ci2a);
-								}
-								stack.push(new E_Bound(new ExprVar(n)));
-								return;
-							}
-						}
-					}
-				}
-			}
-
-			pushArgs(func);
-			stack.push(func.copy(stack.pop(), stack.pop()));
-		}
-	}
-
 	// the query builder
 	private final SparqlQueryBuilder queryBuilder;
 
@@ -129,16 +83,12 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor {
 		if (LOG.isDebugEnabled()) {
 			SparqlSelectVisitor.LOG.debug("apply outer expr {}", aExpr);
 		}
-		final Expr expr = aExpr;
-		if (expr instanceof ExprFunction) {
-			if (applyOuterExprSub(aExpr, aExpr, mapFrom, mapTo)) {
-				return;
-			}
+		if (aExpr instanceof ExprFunction) {
+			applyOuterExprSub(aExpr, aExpr, mapFrom, mapTo);
 		}
-		queryBuilder.addFilter(expr);
 	}
 
-	private boolean applyOuterExprSub(final Expr aExpr, final Expr toApply,
+	private void applyOuterExprSub(final Expr aExpr, final Expr toApply,
 			final ItemName mapFrom, final ItemName mapTo) {
 		if (LOG.isDebugEnabled()) {
 			SparqlSelectVisitor.LOG.debug("apply outer expr sub {} {}", aExpr,
@@ -147,22 +97,26 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor {
 		final Expr expr = aExpr;
 		if (expr instanceof ExprFunction) {
 			for (final Expr subExpr : ((ExprFunction) expr).getArgs()) {
-				if (applyOuterExprSub(subExpr, toApply, mapFrom, mapTo)) {
-					return true;
-				}
+				applyOuterExprSub(subExpr, toApply, mapFrom, mapTo);
 			}
-			return false;
-		}
+		} else
 		if (expr instanceof ExprVar) {
-			final Var v = ((ExprVar) expr).asVar();
-			final QueryTableInfo tableInfo = queryBuilder.getTable(v);
-			if ((tableInfo != null) && (tableInfo.isOptional())) {
-				tableInfo.addFilter(toApply);
-				return true;
+			QueryColumnInfo columnInfo = null;
+			if (expr instanceof ExprColumn)
+			{
+				columnInfo = ((ExprColumn)expr).getColumnInfo();
 			}
-			return false;
+			else
+			{
+				columnInfo = queryBuilder.getColumn(((ExprVar) expr).asVar());
+			}
+			TableName tName = columnInfo.getName().getTableName();
+			final QueryTableInfo tableInfo = queryBuilder.getTable(tName);
+			tableInfo.addDataFilter(columnInfo);
+			if ((tableInfo != null) && (tableInfo.isOptional())) {
+				tableInfo.addJoinElement(toApply);
+			}
 		}
-		return false;
 	}
 
 	private void deparseDistinct(final Distinct distinct) {
@@ -306,29 +260,18 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor {
 			join.getRightItem().accept(fromVisitor);
 
 			if (join.getOnExpression() != null) {
+				
 				final SparqlExprVisitor expressionVisitor = new SparqlExprVisitor(
 						queryBuilder, SparqlQueryBuilder.REQUIRED, false);
 				join.getOnExpression().accept(expressionVisitor);
-				final ExpRewriter rewriter = new JoinRewriter(queryBuilder) {
-
-					@Override
-					protected Node addAlias(final QueryColumnInfo columnInfo,
-							final ColumnName alias) {
-						final TableName tName = columnInfo.getName()
-								.getTableName();
-						final QueryTableInfo tableInfo = queryBuilder
-								.getTable(tName);
-						tableInfo.setEquals(columnInfo, alias);
-						return queryBuilder.getColumn(alias).getVar();
-						// return
-						// tableInfo.addColumnToQuery(columnInfo.getColumn(),
-						// columnInfo.getName());
-					}
-				};
-				rewriter.addMap(fromVisitor.getName(), tableName);
-				expressionVisitor.getResult().visit(rewriter);
-				applyOuterExpr(rewriter.getResult(), fromVisitor.getName(),
+				applyOuterExpr(expressionVisitor.getResult(), fromVisitor.getName(),
 						tableName);
+
+			}
+			if (join.getUsingColumns() != null) {
+				for (final Object c : join.getUsingColumns()) {
+					queryBuilder.addUsing(((Column) c).getColumnName());
+				}
 			}
 		}
 	}

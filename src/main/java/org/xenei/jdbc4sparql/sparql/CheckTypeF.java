@@ -111,6 +111,7 @@ public class CheckTypeF implements Function {
 
 		final int sqlType = type.getInteger().intValue();
 
+		convertedValue = null;
 		final Node n = binding.get(var.asVar());
 		if (n == null) {
 			if (LOG.isDebugEnabled()) {
@@ -143,7 +144,7 @@ public class CheckTypeF implements Function {
 				retval = nullable.getBoolean();
 			}
 			if (LOG.isDebugEnabled()) {
-				LOG.debug("{} ({}) of {} ", this, var, binding);
+				LOG.debug("CheckTypeF({}) of {} ", var, binding);
 				LOG.debug("with value ({}) {} is {}", n, convertedValue, retval);
 			}
 			return retval ? NodeValue.TRUE : NodeValue.FALSE;

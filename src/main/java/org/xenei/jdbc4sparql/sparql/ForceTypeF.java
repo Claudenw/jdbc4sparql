@@ -9,6 +9,7 @@ import com.hp.hpl.jena.sparql.engine.binding.Binding;
 import com.hp.hpl.jena.sparql.expr.E_Function;
 import com.hp.hpl.jena.sparql.expr.ExprEvalException;
 import com.hp.hpl.jena.sparql.expr.ExprList;
+import com.hp.hpl.jena.sparql.expr.ExprVar;
 import com.hp.hpl.jena.sparql.expr.NodeValue;
 import com.hp.hpl.jena.sparql.expr.nodevalue.NodeValueBoolean;
 import com.hp.hpl.jena.sparql.function.FunctionEnv;
@@ -39,7 +40,7 @@ public class ForceTypeF extends CheckTypeF {
 			final NodeValue retval = TypeConverter.getNodeValue(super
 					.getValue());
 			if (LOG.isDebugEnabled()) {
-				LOG.debug("ForceTypeF is {}", retval);
+				LOG.debug("ForceTypeF( {} ) is {} ({})", args.get(0), retval, binding.get( ((ExprVar) args.get(0)).asVar()));
 			}
 			return retval;
 		}

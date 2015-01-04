@@ -95,16 +95,16 @@ public class SparqlParserTest {
 
 		// create the foo table
 		final RdfTableDef tableDef = new RdfTableDef.Builder()
-				.addColumnDef(
-						MetaCatalogBuilder.getNonNullStringBuilder().build(
-								model))
-				.addColumnDef(
-						MetaCatalogBuilder.getNullStringBuilder().build(model))
-				.addColumnDef(
-						MetaCatalogBuilder.getNonNullIntBuilder().build(model))
-				.addColumnDef(
-						MetaCatalogBuilder.getNullIntBuilder().build(model))
-				.build(model);
+		.addColumnDef(
+				MetaCatalogBuilder.getNonNullStringBuilder().build(
+						model))
+						.addColumnDef(
+								MetaCatalogBuilder.getNullStringBuilder().build(model))
+								.addColumnDef(
+										MetaCatalogBuilder.getNonNullIntBuilder().build(model))
+										.addColumnDef(
+												MetaCatalogBuilder.getNullIntBuilder().build(model))
+												.build(model);
 
 		RdfTable.Builder bldr = new RdfTable.Builder().setTableDef(tableDef)
 				.setColumn(0, "StringCol").setColumn(1, "NullableStringCol")
@@ -174,7 +174,7 @@ public class SparqlParserTest {
 	// String nativeSQL(String sqlQuery) throws SQLException;
 
 	private Query getQuery(final String sql) throws SQLDataException,
-			JSQLParserException {
+	JSQLParserException {
 		final Statement stmt = parserManager.parse(new StringReader(sql));
 		final SparqlVisitor sparqlVisitor = new SparqlVisitor(catalogs, parser,
 				catalog, schema);
@@ -189,8 +189,8 @@ public class SparqlParserTest {
 
 	private Map<Class<? extends Element>, Wrapper> validate(final Query query,
 			final Map<Class<? extends Element>, Integer> tests)
-			throws IllegalAccessException, IllegalArgumentException,
-			InvocationTargetException {
+					throws IllegalAccessException, IllegalArgumentException,
+					InvocationTargetException {
 		final Map<Class<? extends Element>, Wrapper> retval = new IdentityHashMap<Class<? extends Element>, Wrapper>();
 		final ElementExtractor extractor = new ElementExtractor();
 		for (final Map.Entry<Class<? extends Element>, Integer> test : tests
@@ -2752,6 +2752,206 @@ public class SparqlParserTest {
 		verifyVars(query.getProjectVars(), new String[] {
 			"arg"
 		});
+		tests.clear();
+
+	}
+
+	@Test
+	public void testOuterJoin() throws Exception {
+		query = getQuery("SELECT foo.IntCol, bar.BarIntCol FROM foo OUTER JOIN bar ON foo.IntCol=bar.BarIntCol");
+		// 2 from each table
+		tests.put(ElementBind.class, 4);
+		// 1 from each table + join
+		tests.put(ElementFilter.class, 3);
+		// 2 from each table + outer table
+		tests.put(ElementOptional.class, 5);
+		tests.put(ElementPathBlock.class, 10);
+		results = validate(query, tests);
+	}
+
+	@Test
+	public void testOuterJoin_Opt() throws Exception {
+
+		/* OPT COLUMN */
+		query = getQuery(String.format(
+				"SELECT %s FROM foo OUTER JOIN bar ON foo.%s=bar.Bar%s", OPT,
+				RQD_TEST, RQD_TEST));
+		// 2 from foo, 1 from bar
+		tests.put(ElementBind.class, 3);
+		// 1 from each table + join filter
+		tests.put(ElementFilter.class, 3);
+		// 2 from each table + 1 for outer table
+		tests.put(ElementOptional.class, 5);
+		tests.put(ElementPathBlock.class, 10);
+		validate(query, tests);
+		assertEquals(1, query.getProjectVars().size());
+		tests.clear();
+
+		query = getQuery(String.format(
+				"SELECT %s FROM foo OUTER JOIN bar ON foo.%s=bar.%s", OPT,
+				RQD_TEST, OPT_TEST));
+		// 2 from foo, 1 from bar
+		tests.put(ElementBind.class, 3);
+		// 1 from each table + join filter
+		tests.put(ElementFilter.class, 3);
+		// 2 from each table + 1 for outer table
+		tests.put(ElementOptional.class, 5);
+		tests.put(ElementPathBlock.class, 10);
+		validate(query, tests);
+		assertEquals(1, query.getProjectVars().size());
+		tests.clear();
+
+		query = getQuery(String.format(
+				"SELECT %s FROM foo OUTER JOIN bar ON foo.%s=bar.Bar%s", OPT,
+				OPT_TEST, RQD_TEST));
+		// 2 from foo, 1 from bar
+		tests.put(ElementBind.class, 3);
+		// 1 from each table + join filter
+		tests.put(ElementFilter.class, 3);
+		// 2 from each table + 1 for outer table
+		tests.put(ElementOptional.class, 5);
+		tests.put(ElementPathBlock.class, 10);
+		validate(query, tests);
+		assertEquals(1, query.getProjectVars().size());
+		tests.clear();
+
+		query = getQuery(String.format(
+				"SELECT %s FROM foo OUTER JOIN bar ON foo.%s=bar.%s", OPT,
+				OPT_TEST, OPT_TEST));
+		// 2 from foo, 1 from bar
+		tests.put(ElementBind.class, 3);
+		// 1 from each table + join filter
+		tests.put(ElementFilter.class, 3);
+		// 2 from each table + 1 for outer table
+		tests.put(ElementOptional.class, 5);
+		tests.put(ElementPathBlock.class, 10);
+		validate(query, tests);
+		assertEquals(1, query.getProjectVars().size());
+		tests.clear();
+	}
+
+	@Test
+	public void testOuterJoin_Rqd() throws Exception {
+
+		/* RQD COLUMN */
+		query = getQuery(String.format(
+				"SELECT %s FROM foo OUTER JOIN bar ON foo.%s=bar.Bar%s", RQD,
+				RQD_TEST, RQD_TEST));
+		// 2 from foo, 1 from bar
+		tests.put(ElementBind.class, 3);
+		// 1 from each table + join filter
+		tests.put(ElementFilter.class, 3);
+		// 2 from each table + 1 for outer table
+		tests.put(ElementOptional.class, 5);
+		tests.put(ElementPathBlock.class, 10);
+		validate(query, tests);
+		assertEquals(1, query.getProjectVars().size());
+		tests.clear();
+
+		query = getQuery(String.format(
+				"SELECT %s FROM foo OUTER JOIN bar ON foo.%s=bar.Bar%s", RQD,
+				RQD_TEST, RQD_TEST));
+		// 2 from foo, 1 from bar
+		tests.put(ElementBind.class, 3);
+		// 1 from each table + join filter
+		tests.put(ElementFilter.class, 3);
+		// 2 from each table + 1 for outer table
+		tests.put(ElementOptional.class, 5);
+		tests.put(ElementPathBlock.class, 10);
+		validate(query, tests);
+		assertEquals(1, query.getProjectVars().size());
+		tests.clear();
+
+		query = getQuery(String.format(
+				"SELECT %s FROM foo OUTER JOIN bar ON foo.%s=bar.Bar%s", RQD,
+				RQD_TEST, RQD_TEST));
+		// 2 from foo, 1 from bar
+		tests.put(ElementBind.class, 3);
+		// 1 from each table + join filter
+		tests.put(ElementFilter.class, 3);
+		// 2 from each table + 1 for outer table
+		tests.put(ElementOptional.class, 5);
+		tests.put(ElementPathBlock.class, 10);
+		validate(query, tests);
+		assertEquals(1, query.getProjectVars().size());
+		tests.clear();
+
+		query = getQuery(String.format(
+				"SELECT %s FROM foo OUTER JOIN bar ON foo.%s=bar.Bar%s", RQD,
+				RQD_TEST, RQD_TEST));
+		// 2 from foo, 1 from bar
+		tests.put(ElementBind.class, 3);
+		// 1 from each table + join filter
+		tests.put(ElementFilter.class, 3);
+		// 2 from each table + 1 for outer table
+		tests.put(ElementOptional.class, 5);
+		tests.put(ElementPathBlock.class, 10);
+		validate(query, tests);
+		assertEquals(1, query.getProjectVars().size());
+		tests.clear();
+
+	}
+
+	@Test
+	public void testOuterJoin_Using() throws Exception {
+		// NullableIntCol is promoted to required as it is what we are joining
+		// on.
+		/* star select */
+		query = getQuery("SELECT * FROM foo OUTER JOIN bar USING (NullableIntCol)");
+		// 4 from each table
+		tests.put(ElementBind.class, 8);
+		// 1 from each table
+		tests.put(ElementFilter.class, 2);
+		// 1 from each table
+		tests.put(ElementOptional.class, 3);
+		tests.put(ElementPathBlock.class, 10);
+		results = validate(query, tests);
+
+		// one for each column in each table minus the joined column name.
+		assertEquals(7, query.getProjectVars().size());
+		tests.clear();
+
+		/* foo star select */
+		query = getQuery("SELECT foo.* FROM foo OUTER JOIN bar using (NullableIntCol)");
+		// 4 from foo + 1 bar nullableIntCol
+		tests.put(ElementBind.class, 5);
+		// 1 from each table
+		tests.put(ElementFilter.class, 2);
+		// 1 from each table
+		tests.put(ElementOptional.class, 3);
+		tests.put(ElementPathBlock.class, 10);
+		validate(query, tests);
+		assertEquals(4, query.getProjectVars().size());
+		tests.clear();
+
+		/* OPT COLUMN */
+		query = getQuery(String
+				.format("SELECT %s FROM foo OUTER JOIN bar using (NullableIntCol)",
+						OPT));
+		// 2 from foo + 1 from bar
+		tests.put(ElementBind.class, 3);
+		// 1 from each table
+		tests.put(ElementFilter.class, 2);
+		// 1 from each table
+		tests.put(ElementOptional.class, 3);
+		tests.put(ElementPathBlock.class, 10);
+		validate(query, tests);
+		assertEquals(1, query.getProjectVars().size());
+		tests.clear();
+
+		/* RQD COLUMN */
+		query = getQuery(String
+				.format("SELECT %s FROM foo OUTER JOIN bar using (NullableIntCol)",
+						RQD));
+		// 2 from foo + 1 from bar
+		tests.put(ElementBind.class, 3);
+		// 1 from each table
+		tests.put(ElementFilter.class, 2);
+		// 1 from each table
+		tests.put(ElementOptional.class, 3);
+		tests.put(ElementPathBlock.class, 10);
+		validate(query, tests);
+		assertEquals(1, query.getProjectVars().size());
 		tests.clear();
 
 	}
