@@ -19,135 +19,54 @@
  */
 package org.xenei.jdbc4sparql.sparql.visitor;
 
-import java.io.StringReader;
-import java.net.URL;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
-import net.sf.jsqlparser.parser.CCJSqlParserManager;
-import net.sf.jsqlparser.statement.Statement;
-
-import org.apache.log4j.Level;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.xenei.jdbc4sparql.LoggingConfig;
-import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.name.ColumnName;
 import org.xenei.jdbc4sparql.iface.name.NameSegments;
 import org.xenei.jdbc4sparql.impl.NameUtils;
-import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
-import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
-import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
-import org.xenei.jdbc4sparql.impl.rdf.RdfTableDef;
-import org.xenei.jdbc4sparql.impl.virtual.VirtualCatalog;
-import org.xenei.jdbc4sparql.meta.MetaCatalogBuilder;
-import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
-import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlParserImpl;
 import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlVisitor;
-import org.xenei.jdbc4sparql.utils.ElementExtractor;
 
 import com.hp.hpl.jena.query.Query;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.sparql.core.TriplePath;
+import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.sparql.core.Var;
-import com.hp.hpl.jena.sparql.core.VarExprList;
 import com.hp.hpl.jena.sparql.expr.E_Equals;
+import com.hp.hpl.jena.sparql.expr.E_Function;
 import com.hp.hpl.jena.sparql.expr.E_NotEquals;
 import com.hp.hpl.jena.sparql.expr.Expr;
+import com.hp.hpl.jena.sparql.expr.ExprAggregator;
 import com.hp.hpl.jena.sparql.expr.ExprVar;
 import com.hp.hpl.jena.sparql.expr.nodevalue.NodeValueString;
 import com.hp.hpl.jena.sparql.syntax.Element;
 import com.hp.hpl.jena.sparql.syntax.ElementBind;
 import com.hp.hpl.jena.sparql.syntax.ElementFilter;
-import com.hp.hpl.jena.sparql.syntax.ElementGroup;
 import com.hp.hpl.jena.sparql.syntax.ElementOptional;
 import com.hp.hpl.jena.sparql.syntax.ElementPathBlock;
 import com.hp.hpl.jena.sparql.syntax.ElementService;
 import com.hp.hpl.jena.sparql.syntax.ElementSubQuery;
 
-public class RemoteSparqlVisitorTest {
-	private Map<String, Catalog> catalogs;
-	private SparqlParser parser;
-	private final CCJSqlParserManager parserManager = new CCJSqlParserManager();
-	private SparqlVisitor sv;
+public class RemoteSparqlVisitorTest extends AbstractSparqlVisitorTest {
 
-	private static final String CATALOG_NAME = "testCatalog";
-	private static final String SCHEMA_NAME = "testSchema";
+	private static final String SERVICE_URI = "http://example.com/sparql";
 
+	@Override
 	@Before
-	public void setUp() throws Exception {
-		catalogs = new HashMap<String, Catalog>();
-		catalogs.put(VirtualCatalog.NAME, new VirtualCatalog());
+	public void setup() throws Exception {
+		super.setup();
+		final Property p = model.createProperty(
+				"http://org.xenei.jdbc4sparql/entity/Catalog#",
+				"sparqlEndpoint");
 
-		LoggingConfig.setConsole(Level.DEBUG);
-		LoggingConfig.setRootLogger(Level.INFO);
-		LoggingConfig.setLogger("com.hp.hpl.jena.", Level.INFO);
-		LoggingConfig.setLogger("org.xenei.jdbc4sparql", Level.DEBUG);
-		final Model model = ModelFactory.createDefaultModel();
-		final Model localModel = ModelFactory.createDefaultModel();
-		final RdfCatalog catalog = new RdfCatalog.Builder()
-				.setSparqlEndpoint(new URL("http://example.com/sparql"))
-				.setLocalModel(localModel).setName(CATALOG_NAME).build(model);
-
-		catalogs.put(catalog.getShortName(), catalog);
-
-		final RdfSchema schema = new RdfSchema.Builder().setCatalog(catalog)
-				.setName(SCHEMA_NAME).build(model);
-
-		// create the foo table
-		final RdfTableDef tableDef = new RdfTableDef.Builder()
-				.addColumnDef(
-						MetaCatalogBuilder.getNonNullStringBuilder().build(
-								model))
-				.addColumnDef(
-						MetaCatalogBuilder.getNullStringBuilder().build(model))
-				.addColumnDef(
-						MetaCatalogBuilder.getNonNullIntBuilder().build(model))
-				.addColumnDef(
-						MetaCatalogBuilder.getNullIntBuilder().build(model))
-				.build(model);
-
-		RdfTable.Builder bldr = new RdfTable.Builder().setTableDef(tableDef)
-				.setColumn(0, "StringCol").setColumn(1, "NullableStringCol")
-				.setColumn(2, "IntCol").setColumn(3, "NullableIntCol")
-				.setName("foo").setSchema(schema)
-				.addQuerySegment("%1$s a <http://example.com/foo> .");
-		bldr.getColumn(0).addQuerySegment(
-				"%1$s <http://example.com/zero> %2$s .");
-		bldr.getColumn(1).addQuerySegment(
-				"%1$s <http://example.com/one> %2$s .");
-		bldr.getColumn(2).addQuerySegment(
-				"%1$s <http://example.com/two> %2$s .");
-		bldr.getColumn(3).addQuerySegment(
-				"%1$s <http://example.com/three> %2$s .");
-		bldr.build(model);
-
-		bldr = new RdfTable.Builder().setTableDef(tableDef)
-				.setColumn(0, "BarStringCol")
-				.setColumn(1, "BarNullableStringCol")
-				.setColumn(2, "BarIntCol")
-				// must be NullableIntCol for inner join test
-				.setColumn(3, "NullableIntCol").setName("bar")
-				.setSchema(schema)
-				.addQuerySegment("%1$s a <http://example.com/bar> . ");
-		bldr.getColumn(0).addQuerySegment(
-				"%1$s <http://example.com/zero> %2$s .");
-		bldr.getColumn(1).addQuerySegment(
-				"%1$s <http://example.com/one> %2$s .");
-		bldr.getColumn(2).addQuerySegment(
-				"%1$s <http://example.com/two> %2$s .");
-		bldr.getColumn(3).addQuerySegment(
-				"%1$s <http://example.com/three> %2$s .");
-		bldr.build(model);
-
-		parser = new SparqlParserImpl();
+		catalog.getResource().addProperty(p, SERVICE_URI);
+		assertTrue("Catalog was not set to service", catalog.isService());
+		// recreate the visitor to handle service catalog
 		sv = new SparqlVisitor(catalogs, parser, catalog, schema);
-
 	}
 
 	@Test
@@ -161,11 +80,11 @@ public class RemoteSparqlVisitorTest {
 				String.format(fmt, "bar", "BarNullableStringCol"),
 				String.format(fmt, "bar", "BarIntCol")
 		};
-		final String query = "SELECT * FROM foo inner join bar using (NullableIntCol)";
-		final Statement stmt = parserManager.parse(new StringReader(query));
-
-		stmt.accept(sv);
-		final Query q = sv.getBuilder().build();
+		final Query q = getQuery("SELECT * FROM foo inner join bar using (NullableIntCol)");
+		tests.put(ElementBind.class, 7);
+		tests.put(ElementFilter.class, 3);
+		tests.put(ElementService.class, 1);
+		results = validate(q, tests);
 
 		final List<Var> vLst = q.getProjectVars();
 		Assert.assertEquals(7, vLst.size());
@@ -173,62 +92,66 @@ public class RemoteSparqlVisitorTest {
 			Assert.assertTrue(Arrays.asList(colNames).contains(v.getName()));
 		}
 
-		final ElementExtractor extractor = new ElementExtractor(
-				ElementBind.class);
-		q.getQueryPattern().visit(extractor);
-		Assert.assertEquals(7, extractor.getExtracted().size());
-		for (final Element el : extractor.getExtracted()) {
+		final ElementService service = (ElementService) results
+				.get(ElementService.class).lst.get(0);
+		final Query q2 = ((ElementSubQuery) service.getElement()).getQuery();
+
+		final List<Element> bindList = results.get(ElementBind.class).lst;
+		for (final Element el : bindList) {
 			final ElementBind bind = (ElementBind) el;
-			Assert.assertTrue(q.getProjectVars().contains(bind.getVar()));
+			Assert.assertTrue("result vars missing bind var " + bind.getVar(),
+					q.getProjectVars().contains(bind.getVar()));
+			final E_Function func = (E_Function) bind.getExpr();
+			Assert.assertTrue(
+					"service vars missing bind var " + bind.getExpr(),
+					q2.getProjectVars().contains(
+							((ExprVar) func.getArg(1)).asVar()));
 		}
-
-		q.getQueryPattern().visit(
-				extractor.reset().setMatchType(ElementFilter.class));
-		// 2 datadype 2 for join 1 for equality.
-		Assert.assertEquals(5, extractor.getExtracted().size());
-
 	}
 
 	@Test
 	public void testMethodParse() throws Exception {
-		final String query = "SELECT count( IntCol ) FROM foo";
-		final Statement stmt = parserManager.parse(new StringReader(query));
-		stmt.accept(sv);
-		final Query q = sv.getBuilder().build();
+		final Query q = getQuery("SELECT count( IntCol ) FROM foo");
+		tests.put(ElementBind.class, 0);
+		tests.put(ElementFilter.class, 1);
+		tests.put(ElementService.class, 1);
+		results = validate(q, tests);
 
-		final VarExprList vLst = q.getProject();
-		Assert.assertEquals(1, vLst.getVars().size());
+		final ElementService service = (ElementService) results
+				.get(ElementService.class).lst.get(0);
+		final Query q2 = ((ElementSubQuery) service.getElement()).getQuery();
 
-		final ElementExtractor extractor = new ElementExtractor(
-				ElementBind.class);
-		q.getQueryPattern().visit(extractor);
-		Assert.assertEquals(3, extractor.getExtracted().size());
-
-		q.getQueryPattern().visit(
-				extractor.reset().setMatchType(ElementFilter.class));
-		Assert.assertEquals(2, extractor.getExtracted().size());
+		assertEquals(1, q.getProjectVars().size());
+		final ExprAggregator e = (ExprAggregator) q.getProject().getExpr(
+				q.getProjectVars().get(0));
+		final Var v2 = e.getAggregator().getExpr().asVar();
+		assertTrue(v2.toString() + " missing from service call", q2
+				.getProjectVars().contains(v2));
 	}
 
 	@Test
 	public void testMethodWithAliasParse() throws Exception {
-		final String query = "SELECT count( IntCol ) AS bar FROM foo";
-		final Statement stmt = parserManager.parse(new StringReader(query));
-		stmt.accept(sv);
-		final Query q = sv.getBuilder().build();
+		final Query q = getQuery("SELECT count( IntCol ) AS bar FROM foo");
+		tests.put(ElementBind.class, 0);
+		tests.put(ElementFilter.class, 1);
+		tests.put(ElementService.class, 1);
+		results = validate(q, tests);
 
 		Assert.assertEquals(1, q.getProject().size());
 		Assert.assertEquals(1, q.getProjectVars().size());
 		Assert.assertEquals("bar", q.getProjectVars().get(0).getVarName());
 
-		final ElementExtractor extractor = new ElementExtractor(
-				ElementBind.class);
-		q.getQueryPattern().visit(extractor);
-		// 2 required column + count
-		Assert.assertEquals(3, extractor.getExtracted().size());
+		final ElementService service = (ElementService) results
+				.get(ElementService.class).lst.get(0);
+		final Query q2 = ((ElementSubQuery) service.getElement()).getQuery();
 
-		q.getQueryPattern().visit(
-				extractor.reset().setMatchType(ElementFilter.class));
-		Assert.assertEquals(2, extractor.getExtracted().size());
+		assertEquals(1, q.getProjectVars().size());
+		final ExprAggregator e = (ExprAggregator) q.getProject().getExpr(
+				q.getProjectVars().get(0));
+		final Var v2 = e.getAggregator().getExpr().asVar();
+		assertTrue(v2.toString() + " missing from service call", q2
+				.getProjectVars().contains(v2));
+
 	}
 
 	@Test
@@ -237,10 +160,12 @@ public class RemoteSparqlVisitorTest {
 				"StringCol", "NullableStringCol", "IntCol", "NullableIntCol"
 		};
 
-		final String query = "SELECT * FROM foo";
-		final Statement stmt = parserManager.parse(new StringReader(query));
-		stmt.accept(sv);
-		final Query q = sv.getBuilder().build();
+		final Query q = getQuery("SELECT * FROM foo");
+		tests.put(ElementBind.class, 4);
+		tests.put(ElementFilter.class, 1);
+		tests.put(ElementOptional.class, 2);
+		tests.put(ElementService.class, 1);
+		results = validate(q, tests);
 
 		final List<Var> vLst = q.getProjectVars();
 		Assert.assertEquals(4, vLst.size());
@@ -248,29 +173,13 @@ public class RemoteSparqlVisitorTest {
 			Assert.assertTrue(Arrays.asList(colNames).contains(v.getName()));
 		}
 
-		Assert.assertTrue(q.getQueryPattern() instanceof ElementGroup);
-		final ElementExtractor extractor = new ElementExtractor(
-				ElementBind.class);
-		q.getQueryPattern().visit(extractor);
-		Assert.assertEquals(4, extractor.getExtracted().size());
-		for (final Element el : extractor.getExtracted()) {
+		for (final Element el : results.get(ElementBind.class).lst) {
 			final ElementBind bind = (ElementBind) el;
 			Assert.assertTrue(q.getProjectVars().contains(bind.getVar()));
 		}
 
-		q.getQueryPattern().visit(
-				extractor.reset().setMatchType(ElementFilter.class));
-		Assert.assertEquals(1, extractor.getExtracted().size());
-
-		q.getQueryPattern().visit(
-				extractor.reset().setMatchType(ElementOptional.class));
-		Assert.assertEquals(2, extractor.getExtracted().size());
-
-		q.getQueryPattern().visit(
-				extractor.reset().setMatchType(ElementService.class));
-		Assert.assertEquals(1, extractor.getExtracted().size());
-		final ElementService srv = (ElementService) extractor.getExtracted()
-				.get(0);
+		final ElementService srv = (ElementService) results
+				.get(ElementService.class).lst.get(0);
 		final ElementSubQuery esq = (ElementSubQuery) srv.getElement();
 		final List<Var> vars = esq.getQuery().getProjectVars();
 		Assert.assertEquals(4, vars.size());
@@ -279,113 +188,77 @@ public class RemoteSparqlVisitorTest {
 
 	@Test
 	public void testSpecColParse() throws Exception {
-		final String query = "SELECT StringCol FROM foo";
-		final Statement stmt = parserManager.parse(new StringReader(query));
-		stmt.accept(sv);
-		final Query q = sv.getBuilder().build();
+		final Query q = getQuery("SELECT StringCol FROM foo");
+
+		tests.put(ElementBind.class, 1);
+		tests.put(ElementFilter.class, 1);
+		tests.put(ElementOptional.class, 2);
+		tests.put(ElementService.class, 1);
+		results = validate(q, tests);
 
 		final List<Var> vLst = q.getProjectVars();
 		Assert.assertEquals(1, vLst.size());
 		Assert.assertEquals(Var.alloc("StringCol"), vLst.get(0));
 
-		final ElementExtractor extractor = new ElementExtractor(
-				ElementBind.class);
-		q.getQueryPattern().visit(extractor);
-		// 2 required columns
-		final String[] names = {
-				"StringCol", "IntCol"
-		};
-		Assert.assertEquals(2, extractor.getExtracted().size());
-		for (final Element el : extractor.getExtracted()) {
-			final ElementBind eb = (ElementBind) el;
-			final String name = eb.getVar().getName();
-			Assert.assertTrue(Arrays.asList(names).contains(name));
-		}
+		final Element el = results.get(ElementBind.class).lst.get(0);
+		final ElementBind eb = (ElementBind) el;
+		Assert.assertEquals("StringCol", eb.getVar().getName());
 
-		q.getQueryPattern().visit(
-				extractor.reset().setMatchType(ElementFilter.class));
-		Assert.assertEquals(1, extractor.getExtracted().size());
-
-		q.getQueryPattern().visit(
-				extractor.reset().setMatchType(ElementService.class));
-		Assert.assertEquals(1, extractor.getExtracted().size());
-		final ElementService srv = (ElementService) extractor.getExtracted()
-				.get(0);
+		final ElementService srv = (ElementService) results
+				.get(ElementService.class).lst.get(0);
 		final ElementSubQuery esq = (ElementSubQuery) srv.getElement();
 		final List<Var> vars = esq.getQuery().getProjectVars();
-		Assert.assertEquals(2, vars.size());
-
+		// all 4 columns in foo
+		Assert.assertEquals(4, vars.size());
 	}
 
 	@Test
 	public void testSpecColWithAliasParse() throws Exception {
-		final String query = "SELECT StringCol AS bar FROM foo";
-		final Statement stmt = parserManager.parse(new StringReader(query));
-		stmt.accept(sv);
-		final Query q = sv.getBuilder().build();
+		final Query q = getQuery("SELECT StringCol AS bar FROM foo");
+
+		tests.put(ElementBind.class, 1);
+		tests.put(ElementFilter.class, 1);
+		tests.put(ElementOptional.class, 2);
+		tests.put(ElementService.class, 1);
+		results = validate(q, tests);
 
 		final List<Var> vLst = q.getProjectVars();
 		Assert.assertEquals(1, vLst.size());
 		Assert.assertEquals(Var.alloc("bar"), vLst.get(0));
 
-		final ElementExtractor extractor = new ElementExtractor(
-				ElementBind.class);
-		q.getQueryPattern().visit(extractor);
-		// 3 required columns
-		final String[] names = {
-				"StringCol", "IntCol", "bar"
-		};
-		Assert.assertEquals(3, extractor.getExtracted().size());
-		for (final Element el : extractor.getExtracted()) {
-			final ElementBind eb = (ElementBind) el;
-			final String name = eb.getVar().getName();
-			Assert.assertTrue(Arrays.asList(names).contains(name));
-		}
+		final ElementBind eb = (ElementBind) results.get(ElementBind.class).lst
+				.get(0);
+		final String name = eb.getVar().getName();
+		Assert.assertEquals("bar", name);
 
-		q.getQueryPattern().visit(
-				extractor.reset().setMatchType(ElementFilter.class));
-		Assert.assertEquals(1, extractor.getExtracted().size());
 	}
 
 	@Test
 	public void testSpecColWithEqnParse() throws Exception {
-		final String query = "SELECT StringCol FROM foo WHERE StringCol != 'baz'";
-		final Statement stmt = parserManager.parse(new StringReader(query));
-		stmt.accept(sv);
-		final Query q = sv.getBuilder().build();
+		final Query q = getQuery("SELECT StringCol FROM foo WHERE StringCol != 'baz'");
 
-		final ElementExtractor extractor = new ElementExtractor(
-				ElementBind.class);
-		q.getQueryPattern().visit(extractor);
-		// 2 required columns
-		final String[] names = {
-				"StringCol", "IntCol"
-		};
-		Assert.assertEquals(2, extractor.getExtracted().size());
-		for (final Element el : extractor.getExtracted()) {
-			final ElementBind eb = (ElementBind) el;
-			final String name = eb.getVar().getName();
-			Assert.assertTrue(Arrays.asList(names).contains(name));
-		}
+		tests.put(ElementBind.class, 1);
+		tests.put(ElementFilter.class, 2);
+		tests.put(ElementOptional.class, 2);
+		tests.put(ElementService.class, 1);
+		results = validate(q, tests);
 
-		q.getQueryPattern().visit(
-				extractor.reset().setMatchType(ElementFilter.class));
-		// 1 datafilter and 1 real filter
-		Assert.assertEquals(2, extractor.getExtracted().size());
-
-		q.getQueryPattern().visit(
-				extractor.reset().setMatchType(ElementService.class));
-		Assert.assertEquals(1, extractor.getExtracted().size());
-		final ElementService srv = (ElementService) extractor.getExtracted()
+		final ElementBind eb = (ElementBind) results.get(ElementBind.class).lst
 				.get(0);
+		final String name = eb.getVar().getName();
+		Assert.assertEquals("StringCol", name);
+
+		final ElementService srv = (ElementService) results
+				.get(ElementService.class).lst.get(0);
 		final ElementSubQuery esq = (ElementSubQuery) srv.getElement();
 		final List<Var> vars = esq.getQuery().getProjectVars();
-		Assert.assertEquals(2, vars.size());
-		srv.visit(extractor.reset().setMatchType(ElementFilter.class));
-		// 1 filter inside of service call
-		Assert.assertEquals(1, extractor.getExtracted().size());
-		final Expr expr = ((ElementFilter) extractor.getExtracted().get(0))
-				.getExpr();
+		Assert.assertEquals(4, vars.size());
+		tests.clear();
+		tests.put(ElementFilter.class, 1);
+		results = validate(srv.getElement(), tests);
+
+		final Expr expr = ((ElementFilter) results.get(ElementFilter.class).lst
+				.get(0)).getExpr();
 		Assert.assertTrue(expr instanceof E_NotEquals);
 		final E_NotEquals expr2 = (E_NotEquals) expr;
 		Assert.assertEquals("v_571a89fd_0385_38d9_9ef2_c37d2542d0ad",
@@ -401,37 +274,33 @@ public class RemoteSparqlVisitorTest {
 
 	@Test
 	public void testTableAliasParse() throws Exception {
-		final String query = "SELECT StringCol FROM foo bar WHERE StringCol != 'baz'";
-		final Statement stmt = parserManager.parse(new StringReader(query));
-		stmt.accept(sv);
-		final Query q = sv.getBuilder().build();
+		final Query q = getQuery("SELECT StringCol FROM foo bar WHERE StringCol != 'baz'");
+
+		tests.put(ElementBind.class, 1);
+		tests.put(ElementFilter.class, 2);
+		tests.put(ElementOptional.class, 2);
+		tests.put(ElementService.class, 1);
+		tests.put(ElementPathBlock.class, 4);
+		results = validate(q, tests);
 
 		final List<Var> vLst = q.getProjectVars();
 		Assert.assertEquals(1, vLst.size());
 		Assert.assertEquals(Var.alloc("StringCol"), vLst.get(0));
 
-		final ElementExtractor extractor = new ElementExtractor(
-				ElementBind.class);
-		q.getQueryPattern().visit(extractor);
 		// 2 required columns
 		final String[] names = {
 				"StringCol", "IntCol"
 		};
-		Assert.assertEquals(2, extractor.getExtracted().size());
-		for (final Element el : extractor.getExtracted()) {
+
+		for (final Element el : results.get(ElementBind.class).lst) {
 			final ElementBind eb = (ElementBind) el;
 			final String name = eb.getVar().getName();
 			Assert.assertTrue(Arrays.asList(names).contains(name));
 		}
 
-		q.getQueryPattern().visit(
-				extractor.reset().setMatchType(ElementFilter.class));
-		// 1 datatype and 1 real filter
-		Assert.assertEquals(2, extractor.getExtracted().size());
-
 		// should be the first one
-		final Expr expr = ((ElementFilter) extractor.getExtracted().get(0))
-				.getExpr();
+		final Expr expr = ((ElementFilter) results.get(ElementFilter.class).lst
+				.get(0)).getExpr();
 		Assert.assertTrue(expr instanceof E_NotEquals);
 		final E_NotEquals expr2 = (E_NotEquals) expr;
 		Assert.assertEquals("v_c7b696e2_e6e6_372c_807d_51154bb155e1",
@@ -439,18 +308,9 @@ public class RemoteSparqlVisitorTest {
 		Assert.assertEquals("baz",
 				((NodeValueString) (expr2.getArg2())).asString());
 
-		q.getQueryPattern().visit(
-				extractor.reset().setMatchType(ElementPathBlock.class));
-		Assert.assertEquals(3, extractor.getExtracted().size());
-		final ElementPathBlock epb = (ElementPathBlock) extractor
-				.getExtracted().get(0);
-		final Iterator<TriplePath> iter = epb.patternElts();
-		while (iter.hasNext()) {
-			final TriplePath t = iter.next();
-			Assert.assertTrue(t.getSubject().isVariable());
-			Assert.assertEquals("v_31c94ccf_f177_3e10_a2f3_e790f85b33c5", t
-					.getSubject().getName());
-		}
+		verifyTable(results.get(ElementPathBlock.class),
+				"v_31c94ccf_f177_3e10_a2f3_e790f85b33c5");
+
 	}
 
 	@Test
@@ -465,12 +325,14 @@ public class RemoteSparqlVisitorTest {
 				"bar" + NameUtils.SPARQL_DOT + "BarIntCol",
 				"bar" + NameUtils.SPARQL_DOT + "NullableIntCol"
 		};
-		final String query = "SELECT * FROM foo, bar WHERE foo.IntCol = bar.BarIntCol";
-		final Statement stmt = parserManager.parse(new StringReader(query));
-		stmt.accept(sv);
-		final Query q = sv.getBuilder().build();
+		final Query q = getQuery("SELECT * FROM foo, bar WHERE foo.IntCol = bar.BarIntCol");
 
-		//
+		tests.put(ElementBind.class, columnNames.length);
+		tests.put(ElementFilter.class, 3);
+		tests.put(ElementOptional.class, 4);
+		tests.put(ElementService.class, 1);
+		results = validate(q, tests);
+
 		final List<Var> vLst = q.getProjectVars();
 		Assert.assertEquals(columnNames.length, vLst.size());
 		for (final Var v : vLst) {
@@ -481,17 +343,8 @@ public class RemoteSparqlVisitorTest {
 					Arrays.asList(columnNames).contains(tn.getSPARQLName()));
 		}
 
-		final ElementExtractor extractor = new ElementExtractor(
-				ElementBind.class);
-		q.getQueryPattern().visit(extractor);
-		Assert.assertEquals(columnNames.length, extractor.getExtracted().size());
-
-		q.getQueryPattern().visit(
-				extractor.reset().setMatchType(ElementFilter.class));
-		// one datatype for each table + real join filter
-		Assert.assertEquals(3, extractor.getExtracted().size());
-		final Expr expr = ((ElementFilter) extractor.getExtracted().get(0))
-				.getExpr();
+		final Expr expr = ((ElementFilter) results.get(ElementFilter.class).lst
+				.get(0)).getExpr();
 		Assert.assertTrue(expr instanceof E_Equals);
 		final E_Equals expr2 = (E_Equals) expr;
 		Assert.assertEquals("v_f87609c4_9dab_3bf7_8522_ccd46fa4e808",

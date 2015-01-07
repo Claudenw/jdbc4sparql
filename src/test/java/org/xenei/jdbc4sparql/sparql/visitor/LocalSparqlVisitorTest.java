@@ -19,41 +19,16 @@
  */
 package org.xenei.jdbc4sparql.sparql.visitor;
 
-import java.io.StringReader;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
-import net.sf.jsqlparser.parser.CCJSqlParserManager;
-import net.sf.jsqlparser.statement.Statement;
-
-import org.apache.log4j.Level;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
-import org.xenei.jdbc4sparql.LoggingConfig;
-import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.name.ColumnName;
 import org.xenei.jdbc4sparql.iface.name.NameSegments;
-import org.xenei.jdbc4sparql.iface.name.TableName;
 import org.xenei.jdbc4sparql.impl.NameUtils;
-import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
-import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
-import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
-import org.xenei.jdbc4sparql.impl.rdf.RdfTableDef;
-import org.xenei.jdbc4sparql.impl.virtual.VirtualCatalog;
-import org.xenei.jdbc4sparql.meta.MetaCatalogBuilder;
-import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
-import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlParserImpl;
-import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlVisitor;
-import org.xenei.jdbc4sparql.utils.ElementExtractor;
 
 import com.hp.hpl.jena.query.Query;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.sparql.core.TriplePath;
 import com.hp.hpl.jena.sparql.core.Var;
 import com.hp.hpl.jena.sparql.core.VarExprList;
 import com.hp.hpl.jena.sparql.expr.E_Bound;
@@ -69,82 +44,7 @@ import com.hp.hpl.jena.sparql.syntax.ElementFilter;
 import com.hp.hpl.jena.sparql.syntax.ElementOptional;
 import com.hp.hpl.jena.sparql.syntax.ElementPathBlock;
 
-public class LocalSparqlVisitorTest {
-	private Map<String, Catalog> catalogs;
-	private SparqlParser parser;
-	private final CCJSqlParserManager parserManager = new CCJSqlParserManager();
-	private SparqlVisitor sv;
-	private TableName tableName;
-
-	@Before
-	public void setUp() throws Exception {
-		catalogs = new HashMap<String, Catalog>();
-		catalogs.put(VirtualCatalog.NAME, new VirtualCatalog());
-		LoggingConfig.setConsole(Level.DEBUG);
-		LoggingConfig.setRootLogger(Level.INFO);
-		LoggingConfig.setLogger("com.hp.hpl.jena.", Level.INFO);
-		LoggingConfig.setLogger("org.xenei.jdbc4sparql", Level.DEBUG);
-		Class.forName("org.xenei.jdbc4sparql.J4SDriver");
-
-		final Model model = ModelFactory.createDefaultModel();
-		final Model localModel = ModelFactory.createDefaultModel();
-		final RdfCatalog catalog = new RdfCatalog.Builder()
-				.setLocalModel(localModel).setName("testCatalog").build(model);
-		catalogs.put(catalog.getShortName(), catalog);
-
-		final RdfSchema schema = new RdfSchema.Builder().setCatalog(catalog)
-				.setName("testSchema").build(model);
-
-		// create the foo table
-		final RdfTableDef tableDef = new RdfTableDef.Builder()
-				.addColumnDef(
-						MetaCatalogBuilder.getNonNullStringBuilder().build(
-								model))
-				.addColumnDef(
-						MetaCatalogBuilder.getNullStringBuilder().build(model))
-				.addColumnDef(
-						MetaCatalogBuilder.getNonNullIntBuilder().build(model))
-				.addColumnDef(
-						MetaCatalogBuilder.getNullIntBuilder().build(model))
-				.build(model);
-
-		RdfTable.Builder bldr = new RdfTable.Builder().setTableDef(tableDef)
-				.setColumn(0, "StringCol").setColumn(1, "NullableStringCol")
-				.setColumn(2, "IntCol").setColumn(3, "NullableIntCol")
-				.setName("foo").setSchema(schema)
-				.addQuerySegment("%1$s a <http://example.com/foo> . ");
-		bldr.getColumn(0).addQuerySegment(
-				"%1$s <http://example.com/zero> %2$s .");
-		bldr.getColumn(1).addQuerySegment(
-				"%1$s <http://example.com/one> %2$s . ");
-		bldr.getColumn(2).addQuerySegment(
-				"%1$s <http://example.com/two> %2$s . ");
-		bldr.getColumn(3).addQuerySegment(
-				"%1$s <http://example.com/three> %2$s .");
-		bldr.build(model);
-
-		bldr = new RdfTable.Builder().setTableDef(tableDef)
-				.setColumn(0, "BarStringCol")
-				.setColumn(1, "BarNullableStringCol")
-				.setColumn(2, "BarIntCol")
-				// must be NullableIntCol for inner join test
-				.setColumn(3, "NullableIntCol").setName("bar")
-				.setSchema(schema)
-				.addQuerySegment("%1$s a <http://example.com/bar> . ");
-		bldr.getColumn(0).addQuerySegment(
-				"%1$s <http://example.com/zero> %2$s . ");
-		bldr.getColumn(1).addQuerySegment(
-				"%1$s <http://example.com/one> %2$s . ");
-		bldr.getColumn(2).addQuerySegment(
-				"%1$s <http://example.com/two> %2$s . ");
-		bldr.getColumn(3).addQuerySegment(
-				"%1$s <http://example.com/three> %2$s . ");
-		bldr.build(model);
-		tableName = bldr.getName();
-		parser = new SparqlParserImpl();
-		sv = new SparqlVisitor(catalogs, parser, catalog, schema);
-
-	}
+public class LocalSparqlVisitorTest extends AbstractSparqlVisitorTest {
 
 	@Test
 	public void testInnerJoinParse() throws Exception {
@@ -157,11 +57,13 @@ public class LocalSparqlVisitorTest {
 				String.format(fmt, "bar", "BarNullableStringCol"),
 				String.format(fmt, "bar", "BarIntCol")
 		};
-		final String query = "SELECT * FROM foo inner join bar using (NullableIntCol)";
-		final Statement stmt = parserManager.parse(new StringReader(query));
 
-		stmt.accept(sv);
-		final Query q = sv.getBuilder().build();
+		final Query q = getQuery("SELECT * FROM foo inner join bar using (NullableIntCol)");
+
+		tests.put(ElementBind.class, 8);
+		tests.put(ElementFilter.class, 2);
+		tests.put(ElementOptional.class, 2);
+		results = validate(q, tests);
 
 		final List<Var> vLst = q.getProjectVars();
 		Assert.assertEquals(7, vLst.size());
@@ -169,53 +71,39 @@ public class LocalSparqlVisitorTest {
 			Assert.assertTrue(Arrays.asList(colNames).contains(v.getName()));
 		}
 
-		final ElementExtractor extractor = new ElementExtractor(
-				ElementBind.class);
-		q.getQueryPattern().visit(extractor);
-		// 7 result variable + 1 extra for using.
-		Assert.assertEquals(8, extractor.getExtracted().size());
-		for (final Element el : extractor.getExtracted()) {
+		for (final Element el : results.get(ElementBind.class).lst) {
 			final ElementBind bind = (ElementBind) el;
 			Assert.assertTrue(q.getProjectVars().contains(bind.getVar()));
 		}
-
-		q.getQueryPattern().visit(
-				extractor.reset().setMatchType(ElementFilter.class));
-		// one for each table
-		Assert.assertEquals(2, extractor.getExtracted().size());
 	}
 
 	@Test
 	public void testMethodParse() throws Exception {
-		final String query = "SELECT count( IntCol ) FROM foo";
-		final Statement stmt = parserManager.parse(new StringReader(query));
-		stmt.accept(sv);
-		final Query q = sv.getBuilder().build();
+		final Query q = getQuery("SELECT count( IntCol ) FROM foo");
+
+		tests.put(ElementBind.class, 1);
+		tests.put(ElementFilter.class, 1);
+		tests.put(ElementOptional.class, 2);
+		results = validate(q, tests);
 
 		final VarExprList vLst = q.getProject();
 		Assert.assertEquals(1, vLst.getExprs().size());
 
-		final ElementExtractor extractor = new ElementExtractor(
-				ElementFilter.class);
-		q.getQueryPattern().visit(extractor);
-		Assert.assertEquals(1, extractor.getExtracted().size());
 	}
 
 	@Test
 	public void testMethodWithAliasParse() throws Exception {
-		final String query = "SELECT count( IntCol ) AS bar FROM foo";
-		final Statement stmt = parserManager.parse(new StringReader(query));
-		stmt.accept(sv);
-		final Query q = sv.getBuilder().build();
+		final Query q = getQuery("SELECT count( IntCol ) AS bar FROM foo");
+
+		tests.put(ElementBind.class, 1);
+		tests.put(ElementFilter.class, 1);
+		tests.put(ElementOptional.class, 2);
+		results = validate(q, tests);
 
 		Assert.assertEquals(1, q.getProject().size());
 		Assert.assertEquals(1, q.getProjectVars().size());
 		Assert.assertEquals("bar", q.getProjectVars().get(0).getVarName());
 
-		final ElementExtractor extractor = new ElementExtractor(
-				ElementFilter.class);
-		q.getQueryPattern().visit(extractor);
-		Assert.assertEquals(1, extractor.getExtracted().size());
 	}
 
 	@Test
@@ -223,10 +111,12 @@ public class LocalSparqlVisitorTest {
 		final String[] colNames = {
 				"StringCol", "NullableStringCol", "IntCol", "NullableIntCol"
 		};
-		final String query = "SELECT * FROM foo";
-		final Statement stmt = parserManager.parse(new StringReader(query));
-		stmt.accept(sv);
-		final Query q = sv.getBuilder().build();
+
+		final Query q = getQuery("SELECT * FROM foo");
+		tests.put(ElementBind.class, 4);
+		tests.put(ElementFilter.class, 1);
+		tests.put(ElementOptional.class, 2);
+		results = validate(q, tests);
 
 		final List<Var> vLst = q.getProjectVars();
 		Assert.assertEquals(4, vLst.size());
@@ -234,99 +124,67 @@ public class LocalSparqlVisitorTest {
 			Assert.assertTrue(Arrays.asList(colNames).contains(v.getName()));
 		}
 
-		final ElementExtractor extractor = new ElementExtractor(
-				ElementBind.class);
-		q.getQueryPattern().visit(extractor);
-		Assert.assertEquals(4, extractor.getExtracted().size());
-		for (final Element el : extractor.getExtracted()) {
+		for (final Element el : results.get(ElementBind.class).lst) {
 			final ElementBind bind = (ElementBind) el;
 			Assert.assertTrue(q.getProjectVars().contains(bind.getVar()));
 		}
-
-		q.getQueryPattern().visit(
-				extractor.reset().setMatchType(ElementFilter.class));
-		Assert.assertEquals(1, extractor.getExtracted().size());
-
-		q.getQueryPattern().visit(
-				extractor.reset().setMatchType(ElementOptional.class));
-		Assert.assertEquals(2, extractor.getExtracted().size());
-
 	}
 
 	@Test
 	public void testSpecColParse() throws Exception {
-		final String query = "SELECT StringCol FROM foo";
-		final Statement stmt = parserManager.parse(new StringReader(query));
-		stmt.accept(sv);
-		final Query q = sv.getBuilder().build();
+		final Query q = getQuery("SELECT StringCol FROM foo");
+
+		tests.put(ElementBind.class, 1);
+		tests.put(ElementFilter.class, 1);
+		tests.put(ElementOptional.class, 2);
+		results = validate(q, tests);
 
 		final List<Var> vLst = q.getProjectVars();
 		Assert.assertEquals(1, vLst.size());
 		Assert.assertEquals(Var.alloc("StringCol"), vLst.get(0));
 
-		final ElementExtractor extractor = new ElementExtractor(
-				ElementBind.class);
-		q.getQueryPattern().visit(extractor);
 		// 1 required column
-		Assert.assertEquals(1, extractor.getExtracted().size());
-		final ElementBind eb = (ElementBind) extractor.getExtracted().get(0);
+		final ElementBind eb = (ElementBind) results.get(ElementBind.class).lst
+				.get(0);
 		Assert.assertEquals("StringCol", eb.getVar().getName());
-
-		q.getQueryPattern().visit(
-				extractor.reset().setMatchType(ElementFilter.class));
-		Assert.assertEquals(1, extractor.getExtracted().size());
-
 	}
 
 	@Test
 	public void testSpecColWithAliasParse() throws Exception {
-		final String query = "SELECT StringCol AS bar FROM foo";
-		final Statement stmt = parserManager.parse(new StringReader(query));
-		stmt.accept(sv);
-		final Query q = sv.getBuilder().build();
+		final Query q = getQuery("SELECT StringCol AS bar FROM foo");
+
+		tests.put(ElementBind.class, 1);
+		tests.put(ElementFilter.class, 1);
+		tests.put(ElementOptional.class, 2);
+		results = validate(q, tests);
 
 		final List<Var> vLst = q.getProjectVars();
 		Assert.assertEquals(1, vLst.size());
 		Assert.assertEquals(Var.alloc("bar"), vLst.get(0));
 
-		final ElementExtractor extractor = new ElementExtractor(
-				ElementBind.class);
-		q.getQueryPattern().visit(extractor);
-		// 1 required columns
-		Assert.assertEquals(1, extractor.getExtracted().size());
-		final ElementBind eb = (ElementBind) extractor.getExtracted().get(0);
-
+		final ElementBind eb = (ElementBind) results.get(ElementBind.class).lst
+				.get(0);
 		Assert.assertEquals("bar", eb.getVar().getName());
-
-		q.getQueryPattern().visit(
-				extractor.reset().setMatchType(ElementFilter.class));
-		Assert.assertEquals(1, extractor.getExtracted().size());
-
 	}
 
 	@Test
 	public void testSpecColWithEqnParse() throws Exception {
-		final String query = "SELECT StringCol FROM foo WHERE StringCol != 'baz'";
-		final Statement stmt = parserManager.parse(new StringReader(query));
-		stmt.accept(sv);
-		final Query q = sv.getBuilder().build();
+		final Query q = getQuery("SELECT StringCol FROM foo WHERE StringCol != 'baz'");
 
-		final ElementExtractor extractor = new ElementExtractor(
-				ElementBind.class);
-		q.getQueryPattern().visit(extractor);
+		tests.put(ElementBind.class, 1);
+		tests.put(ElementFilter.class, 2);
+		tests.put(ElementOptional.class, 2);
+		results = validate(q, tests);
+
 		// 1 required column
-		Assert.assertEquals(1, extractor.getExtracted().size());
-		final ElementBind eb = (ElementBind) extractor.getExtracted().get(0);
+
+		final ElementBind eb = (ElementBind) results.get(ElementBind.class).lst
+				.get(0);
 		Assert.assertEquals("StringCol", eb.getVar().getName());
 
-		q.getQueryPattern().visit(
-				extractor.reset().setMatchType(ElementFilter.class));
-		// 1 datatype and 1 real filter
-		Assert.assertEquals(2, extractor.getExtracted().size());
-
 		// should be the last one
-		final Expr expr = ((ElementFilter) extractor.getExtracted().get(1))
-				.getExpr();
+		final Expr expr = ((ElementFilter) results.get(ElementFilter.class).lst
+				.get(1)).getExpr();
 		Assert.assertTrue(expr instanceof E_NotEquals);
 		final E_NotEquals expr2 = (E_NotEquals) expr;
 		Assert.assertEquals("StringCol",
@@ -342,30 +200,25 @@ public class LocalSparqlVisitorTest {
 
 	@Test
 	public void testTableAliasParse() throws Exception {
-		final String query = "SELECT StringCol FROM foo bar WHERE StringCol != 'baz'";
-		final Statement stmt = parserManager.parse(new StringReader(query));
-		stmt.accept(sv);
-		final Query q = sv.getBuilder().build();
+		final Query q = getQuery("SELECT StringCol FROM foo bar WHERE StringCol != 'baz'");
+
+		tests.put(ElementBind.class, 1);
+		tests.put(ElementFilter.class, 2);
+		tests.put(ElementOptional.class, 2);
+		tests.put(ElementPathBlock.class, 5);
+		results = validate(q, tests);
 
 		final List<Var> vLst = q.getProjectVars();
 		Assert.assertEquals(1, vLst.size());
 		Assert.assertEquals(Var.alloc("StringCol"), vLst.get(0));
 
-		final ElementExtractor extractor = new ElementExtractor(
-				ElementBind.class);
-		q.getQueryPattern().visit(extractor);
-		// 1 required column
-		Assert.assertEquals(1, extractor.getExtracted().size());
-		final ElementBind eb = (ElementBind) extractor.getExtracted().get(0);
+		final ElementBind eb = (ElementBind) results.get(ElementBind.class).lst
+				.get(0);
 		Assert.assertEquals("StringCol", eb.getVar().getName());
 
-		q.getQueryPattern().visit(
-				extractor.reset().setMatchType(ElementFilter.class));
-		Assert.assertEquals(2, extractor.getExtracted().size());
-
 		// should be the last one
-		final Expr expr = ((ElementFilter) extractor.getExtracted().get(1))
-				.getExpr();
+		final Expr expr = ((ElementFilter) results.get(ElementFilter.class).lst
+				.get(1)).getExpr();
 		Assert.assertTrue(expr instanceof E_NotEquals);
 		final E_NotEquals expr2 = (E_NotEquals) expr;
 		Assert.assertEquals("StringCol",
@@ -373,20 +226,7 @@ public class LocalSparqlVisitorTest {
 		Assert.assertEquals("baz",
 				((NodeValueString) (expr2.getArg2())).asString());
 
-		q.getQueryPattern().visit(
-				extractor.reset().setMatchType(ElementPathBlock.class));
-		// 4 columns + table
-		Assert.assertEquals(5, extractor.getExtracted().size());
-		for (final Element el : extractor.getExtracted()) {
-			final ElementPathBlock epb = (ElementPathBlock) el;
-			final Iterator<TriplePath> iter = epb.patternElts();
-			while (iter.hasNext()) {
-				final TriplePath t = iter.next();
-				Assert.assertTrue(t.getSubject().isVariable());
-				Assert.assertEquals(tableName.getGUID(), t.getSubject()
-						.getName());
-			}
-		}
+		verifyTable(results.get(ElementPathBlock.class), tableName.getGUID());
 	}
 
 	@Test
@@ -401,10 +241,13 @@ public class LocalSparqlVisitorTest {
 				"bar" + NameUtils.SPARQL_DOT + "BarIntCol",
 				"bar" + NameUtils.SPARQL_DOT + "NullableIntCol"
 		};
-		final String query = "SELECT * FROM foo, bar WHERE foo.IntCol = bar.BarIntCol";
-		final Statement stmt = parserManager.parse(new StringReader(query));
-		stmt.accept(sv);
-		final Query q = sv.getBuilder().build();
+		final Query q = getQuery("SELECT * FROM foo, bar WHERE foo.IntCol = bar.BarIntCol");
+
+		tests.put(ElementBind.class, columnNames.length);
+		tests.put(ElementFilter.class, 3);
+		// 2 from each table
+		tests.put(ElementOptional.class, 4);
+		results = validate(q, tests);
 
 		final List<Var> vLst = q.getProjectVars();
 		Assert.assertEquals(columnNames.length, vLst.size());
@@ -416,17 +259,8 @@ public class LocalSparqlVisitorTest {
 					Arrays.asList(columnNames).contains(tn.getSPARQLName()));
 		}
 
-		final ElementExtractor extractor = new ElementExtractor(
-				ElementBind.class);
-		q.getQueryPattern().visit(extractor);
-		Assert.assertEquals(columnNames.length, extractor.getExtracted().size());
-
-		q.getQueryPattern().visit(
-				extractor.reset().setMatchType(ElementFilter.class));
-		// one for each table + one real (join) filter
-		Assert.assertEquals(3, extractor.getExtracted().size());
-		final Expr expr = ((ElementFilter) extractor.getExtracted().get(2))
-				.getExpr();
+		final Expr expr = ((ElementFilter) results.get(ElementFilter.class).lst
+				.get(2)).getExpr();
 		Assert.assertTrue(expr instanceof E_Equals);
 		final E_Equals expr2 = (E_Equals) expr;
 		Assert.assertEquals("foo" + NameUtils.SPARQL_DOT + "IntCol",
@@ -437,43 +271,32 @@ public class LocalSparqlVisitorTest {
 
 	@Test
 	public void testCountNullableColumn() throws Exception {
-		final String query = "select count(NullableIntCol) from foo";
-		final Statement stmt = parserManager.parse(new StringReader(query));
-		stmt.accept(sv);
-		final Query q = sv.getBuilder().build();
+		final Query q = getQuery("select count(NullableIntCol) from foo");
 
-		final ElementExtractor extractor = new ElementExtractor(
-				ElementFilter.class);
-		q.getQueryPattern().visit(extractor);
-
-		// one for table
-		Assert.assertEquals(1, extractor.getExtracted().size());
+		tests.put(ElementBind.class, 1);
+		tests.put(ElementFilter.class, 1);
+		tests.put(ElementOptional.class, 2);
+		results = validate(q, tests);
 
 	}
 
 	@Test
 	public void testColumnByNotNull() throws Exception {
-		final String query = "select IntCol from foo WHERE NullableIntCol IS NULL";
-		final Statement stmt = parserManager.parse(new StringReader(query));
-		stmt.accept(sv);
-		final Query q = sv.getBuilder().build();
+		final Query q = getQuery("select IntCol from foo WHERE NullableIntCol IS NULL");
 
-		final ElementExtractor extractor = new ElementExtractor(
-				ElementFilter.class);
-		q.getQueryPattern().visit(extractor);
-		// one for table + one real filter
-		Assert.assertEquals(2, extractor.getExtracted().size());
-		Expr expr = ((ElementFilter) extractor.getExtracted().get(1)).getExpr();
+		tests.put(ElementBind.class, 2);
+		tests.put(ElementFilter.class, 2);
+		tests.put(ElementOptional.class, 2);
+		results = validate(q, tests);
+
+		Expr expr = ((ElementFilter) results.get(ElementFilter.class).lst
+				.get(1)).getExpr();
 
 		Assert.assertTrue(expr instanceof E_LogicalNot);
 		expr = ((E_LogicalNot) expr).getArg();
 		Assert.assertTrue(expr instanceof E_Bound);
 		Assert.assertEquals("v_39a47853_59fe_3101_9dc3_57a586635865",
 				((E_Bound) expr).getArg().asVar().getName());
-
-		q.getQueryPattern().visit(
-				extractor.reset().setMatchType(ElementBind.class));
-		Assert.assertEquals(2, extractor.getExtracted().size());
 
 	}
 }

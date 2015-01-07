@@ -284,7 +284,11 @@ public class QueryTableInfo extends QueryItemInfo<Table, TableName> {
 			QueryTableInfo.LOG.debug("Adding join element: {}", expr);
 		}
 		joinElementList.add(new ElementFilter(expr));
-
+	}
+	
+	public Set<Element> getJoinElements()
+	{
+		return joinElementList;
 	}
 
 	/**
@@ -457,7 +461,9 @@ public class QueryTableInfo extends QueryItemInfo<Table, TableName> {
 	}
 
 	/**
-	 * Returns the column or null if not found
+	 * Returns the column or null if not found.
+	 * 
+	 * Columns may will have the optional status of the base column.
 	 *
 	 * @param name
 	 *            The name of the column to look for.
@@ -473,8 +479,8 @@ public class QueryTableInfo extends QueryItemInfo<Table, TableName> {
 	 * @param cName
 	 *            The name of the column to look for.
 	 * @param optional
-	 *            If false then column is required, if true then the column
-	 *            isOptional flag defines value
+	 *            If false then column is required, if true then the 
+	 *            isOptional flag of the base column defines value
 	 * @return The QueryColumnInfo for the column.
 	 * @throws SQLException
 	 */

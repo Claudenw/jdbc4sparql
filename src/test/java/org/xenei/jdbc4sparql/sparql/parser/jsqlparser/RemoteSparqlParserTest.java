@@ -31,6 +31,7 @@ import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTableDef;
+import org.xenei.jdbc4sparql.impl.rdf.ResourceBuilder;
 import org.xenei.jdbc4sparql.impl.virtual.VirtualCatalog;
 import org.xenei.jdbc4sparql.meta.MetaCatalogBuilder;
 import org.xenei.jdbc4sparql.sparql.ForceTypeF;
@@ -42,6 +43,7 @@ import com.hp.hpl.jena.graph.Node;
 import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.sparql.core.TriplePath;
 import com.hp.hpl.jena.sparql.core.Var;
 import com.hp.hpl.jena.sparql.expr.E_Function;
@@ -51,13 +53,25 @@ import com.hp.hpl.jena.sparql.syntax.ElementBind;
 import com.hp.hpl.jena.sparql.syntax.ElementFilter;
 import com.hp.hpl.jena.sparql.syntax.ElementOptional;
 import com.hp.hpl.jena.sparql.syntax.ElementPathBlock;
+import com.hp.hpl.jena.sparql.syntax.ElementService;
 
 /**
  * Class that validates the parser correctly parses the SQL into SPARQL
  *
  */
-public class SparqlParserTest extends AbstractSparqlParserTest {
+public class RemoteSparqlParserTest extends AbstractSparqlParserTest {
 
+	private static final String SERVICE_URI="http://example.com/sparql";
+	@Before
+	public void setup()
+	{
+		super.setup();
+		Property p = model.createProperty("http://org.xenei.jdbc4sparql/entity/Catalog#",
+				"sparqlEndpoint");
+		
+		catalog.getResource().addProperty(p, SERVICE_URI );	
+		assertTrue( "Catalog was not set to service", catalog.isService() );
+	}
 	
 	@Test
 	public void testCatalogFunctionSelect() throws Exception {
@@ -66,10 +80,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertTrue(funcs.contains("CATALOG"));
 
 		query = getQuery("SELECT CATALOG() FROM foo");
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 0);
 		tests.put(ElementFilter.class, 1);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -78,10 +93,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertEquals("var0", query.getProjectVars().get(0).getName());
 
 		query = getQuery("SELECT CATALOG() as arg FROM foo");
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 0);
 		tests.put(ElementFilter.class, 1);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -96,10 +112,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertTrue(funcs.contains("VERSION"));
 
 		query = getQuery("SELECT VERSION() FROM foo");
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 0);
 		tests.put(ElementFilter.class, 1);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -108,10 +125,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertEquals("var0", query.getProjectVars().get(0).getName());
 
 		query = getQuery("SELECT VERSION() as arg FROM foo");
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 0);
 		tests.put(ElementFilter.class, 1);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -128,10 +146,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertTrue(funcs.contains("CATALOG"));
 
 		query = getQuery("SELECT * FROM foo WHERE StringCol=CATALOG()");
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 4);
 		tests.put(ElementFilter.class, 2);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -150,15 +169,23 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertTrue(funcs.contains("VERSION"));
 
 		query = getQuery("SELECT * FROM foo WHERE StringCol=VERSION()");
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 4);
 		tests.put(ElementFilter.class, 2);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
 		verifyBinds(results.get(ElementBind.class), vars);
 		tests.clear();
+		
+		ElementService service = (ElementService) results.get(ElementService.class).lst.get(0);
+		assertEquals( SERVICE_URI, service.getServiceNode().getURI());
+		tests.put(ElementBind.class, 0);
+		tests.put(ElementFilter.class, 1);
+		tests.put(ElementOptional.class, 2);
+		validate(service,tests);
 	}
 
 	@Test
@@ -168,10 +195,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertTrue(funcs.contains("LENGTH"));
 
 		query = getQuery("SELECT LENGTH(StringCol) FROM foo");
-		tests.put(ElementBind.class, 1);
+		tests.put(ElementService.class, 1 );
+		tests.put(ElementBind.class, 0);
 		tests.put(ElementFilter.class, 1);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -180,10 +208,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertEquals("var0", query.getProjectVars().get(0).getName());
 
 		query = getQuery("SELECT LENGTH(StringCol) as arg FROM foo");
-		tests.put(ElementBind.class, 1);
+		tests.put(ElementService.class, 1 );
+		tests.put(ElementBind.class, 0);
 		tests.put(ElementFilter.class, 1);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -199,10 +228,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertTrue(funcs.contains("SUBSTRING"));
 
 		query = getQuery("SELECT SUBSTRING(StringCol,1,3) FROM foo");
-		tests.put(ElementBind.class, 1);
+		tests.put(ElementService.class, 1 );
+		tests.put(ElementBind.class, 0);
 		tests.put(ElementFilter.class, 1);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -211,10 +241,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertEquals("var0", query.getProjectVars().get(0).getName());
 
 		query = getQuery("SELECT SUBSTRING(StringCol,1,3)  as arg FROM foo");
-		tests.put(ElementBind.class, 1);
+		tests.put(ElementService.class, 1 );
+		tests.put(ElementBind.class, 0);
 		tests.put(ElementFilter.class, 1);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -230,10 +261,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertTrue(funcs.contains("UCASE"));
 
 		query = getQuery("SELECT UCASE(StringCol) FROM foo");
-		tests.put(ElementBind.class, 1);
+		tests.put(ElementService.class, 1 );
+		tests.put(ElementBind.class, 0);
 		tests.put(ElementFilter.class, 1);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -242,10 +274,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertEquals("var0", query.getProjectVars().get(0).getName());
 
 		query = getQuery("SELECT UCASE(StringCol) as arg FROM foo");
-		tests.put(ElementBind.class, 1);
+		tests.put(ElementService.class, 1 );
+		tests.put(ElementBind.class, 0);
 		tests.put(ElementFilter.class, 1);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -254,10 +287,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertEquals("arg", query.getProjectVars().get(0).getName());
 
 		query = getQuery("SELECT UPPER(StringCol) FROM foo");
-		tests.put(ElementBind.class, 1);
+		tests.put(ElementService.class, 1 );
+		tests.put(ElementBind.class, 0);
 		tests.put(ElementFilter.class, 1);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -266,10 +300,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertEquals("var0", query.getProjectVars().get(0).getName());
 
 		query = getQuery("SELECT UPPER(StringCol) as arg FROM foo");
-		tests.put(ElementBind.class, 1);
+		tests.put(ElementService.class, 1 );
+		tests.put(ElementBind.class, 0);
 		tests.put(ElementFilter.class, 1);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -285,10 +320,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertTrue(funcs.contains("LCASE"));
 
 		query = getQuery("SELECT LCASE(StringCol) FROM foo");
-		tests.put(ElementBind.class, 1);
+		tests.put(ElementService.class, 1 );
+		tests.put(ElementBind.class, 0);
 		tests.put(ElementFilter.class, 1);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -297,10 +333,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertEquals("var0", query.getProjectVars().get(0).getName());
 
 		query = getQuery("SELECT LCASE(StringCol) as arg FROM foo");
-		tests.put(ElementBind.class, 1);
+		tests.put(ElementService.class, 1 );
+		tests.put(ElementBind.class, 0);
 		tests.put(ElementFilter.class, 1);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -309,10 +346,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertEquals("arg", query.getProjectVars().get(0).getName());
 
 		query = getQuery("SELECT LOWER(StringCol) FROM foo");
-		tests.put(ElementBind.class, 1);
+		tests.put(ElementService.class, 1 );
+		tests.put(ElementBind.class, 0);
 		tests.put(ElementFilter.class, 1);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -321,10 +359,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertEquals("var0", query.getProjectVars().get(0).getName());
 
 		query = getQuery("SELECT LOWER(StringCol) as arg FROM foo");
-		tests.put(ElementBind.class, 1);
+		tests.put(ElementService.class, 1 );
+		tests.put(ElementBind.class, 0);
 		tests.put(ElementFilter.class, 1);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -340,10 +379,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertTrue(funcs.contains("REPLACE"));
 
 		query = getQuery("SELECT REPLACE(StringCol, 'a', 'b') FROM foo");
-		tests.put(ElementBind.class, 1);
+		tests.put(ElementService.class, 1 );
+		tests.put(ElementBind.class, 0);
 		tests.put(ElementFilter.class, 1);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -352,10 +392,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertEquals("var0", query.getProjectVars().get(0).getName());
 
 		query = getQuery("SELECT REPLACE(StringCol, 'a', 'b') as arg FROM foo");
-		tests.put(ElementBind.class, 1);
+		tests.put(ElementService.class, 1 );
+		tests.put(ElementBind.class, 0);
 		tests.put(ElementFilter.class, 1);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -372,10 +413,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertTrue(funcs.contains("LENGTH"));
 
 		query = getQuery("SELECT * FROM foo WHERE LENGTH(StringCol)=5");
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 4);
 		tests.put(ElementFilter.class, 2);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -394,10 +436,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertTrue(funcs.contains("SUBSTRING"));
 
 		query = getQuery("SELECT * FROM foo WHERE SUBSTRING(StringCol,1,3)='bcd'");
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 4);
 		tests.put(ElementFilter.class, 2);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -416,10 +459,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertTrue(funcs.contains("UCASE"));
 
 		query = getQuery("SELECT * FROM foo where UCASE(StringCol)='ABC' ");
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 4);
 		tests.put(ElementFilter.class, 2);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -431,10 +475,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertFalse(filter.getExpr() instanceof ExprInfo);
 
 		query = getQuery("SELECT * FROM foo WHERE UPPER(StringCol)='ABC'");
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 4);
 		tests.put(ElementFilter.class, 2);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -453,10 +498,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertTrue(funcs.contains("LCASE"));
 
 		query = getQuery("SELECT * FROM foo WHERE LCASE(StringCol)='abc'");
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 4);
 		tests.put(ElementFilter.class, 2);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -468,10 +514,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertFalse(filter.getExpr() instanceof ExprInfo);
 
 		query = getQuery("SELECT * FROM foo WHERE LOWER(StringCol)='abc'");
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 4);
 		tests.put(ElementFilter.class, 2);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -490,10 +537,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertTrue(funcs.contains("REPLACE"));
 
 		query = getQuery("SELECT * FROM foo WHERE REPLACE(StringCol, 'a', 'b')='bbc'");
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 4);
 		tests.put(ElementFilter.class, 2);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -513,10 +561,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertTrue(funcs.contains("MAX"));
 
 		query = getQuery("SELECT MAX(IntCol) FROM foo");
-		tests.put(ElementBind.class, 1);
+		tests.put(ElementService.class, 1 );
+		tests.put(ElementBind.class, 0);
 		tests.put(ElementFilter.class, 1);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -525,10 +574,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertEquals("var0", query.getProjectVars().get(0).getName());
 
 		query = getQuery("SELECT MAX(IntCol) as arg FROM foo");
-		tests.put(ElementBind.class, 1);
+		tests.put(ElementService.class, 1 );
+		tests.put(ElementBind.class, 0);
 		tests.put(ElementFilter.class, 1);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -544,10 +594,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertTrue(funcs.contains("MIN"));
 
 		query = getQuery("SELECT MIN(IntCol) FROM foo");
-		tests.put(ElementBind.class, 1);
+		tests.put(ElementService.class, 1 );
+		tests.put(ElementBind.class, 0);
 		tests.put(ElementFilter.class, 1);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -556,10 +607,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertEquals("var0", query.getProjectVars().get(0).getName());
 
 		query = getQuery("SELECT MIN(IntCol) as arg FROM foo");
-		tests.put(ElementBind.class, 1);
+		tests.put(ElementService.class, 1 );
+		tests.put(ElementBind.class, 0);
 		tests.put(ElementFilter.class, 1);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -575,10 +627,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertTrue(funcs.contains("COUNT"));
 
 		query = getQuery("SELECT COUNT(IntCol) FROM foo");
-		tests.put(ElementBind.class, 1);
+		tests.put(ElementService.class, 1 );
+		tests.put(ElementBind.class, 0);
 		tests.put(ElementFilter.class, 1);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -587,10 +640,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertEquals("var0", query.getProjectVars().get(0).getName());
 
 		query = getQuery("SELECT COUNT(IntCol) as arg FROM foo");
-		tests.put(ElementBind.class, 1);
+		tests.put(ElementService.class, 1 );
+		tests.put(ElementBind.class, 0);
 		tests.put(ElementFilter.class, 1);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -599,10 +653,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertEquals("arg", query.getProjectVars().get(0).getName());
 
 		query = getQuery("SELECT COUNT(*) FROM foo");
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 0);
 		tests.put(ElementFilter.class, 1);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -611,10 +666,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertEquals("var0", query.getProjectVars().get(0).getName());
 
 		query = getQuery("SELECT COUNT(*) as arg FROM foo");
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 0);
 		tests.put(ElementFilter.class, 1);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -631,26 +687,26 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertTrue(funcs.contains("SUM"));
 
 		query = getQuery("SELECT SUM(IntCol) FROM foo");
-		tests.put(ElementBind.class, 1);
+		tests.put(ElementService.class, 1 );
+		tests.put(ElementBind.class, 0);
 		tests.put(ElementFilter.class, 1);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
-		verifyBinds(results.get(ElementBind.class), vars);
 		tests.clear();
 		assertEquals("var0", query.getProjectVars().get(0).getName());
 
 		query = getQuery("SELECT SUM(IntCol) as arg FROM foo");
-		tests.put(ElementBind.class, 1);
+		tests.put(ElementService.class, 1 );
+		tests.put(ElementBind.class, 0);
 		tests.put(ElementFilter.class, 1);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
-		verifyBinds(results.get(ElementBind.class), vars);
 		tests.clear();
 		assertEquals("arg", query.getProjectVars().get(0).getName());
 	}
@@ -662,10 +718,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertTrue(funcs.contains("ABS"));
 
 		query = getQuery("SELECT ABS(IntCol) FROM foo");
-		tests.put(ElementBind.class, 1);
+		tests.put(ElementService.class, 1 );
+		tests.put(ElementBind.class, 0);
 		tests.put(ElementFilter.class, 1);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -674,10 +731,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertEquals("var0", query.getProjectVars().get(0).getName());
 
 		query = getQuery("SELECT ABS(IntCol) as arg FROM foo");
-		tests.put(ElementBind.class, 1);
+		tests.put(ElementService.class, 1 );
+		tests.put(ElementBind.class, 0);
 		tests.put(ElementFilter.class, 1);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -693,10 +751,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertTrue(funcs.contains("ROUND"));
 
 		query = getQuery("SELECT ROUND(IntCol) FROM foo");
-		tests.put(ElementBind.class, 1);
+		tests.put(ElementService.class, 1 );
+		tests.put(ElementBind.class, 0);
 		tests.put(ElementFilter.class, 1);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -705,10 +764,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertEquals("var0", query.getProjectVars().get(0).getName());
 
 		query = getQuery("SELECT ROUND(IntCol) as arg FROM foo");
-		tests.put(ElementBind.class, 1);
+		tests.put(ElementService.class, 1 );
+		tests.put(ElementBind.class, 0);
 		tests.put(ElementFilter.class, 1);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -724,10 +784,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertTrue(funcs.contains("CEIL"));
 
 		query = getQuery("SELECT CEIL(IntCol) FROM foo");
-		tests.put(ElementBind.class, 1);
+		tests.put(ElementService.class, 1 );
+		tests.put(ElementBind.class, 0);
 		tests.put(ElementFilter.class, 1);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -736,10 +797,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertEquals("var0", query.getProjectVars().get(0).getName());
 
 		query = getQuery("SELECT CEIL(IntCol) as arg FROM foo");
-		tests.put(ElementBind.class, 1);
+		tests.put(ElementService.class, 1 );
+		tests.put(ElementBind.class, 0);
 		tests.put(ElementFilter.class, 1);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -755,10 +817,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertTrue(funcs.contains("FLOOR"));
 
 		query = getQuery("SELECT FLOOR(IntCol) FROM foo");
-		tests.put(ElementBind.class, 1);
+		tests.put(ElementService.class, 1 );
+		tests.put(ElementBind.class, 0);
 		tests.put(ElementFilter.class, 1);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -767,10 +830,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertEquals("var0", query.getProjectVars().get(0).getName());
 
 		query = getQuery("SELECT FLOOR(IntCol) as arg FROM foo");
-		tests.put(ElementBind.class, 1);
+		tests.put(ElementService.class, 1 );
+		tests.put(ElementBind.class, 0);
 		tests.put(ElementFilter.class, 1);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -786,10 +850,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertTrue(funcs.contains("RAND"));
 
 		query = getQuery("SELECT RAND() FROM foo");
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 0);
 		tests.put(ElementFilter.class, 1);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -798,10 +863,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertEquals("var0", query.getProjectVars().get(0).getName());
 
 		query = getQuery("SELECT RAND() as arg FROM foo");
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 0);
 		tests.put(ElementFilter.class, 1);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -810,7 +876,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertEquals("arg", query.getProjectVars().get(0).getName());
 
 	}
-	
+
 	@Test
 	public void testAbsFunctionWhere() throws Exception {
 
@@ -818,10 +884,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertTrue(funcs.contains("ABS"));
 
 		query = getQuery("SELECT * FROM foo WHERE ABS(IntCol) = 5");
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 4);
 		tests.put(ElementFilter.class, 2);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -840,10 +907,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertTrue(funcs.contains("ROUND"));
 
 		query = getQuery("SELECT * FROM foo WHERE  ROUND(IntCol) =5 ");
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 4);
 		tests.put(ElementFilter.class, 2);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -862,10 +930,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertTrue(funcs.contains("CEIL"));
 
 		query = getQuery("SELECT * FROM foo WHERE CEIL(IntCol) =5");
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 4);
 		tests.put(ElementFilter.class, 2);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -884,10 +953,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertTrue(funcs.contains("FLOOR"));
 
 		query = getQuery("SELECT * FROM foo WHERE FLOOR(IntCol) = 3");
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 4);
 		tests.put(ElementFilter.class, 2);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -906,10 +976,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertTrue(funcs.contains("RAND"));
 
 		query = getQuery("SELECT * FROM foo WHERE RAND() < 0.5");
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 4);
 		tests.put(ElementFilter.class, 2);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -926,10 +997,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 	public void testAddWhere() throws Exception {
 
 		query = getQuery("SELECT * FROM foo WHERE IntCol + 3 > 5");
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 4);
 		tests.put(ElementFilter.class, 2);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -941,10 +1013,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertFalse(filter.getExpr() instanceof ExprInfo);
 
 		query = getQuery("SELECT * FROM foo WHERE IntCol + 3 > 5");
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 4);
 		tests.put(ElementFilter.class, 2);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -966,10 +1039,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 	@Test
 	public void testAndWhere() throws Exception {
 		query = getQuery("SELECT * FROM foo WHERE IntCol > 5 AND IntCol < 7");
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 4);
 		tests.put(ElementFilter.class, 2);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -990,10 +1064,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 	@Test
 	public void testBetweenWhere() throws Exception {
 		query = getQuery("SELECT * FROM foo WHERE IntCol BETWEEN 5 AND 7");
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 4);
 		tests.put(ElementFilter.class, 2);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -1037,10 +1112,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 	@Test
 	public void testEqualsWhere() throws Exception {
 		query = getQuery("SELECT * FROM foo WHERE IntCol = 7");
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 4);
 		tests.put(ElementFilter.class, 2);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -1074,10 +1150,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 	@Test
 	public void testDivisionWhere() throws Exception {
 		query = getQuery("SELECT * FROM foo WHERE IntCol / 5 > 2.3");
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 4);
 		tests.put(ElementFilter.class, 2);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -1092,10 +1169,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 	@Test
 	public void testDoubleWhere() throws Exception {
 		query = getQuery("SELECT * FROM foo WHERE  2.3 > IntCol");
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 4);
 		tests.put(ElementFilter.class, 2);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -1110,10 +1188,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 	@Test
 	public void testLongWhere() throws Exception {
 		query = getQuery("SELECT * FROM foo WHERE  3 = IntCol");
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 4);
 		tests.put(ElementFilter.class, 2);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -1139,10 +1218,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 	@Test
 	public void testGreaterThanWhere() throws Exception {
 		query = getQuery("SELECT * FROM foo WHERE IntCol > 5");
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 4);
 		tests.put(ElementFilter.class, 2);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -1157,10 +1237,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 	@Test
 	public void testGreaterThanEqualWhere() throws Exception {
 		query = getQuery("SELECT * FROM foo WHERE IntCol >= 5");
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 4);
 		tests.put(ElementFilter.class, 2);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -1175,10 +1256,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 	@Test
 	public void testInWhere() throws Exception {
 		query = getQuery("SELECT * FROM foo WHERE IntCol IN ( 2,4,6)");
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 4);
 		tests.put(ElementFilter.class, 2);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -1200,10 +1282,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 	@Test
 	public void testIsNullWhere() throws Exception {
 		query = getQuery("SELECT * FROM foo WHERE NullableStringCol IS NULL");
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 4);
 		tests.put(ElementFilter.class, 2);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -1215,10 +1298,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertFalse(filter.getExpr() instanceof ExprInfo);
 
 		query = getQuery("SELECT * FROM foo WHERE NullableStringCol IS NOT NULL ");
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 4);
 		tests.put(ElementFilter.class, 2);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -1239,10 +1323,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 	@Test
 	public void testLikeWhere() throws Exception {
 		query = getQuery("SELECT * FROM foo WHERE StringCol LIKE 'A_b%c' ");
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 4);
 		tests.put(ElementFilter.class, 2);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -1272,10 +1357,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 	@Test
 	public void testLessThanWhere() throws Exception {
 		query = getQuery("SELECT * FROM foo WHERE IntCol < 5 ");
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 4);
 		tests.put(ElementFilter.class, 2);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -1290,10 +1376,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 	@Test
 	public void testLessThanEqualWhere() throws Exception {
 		query = getQuery("SELECT * FROM foo WHERE  IntCol <= 5 ");
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 4);
 		tests.put(ElementFilter.class, 2);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -1308,10 +1395,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 	@Test
 	public void testMultiplicationWhere() throws Exception {
 		query = getQuery("SELECT * FROM foo WHERE  IntCol * 5 > 20 ");
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 4);
 		tests.put(ElementFilter.class, 2);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -1326,10 +1414,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 	@Test
 	public void testNotEqualsWhere() throws Exception {
 		query = getQuery("SELECT * FROM foo WHERE  IntCol <> 5 ");
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 4);
 		tests.put(ElementFilter.class, 2);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -1341,10 +1430,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertFalse(filter.getExpr() instanceof ExprInfo);
 
 		query = getQuery("SELECT * FROM foo WHERE IntCol != 5 ");
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 4);
 		tests.put(ElementFilter.class, 2);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -1366,10 +1456,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 	@Test
 	public void testLogicalOrWhere() throws Exception {
 		query = getQuery("SELECT * FROM foo WHERE IntCol=5 OR IntCol=6 ");
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 4);
 		tests.put(ElementFilter.class, 2);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -1384,11 +1475,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 	@Test
 	public void testParenthesisWhere() throws Exception {
 		query = getQuery("SELECT * FROM foo WHERE ( IntCol > 5 ) ");
-
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 4);
 		tests.put(ElementFilter.class, 2);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -1414,10 +1505,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 	@Test
 	public void testSubtractWhere() throws Exception {
 		query = getQuery("SELECT * FROM foo WHERE IntCol-5 > 5 ");
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 4);
 		tests.put(ElementFilter.class, 2);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -1459,10 +1551,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 	public void testAddSelect() throws Exception {
 
 		query = getQuery("SELECT IntCol + 3 FROM foo");
-		tests.put(ElementBind.class, 1);
+		tests.put(ElementService.class, 1 );
+		tests.put(ElementBind.class, 0);
 		tests.put(ElementFilter.class, 1);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -1472,10 +1565,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertEquals("var0", query.getProjectVars().get(0).getName());
 
 		query = getQuery("SELECT IntCol + 3 as arg FROM foo");
-		tests.put(ElementBind.class, 1);
+		tests.put(ElementService.class, 1 );
+		tests.put(ElementBind.class, 0);
 		tests.put(ElementFilter.class, 1);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -1598,10 +1692,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 	public void testDivisionSelect() throws Exception {
 
 		query = getQuery("SELECT IntCol / 5 FROM foo");
-		tests.put(ElementBind.class, 1);
+		tests.put(ElementService.class, 1 );
+		tests.put(ElementBind.class, 0);
 		tests.put(ElementFilter.class, 1);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -1611,10 +1706,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertEquals("var0", query.getProjectVars().get(0).getName());
 
 		query = getQuery("SELECT IntCol / 5 as arg FROM foo");
-		tests.put(ElementBind.class, 1);
+		tests.put(ElementService.class, 1 );
+		tests.put(ElementBind.class, 0);
 		tests.put(ElementFilter.class, 1);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -1847,10 +1943,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 	@Test
 	public void testMultiplicationSelect() throws Exception {
 		query = getQuery("SELECT IntCol * 5 FROM foo");
-		tests.put(ElementBind.class, 1);
+		tests.put(ElementService.class, 1 );
+		tests.put(ElementBind.class, 0);
 		tests.put(ElementFilter.class, 1);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -1860,10 +1957,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertEquals("var0", query.getProjectVars().get(0).getName());
 
 		query = getQuery("SELECT IntCol * 5 as arg FROM foo");
-		tests.put(ElementBind.class, 1);
+		tests.put(ElementService.class, 1 );
+		tests.put(ElementBind.class, 0);
 		tests.put(ElementFilter.class, 1);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -1981,10 +2079,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 	@Test
 	public void testSubtractionSelect() throws Exception {
 		query = getQuery("SELECT IntCol-5 FROM foo");
-		tests.put(ElementBind.class, 1);
+		tests.put(ElementService.class, 1 );
+		tests.put(ElementBind.class, 0);
 		tests.put(ElementFilter.class, 1);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -1994,10 +2093,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		assertEquals("var0", query.getProjectVars().get(0).getName());
 
 		query = getQuery("SELECT IntCol-5 as arg FROM foo");
-		tests.put(ElementBind.class, 1);
+		tests.put(ElementService.class, 1 );
+		tests.put(ElementBind.class, 0);
 		tests.put(ElementFilter.class, 1);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -2056,11 +2156,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 			assertTrue(v.getName() + " missing", colNames.contains(v.getName()));
 			colNames.remove(v.getName());
 		}
-
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 0);
 		tests.put(ElementFilter.class, 1);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -2078,10 +2178,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		};
 
 		query = getQuery("SELECT * FROM foo");
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 4);
 		tests.put(ElementFilter.class, 1);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -2094,10 +2195,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		}
 		tests.clear();
 		query = getQuery(String.format("SELECT * FROM foo WHERE %s", rqd_tst));
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 4);
 		tests.put(ElementFilter.class, 2);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -2106,10 +2208,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		tests.clear();
 
 		query = getQuery(String.format("SELECT * FROM foo WHERE %s", opt_tst));
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 4);
 		tests.put(ElementFilter.class, 2);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -2129,10 +2232,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		};
 
 		query = getQuery("SELECT * FROM foo AS bar");
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 4);
 		tests.put(ElementFilter.class, 1);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				barTableName.getGUID());
@@ -2146,10 +2250,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		tests.clear();
 		query = getQuery(String.format("SELECT * FROM foo AS bar WHERE %s",
 				rqd_tst));
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 4);
 		tests.put(ElementFilter.class, 2);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				barTableName.getGUID());
@@ -2162,7 +2267,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		tests.put(ElementBind.class, 4);
 		tests.put(ElementFilter.class, 2);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				barTableName.getGUID());
@@ -2177,10 +2282,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		final String opt_tst = String.format("%s='FooString'", OPT_TEST);
 
 		query = getQuery(String.format("SELECT %s FROM foo", RQD));
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 1);
 		tests.put(ElementFilter.class, 1);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -2191,10 +2297,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		tests.clear();
 
 		query = getQuery(String.format("SELECT %s AS arg FROM foo", RQD));
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 1);
 		tests.put(ElementFilter.class, 1);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -2206,11 +2313,12 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 
 		query = getQuery(String.format("SELECT %s FROM foo WHERE %s", RQD,
 				rqd_tst));
+		tests.put(ElementService.class, 1 );
 		// one for select one for filter
-		tests.put(ElementBind.class, 2);
+		tests.put(ElementBind.class, 1);
 		tests.put(ElementFilter.class, 2);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -2222,11 +2330,12 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 
 		query = getQuery(String.format("SELECT %s as arg FROM foo WHERE %s",
 				RQD, rqd_tst));
+		tests.put(ElementService.class, 1 );
 		// one for select one for filter
-		tests.put(ElementBind.class, 2);
+		tests.put(ElementBind.class, 1);
 		tests.put(ElementFilter.class, 2);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, null);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -2238,11 +2347,12 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 
 		query = getQuery(String.format("SELECT %s FROM foo WHERE %s", RQD,
 				opt_tst));
+		tests.put(ElementService.class, 1 );
 		// one for select one for filter
-		tests.put(ElementBind.class, 2);
+		tests.put(ElementBind.class, 1);
 		tests.put(ElementFilter.class, 2);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -2254,11 +2364,12 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 
 		query = getQuery(String.format("SELECT %s AS arg FROM foo WHERE %s",
 				RQD, opt_tst));
+		tests.put(ElementService.class, 1 );
 		// one for select one for filter
-		tests.put(ElementBind.class, 2);
+		tests.put(ElementBind.class, 1);
 		tests.put(ElementFilter.class, 2);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -2276,10 +2387,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		final String opt_tst = String.format("%s='FooString'", OPT_TEST);
 
 		query = getQuery(String.format("SELECT %s FROM foo AS bar", RQD));
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 1);
 		tests.put(ElementFilter.class, 1);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				barTableName.getGUID());
@@ -2290,10 +2402,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		tests.clear();
 
 		query = getQuery(String.format("SELECT %s AS arg FROM foo AS bar", RQD));
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 1);
 		tests.put(ElementFilter.class, 1);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				barTableName.getGUID());
@@ -2305,11 +2418,12 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 
 		query = getQuery(String.format("SELECT %s FROM foo AS bar WHERE %s",
 				RQD, rqd_tst));
+		tests.put(ElementService.class, 1 );
 		// one for select one for filter
-		tests.put(ElementBind.class, 2);
+		tests.put(ElementBind.class, 1);
 		tests.put(ElementFilter.class, 2);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				barTableName.getGUID());
@@ -2321,11 +2435,12 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 
 		query = getQuery(String.format(
 				"SELECT %s as arg FROM foo AS bar WHERE %s", RQD, rqd_tst));
+		tests.put(ElementService.class, 1 );
 		// one for select one for filter
-		tests.put(ElementBind.class, 2);
+		tests.put(ElementBind.class, 1);
 		tests.put(ElementFilter.class, 2);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				barTableName.getGUID());
@@ -2337,11 +2452,12 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 
 		query = getQuery(String.format("SELECT %s FROM foo AS bar WHERE %s",
 				RQD, opt_tst));
+		tests.put(ElementService.class, 1 );
 		// one for select one for filter
-		tests.put(ElementBind.class, 2);
+		tests.put(ElementBind.class, 1);
 		tests.put(ElementFilter.class, 2);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				barTableName.getGUID());
@@ -2353,11 +2469,12 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 
 		query = getQuery(String.format(
 				"SELECT %s AS arg FROM foo AS bar WHERE %s", RQD, opt_tst));
+		tests.put(ElementService.class, 1 );
 		// one for select one for filter
-		tests.put(ElementBind.class, 2);
+		tests.put(ElementBind.class, 1);
 		tests.put(ElementFilter.class, 2);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				barTableName.getGUID());
@@ -2375,10 +2492,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		final String opt_tst = String.format("%s='FooString'", OPT_TEST);
 
 		query = getQuery(String.format("SELECT %s FROM foo", OPT));
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 1);
 		tests.put(ElementFilter.class, 1);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -2389,10 +2507,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		tests.clear();
 
 		query = getQuery(String.format("SELECT %s AS arg FROM foo", OPT));
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 1);
 		tests.put(ElementFilter.class, 1);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -2404,11 +2523,12 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 
 		query = getQuery(String.format("SELECT %s FROM foo WHERE %s", OPT,
 				rqd_tst));
+		tests.put(ElementService.class, 1 );
 		// one for select one for filter
-		tests.put(ElementBind.class, 2);
+		tests.put(ElementBind.class, 1);
 		tests.put(ElementFilter.class, 2);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -2420,11 +2540,12 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 
 		query = getQuery(String.format("SELECT %s AS arg FROM foo WHERE %s",
 				OPT, rqd_tst));
+		tests.put(ElementService.class, 1 );
 		// one for select one for filter
-		tests.put(ElementBind.class, 2);
+		tests.put(ElementBind.class, 1);
 		tests.put(ElementFilter.class, 2);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -2436,11 +2557,12 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 
 		query = getQuery(String.format("SELECT %s FROM foo WHERE %s", OPT,
 				opt_tst));
+		tests.put(ElementService.class, 1 );
 		// one for select one for filter
-		tests.put(ElementBind.class, 2);
+		tests.put(ElementBind.class, 1);
 		tests.put(ElementFilter.class, 2);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -2452,11 +2574,12 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 
 		query = getQuery(String.format("SELECT %s AS arg FROM foo WHERE %s",
 				OPT, opt_tst));
+		tests.put(ElementService.class, 1 );
 		// one for select one for filter
-		tests.put(ElementBind.class, 2);
+		tests.put(ElementBind.class, 1);
 		tests.put(ElementFilter.class, 2);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName.getGUID());
@@ -2471,13 +2594,13 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 	@Test
 	public void testOuterJoin() throws Exception {
 		query = getQuery("SELECT foo.IntCol, bar.BarIntCol FROM foo OUTER JOIN bar ON foo.IntCol=bar.BarIntCol");
-		// 2 from each table
-		tests.put(ElementBind.class, 4);
+		tests.put(ElementService.class, 1 );
+			// 2 from each table
+		tests.put(ElementBind.class, 2);
 		// 1 from each table + join
 		tests.put(ElementFilter.class, 3);
 		// 2 from each table + outer table
 		tests.put(ElementOptional.class, 5);
-		tests.put(ElementPathBlock.class, 10);
 		results = validate(query, tests);
 	}
 
@@ -2488,13 +2611,13 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		query = getQuery(String.format(
 				"SELECT %s FROM foo OUTER JOIN bar ON foo.%s=bar.Bar%s", OPT,
 				RQD_TEST, RQD_TEST));
-		// 2 from foo, 1 from bar
-		tests.put(ElementBind.class, 3);
+		tests.put(ElementService.class, 1 );
+			// 2 from foo, 1 from bar
+		tests.put(ElementBind.class, 1);
 		// 1 from each table + join filter
 		tests.put(ElementFilter.class, 3);
 		// 2 from each table + 1 for outer table
 		tests.put(ElementOptional.class, 5);
-		tests.put(ElementPathBlock.class, 10);
 		validate(query, tests);
 		assertEquals(1, query.getProjectVars().size());
 		tests.clear();
@@ -2502,13 +2625,13 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		query = getQuery(String.format(
 				"SELECT %s FROM foo OUTER JOIN bar ON foo.%s=bar.%s", OPT,
 				RQD_TEST, OPT_TEST));
+		tests.put(ElementService.class, 1 );
 		// 2 from foo, 1 from bar
-		tests.put(ElementBind.class, 3);
+		tests.put(ElementBind.class, 1);
 		// 1 from each table + join filter
 		tests.put(ElementFilter.class, 3);
 		// 2 from each table + 1 for outer table
 		tests.put(ElementOptional.class, 5);
-		tests.put(ElementPathBlock.class, 10);
 		validate(query, tests);
 		assertEquals(1, query.getProjectVars().size());
 		tests.clear();
@@ -2516,13 +2639,13 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		query = getQuery(String.format(
 				"SELECT %s FROM foo OUTER JOIN bar ON foo.%s=bar.Bar%s", OPT,
 				OPT_TEST, RQD_TEST));
+		tests.put(ElementService.class, 1 );
 		// 2 from foo, 1 from bar
-		tests.put(ElementBind.class, 3);
+		tests.put(ElementBind.class, 1);
 		// 1 from each table + join filter
 		tests.put(ElementFilter.class, 3);
 		// 2 from each table + 1 for outer table
 		tests.put(ElementOptional.class, 5);
-		tests.put(ElementPathBlock.class, 10);
 		validate(query, tests);
 		assertEquals(1, query.getProjectVars().size());
 		tests.clear();
@@ -2530,13 +2653,13 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		query = getQuery(String.format(
 				"SELECT %s FROM foo OUTER JOIN bar ON foo.%s=bar.%s", OPT,
 				OPT_TEST, OPT_TEST));
+		tests.put(ElementService.class, 1 );
 		// 2 from foo, 1 from bar
-		tests.put(ElementBind.class, 3);
+		tests.put(ElementBind.class, 1);
 		// 1 from each table + join filter
 		tests.put(ElementFilter.class, 3);
 		// 2 from each table + 1 for outer table
 		tests.put(ElementOptional.class, 5);
-		tests.put(ElementPathBlock.class, 10);
 		validate(query, tests);
 		assertEquals(1, query.getProjectVars().size());
 		tests.clear();
@@ -2549,13 +2672,13 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		query = getQuery(String.format(
 				"SELECT %s FROM foo OUTER JOIN bar ON foo.%s=bar.Bar%s", RQD,
 				RQD_TEST, RQD_TEST));
+		tests.put(ElementService.class, 1 );
 		// 2 from foo, 1 from bar
-		tests.put(ElementBind.class, 3);
+		tests.put(ElementBind.class, 1);
 		// 1 from each table + join filter
 		tests.put(ElementFilter.class, 3);
 		// 2 from each table + 1 for outer table
 		tests.put(ElementOptional.class, 5);
-		tests.put(ElementPathBlock.class, 10);
 		validate(query, tests);
 		assertEquals(1, query.getProjectVars().size());
 		tests.clear();
@@ -2563,13 +2686,13 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		query = getQuery(String.format(
 				"SELECT %s FROM foo OUTER JOIN bar ON foo.%s=bar.Bar%s", RQD,
 				RQD_TEST, RQD_TEST));
+		tests.put(ElementService.class, 1 );
 		// 2 from foo, 1 from bar
-		tests.put(ElementBind.class, 3);
+		tests.put(ElementBind.class, 1);
 		// 1 from each table + join filter
 		tests.put(ElementFilter.class, 3);
 		// 2 from each table + 1 for outer table
 		tests.put(ElementOptional.class, 5);
-		tests.put(ElementPathBlock.class, 10);
 		validate(query, tests);
 		assertEquals(1, query.getProjectVars().size());
 		tests.clear();
@@ -2577,13 +2700,13 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		query = getQuery(String.format(
 				"SELECT %s FROM foo OUTER JOIN bar ON foo.%s=bar.Bar%s", RQD,
 				RQD_TEST, RQD_TEST));
+		tests.put(ElementService.class, 1 );
 		// 2 from foo, 1 from bar
-		tests.put(ElementBind.class, 3);
+		tests.put(ElementBind.class, 1);
 		// 1 from each table + join filter
 		tests.put(ElementFilter.class, 3);
 		// 2 from each table + 1 for outer table
 		tests.put(ElementOptional.class, 5);
-		tests.put(ElementPathBlock.class, 10);
 		validate(query, tests);
 		assertEquals(1, query.getProjectVars().size());
 		tests.clear();
@@ -2591,13 +2714,13 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		query = getQuery(String.format(
 				"SELECT %s FROM foo OUTER JOIN bar ON foo.%s=bar.Bar%s", RQD,
 				RQD_TEST, RQD_TEST));
+		tests.put(ElementService.class, 1 );
 		// 2 from foo, 1 from bar
-		tests.put(ElementBind.class, 3);
+		tests.put(ElementBind.class, 1);
 		// 1 from each table + join filter
 		tests.put(ElementFilter.class, 3);
 		// 2 from each table + 1 for outer table
 		tests.put(ElementOptional.class, 5);
-		tests.put(ElementPathBlock.class, 10);
 		validate(query, tests);
 		assertEquals(1, query.getProjectVars().size());
 		tests.clear();
@@ -2610,13 +2733,13 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		// on.
 		/* star select */
 		query = getQuery("SELECT * FROM foo OUTER JOIN bar USING (NullableIntCol)");
+		tests.put(ElementService.class, 1 );
 		// 4 from each table
-		tests.put(ElementBind.class, 8);
+		tests.put(ElementBind.class, 7);
 		// 1 from each table
-		tests.put(ElementFilter.class, 2);
+		tests.put(ElementFilter.class, 3);
 		// 1 from each table
 		tests.put(ElementOptional.class, 3);
-		tests.put(ElementPathBlock.class, 10);
 		results = validate(query, tests);
 
 		// one for each column in each table minus the joined column name.
@@ -2625,13 +2748,13 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 
 		/* foo star select */
 		query = getQuery("SELECT foo.* FROM foo OUTER JOIN bar using (NullableIntCol)");
+		tests.put(ElementService.class, 1 );
 		// 4 from foo + 1 bar nullableIntCol
-		tests.put(ElementBind.class, 5);
+		tests.put(ElementBind.class, 4);
 		// 1 from each table
-		tests.put(ElementFilter.class, 2);
+		tests.put(ElementFilter.class, 3);
 		// 1 from each table
 		tests.put(ElementOptional.class, 3);
-		tests.put(ElementPathBlock.class, 10);
 		validate(query, tests);
 		assertEquals(4, query.getProjectVars().size());
 		tests.clear();
@@ -2640,13 +2763,13 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		query = getQuery(String
 				.format("SELECT %s FROM foo OUTER JOIN bar using (NullableIntCol)",
 						OPT));
-		// 2 from foo + 1 from bar
-		tests.put(ElementBind.class, 3);
+		tests.put(ElementService.class, 1 );
+			// 2 from foo + 1 from bar
+		tests.put(ElementBind.class, 1);
 		// 1 from each table
-		tests.put(ElementFilter.class, 2);
+		tests.put(ElementFilter.class, 3);
 		// 1 from each table
 		tests.put(ElementOptional.class, 3);
-		tests.put(ElementPathBlock.class, 10);
 		validate(query, tests);
 		assertEquals(1, query.getProjectVars().size());
 		tests.clear();
@@ -2655,13 +2778,13 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		query = getQuery(String
 				.format("SELECT %s FROM foo OUTER JOIN bar using (NullableIntCol)",
 						RQD));
+		tests.put(ElementService.class, 1 );
 		// 2 from foo + 1 from bar
-		tests.put(ElementBind.class, 3);
+		tests.put(ElementBind.class, 1);
 		// 1 from each table
-		tests.put(ElementFilter.class, 2);
+		tests.put(ElementFilter.class, 3);
 		// 1 from each table
 		tests.put(ElementOptional.class, 3);
-		tests.put(ElementPathBlock.class, 10);
 		validate(query, tests);
 		assertEquals(1, query.getProjectVars().size());
 		tests.clear();
@@ -2674,13 +2797,13 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		// on.
 		/* star select */
 		query = getQuery("SELECT * FROM foo INNER JOIN bar using (NullableIntCol)");
+		tests.put(ElementService.class, 1 );
 		// 4 from each table
-		tests.put(ElementBind.class, 8);
-		// 1 from each table
-		tests.put(ElementFilter.class, 2);
+		tests.put(ElementBind.class, 7);
+		// 1 from each table +1 for join
+		tests.put(ElementFilter.class, 3);
 		// 1 from each table
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 10);
 		results = validate(query, tests);
 
 		// one for each column in each table minus the joined column name.
@@ -2689,13 +2812,13 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 
 		/* foo star select */
 		query = getQuery("SELECT foo.* FROM foo INNER JOIN bar using (NullableIntCol)");
-		// 4 from foo + 1 bar nullableIntCol
-		tests.put(ElementBind.class, 5);
+		tests.put(ElementService.class, 1 );
+			// 4 from foo + 1 bar nullableIntCol
+		tests.put(ElementBind.class, 4);
 		// 1 from each table
-		tests.put(ElementFilter.class, 2);
+		tests.put(ElementFilter.class, 3);
 		// 1 from each table
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 10);
 		validate(query, tests);
 		assertEquals(4, query.getProjectVars().size());
 		tests.clear();
@@ -2704,13 +2827,13 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		query = getQuery(String
 				.format("SELECT %s FROM foo INNER JOIN bar using (NullableIntCol)",
 						OPT));
+		tests.put(ElementService.class, 1 );
 		// 2 from foo + 1 from bar
-		tests.put(ElementBind.class, 3);
+		tests.put(ElementBind.class, 1);
 		// 1 from each table
-		tests.put(ElementFilter.class, 2);
+		tests.put(ElementFilter.class, 3);
 		// 1 from each table
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 10);
 		validate(query, tests);
 		assertEquals(1, query.getProjectVars().size());
 		tests.clear();
@@ -2719,13 +2842,13 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		query = getQuery(String
 				.format("SELECT %s FROM foo INNER JOIN bar using (NullableIntCol)",
 						RQD));
+		tests.put(ElementService.class, 1 );
 		// 2 from foo + 1 from bar
-		tests.put(ElementBind.class, 3);
+		tests.put(ElementBind.class, 1);
 		// 1 from each table
-		tests.put(ElementFilter.class, 2);
+		tests.put(ElementFilter.class, 3);
 		// 1 from each table
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 10);
 		validate(query, tests);
 		assertEquals(1, query.getProjectVars().size());
 		tests.clear();
@@ -2737,13 +2860,13 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		query = getQuery(String.format(
 				"SELECT * FROM foo INNER JOIN bar ON foo.%s=bar.Bar%s",
 				RQD_TEST, RQD_TEST));
+		tests.put(ElementService.class, 1 );
 		// 4 from each table + 2 on join
-		tests.put(ElementBind.class, 10);
+		tests.put(ElementBind.class, 8);
 		// 1 from each table + join filter
 		tests.put(ElementFilter.class, 3);
 		// 2 from each table
 		tests.put(ElementOptional.class, 4);
-		tests.put(ElementPathBlock.class, 10);
 		validate(query, tests);
 		assertEquals(8, query.getProjectVars().size());
 		tests.clear();
@@ -2751,13 +2874,13 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		query = getQuery(String.format(
 				"SELECT * FROM foo INNER JOIN bar ON foo.%s=bar.%s", RQD_TEST,
 				OPT_TEST));
+		tests.put(ElementService.class, 1 );
 		// 4 from each table + 2 on join
-		tests.put(ElementBind.class, 10);
+		tests.put(ElementBind.class, 8);
 		// 1 from each table + join filter
 		tests.put(ElementFilter.class, 3);
 		// 2 from each table
 		tests.put(ElementOptional.class, 4);
-		tests.put(ElementPathBlock.class, 10);
 		validate(query, tests);
 		assertEquals(8, query.getProjectVars().size());
 		tests.clear();
@@ -2765,13 +2888,13 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		query = getQuery(String.format(
 				"SELECT * FROM foo INNER JOIN bar ON foo.%s=bar.Bar%s",
 				OPT_TEST, RQD_TEST));
+		tests.put(ElementService.class, 1 );
 		// 4 from each table + 2 on join
-		tests.put(ElementBind.class, 10);
+		tests.put(ElementBind.class, 8);
 		// 1 from each table + join filter
 		tests.put(ElementFilter.class, 3);
 		// 2 from each table
 		tests.put(ElementOptional.class, 4);
-		tests.put(ElementPathBlock.class, 10);
 		validate(query, tests);
 		assertEquals(8, query.getProjectVars().size());
 		tests.clear();
@@ -2779,13 +2902,13 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		query = getQuery(String.format(
 				"SELECT * FROM foo INNER JOIN bar ON foo.%s=bar.%s", OPT_TEST,
 				OPT_TEST));
+		tests.put(ElementService.class, 1 );
 		// 4 from each table + 2 on join
-		tests.put(ElementBind.class, 10);
+		tests.put(ElementBind.class, 8);
 		// 1 from each table + join filter
 		tests.put(ElementFilter.class, 3);
 		// 2 from each table
 		tests.put(ElementOptional.class, 4);
-		tests.put(ElementPathBlock.class, 10);
 		validate(query, tests);
 		assertEquals(8, query.getProjectVars().size());
 		tests.clear();
@@ -2799,13 +2922,13 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		query = getQuery(String.format(
 				"SELECT foo.* FROM foo INNER JOIN bar ON foo.%s=bar.Bar%s",
 				RQD_TEST, RQD_TEST));
+		tests.put(ElementService.class, 1 );
 		// 4 from foo + 2 on join
-		tests.put(ElementBind.class, 6);
+		tests.put(ElementBind.class, 4);
 		// 1 from each table + join filter
 		tests.put(ElementFilter.class, 3);
 		// 2 from each table
 		tests.put(ElementOptional.class, 4);
-		tests.put(ElementPathBlock.class, 10);
 		validate(query, tests);
 		assertEquals(4, query.getProjectVars().size());
 		tests.clear();
@@ -2813,13 +2936,13 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		query = getQuery(String.format(
 				"SELECT foo.* FROM foo INNER JOIN bar ON foo.%s=bar.%s",
 				RQD_TEST, OPT_TEST));
+		tests.put(ElementService.class, 1 );
 		// 4 from foo + 2 on join
-		tests.put(ElementBind.class, 6);
+		tests.put(ElementBind.class, 4);
 		// 1 from each table + join filter
 		tests.put(ElementFilter.class, 3);
 		// 2 from each table
 		tests.put(ElementOptional.class, 4);
-		tests.put(ElementPathBlock.class, 10);
 		validate(query, tests);
 		assertEquals(4, query.getProjectVars().size());
 		tests.clear();
@@ -2827,13 +2950,13 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		query = getQuery(String.format(
 				"SELECT foo.* FROM foo INNER JOIN bar ON foo.%s=bar.Bar%s",
 				OPT_TEST, RQD_TEST));
+		tests.put(ElementService.class, 1 );
 		// 4 from foo + 2 on join
-		tests.put(ElementBind.class, 6);
+		tests.put(ElementBind.class, 4);
 		// 1 from each table + join filter
 		tests.put(ElementFilter.class, 3);
 		// 2 from each table
 		tests.put(ElementOptional.class, 4);
-		tests.put(ElementPathBlock.class, 10);
 		validate(query, tests);
 		assertEquals(4, query.getProjectVars().size());
 		tests.clear();
@@ -2841,13 +2964,13 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		query = getQuery(String.format(
 				"SELECT foo.* FROM foo INNER JOIN bar ON foo.%s=bar.%s",
 				OPT_TEST, OPT_TEST));
+		tests.put(ElementService.class, 1 );
 		// 4 from foo + 2 on join
-		tests.put(ElementBind.class, 6);
+		tests.put(ElementBind.class, 4);
 		// 1 from each table + join filter
 		tests.put(ElementFilter.class, 3);
 		// 2 from each table
 		tests.put(ElementOptional.class, 4);
-		tests.put(ElementPathBlock.class, 10);
 		validate(query, tests);
 		assertEquals(4, query.getProjectVars().size());
 		tests.clear();
@@ -2860,13 +2983,13 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		query = getQuery(String.format(
 				"SELECT %s FROM foo INNER JOIN bar ON foo.%s=bar.Bar%s", OPT,
 				RQD_TEST, RQD_TEST));
+		tests.put(ElementService.class, 1 );
 		// 2 from foo, 1 from bar
-		tests.put(ElementBind.class, 3);
+		tests.put(ElementBind.class, 1);
 		// 1 from each table + join filter
 		tests.put(ElementFilter.class, 3);
 		// 2 from each table
 		tests.put(ElementOptional.class, 4);
-		tests.put(ElementPathBlock.class, 10);
 		validate(query, tests);
 		assertEquals(1, query.getProjectVars().size());
 		tests.clear();
@@ -2874,14 +2997,14 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		query = getQuery(String.format(
 				"SELECT %s FROM foo INNER JOIN bar ON foo.%s=bar.%s", OPT,
 				RQD_TEST, OPT_TEST));
+		tests.put(ElementService.class, 1 );
 		// 2 from foo, 1 from bar
-		tests.put(ElementBind.class, 3);
+		tests.put(ElementBind.class, 1);
 
 		// 1 from each table + join filter
 		tests.put(ElementFilter.class, 3);
 		// 2 from each table
 		tests.put(ElementOptional.class, 4);
-		tests.put(ElementPathBlock.class, 10);
 		validate(query, tests);
 		assertEquals(1, query.getProjectVars().size());
 		tests.clear();
@@ -2889,13 +3012,13 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		query = getQuery(String.format(
 				"SELECT %s FROM foo INNER JOIN bar ON foo.%s=bar.Bar%s", OPT,
 				OPT_TEST, RQD_TEST));
+		tests.put(ElementService.class, 1 );
 		// 2 from foo, 1 from bar
-		tests.put(ElementBind.class, 3);
+		tests.put(ElementBind.class, 1);
 		// 1 from each table + join filter
 		tests.put(ElementFilter.class, 3);
 		// 2 from each table
 		tests.put(ElementOptional.class, 4);
-		tests.put(ElementPathBlock.class, 10);
 		validate(query, tests);
 		assertEquals(1, query.getProjectVars().size());
 		tests.clear();
@@ -2903,13 +3026,13 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		query = getQuery(String.format(
 				"SELECT %s FROM foo INNER JOIN bar ON foo.%s=bar.%s", OPT,
 				OPT_TEST, OPT_TEST));
+		tests.put(ElementService.class, 1 );
 		// 2 from foo, 1 from bar
-		tests.put(ElementBind.class, 3);
+		tests.put(ElementBind.class, 1);
 		// 1 from each table + join filter
 		tests.put(ElementFilter.class, 3);
 		// 2 from each table
 		tests.put(ElementOptional.class, 4);
-		tests.put(ElementPathBlock.class, 10);
 		validate(query, tests);
 		assertEquals(1, query.getProjectVars().size());
 		tests.clear();
@@ -2922,13 +3045,13 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		query = getQuery(String.format(
 				"SELECT %s FROM foo INNER JOIN bar ON foo.%s=bar.Bar%s", RQD,
 				RQD_TEST, RQD_TEST));
+		tests.put(ElementService.class, 1 );
 		// 2 from foo, 1 from bar
-		tests.put(ElementBind.class, 3);
+		tests.put(ElementBind.class, 1);
 		// 1 from each table + join filter
 		tests.put(ElementFilter.class, 3);
 		// 2 from each table
 		tests.put(ElementOptional.class, 4);
-		tests.put(ElementPathBlock.class, 10);
 		validate(query, tests);
 		assertEquals(1, query.getProjectVars().size());
 		tests.clear();
@@ -2936,13 +3059,13 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		query = getQuery(String.format(
 				"SELECT %s FROM foo INNER JOIN bar ON foo.%s=bar.Bar%s", RQD,
 				RQD_TEST, RQD_TEST));
+		tests.put(ElementService.class, 1 );
 		// 2 from foo, 1 from bar
-		tests.put(ElementBind.class, 3);
+		tests.put(ElementBind.class, 1);
 		// 1 from each table + join filter
 		tests.put(ElementFilter.class, 3);
 		// 2 from each table
 		tests.put(ElementOptional.class, 4);
-		tests.put(ElementPathBlock.class, 10);
 		validate(query, tests);
 		assertEquals(1, query.getProjectVars().size());
 		tests.clear();
@@ -2950,13 +3073,13 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		query = getQuery(String.format(
 				"SELECT %s FROM foo INNER JOIN bar ON foo.%s=bar.Bar%s", RQD,
 				RQD_TEST, RQD_TEST));
-		// 2 from foo, 1 from bar
-		tests.put(ElementBind.class, 3);
+		tests.put(ElementService.class, 1 );
+			// 2 from foo, 1 from bar
+		tests.put(ElementBind.class, 1);
 		// 1 from each table + join filter
 		tests.put(ElementFilter.class, 3);
 		// 2 from each table
 		tests.put(ElementOptional.class, 4);
-		tests.put(ElementPathBlock.class, 10);
 		validate(query, tests);
 		assertEquals(1, query.getProjectVars().size());
 		tests.clear();
@@ -2964,13 +3087,13 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		query = getQuery(String.format(
 				"SELECT %s FROM foo INNER JOIN bar ON foo.%s=bar.Bar%s", RQD,
 				RQD_TEST, RQD_TEST));
+		tests.put(ElementService.class, 1 );
 		// 2 from foo, 1 from bar
-		tests.put(ElementBind.class, 3);
+		tests.put(ElementBind.class, 1);
 		// 1 from each table + join filter
 		tests.put(ElementFilter.class, 3);
 		// 2 from each table
 		tests.put(ElementOptional.class, 4);
-		tests.put(ElementPathBlock.class, 10);
 		validate(query, tests);
 		assertEquals(1, query.getProjectVars().size());
 		tests.clear();
@@ -2984,13 +3107,13 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		query = getQuery(String.format(
 				"SELECT * FROM foo, bar WHERE foo.%s=bar.Bar%s", RQD_TEST,
 				RQD_TEST));
+		tests.put(ElementService.class, 1 );
 		// 4 from each table
 		tests.put(ElementBind.class, 8);
 		// 1 from each table + join filter
 		tests.put(ElementFilter.class, 3);
 		// 2 from each table
 		tests.put(ElementOptional.class, 4);
-		tests.put(ElementPathBlock.class, 10);
 		validate(query, tests);
 		assertEquals(8, query.getProjectVars().size());
 		tests.clear();
@@ -2998,13 +3121,13 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		query = getQuery(String.format(
 				"SELECT * FROM foo, bar WHERE foo.%s=bar.%s", RQD_TEST,
 				OPT_TEST));
-		// 4 from each table
+		tests.put(ElementService.class, 1 );
+			// 4 from each table
 		tests.put(ElementBind.class, 8);
 		// 1 from each table + join filter
 		tests.put(ElementFilter.class, 3);
 		// 2 from each table
 		tests.put(ElementOptional.class, 4);
-		tests.put(ElementPathBlock.class, 10);
 		validate(query, tests);
 		assertEquals(8, query.getProjectVars().size());
 		tests.clear();
@@ -3012,13 +3135,13 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		query = getQuery(String.format(
 				"SELECT * FROM foo, bar WHERE foo.%s=bar.Bar%s", OPT_TEST,
 				RQD_TEST));
+		tests.put(ElementService.class, 1 );
 		// 4 from each table
 		tests.put(ElementBind.class, 8);
 		// 1 from each table + join filter
 		tests.put(ElementFilter.class, 3);
 		// 2 from each table
 		tests.put(ElementOptional.class, 4);
-		tests.put(ElementPathBlock.class, 10);
 		validate(query, tests);
 		assertEquals(8, query.getProjectVars().size());
 		tests.clear();
@@ -3026,13 +3149,13 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		query = getQuery(String.format(
 				"SELECT * FROM foo, bar WHERE foo.%s=bar.%s", OPT_TEST,
 				OPT_TEST));
-		// 4 from each table
+		tests.put(ElementService.class, 1 );
+			// 4 from each table
 		tests.put(ElementBind.class, 8);
 		// 1 from each table + join filter
 		tests.put(ElementFilter.class, 3);
 		// 2 from each table
 		tests.put(ElementOptional.class, 4);
-		tests.put(ElementPathBlock.class, 10);
 		validate(query, tests);
 		assertEquals(8, query.getProjectVars().size());
 		tests.clear();
@@ -3046,8 +3169,9 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		query = getQuery(String.format(
 				"SELECT foo.* FROM foo, bar WHERE foo.%s=bar.Bar%s", RQD_TEST,
 				RQD_TEST));
-		// 4 from foo + select from bar
-		tests.put(ElementBind.class, 5);
+		tests.put(ElementService.class, 1 );
+			// 4 from foo + select from bar
+		tests.put(ElementBind.class, 4);
 		// 1 from each table + join filter
 		tests.put(ElementFilter.class, 3);
 		// 2 from each table
@@ -3059,13 +3183,13 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		query = getQuery(String.format(
 				"SELECT foo.* FROM foo, bar WHERE foo.%s=bar.%s", RQD_TEST,
 				OPT_TEST));
-		// 4 from foo + select from bar
-		tests.put(ElementBind.class, 5);
+		tests.put(ElementService.class, 1 );
+			// 4 from foo + select from bar
+		tests.put(ElementBind.class, 4);
 		// 1 from each table + join filter
 		tests.put(ElementFilter.class, 3);
 		// 2 from each table
 		tests.put(ElementOptional.class, 4);
-		tests.put(ElementPathBlock.class, 10);
 		validate(query, tests);
 		assertEquals(4, query.getProjectVars().size());
 		tests.clear();
@@ -3073,13 +3197,13 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		query = getQuery(String.format(
 				"SELECT foo.* FROM foo, bar WHERE foo.%s=bar.Bar%s", OPT_TEST,
 				RQD_TEST));
+		tests.put(ElementService.class, 1 );
 		// 4 from foo + select from bar
-		tests.put(ElementBind.class, 5);
+		tests.put(ElementBind.class, 4);
 		// 1 from each table + join filter
 		tests.put(ElementFilter.class, 3);
 		// 2 from each table
 		tests.put(ElementOptional.class, 4);
-		tests.put(ElementPathBlock.class, 10);
 		validate(query, tests);
 		assertEquals(4, query.getProjectVars().size());
 		tests.clear();
@@ -3087,13 +3211,13 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		query = getQuery(String.format(
 				"SELECT foo.* FROM foo, bar WHERE foo.%s=bar.%s", OPT_TEST,
 				OPT_TEST));
+		tests.put(ElementService.class, 1 );
 		// 4 from foo + select from bar
-		tests.put(ElementBind.class, 5);
+		tests.put(ElementBind.class, 4);
 		// 1 from each table + join filter
 		tests.put(ElementFilter.class, 3);
 		// 2 from each table
 		tests.put(ElementOptional.class, 4);
-		tests.put(ElementPathBlock.class, 10);
 		validate(query, tests);
 		assertEquals(4, query.getProjectVars().size());
 		tests.clear();
@@ -3106,13 +3230,13 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		query = getQuery(String.format(
 				"SELECT %s FROM foo, bar WHERE foo.%s=bar.Bar%s", OPT,
 				RQD_TEST, RQD_TEST));
+		tests.put(ElementService.class, 1 );
 		// 2 from foo, 1 from bar
-		tests.put(ElementBind.class, 3);
+		tests.put(ElementBind.class, 1);
 		// 1 from each table + join filter
 		tests.put(ElementFilter.class, 3);
 		// 2 from each table
 		tests.put(ElementOptional.class, 4);
-		tests.put(ElementPathBlock.class, 10);
 		validate(query, tests);
 		assertEquals(1, query.getProjectVars().size());
 		tests.clear();
@@ -3120,14 +3244,14 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		query = getQuery(String.format(
 				"SELECT %s FROM foo, bar WHERE foo.%s=bar.%s", OPT, RQD_TEST,
 				OPT_TEST));
+		tests.put(ElementService.class, 1 );
 		// 2 from foo, 1 from bar
-		tests.put(ElementBind.class, 3);
+		tests.put(ElementBind.class, 1);
 
 		// 1 from each table + join filter
 		tests.put(ElementFilter.class, 3);
 		// 2 from each table
 		tests.put(ElementOptional.class, 4);
-		tests.put(ElementPathBlock.class, 10);
 		validate(query, tests);
 		assertEquals(1, query.getProjectVars().size());
 		tests.clear();
@@ -3135,13 +3259,13 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		query = getQuery(String.format(
 				"SELECT %s FROM foo, bar WHERE foo.%s=bar.Bar%s", OPT,
 				OPT_TEST, RQD_TEST));
+		tests.put(ElementService.class, 1 );
 		// 2 from foo, 1 from bar
-		tests.put(ElementBind.class, 3);
+		tests.put(ElementBind.class, 1);
 		// 1 from each table + join filter
 		tests.put(ElementFilter.class, 3);
 		// 2 from each table
 		tests.put(ElementOptional.class, 4);
-		tests.put(ElementPathBlock.class, 10);
 		validate(query, tests);
 		assertEquals(1, query.getProjectVars().size());
 		tests.clear();
@@ -3149,13 +3273,13 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		query = getQuery(String.format(
 				"SELECT %s FROM foo, bar WHERE foo.%s=bar.%s", OPT, OPT_TEST,
 				OPT_TEST));
+		tests.put(ElementService.class, 1 );
 		// 2 from foo, 1 from bar
-		tests.put(ElementBind.class, 3);
+		tests.put(ElementBind.class, 1);
 		// 1 from each table + join filter
 		tests.put(ElementFilter.class, 3);
 		// 2 from each table
 		tests.put(ElementOptional.class, 4);
-		tests.put(ElementPathBlock.class, 10);
 		validate(query, tests);
 		assertEquals(1, query.getProjectVars().size());
 		tests.clear();
@@ -3168,13 +3292,13 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		query = getQuery(String.format(
 				"SELECT %s FROM foo, bar WHERE foo.%s=bar.Bar%s", RQD,
 				RQD_TEST, RQD_TEST));
+		tests.put(ElementService.class, 1 );
 		// 2 from foo, 1 from bar
-		tests.put(ElementBind.class, 3);
+		tests.put(ElementBind.class, 1);
 		// 1 from each table + join filter
 		tests.put(ElementFilter.class, 3);
 		// 2 from each table
 		tests.put(ElementOptional.class, 4);
-		tests.put(ElementPathBlock.class, 10);
 		validate(query, tests);
 		assertEquals(1, query.getProjectVars().size());
 		tests.clear();
@@ -3182,13 +3306,13 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		query = getQuery(String.format(
 				"SELECT %s FROM foo, bar WHERE foo.%s=bar.Bar%s", RQD,
 				RQD_TEST, RQD_TEST));
+		tests.put(ElementService.class, 1 );
 		// 2 from foo, 1 from bar
-		tests.put(ElementBind.class, 3);
+		tests.put(ElementBind.class, 1);
 		// 1 from each table + join filter
 		tests.put(ElementFilter.class, 3);
 		// 2 from each table
 		tests.put(ElementOptional.class, 4);
-		tests.put(ElementPathBlock.class, 10);
 		validate(query, tests);
 		assertEquals(1, query.getProjectVars().size());
 		tests.clear();
@@ -3196,13 +3320,13 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		query = getQuery(String.format(
 				"SELECT %s FROM foo, bar WHERE foo.%s=bar.Bar%s", RQD,
 				RQD_TEST, RQD_TEST));
+		tests.put(ElementService.class, 1 );
 		// 2 from foo, 1 from bar
-		tests.put(ElementBind.class, 3);
+		tests.put(ElementBind.class, 1);
 		// 1 from each table + join filter
 		tests.put(ElementFilter.class, 3);
 		// 2 from each table
 		tests.put(ElementOptional.class, 4);
-		tests.put(ElementPathBlock.class, 10);
 		validate(query, tests);
 		assertEquals(1, query.getProjectVars().size());
 		tests.clear();
@@ -3210,13 +3334,13 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		query = getQuery(String.format(
 				"SELECT %s FROM foo, bar WHERE foo.%s=bar.Bar%s", RQD,
 				RQD_TEST, RQD_TEST));
+		tests.put(ElementService.class, 1 );
 		// 2 from foo, 1 from bar
-		tests.put(ElementBind.class, 3);
+		tests.put(ElementBind.class, 1);
 		// 1 from each table + join filter
 		tests.put(ElementFilter.class, 3);
 		// 2 from each table
 		tests.put(ElementOptional.class, 4);
-		tests.put(ElementPathBlock.class, 10);
 		validate(query, tests);
 		assertEquals(1, query.getProjectVars().size());
 		tests.clear();
@@ -3229,10 +3353,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		final String opt_tst = String.format("%s='FooString'", OPT_TEST);
 
 		query = getQuery(String.format("SELECT %s FROM foo AS bar", OPT));
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 1);
 		tests.put(ElementFilter.class, 1);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				barTableName.getGUID());
@@ -3243,10 +3368,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		tests.clear();
 
 		query = getQuery(String.format("SELECT %s AS arg FROM foo AS bar", OPT));
+		tests.put(ElementService.class, 1 );
 		tests.put(ElementBind.class, 1);
 		tests.put(ElementFilter.class, 1);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				barTableName.getGUID());
@@ -3259,10 +3385,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		query = getQuery(String.format("SELECT %s FROM foo AS bar WHERE %s",
 				OPT, rqd_tst));
 		// one for select one for filter
-		tests.put(ElementBind.class, 2);
+		tests.put(ElementService.class, 1 );
+		tests.put(ElementBind.class, 1);
 		tests.put(ElementFilter.class, 2);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				barTableName.getGUID());
@@ -3275,10 +3402,11 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		query = getQuery(String.format(
 				"SELECT %s AS arg FROM foo AS bar WHERE %s", OPT, rqd_tst));
 		// one for select one for filter
-		tests.put(ElementBind.class, 2);
+		tests.put(ElementService.class, 1 );
+		tests.put(ElementBind.class, 1);
 		tests.put(ElementFilter.class, 2);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				barTableName.getGUID());
@@ -3290,11 +3418,12 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 
 		query = getQuery(String.format("SELECT %s FROM foo AS bar WHERE %s",
 				OPT, opt_tst));
+		tests.put(ElementService.class, 1 );
 		// one for select one for filter
-		tests.put(ElementBind.class, 2);
+		tests.put(ElementBind.class, 1);
 		tests.put(ElementFilter.class, 2);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				barTableName.getGUID());
@@ -3306,11 +3435,12 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 
 		query = getQuery(String.format(
 				"SELECT %s AS arg FROM foo AS bar WHERE %s", OPT, opt_tst));
+		tests.put(ElementService.class, 1 );
 		// one for select one for filter
-		tests.put(ElementBind.class, 2);
+		tests.put(ElementBind.class, 1);
 		tests.put(ElementFilter.class, 2);
 		tests.put(ElementOptional.class, 2);
-		tests.put(ElementPathBlock.class, 5);
+		tests.put(ElementPathBlock.class, 4);
 		results = validate(query, tests);
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				barTableName.getGUID());

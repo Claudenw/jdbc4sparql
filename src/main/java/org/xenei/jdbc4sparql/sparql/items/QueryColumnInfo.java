@@ -70,8 +70,12 @@ public class QueryColumnInfo extends QueryItemInfo<Column, ColumnName> {
 		return aliasFor != null;
 	}
 
-	public QueryColumnInfo getAliasFor() {
-		return aliasFor;
+//	public QueryColumnInfo getAliasFor() {
+//		return aliasFor;
+//	}
+	
+	public QueryColumnInfo getBaseColumnInfo() {
+		return aliasFor != null? aliasFor.getBaseColumnInfo() : this;
 	}
 
 	/**

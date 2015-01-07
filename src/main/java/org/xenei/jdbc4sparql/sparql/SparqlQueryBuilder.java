@@ -17,14 +17,17 @@
  */
 package org.xenei.jdbc4sparql.sparql;
 
+import java.lang.reflect.Field;
 import java.sql.SQLDataException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -58,6 +61,7 @@ import com.hp.hpl.jena.sparql.expr.E_Function;
 import com.hp.hpl.jena.sparql.expr.E_LogicalAnd;
 import com.hp.hpl.jena.sparql.expr.Expr;
 import com.hp.hpl.jena.sparql.expr.ExprAggregator;
+import com.hp.hpl.jena.sparql.expr.ExprVar;
 import com.hp.hpl.jena.sparql.expr.NodeValue;
 import com.hp.hpl.jena.sparql.expr.aggregate.Aggregator;
 import com.hp.hpl.jena.sparql.syntax.Element;
@@ -518,7 +522,21 @@ public class SparqlQueryBuilder {
 				// good.
 				final Query serviceCall = query.cloneQuery();
 				final VarExprList vars = serviceCall.getProject();
-
+				// reset the serviceCall select vars
+				//  protected VarExprList projectVars = new VarExprList() ;
+				try {
+					Field f = Query.class.getDeclaredField("projectVars");
+					f.setAccessible(true);
+					f.set( serviceCall,  new VarExprList() );
+				} catch (NoSuchFieldException e2) {
+					throw new IllegalStateException( e2.getMessage(),e2);
+				} catch (SecurityException e2) {
+					throw new IllegalStateException( e2.getMessage(),e2);
+				} catch (IllegalAccessException e2) {
+					throw new IllegalStateException( e2.getMessage(),e2);
+				}
+				
+				
 				final ElementService service = new ElementService(
 						catalog.getServiceNode(), new ElementSubQuery(
 								serviceCall), false);
@@ -532,42 +550,67 @@ public class SparqlQueryBuilder {
 				infoSet.setUseGUID(false); // we are now building complete set.
 				// create the service call
 				// make sure we project all vars for the filters.
-
+				final Collection<QueryColumnInfo> typeFilters = new HashSet<QueryColumnInfo>();
+				final Collection<QueryColumnInfo> dataFilters = new HashSet<QueryColumnInfo>();
+				final Collection<QueryColumnInfo> columnsInQuery = new ArrayList<QueryColumnInfo>();
 				for (final Var v : vars.getVars()) {
 					final QueryColumnInfo colInfo = infoSet
 							.findColumnByGUIDVar(v.getName());
-					newResult.addResultVar(colInfo.getVar());
-
+					if (colInfo == null)
+					{
+						// may be a variable associated with a function
+						if (vars.getExpr(v) != null)
+						{
+							newResult.addResultVar(v, vars.getExpr(v));
+						}
+						else
+						{
+							throw new IllegalStateException( String.format("can not find column %s", v));
+						}
+					}
+					else
+					{
+						columnsInQuery.add( colInfo );
+						newResult.addResultVar(colInfo.getVar());
+					}		
 				}
 
 				// add the columns to the query.
+				// the columns are named by GUID in the query.
+				boolean firstTable = true;
 				for (final QueryTableInfo tableInfo : infoSet.getTables()) {
-					final Collection<QueryColumnInfo> typeFilters = infoSet
-							.iterateColumns(tableInfo.getName())
-							.filterDrop(new Filter<QueryColumnInfo>() {
-
-								@Override
-								public boolean accept(final QueryColumnInfo o) {
-									return columnsInUsing.contains(o.getName()
-											.getShortName());
-								}
-							}).toList();
+					// add the data type filters
+					for (final Column tblCol : tableInfo.getTable().getColumnList())
+					{
+						QueryColumnInfo columnInfo = new QueryColumnInfo(tblCol);
+						typeFilters.add( columnInfo );
+						serviceCall.addResultVar(columnInfo.getGUIDVar());	
+					}
+					// add the binds
+					for (QueryColumnInfo colInfo : columnsInQuery)
+					{
+						if(colInfo.getBaseColumnInfo().getName().getTableName().equals( tableInfo.getName() ))
+						{
+							if (firstTable || ! this.columnsInUsing.contains(colInfo.getName().getShortName()))
+							{
+								dataFilters.add( colInfo );
+							}
+						}
+					}
+					
 					try {
 						QueryTableInfo.addTypeFilters(infoSet, typeFilters,
-								typeFilters, null, filterGroup, typeGroup); // TODO fix me
+								dataFilters, tableInfo.getJoinElements(),
+								filterGroup, typeGroup);
 					} catch (final SQLDataException e1) {
 						throw new IllegalStateException(e1.getMessage(), e1);
 					}
-					for (final QueryColumnInfo columnInfo : typeFilters) {
-						if (!serviceCall.getProjectVars().contains(
-								columnInfo.getGUIDVar())) {
-							serviceCall.addProjectVars(Arrays.asList(new Var[] {
-								columnInfo.getGUIDVar()
-							}));
-						}
-					}
+					dataFilters.clear();
+					typeFilters.clear();	
+					firstTable = false;
 				}
 
+				// add equality check into service Call
 				for (final String columnName : columnsInUsing) {
 					QueryColumnInfo first = null;
 					Expr expr = null;
@@ -575,28 +618,13 @@ public class SparqlQueryBuilder {
 					for (final QueryColumnInfo columnInfo : infoSet
 							.listColumns(new SearchName(null, null, null,
 									columnName))) {
-
-						final E_Function func = CheckTypeF
-								.getFunction(columnInfo);
-						if (LOG.isDebugEnabled()) {
-							LOG.debug("Adding filter: {}", func);
-						}
-						filterGroup.addElementFilter(new ElementFilter(func));
-
 						if (first == null) {
-
-							final ElementBind bind = ForceTypeF
-									.getBinding(columnInfo);
-							if (LOG.isDebugEnabled()) {
-								LOG.debug("Adding binding: {}", bind);
-							}
-							typeGroup.addElement(bind);
 							first = columnInfo;
 						}
 						else {
 							final E_Equals eq = new E_Equals(
-									ForceTypeF.getFunction(first),
-									ForceTypeF.getFunction(columnInfo));
+									new ExprVar(first.getGUIDVar()),
+									new ExprVar(columnInfo.getGUIDVar()));
 							if (expr == null) {
 								expr = eq;
 							}
@@ -610,7 +638,7 @@ public class SparqlQueryBuilder {
 						if (LOG.isDebugEnabled()) {
 							LOG.debug("Adding filter: {}", expr);
 						}
-						filterGroup.addElementFilter(new ElementFilter(expr));
+						((ElementGroup)serviceCall.getQueryPattern()).addElementFilter(new ElementFilter(expr));
 					}
 				}
 
@@ -779,8 +807,8 @@ public class SparqlQueryBuilder {
 				columnNameArg.getCatalog(), VirtualCatalog.NAME),
 				StringUtils.defaultString(columnNameArg.getSchema(),
 						VirtualSchema.NAME), StringUtils.defaultString(
-								columnNameArg.getTable(), VirtualTable.NAME),
-								columnNameArg.getShortName());
+						columnNameArg.getTable(), VirtualTable.NAME),
+				columnNameArg.getShortName());
 		QueryTableInfo tableInfo = infoSet.getTable(columnName.getTableName());
 		Column column = null;
 		if (tableInfo == null) {
