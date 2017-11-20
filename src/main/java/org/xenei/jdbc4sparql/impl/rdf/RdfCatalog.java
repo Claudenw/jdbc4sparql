@@ -42,9 +42,9 @@ import org.xenei.jena.entities.impl.EntityManagerImpl;
 public class RdfCatalog implements Catalog, ResourceWrapper {
 	
 	public static class Builder implements Catalog {
-		public static String getFQName(final String shortName) {
+		public static String getFQName(EntityManager entityManager, final String shortName) {
 			return String.format("%s/instance/N%s",
-					ResourceBuilder.getFQName(RdfCatalog.class), shortName);
+					ResourceBuilder.getFQName(entityManager, RdfCatalog.class), shortName);
 		}
 
 		private Model localModel;
@@ -76,7 +76,7 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 			
 			checkBuildState();
 			final Class<?> typeClass = RdfCatalog.class;
-			final String fqName = getFQName();
+			final String fqName = getFQName(entityManager);
 			final ResourceBuilder builder = new ResourceBuilder( entityManager);
 
 			//final EntityManager entityManager = EntityManagerFactory
@@ -149,8 +149,8 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 			return new NameFilter<Schema>(schemaNamePattern, schemas);
 		}
 
-		private String getFQName() {
-			return Builder.getFQName(name);
+		private String getFQName(EntityManager mgr) {
+			return Builder.getFQName(mgr, name);
 		}
 
 		public Model getLocalModel() {
@@ -209,7 +209,7 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 	AbstractChangeListener<Catalog, RdfSchema> {
 
 		public ChangeListener() {
-			super(RdfCatalog.this.getResource(), RdfCatalog.class, "schemas",
+			super(RdfCatalog.this, RdfCatalog.class, "schemas",
 					RdfSchema.class);
 		}
 
@@ -317,7 +317,7 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 	public Set<Schema> fixupSchemas(final Set<Schema> schemas) {
 		final Set<Schema> schemaList = new HashSet<Schema>();
 		for (final Schema schema : schemas) {
-			schemaList.add(RdfSchema.Builder.fixupCatalog(this,
+			schemaList.add(RdfSchema.Builder.fixupCatalog(getEntityManager(), this,
 					(RdfSchema) schema));
 		}
 		this.schemaList = schemaList;

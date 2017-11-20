@@ -46,7 +46,7 @@ ResourceWrapper {
 		public RdfTableDef build(final EntityManager entityManager) {
 			checkBuildState();
 
-			final String fqName = getFQName();
+			final String fqName = getFQName(entityManager);
 			final ResourceBuilder builder = new ResourceBuilder(entityManager);
 
 			Resource tableDef = null;
@@ -92,7 +92,7 @@ ResourceWrapper {
 					}
 				}
 				final Property p = tableDef.getModel().createProperty(ResourceBuilder
-						.getFQName(colDefClass));
+						.getFQName(entityManager, colDefClass));
 				tableDef.addProperty(p, lst);
 
 			}
@@ -131,7 +131,7 @@ ResourceWrapper {
 			return columnDefs.indexOf(column);
 		}
 
-		public String getFQName() {
+		public String getFQName(EntityManager entityManager) {
 			final StringBuilder sb = new StringBuilder();
 			for (final ColumnDef cd : columnDefs) {
 				sb.append(((ResourceWrapper) cd).getResource().getURI())
@@ -148,7 +148,7 @@ ResourceWrapper {
 			}
 
 			return String.format("%s/instance/UUID-%s",
-					ResourceBuilder.getFQName(RdfTableDef.class),
+					ResourceBuilder.getFQName(entityManager,RdfTableDef.class),
 					UUID.nameUUIDFromBytes(sb.toString().getBytes()));
 
 		}
@@ -216,7 +216,7 @@ ResourceWrapper {
 			columns = new ArrayList<ColumnDef>();
 			final Resource resource = getResource();
 			final Property p = resource.getModel().createProperty(
-					ResourceBuilder.getFQName(RdfColumnDef.class));
+					ResourceBuilder.getFQName(getEntityManager(), RdfColumnDef.class));
 			final List<RDFNode> resLst = resource.getRequiredProperty(p)
 					.getResource().as(RDFList.class).asJavaList();
 			for (final RDFNode n : resLst) {

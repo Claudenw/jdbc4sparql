@@ -63,11 +63,11 @@ ResourceWrapper {
 			final ResourceBuilder builder = new ResourceBuilder(entityManager);
 
 			Resource column = null;
-			if (builder.hasResource(getFQName())) {
-				column = builder.getResource(getFQName(), typeClass);
+			if (builder.hasResource(getFQName(entityManager))) {
+				column = builder.getResource(getFQName(entityManager), typeClass);
 			}
 			else {
-				column = builder.getResource(getFQName(), typeClass);
+				column = builder.getResource(getFQName(entityManager), typeClass);
 
 				column.addLiteral(RDFS.label, name);
 				column.addLiteral(builder.getProperty(typeClass, "remarks"),
@@ -147,13 +147,13 @@ ResourceWrapper {
 			return columnDef;
 		}
 
-		public String getFQName() {
+		public String getFQName(EntityManager mgr) {
 			final ResourceWrapper rw = (ResourceWrapper) getColumnDef();
 			final StringBuilder sb = new StringBuilder()
 			.append(rw.getResource().getURI()).append(" ").append(name)
 			.append(" ").append(getQuerySegmentFmt());
 			return String.format("%s/instance/UUID-%s",
-					ResourceBuilder.getFQName(RdfColumn.class),
+					ResourceBuilder.getFQName(mgr, RdfColumn.class),
 					UUID.nameUUIDFromBytes(sb.toString().getBytes()));
 		}
 

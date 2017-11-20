@@ -19,9 +19,11 @@ import org.xenei.jdbc4sparql.J4SPropertyNames;
 import org.xenei.jdbc4sparql.iface.DatasetProducer;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.utils.NoCloseZipInputStream;
-
+import org.xenei.jena.entities.EntityManager;
+import org.xenei.jena.entities.impl.EntityManagerImpl;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.impl.Util;
 
 /**
@@ -35,17 +37,17 @@ import org.apache.jena.rdf.model.impl.Util;
  * requested and return the same dataset on all subsequent calls.
  */
 abstract public class AbstractDatasetProducer implements DatasetProducer {
-	public static String getModelURI(final String modelName) {
+	public static String getModelURI(EntityManager mgr,final String modelName) {
 		String name = StringUtils.defaultString(modelName);
 		if (StringUtils.isEmpty(name)) {
-			name = RdfCatalog.Builder.getFQName(name);
+			name = RdfCatalog.Builder.getFQName(mgr,name);
 		}
 		else {
 			final int i = Util.splitNamespaceXML(name);
 			if (i == 1) {
 				if (XMLChar.isNCNameStart(name.charAt(0))) {// we have a short
 					// name
-					name = RdfCatalog.Builder.getFQName(name);
+					name = RdfCatalog.Builder.getFQName(mgr,name);
 				}
 			}
 		}
@@ -56,20 +58,23 @@ abstract public class AbstractDatasetProducer implements DatasetProducer {
 
 	private final RDFFormat format = RDFFormat.TRIG;
 
-	protected Dataset localData;
-
-	protected Dataset metaData;
+	protected final Dataset localData;
+	protected final EntityManager localMgr;
+	protected final Dataset metaData;
+	protected final EntityManager metaMgr;
 
 	protected AbstractDatasetProducer(final Properties properties,
 			final Dataset metaDataset, final Dataset localDataset) {
 		this.properties = properties;
 		this.metaData = metaDataset;
 		this.localData = localDataset;
+		this.metaMgr = new EntityManagerImpl( metaData );
+		this.localMgr = new EntityManagerImpl( localData );
 	}
 
 	@Override
 	public void addLocalDataModel(final String modelName, final Model model) {
-		final String name = AbstractDatasetProducer.getModelURI(modelName);
+		final String name = AbstractDatasetProducer.getModelURI(localMgr,modelName);
 		getLocalDataset().addNamedModel(name, model);
 	}
 
@@ -88,8 +93,8 @@ abstract public class AbstractDatasetProducer implements DatasetProducer {
 	}
 
 	@Override
-	public Model getLocalDataModel(final String modelName) {
-		return getModel(getLocalDataset(), modelName);
+	public EntityManager getLocalDataEntityManager(final String modelName) {
+		return getEntityManager(getLocalDataset(), modelName);
 	}
 
 	/**
@@ -102,8 +107,8 @@ abstract public class AbstractDatasetProducer implements DatasetProducer {
 	}
 
 	@Override
-	public Model getMetaDataModel(final String modelName) {
-		return getModel(getMetaDataset(), modelName);
+	public EntityManager getMetaDataEntityManager(final String modelName) {
+		return getEntityManager(getMetaDataset(), modelName);
 	}
 
 	/**
@@ -125,14 +130,13 @@ abstract public class AbstractDatasetProducer implements DatasetProducer {
 		return getMetaDataset().getNamedModel("urn:x-arq:UnionGraph");
 	}
 
-	private Model getModel(final Dataset dataset, final String modelName) {
-		final String name = AbstractDatasetProducer.getModelURI(modelName);
-		final Model model = dataset.getNamedModel(name);
+	private EntityManager getEntityManager(final Dataset dataset, final String modelName) {
+		final String name = AbstractDatasetProducer.getModelURI(localMgr, modelName);
 		if (!dataset.containsNamedModel(name)) {
-			dataset.addNamedModel(name, model);
+			dataset.addNamedModel(name, ModelFactory.createDefaultModel());
 		}
-
-		return model;
+		
+		return new EntityManagerImpl( model );
 
 	}
 

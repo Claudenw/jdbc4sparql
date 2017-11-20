@@ -44,11 +44,11 @@ import org.xenei.jena.entities.annotations.Subject;
 public class RdfTable extends RdfNamespacedObject implements Table,
 ResourceWrapper {
 	public static class Builder implements Table {
-		public static RdfTable fixupSchema(final RdfSchema schema,
+		public static RdfTable fixupSchema(EntityManager entityManager, final RdfSchema schema,
 				final RdfTable table) {
 			table.schema = schema;
 			final Property p = ResourceFactory.createProperty(
-					ResourceBuilder.getNamespace(RdfSchema.class), "tables");
+					ResourceBuilder.getNamespace(entityManager, RdfSchema.class), "tables");
 			schema.getResource().addProperty(p, table.getResource());
 			return table;
 		}
@@ -76,7 +76,7 @@ ResourceWrapper {
 
 		public RdfTable build(final EntityManager entityManager) {
 			checkBuildState();
-			final String fqName = getFQName();
+			final String fqName = getFQName(entityManager);
 			final ResourceBuilder builder = new ResourceBuilder(entityManager);
 
 			Resource table = null;
@@ -231,14 +231,14 @@ ResourceWrapper {
 			return getColumnList().iterator();
 		}
 
-		public String getFQName() {
+		public String getFQName(EntityManager mgr) {
 			final StringBuilder sb = new StringBuilder()
 			.append(schema.getResource().getURI()).append(" ")
 			.append(name).append(" ").append(getQuerySegmentFmt());
 
 			return String
 					.format("%s/instance/N%s", ResourceBuilder
-							.getFQName(RdfTable.class),
+							.getFQName(mgr,RdfTable.class),
 							UUID.nameUUIDFromBytes(sb.toString().getBytes())
 							.toString());
 		}
@@ -384,7 +384,7 @@ ResourceWrapper {
 			final List<Column> cols = getColumnList();
 
 			final Property p = model.createProperty(
-					ResourceBuilder.getNamespace(RdfTable.class), "column");
+					ResourceBuilder.getNamespace(getEntityManager(), RdfTable.class), "column");
 			tbl.getRequiredProperty(p).getResource().as(RDFList.class)
 			.removeList();
 
@@ -463,7 +463,7 @@ ResourceWrapper {
 			final Model model = tbl.getModel();
 
 			final Property p = model.createProperty(
-					ResourceBuilder.getNamespace(RdfTable.class), "column");
+					ResourceBuilder.getNamespace(getEntityManager(), RdfTable.class), "column");
 
 			final List<RDFNode> resLst = tbl.getRequiredProperty(p)
 					.getResource().as(RDFList.class).asJavaList();

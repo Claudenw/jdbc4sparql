@@ -15,14 +15,14 @@ import org.xenei.jena.entities.annotations.Subject;
 
 public class ResourceBuilder {
 	
-	public static String getFQName(final Class<?> nsClass) {
-		final String s = ResourceBuilder.getNamespace(nsClass);
+	public static String getFQName(EntityManager mgr, final Class<?> nsClass) {
+		final String s = ResourceBuilder.getNamespace(mgr, nsClass);
 
 		return s.substring(0, s.length() - 1);
 	}
 
-	public static String getNamespace(final Class<?> nsClass) {
-		final Subject subject = EntityManager.getSubject(nsClass);
+	public static String getNamespace(final EntityManager mgr, final Class<?> nsClass) {
+		final Subject subject = mgr.getSubject(nsClass);
 		if (subject == null) {
 			throw new IllegalArgumentException(String.format(
 					"%s is does not have a subject annotation", nsClass));
@@ -40,7 +40,7 @@ public class ResourceBuilder {
 	}
 
 	public Property getProperty(final Class<?> typeClass, final String localName) {
-		return getResource( ResourceBuilder.getNamespace(typeClass)+localName, typeClass ).as( Property.class );
+		return getResource( ResourceBuilder.getNamespace(entityManager, typeClass)+localName, typeClass ).as( Property.class );
 	}
 
 	/**
@@ -50,22 +50,9 @@ public class ResourceBuilder {
 	 */
 	public Resource getResource(final String fqName, final Class<?> typeClass) {
 		final Resource type = entityManager.createResource(ResourceBuilder
-				.getFQName(typeClass));
+				.getFQName(entityManager, typeClass));
 
-		Resource retval;
-		if (hasResource(fqName)) {
-			retval = entityManager.getResource(fqName);
-			if (!retval.hasProperty(RDF.type, type)) {
-				throw new IllegalStateException(String.format(
-						"Object %s is of type %s not %s", retval.getURI(),
-						retval.getRequiredProperty(RDF.type).getResource()
-						.getURI(), type.getURI()));
-			}
-		}
-		else {
-			retval = entityManager.createResource(fqName, type);
-		}
-		return retval;
+		return entityManager.createResource(fqName, type);
 	}
 
 	/**
@@ -79,6 +66,6 @@ public class ResourceBuilder {
 	}
 
 	public boolean hasResource(final String fqName) {
-		return entityManager.contains(fqName);
+		return entityManager.hasResource(fqName);
 	}
 }

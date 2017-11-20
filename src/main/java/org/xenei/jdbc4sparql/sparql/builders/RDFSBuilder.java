@@ -32,7 +32,7 @@ import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTableDef;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTableDef.Builder;
 import org.xenei.jdbc4sparql.utils.SQLNameUtil;
-
+import org.xenei.jena.entities.EntityManager;
 import org.apache.jena.rdf.model.InfModel;
 import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Model;
@@ -56,7 +56,7 @@ public class RDFSBuilder implements SchemaBuilder {
 		skip.add(RDF.getURI());
 	}
 
-	private void addDataTableColumn(final Model model,
+	private void addDataTableColumn(final EntityManager model,
 			final Map<String, RdfTableDef.Builder> tables,
 			final Map<String, List<Resource>> columnName, final Statement stmt,
 			final RdfTableDef.Builder idDef) {
@@ -140,7 +140,7 @@ public class RDFSBuilder implements SchemaBuilder {
 		}
 	}
 
-	private RdfTableDef.Builder getOrCreateIDTable(final Model model,
+	private RdfTableDef.Builder getOrCreateIDTable(final EntityManager model,
 			final Map<String, RdfTableDef.Builder> tables, final RDFNode r) {
 		final String idTable = r.asNode().getURI() + "_ID";
 

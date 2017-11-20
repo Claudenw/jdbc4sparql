@@ -25,9 +25,9 @@ public class RdfColumnDef implements ColumnDef, ResourceWrapper {
 	 * Column builder, by default columns are not nullable.
 	 */
 	public static class Builder implements ColumnDef {
-		public static String getFQName(final ColumnDef colDef) {
+		public static String getFQName(EntityManager mgr, final ColumnDef colDef) {
 			return String.format("%s/instance/UUID-%s",
-					ResourceBuilder.getFQName(RdfColumnDef.class),
+					ResourceBuilder.getFQName(mgr, RdfColumnDef.class),
 					ColumnDef.Util.createID(colDef));
 		}
 
@@ -69,7 +69,7 @@ public class RdfColumnDef implements ColumnDef, ResourceWrapper {
 		public RdfColumnDef build(final EntityManager entityManager) {
 			checkBuildState();
 
-			final String fqName = Builder.getFQName(this);
+			final String fqName = Builder.getFQName(entityManager, this);
 			final ResourceBuilder builder = new ResourceBuilder(entityManager);
 			Resource columnDef = null;
 			if (builder.hasResource(fqName)) {

@@ -13,6 +13,7 @@ import org.apache.jena.vocabulary.RDF;
 import org.xenei.jena.entities.EntityManager;
 import org.xenei.jena.entities.EntityManagerFactory;
 import org.xenei.jena.entities.MissingAnnotation;
+import org.xenei.jena.entities.ResourceWrapper;
 
 public abstract class AbstractChangeListener<S, T> implements
 ModelChangedListener {
@@ -20,15 +21,15 @@ ModelChangedListener {
 	private final ResourceBuilder rb;
 	private final Resource s;
 	private final Property p;
-	private final EntityManager entityManager = EntityManagerFactory
-			.getEntityManager();
+	private final EntityManager entityManager;
 	private final Class<? extends T> oClass;
 
-	protected AbstractChangeListener(final Resource resource,
+	protected AbstractChangeListener(final ResourceWrapper wrapper,
 			final Class<? extends S> resourceClass, final String propertyName,
 			final Class<? extends T> class1) {
-		rb = new ResourceBuilder(resource.getModel());
-		s = resource;
+		entityManager = wrapper.getEntityManager();
+		rb = new ResourceBuilder(entityManager);
+		s = wrapper.getResource();
 		p = rb.getProperty(resourceClass, propertyName);
 		this.oClass = class1;
 	}

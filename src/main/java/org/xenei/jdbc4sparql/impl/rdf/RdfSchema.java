@@ -29,11 +29,11 @@ import org.xenei.jena.entities.annotations.Subject;
 public class RdfSchema extends RdfNamespacedObject implements Schema,
 ResourceWrapper {
 	public static class Builder implements Schema {
-		public static RdfSchema fixupCatalog(final RdfCatalog catalog,
+		public static RdfSchema fixupCatalog(EntityManager mgr,final RdfCatalog catalog,
 				final RdfSchema schema) {
 			schema.catalog = catalog;
 			final Property p = ResourceFactory.createProperty(
-					ResourceBuilder.getNamespace(RdfCatalog.class), "schemas");
+					ResourceBuilder.getNamespace(mgr,RdfCatalog.class), "schemas");
 			catalog.getResource().addProperty(p, schema.getResource());
 			return schema;
 		}
@@ -46,7 +46,7 @@ ResourceWrapper {
 		public RdfSchema build(final EntityManager entityManager) {
 			checkBuildState();
 			final Class<?> typeClass = RdfSchema.class;
-			final String fqName = getFQName();
+			final String fqName = getFQName(entityManager);
 			final ResourceBuilder builder = new ResourceBuilder(entityManager);
 
 			Resource schema = null;
@@ -68,7 +68,7 @@ ResourceWrapper {
 
 			try {
 				RdfSchema retval = entityManager.read(schema, RdfSchema.class);
-				retval = Builder.fixupCatalog(catalog, retval);
+				retval = Builder.fixupCatalog(entityManager,catalog, retval);
 				retval.getResource().getModel().register(retval.new ChangeListener());
 				return retval;
 			} catch (final MissingAnnotation e) {
@@ -97,14 +97,14 @@ ResourceWrapper {
 			return catalog;
 		}
 
-		private String getFQName() {
+		private String getFQName(EntityManager entityManager) {
 			final StringBuilder sb = new StringBuilder()
 			.append(catalog.getResource().getURI()).append(" ")
 			.append(name);
 
 			return String
 					.format("%s/instance/N%s", ResourceBuilder
-							.getFQName(RdfSchema.class),
+							.getFQName(entityManager,RdfSchema.class),
 
 							UUID.nameUUIDFromBytes(sb.toString().getBytes()).toString());
 		}
@@ -140,7 +140,7 @@ ResourceWrapper {
 	public class ChangeListener extends
 	AbstractChangeListener<Schema, RdfTable> {
 		public ChangeListener() {
-			super(RdfSchema.this.getResource(), RdfSchema.class, "tables",
+			super(RdfSchema.this, RdfSchema.class, "tables",
 					RdfTable.class);
 		}
 
@@ -199,7 +199,7 @@ ResourceWrapper {
 	public Set<Table> fixupTables(final Set<Table> tables) {
 		final Set<Table> tableList = new HashSet<Table>();
 		for (final Table table : tables) {
-			tableList.add(RdfTable.Builder.fixupSchema(this, (RdfTable) table));
+			tableList.add(RdfTable.Builder.fixupSchema(getEntityManager(), this, (RdfTable) table));
 		}
 		this.tableList = tableList;
 		return tableList;
@@ -209,7 +209,7 @@ ResourceWrapper {
 	public RdfCatalog getCatalog() {
 		if (catalog == null) {
 			final Property p = ResourceFactory.createProperty(
-					ResourceBuilder.getNamespace(RdfCatalog.class), "schemas");
+					ResourceBuilder.getNamespace(getEntityManager(),RdfCatalog.class), "schemas");
 			Resource r = this.getResource();
 			r = r.getModel().listSubjectsWithProperty(p, r).next();
 			final EntityManager entityManager = EntityManagerFactory

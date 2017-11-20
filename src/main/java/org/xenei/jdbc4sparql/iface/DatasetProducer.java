@@ -15,6 +15,7 @@ import java.util.zip.ZipInputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.rdf.model.Model;
 import org.xenei.jdbc4sparql.J4SPropertyNames;
+import org.xenei.jena.entities.EntityManager;
 
 //import org.apache.jena.rdf.model.Model;
 
@@ -119,7 +120,7 @@ public interface DatasetProducer {
 	 */
 	public void close();
 
-	public Model getLocalDataModel(final String modelName);
+	public EntityManager getLocalDataEntityManager(final String modelName);
 
 	/**
 	 * Get or construct the local dataset.
@@ -128,7 +129,7 @@ public interface DatasetProducer {
 	 */
 	// public Dataset getLocalDataset();
 
-	public Model getMetaDataModel(final String modelName);
+	public EntityManager getMetaDataEntityManager(final String modelName);
 
 	/**
 	 * Retrieve the model that is the union of all models in the data set.

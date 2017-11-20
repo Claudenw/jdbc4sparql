@@ -41,7 +41,7 @@ public class RdfKeySegment implements KeySegment, ResourceWrapper {
 
 			final Class<?> typeClass = RdfKeySegment.class;
 			final String fqName = String.format("%s/instance/%s",
-					ResourceBuilder.getFQName(typeClass), getId());
+					ResourceBuilder.getFQName(entityManager,typeClass), getId());
 			final ResourceBuilder builder = new ResourceBuilder(entityManager);
 			Resource keySegment = null;
 			if (builder.hasResource(fqName)) {

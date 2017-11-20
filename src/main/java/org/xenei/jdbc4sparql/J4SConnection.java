@@ -126,7 +126,7 @@ public class J4SConnection implements Connection {
 		configureCatalogMap();
 
 		if (catalogMap.get(MetaCatalogBuilder.LOCAL_NAME) == null) {
-			dsProducer.getMetaDataModel(MetaCatalogBuilder.LOCAL_NAME);
+			dsProducer.getMetaDataEntityManager(MetaCatalogBuilder.LOCAL_NAME);
 			final Catalog c = MetaCatalogBuilder.getInstance(dsProducer);
 			catalogMap.put(c.getName().getShortName(), c);
 		}
@@ -146,15 +146,15 @@ public class J4SConnection implements Connection {
 	}
 
 	public RdfCatalog addCatalog(final RdfCatalog.Builder catalogBuilder) {
-		final Model model = dsProducer.getMetaDataModel(catalogBuilder
+		final Model model = dsProducer.getMetaDataEntityManager(catalogBuilder
 				.getName().getShortName());
-		Model dataModel = catalogBuilder.getLocalModel();
+		EntityManager dataModel = catalogBuilder.getLocalModel();
 		if (dataModel != null) {
 			dsProducer.addLocalDataModel(catalogBuilder.getName()
 					.getShortName(), dataModel);
 		}
 		else {
-			dataModel = dsProducer.getLocalDataModel(catalogBuilder.getName()
+			dataModel = dsProducer.getLocalDataEntityManager(catalogBuilder.getName()
 					.getShortName());
 			if (dataModel != null) {
 				catalogBuilder.setLocalModel(dataModel);
@@ -221,25 +221,25 @@ public class J4SConnection implements Connection {
 			schemaName = schemaName.replace("^[A-Z0-9a-z]", "_");
 
 			// get the model for the catalog name.
-			final Model model = dsProducer.getMetaDataModel(getCatalog());
+			final EntityManager metaDataModel = dsProducer.getMetaDataEntityManager(getCatalog());
 
 			// if a SPARQL endpoint the driver URL has the endpoint URL.
 			if (url.getType().equals(J4SUrl.TYPE_SPARQL)) {
 				catalog = new RdfCatalog.Builder()
 				.setSparqlEndpoint(url.getEndpoint().toURL())
-				.setName(getCatalog()).build(model);
+				.setName(getCatalog()).build(metaDataModel);
 			}
 			else {
-				final Model dataModel = dsProducer
-						.getLocalDataModel(getCatalog());
+				final EntityManager dataModel = dsProducer
+						.getLocalDataEntityManager(getCatalog());
 				RDFDataMgr.read(dataModel, url.getEndpoint().toURL()
 						.openStream(), url.getLang());
 				catalog = new RdfCatalog.Builder().setLocalModel(dataModel)
-						.setName(getCatalog()).build(model);
+						.setName(getCatalog()).build(metaDataModel);
 			}
 
 			final RdfSchema schema = new RdfSchema.Builder()
-			.setCatalog(catalog).setName(schemaName).build(model);
+			.setCatalog(catalog).setName(schemaName).build(metaDataModel);
 
 			catalogMap.put(catalog.getName().getShortName(), catalog);
 
@@ -418,7 +418,7 @@ public class J4SConnection implements Connection {
 				dsProducer.listMetaDataNames()).toList();
 
 		for (final String name : names) {
-			final Model metaModel = dsProducer.getMetaDataModel(name);
+			final Model metaModel = dsProducer.getMetaDataEntityManager(name);
 			final ResIterator ri = metaModel.listSubjectsWithProperty(RDF.type,
 					catType);
 			while (ri.hasNext()) {
@@ -430,7 +430,7 @@ public class J4SConnection implements Connection {
 					builder.setLocalModel(dsProducer.getMetaDatasetUnionModel());
 				}
 				else {
-					builder.setLocalModel(dsProducer.getLocalDataModel(name));
+					builder.setLocalModel(dsProducer.getLocalDataEntityManager(name));
 				}
 				cat = builder.build(metaModel);
 

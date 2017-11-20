@@ -62,7 +62,7 @@ public class RdfKey implements Key<RdfKeySegment>, ResourceWrapper {
 			checkBuildState();
 			final Class<?> typeClass = Key.class;
 			final String fqName = String.format("%s/instance/key-%s",
-					ResourceBuilder.getFQName(typeClass), getId());
+					ResourceBuilder.getFQName(entityManager,typeClass), getId());
 			final ResourceBuilder builder = new ResourceBuilder(entityManager);
 			Resource key = null;
 			if (builder.hasResource(fqName)) {
