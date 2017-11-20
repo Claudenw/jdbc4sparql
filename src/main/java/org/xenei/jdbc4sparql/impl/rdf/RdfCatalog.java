@@ -68,19 +68,20 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 			}
 		}
 
-		public RdfCatalog build(final Model model) {
+		public RdfCatalog build(EntityManager entityManager) {
 
-			if (model == null) {
-				throw new IllegalArgumentException("Model may not be null");
+			if (entityManager == null) {
+				throw new IllegalArgumentException("EntityManager may not be null");
 			}
+			
 			checkBuildState();
 			final Class<?> typeClass = RdfCatalog.class;
 			final String fqName = getFQName();
-			final ResourceBuilder builder = new ResourceBuilder(model);
+			final ResourceBuilder builder = new ResourceBuilder( entityManager);
 
 			//final EntityManager entityManager = EntityManagerFactory
 					//.getEntityManager();
-			EntityManager entityManager = new EntityManagerImpl( model );
+			//EntityManager entityManager = new EntityManagerImpl( model );
 
 			// create catalog graph resource
 			Resource catalog = null;
@@ -110,7 +111,7 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 				final RdfCatalog retval = entityManager.read(catalog,
 						RdfCatalog.class);
 
-				model.register(retval.new ChangeListener());
+				retval.getResource().getModel().register(retval.new ChangeListener());
 				retval.localModel = localModel != null ? localModel
 						: ModelFactory.createMemModelMaker().createFreshModel();
 				return retval;

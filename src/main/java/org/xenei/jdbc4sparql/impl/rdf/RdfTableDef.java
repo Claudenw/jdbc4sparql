@@ -43,14 +43,11 @@ ResourceWrapper {
 					"ColumnDef must implement ResourceWrapper");
 		}
 
-		public RdfTableDef build(final Model model) {
+		public RdfTableDef build(final EntityManager entityManager) {
 			checkBuildState();
 
 			final String fqName = getFQName();
-			final ResourceBuilder builder = new ResourceBuilder(model);
-
-			final EntityManager entityManager = EntityManagerFactory
-					.getEntityManager();
+			final ResourceBuilder builder = new ResourceBuilder(entityManager);
 
 			Resource tableDef = null;
 			if (builder.hasResource(fqName)) {
@@ -88,13 +85,13 @@ ResourceWrapper {
 				for (final ColumnDef seg : columnDefs) {
 					final Resource s = ((ResourceWrapper) seg).getResource();
 					if (lst == null) {
-						lst = model.createList().with(s);
+						lst = tableDef.getModel().createList().with(s);
 					}
 					else {
 						lst.add(s);
 					}
 				}
-				final Property p = model.createProperty(ResourceBuilder
+				final Property p = tableDef.getModel().createProperty(ResourceBuilder
 						.getFQName(colDefClass));
 				tableDef.addProperty(p, lst);
 

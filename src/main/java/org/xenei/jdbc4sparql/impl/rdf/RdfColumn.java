@@ -57,10 +57,10 @@ ResourceWrapper {
 			return this;
 		}
 
-		public RdfColumn build(final Model model) {
+		public RdfColumn build(final EntityManager entityManager) {
 			checkBuildState();
 
-			final ResourceBuilder builder = new ResourceBuilder(model);
+			final ResourceBuilder builder = new ResourceBuilder(entityManager);
 
 			Resource column = null;
 			if (builder.hasResource(getFQName())) {
@@ -90,13 +90,12 @@ ResourceWrapper {
 				querySegments.clear();
 			}
 
-			final EntityManager entityManager = EntityManagerFactory
-					.getEntityManager();
+			
 			try {
 				final RdfColumn retval = entityManager.read(column, typeClass);
 				RdfTable tbl = null;
 				if (table instanceof RdfTable.Builder) {
-					tbl = ((RdfTable.Builder) table).build(model);
+					tbl = ((RdfTable.Builder) table).build(entityManager);
 				}
 				else if (table instanceof RdfTable) {
 					tbl = (RdfTable) table;

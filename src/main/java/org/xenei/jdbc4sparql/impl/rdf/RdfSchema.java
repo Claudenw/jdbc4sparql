@@ -43,14 +43,11 @@ ResourceWrapper {
 
 		private final Set<Table> tables = new HashSet<Table>();
 
-		public RdfSchema build(final Model model) {
+		public RdfSchema build(final EntityManager entityManager) {
 			checkBuildState();
 			final Class<?> typeClass = RdfSchema.class;
 			final String fqName = getFQName();
-			final ResourceBuilder builder = new ResourceBuilder(model);
-
-			final EntityManager entityManager = EntityManagerFactory
-					.getEntityManager();
+			final ResourceBuilder builder = new ResourceBuilder(entityManager);
 
 			Resource schema = null;
 			if (builder.hasResource(fqName)) {
@@ -72,7 +69,7 @@ ResourceWrapper {
 			try {
 				RdfSchema retval = entityManager.read(schema, RdfSchema.class);
 				retval = Builder.fixupCatalog(catalog, retval);
-				model.register(retval.new ChangeListener());
+				retval.getResource().getModel().register(retval.new ChangeListener());
 				return retval;
 			} catch (final MissingAnnotation e) {
 				throw new RuntimeException(e);

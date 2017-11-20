@@ -66,11 +66,11 @@ public class RdfColumnDef implements ColumnDef, ResourceWrapper {
 
 		private final Class<? extends RdfColumnDef> typeClass = RdfColumnDef.class;
 
-		public RdfColumnDef build(final Model model) {
+		public RdfColumnDef build(final EntityManager entityManager) {
 			checkBuildState();
 
 			final String fqName = Builder.getFQName(this);
-			final ResourceBuilder builder = new ResourceBuilder(model);
+			final ResourceBuilder builder = new ResourceBuilder(entityManager);
 			Resource columnDef = null;
 			if (builder.hasResource(fqName)) {
 				columnDef = builder.getResource(fqName, typeClass);
@@ -119,8 +119,7 @@ public class RdfColumnDef implements ColumnDef, ResourceWrapper {
 
 			}
 
-			final EntityManager entityManager = EntityManagerFactory
-					.getEntityManager();
+			
 			try {
 				return entityManager.read(columnDef, typeClass);
 			} catch (final MissingAnnotation e) {

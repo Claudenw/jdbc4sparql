@@ -58,12 +58,12 @@ public class RdfKey implements Key<RdfKeySegment>, ResourceWrapper {
 			return this;
 		}
 
-		public RdfKey build(final Model model) {
+		public RdfKey build(final EntityManager entityManager) {
 			checkBuildState();
 			final Class<?> typeClass = Key.class;
 			final String fqName = String.format("%s/instance/key-%s",
 					ResourceBuilder.getFQName(typeClass), getId());
-			final ResourceBuilder builder = new ResourceBuilder(model);
+			final ResourceBuilder builder = new ResourceBuilder(entityManager);
 			Resource key = null;
 			if (builder.hasResource(fqName)) {
 				key = builder.getResource(fqName, typeClass);
@@ -81,7 +81,7 @@ public class RdfKey implements Key<RdfKeySegment>, ResourceWrapper {
 				for (final RdfKeySegment seg : segments) {
 					final Resource s = seg.getResource();
 					if (lst == null) {
-						lst = model.createList().with(s);
+						lst = key.getModel().createList().with(s);
 					}
 					else {
 						lst.add(s);
@@ -94,8 +94,7 @@ public class RdfKey implements Key<RdfKeySegment>, ResourceWrapper {
 
 			}
 
-			final EntityManager entityManager = EntityManagerFactory
-					.getEntityManager();
+		
 			try {
 				return entityManager.read(key, RdfKey.class);
 			} catch (final MissingAnnotation e) {

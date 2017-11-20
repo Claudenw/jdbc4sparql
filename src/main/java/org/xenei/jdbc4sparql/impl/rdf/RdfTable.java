@@ -74,13 +74,10 @@ ResourceWrapper {
 			return this;
 		}
 
-		public RdfTable build(final Model model) {
+		public RdfTable build(final EntityManager entityManager) {
 			checkBuildState();
 			final String fqName = getFQName();
-			final ResourceBuilder builder = new ResourceBuilder(model);
-
-			final EntityManager entityManager = EntityManagerFactory
-					.getEntityManager();
+			final ResourceBuilder builder = new ResourceBuilder(entityManager);
 
 			Resource table = null;
 			if (builder.hasResource(fqName)) {
@@ -119,14 +116,14 @@ ResourceWrapper {
 				RDFList lst = null;
 				for (final RdfColumn.Builder bldr : columns) {
 					bldr.setTable(retval);
-					final RdfColumn col = bldr.build(model);
+					final RdfColumn col = bldr.build(entityManager);
 					if (retval.columns == null) {
 						retval.columns = new ArrayList<Column>();
 					}
 					retval.columns.add(col);
 
 					if (lst == null) {
-						lst = model.createList().with(col.getResource());
+						lst = table.getModel().createList().with(col.getResource());
 					}
 					else {
 						lst.add(col.getResource());
@@ -591,7 +588,7 @@ ResourceWrapper {
 		if (superTableDef != null) {
 			final Builder tableBuilder = new Builder().setTableDef(
 					superTableDef).setSchema(getSchema());
-			return tableBuilder.build(getResource().getModel());
+			return tableBuilder.build(getEntityManager());
 		}
 		return null;
 	}

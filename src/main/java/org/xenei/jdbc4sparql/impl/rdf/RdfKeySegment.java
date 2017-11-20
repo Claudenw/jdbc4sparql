@@ -37,12 +37,12 @@ public class RdfKeySegment implements KeySegment, ResourceWrapper {
 		private short idx;
 		private boolean ascending = true;
 
-		public RdfKeySegment build(final Model model) {
+		public RdfKeySegment build(final EntityManager entityManager) {
 
 			final Class<?> typeClass = RdfKeySegment.class;
 			final String fqName = String.format("%s/instance/%s",
 					ResourceBuilder.getFQName(typeClass), getId());
-			final ResourceBuilder builder = new ResourceBuilder(model);
+			final ResourceBuilder builder = new ResourceBuilder(entityManager);
 			Resource keySegment = null;
 			if (builder.hasResource(fqName)) {
 				keySegment = builder.getResource(fqName, typeClass);
@@ -57,8 +57,6 @@ public class RdfKeySegment implements KeySegment, ResourceWrapper {
 
 			}
 
-			final EntityManager entityManager = EntityManagerFactory
-					.getEntityManager();
 			try {
 				return entityManager.read(keySegment, RdfKeySegment.class);
 			} catch (final MissingAnnotation e) {

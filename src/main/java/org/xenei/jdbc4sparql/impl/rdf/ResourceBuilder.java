@@ -3,10 +3,13 @@ package org.xenei.jdbc4sparql.impl.rdf;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.vocabulary.RDF;
 import org.xenei.jdbc4sparql.iface.NamespacedObject;
 import org.xenei.jena.entities.EntityManager;
 import org.xenei.jena.entities.EntityManagerFactory;
+import org.xenei.jena.entities.MissingAnnotation;
+import org.xenei.jena.entities.ResourceWrapper;
 import org.xenei.jena.entities.annotations.Subject;
 
 
@@ -19,8 +22,7 @@ public class ResourceBuilder {
 	}
 
 	public static String getNamespace(final Class<?> nsClass) {
-		final EntityManager em = EntityManagerFactory.getEntityManager();
-		final Subject subject = em.getSubject(nsClass);
+		final Subject subject = EntityManager.getSubject(nsClass);
 		if (subject == null) {
 			throw new IllegalArgumentException(String.format(
 					"%s is does not have a subject annotation", nsClass));
@@ -28,18 +30,17 @@ public class ResourceBuilder {
 		return subject.namespace();
 	}
 
-	private final Model model;
+	private final EntityManager entityManager;
 
-	public ResourceBuilder(final Model model) {
-		if (model == null) {
-			throw new IllegalArgumentException("Model may not be null");
+	public ResourceBuilder(final EntityManager entityManager) {
+		if (entityManager == null) {
+			throw new IllegalArgumentException("EntityManager may not be null");
 		}
-		this.model = model;
+		this.entityManager = entityManager;
 	}
 
 	public Property getProperty(final Class<?> typeClass, final String localName) {
-		return model.createProperty(ResourceBuilder.getNamespace(typeClass),
-				localName);
+		return getResource( ResourceBuilder.getNamespace(typeClass)+localName, typeClass ).as( Property.class );
 	}
 
 	/**
@@ -48,12 +49,12 @@ public class ResourceBuilder {
 	 * @return
 	 */
 	public Resource getResource(final String fqName, final Class<?> typeClass) {
-		final Resource type = model.createResource(ResourceBuilder
+		final Resource type = entityManager.createResource(ResourceBuilder
 				.getFQName(typeClass));
 
 		Resource retval;
 		if (hasResource(fqName)) {
-			retval = model.getResource(fqName);
+			retval = entityManager.getResource(fqName);
 			if (!retval.hasProperty(RDF.type, type)) {
 				throw new IllegalStateException(String.format(
 						"Object %s is of type %s not %s", retval.getURI(),
@@ -62,7 +63,7 @@ public class ResourceBuilder {
 			}
 		}
 		else {
-			retval = model.createResource(fqName, type);
+			retval = entityManager.createResource(fqName, type);
 		}
 		return retval;
 	}
@@ -78,6 +79,6 @@ public class ResourceBuilder {
 	}
 
 	public boolean hasResource(final String fqName) {
-		return model.contains(model.createResource(fqName), null);
+		return entityManager.contains(fqName);
 	}
 }
