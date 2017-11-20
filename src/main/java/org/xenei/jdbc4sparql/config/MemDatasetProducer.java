@@ -7,16 +7,16 @@ import java.util.zip.ZipInputStream;
 
 import org.xenei.jdbc4sparql.impl.AbstractDatasetProducer;
 
-import com.hp.hpl.jena.graph.compose.MultiUnion;
-import com.hp.hpl.jena.query.Dataset;
-import com.hp.hpl.jena.query.DatasetFactory;
-import com.hp.hpl.jena.query.LabelExistsException;
-import com.hp.hpl.jena.query.ReadWrite;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.shared.Lock;
-import com.hp.hpl.jena.sparql.core.DatasetGraph;
-import com.hp.hpl.jena.sparql.util.Context;
+import org.apache.jena.graph.compose.MultiUnion;
+import org.apache.jena.query.Dataset;
+import org.apache.jena.query.DatasetFactory;
+import org.apache.jena.query.LabelExistsException;
+import org.apache.jena.query.ReadWrite;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.shared.Lock;
+import org.apache.jena.sparql.core.DatasetGraph;
+import org.apache.jena.sparql.util.Context;
 
 public class MemDatasetProducer extends AbstractDatasetProducer {
 	private static class MetaDS implements Dataset {
@@ -143,6 +143,21 @@ public class MemDatasetProducer extends AbstractDatasetProducer {
 			return ds.supportsTransactions();
 		}
 
+		@Override
+		public Model getUnionModel() {
+			return m;
+		}
+
+		@Override
+		public boolean supportsTransactionAbort() {
+			return false;
+		}
+
+		@Override
+		public boolean isEmpty() {
+			return m.isEmpty();
+		}
+
 	}
 
 	public MemDatasetProducer() {
@@ -150,14 +165,14 @@ public class MemDatasetProducer extends AbstractDatasetProducer {
 	}
 
 	public MemDatasetProducer(final Properties props) {
-		super(props, new MetaDS(DatasetFactory.createMem()), DatasetFactory
-				.createMem());
+		super(props, new MetaDS(DatasetFactory.create()), DatasetFactory
+				.create());
 	}
 
 	public MemDatasetProducer(final Properties props, final ZipInputStream zis)
 			throws IOException {
-		super(props, new MetaDS(DatasetFactory.createMem()), DatasetFactory
-				.createMem());
+		super(props, new MetaDS(DatasetFactory.create()), DatasetFactory
+				.create());
 		load(zis);
 		((MetaDS) getMetaDataset()).rescan();
 	}

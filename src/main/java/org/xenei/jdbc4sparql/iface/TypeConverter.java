@@ -36,17 +36,18 @@ import javax.sql.rowset.serial.SerialBlob;
 import javax.sql.rowset.serial.SerialClob;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.jena.datatypes.RDFDatatype;
+import org.apache.jena.datatypes.TypeMapper;
+import org.apache.jena.datatypes.xsd.XSDDateTime;
+import org.apache.jena.datatypes.xsd.XSDDuration;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.graph.impl.LiteralLabel;
+import org.apache.jena.graph.impl.LiteralLabelFactory;
+import org.apache.jena.rdf.model.Literal;
+import org.apache.jena.sparql.expr.NodeValue;
 
-import com.hp.hpl.jena.datatypes.RDFDatatype;
-import com.hp.hpl.jena.datatypes.TypeMapper;
-import com.hp.hpl.jena.datatypes.xsd.XSDDateTime;
-import com.hp.hpl.jena.datatypes.xsd.XSDDuration;
-import com.hp.hpl.jena.graph.Node;
-import com.hp.hpl.jena.graph.NodeFactory;
-import com.hp.hpl.jena.graph.impl.LiteralLabel;
-import com.hp.hpl.jena.graph.impl.LiteralLabelFactory;
-import com.hp.hpl.jena.rdf.model.Literal;
-import com.hp.hpl.jena.sparql.expr.NodeValue;
+
 
 /**
  * Class to convert to and from SQL, SPARQL and Java types.
@@ -74,7 +75,7 @@ public final class TypeConverter {
 			node = NodeFactory.createLiteral(value.toString());
 		}
 		else {
-			lit = LiteralLabelFactory.create(value, null, dt);
+			lit = LiteralLabelFactory.createByValue(value, null, dt);
 			node = NodeFactory.createLiteral(lit);
 		}
 		return NodeValue.makeNode(node);

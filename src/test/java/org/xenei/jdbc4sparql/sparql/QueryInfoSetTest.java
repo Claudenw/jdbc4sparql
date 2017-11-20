@@ -36,11 +36,11 @@ import org.xenei.jdbc4sparql.sparql.items.QueryItemCollection;
 import org.xenei.jdbc4sparql.sparql.items.QueryTableInfo;
 import org.xenei.jdbc4sparql.utils.ElementExtractor;
 
-import com.hp.hpl.jena.graph.NodeFactory;
-import com.hp.hpl.jena.sparql.core.TriplePath;
-import com.hp.hpl.jena.sparql.core.Var;
-import com.hp.hpl.jena.sparql.syntax.ElementGroup;
-import com.hp.hpl.jena.sparql.syntax.ElementPathBlock;
+import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.sparql.core.TriplePath;
+import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.syntax.ElementGroup;
+import org.apache.jena.sparql.syntax.ElementPathBlock;
 
 public class QueryInfoSetTest {
 

@@ -25,6 +25,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 
 import org.xenei.jdbc4sparql.iface.TypeConverter;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
@@ -35,13 +36,13 @@ import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTableDef;
 
-import com.hp.hpl.jena.query.QuerySolution;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.RDFNode;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.util.iterator.Filter;
-import com.hp.hpl.jena.util.iterator.Map1;
-import com.hp.hpl.jena.util.iterator.WrappedIterator;
+import org.apache.jena.query.QuerySolution;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.util.iterator.Filter;
+import org.apache.jena.util.iterator.Map1;
+import org.apache.jena.util.iterator.WrappedIterator;
 
 /**
  * A simple builder that builds tables for all subjects of [?x a rdfs:Class]
@@ -189,10 +190,10 @@ public class SimpleNormalizingBuilder extends SimpleBuilder {
 		final List<QuerySolution> results = catalog.executeQuery(queryStr);
 
 		final Iterator<Integer> iter = WrappedIterator.create(
-				results.iterator()).mapWith(new Map1<QuerySolution, Integer>() {
+				results.iterator()).mapWith(new Function<QuerySolution, Integer>() {
 
 					@Override
-					public Integer map1(final QuerySolution o) {
+					public Integer apply(final QuerySolution o) {
 						final RDFNode node = o.get("col");
 						if (node == null) {
 							return 0;

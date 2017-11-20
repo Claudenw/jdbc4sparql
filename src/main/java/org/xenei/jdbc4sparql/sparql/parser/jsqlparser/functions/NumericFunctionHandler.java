@@ -17,25 +17,25 @@ import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlExprVisitor.AliasInfo;
 import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.proxies.ExprInfoFactory;
 
-import com.hp.hpl.jena.sparql.expr.E_NumAbs;
-import com.hp.hpl.jena.sparql.expr.E_NumCeiling;
-import com.hp.hpl.jena.sparql.expr.E_NumFloor;
-import com.hp.hpl.jena.sparql.expr.E_NumRound;
-import com.hp.hpl.jena.sparql.expr.E_Random;
-import com.hp.hpl.jena.sparql.expr.Expr;
-import com.hp.hpl.jena.sparql.expr.ExprAggregator;
-import com.hp.hpl.jena.sparql.expr.aggregate.AggCount;
-import com.hp.hpl.jena.sparql.expr.aggregate.AggCountDistinct;
-import com.hp.hpl.jena.sparql.expr.aggregate.AggCountVar;
-import com.hp.hpl.jena.sparql.expr.aggregate.AggCountVarDistinct;
-import com.hp.hpl.jena.sparql.expr.aggregate.AggMax;
-import com.hp.hpl.jena.sparql.expr.aggregate.AggMaxDistinct;
-import com.hp.hpl.jena.sparql.expr.aggregate.AggMin;
-import com.hp.hpl.jena.sparql.expr.aggregate.AggMinDistinct;
-import com.hp.hpl.jena.sparql.expr.aggregate.AggSum;
-import com.hp.hpl.jena.sparql.expr.aggregate.AggSumDistinct;
-import com.hp.hpl.jena.sparql.expr.aggregate.Aggregator;
-import com.hp.hpl.jena.sparql.expr.aggregate.AggregatorBase;
+import org.apache.jena.sparql.expr.E_NumAbs;
+import org.apache.jena.sparql.expr.E_NumCeiling;
+import org.apache.jena.sparql.expr.E_NumFloor;
+import org.apache.jena.sparql.expr.E_NumRound;
+import org.apache.jena.sparql.expr.E_Random;
+import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.sparql.expr.ExprAggregator;
+import org.apache.jena.sparql.expr.aggregate.AggCount;
+import org.apache.jena.sparql.expr.aggregate.AggCountDistinct;
+import org.apache.jena.sparql.expr.aggregate.AggCountVar;
+import org.apache.jena.sparql.expr.aggregate.AggCountVarDistinct;
+import org.apache.jena.sparql.expr.aggregate.AggMax;
+import org.apache.jena.sparql.expr.aggregate.AggMaxDistinct;
+import org.apache.jena.sparql.expr.aggregate.AggMin;
+import org.apache.jena.sparql.expr.aggregate.AggMinDistinct;
+import org.apache.jena.sparql.expr.aggregate.AggSum;
+import org.apache.jena.sparql.expr.aggregate.AggSumDistinct;
+import org.apache.jena.sparql.expr.aggregate.Aggregator;
+import org.apache.jena.sparql.expr.aggregate.AggregatorBase;
 
 public class NumericFunctionHandler extends AbstractFunctionHandler {
 	public static final String[] NUMERIC_FUNCTIONS = {

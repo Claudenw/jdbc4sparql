@@ -6,6 +6,11 @@ import java.util.List;
 import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.shared.Lock;
+import org.apache.jena.vocabulary.RDFS;
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.ColumnDef;
@@ -18,14 +23,10 @@ import org.xenei.jena.entities.EntityManagerFactory;
 import org.xenei.jena.entities.EntityManagerRequiredException;
 import org.xenei.jena.entities.MissingAnnotation;
 import org.xenei.jena.entities.ResourceWrapper;
+import org.xenei.jena.entities.SubjectInfo;
 import org.xenei.jena.entities.annotations.Predicate;
 import org.xenei.jena.entities.annotations.Subject;
 
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.Property;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.shared.Lock;
-import com.hp.hpl.jena.vocabulary.RDFS;
 
 @Subject(namespace = "http://org.xenei.jdbc4sparql/entity/Column#")
 public class RdfColumn extends RdfNamespacedObject implements Column,
@@ -287,7 +288,18 @@ ResourceWrapper {
 	public Resource getResource() {
 		throw new EntityManagerRequiredException();
 	}
+	
+	@Override
+	@Predicate(impl = true)
+	public EntityManager getEntityManager() {
+		throw new EntityManagerRequiredException();
+	}
 
+	@Override
+	@Predicate(impl = true)
+	public SubjectInfo getSubjectInfo() {
+		throw new EntityManagerRequiredException();
+	}
 	@Override
 	public RdfSchema getSchema() {
 		return getTable().getSchema();

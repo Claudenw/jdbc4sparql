@@ -6,7 +6,7 @@ import java.util.Set;
 
 import org.xenei.jdbc4sparql.iface.name.GUIDObject;
 
-import com.hp.hpl.jena.util.iterator.Filter;
+import org.apache.jena.util.iterator.Filter;
 
 public class NamedObjectGUIDFilter<T extends GUIDObject> extends Filter<T> {
 

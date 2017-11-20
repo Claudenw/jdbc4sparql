@@ -2,7 +2,7 @@ package org.xenei.jdbc4sparql.iface.name;
 
 import java.util.Comparator;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.CompareToBuilder;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.xenei.jdbc4sparql.impl.NameUtils;
@@ -39,7 +39,7 @@ public abstract class ItemName implements GUIDObject {
 	 *            and ItemName implementation.
 	 */
 	public static class Filter<T extends ItemName> extends
-	com.hp.hpl.jena.util.iterator.Filter<T> {
+	org.apache.jena.util.iterator.Filter<T> {
 		private final ItemName compareTo;
 
 		public Filter(final ItemName compareTo) {

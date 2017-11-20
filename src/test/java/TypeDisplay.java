@@ -3,8 +3,8 @@ import java.util.Iterator;
 
 import net.sf.jsqlparser.JSQLParserException;
 
-import com.hp.hpl.jena.datatypes.RDFDatatype;
-import com.hp.hpl.jena.datatypes.TypeMapper;
+import org.apache.jena.datatypes.RDFDatatype;
+import org.apache.jena.datatypes.TypeMapper;
 
 public class TypeDisplay {
 

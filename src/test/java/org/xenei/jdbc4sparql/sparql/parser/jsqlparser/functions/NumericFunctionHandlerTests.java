@@ -36,19 +36,20 @@ import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlExprVisitor.AliasInf
 import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlExprVisitor.ExprColumn;
 import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.proxies.ExprInfo;
 
-import com.hp.hpl.jena.sparql.expr.E_NumAbs;
-import com.hp.hpl.jena.sparql.expr.E_NumCeiling;
-import com.hp.hpl.jena.sparql.expr.E_NumFloor;
-import com.hp.hpl.jena.sparql.expr.E_NumRound;
-import com.hp.hpl.jena.sparql.expr.E_Random;
-import com.hp.hpl.jena.sparql.expr.Expr;
-import com.hp.hpl.jena.sparql.expr.ExprAggregator;
-import com.hp.hpl.jena.sparql.expr.aggregate.AggCountVar;
-import com.hp.hpl.jena.sparql.expr.aggregate.AggMax;
-import com.hp.hpl.jena.sparql.expr.aggregate.AggMin;
-import com.hp.hpl.jena.sparql.expr.aggregate.AggSum;
-import com.hp.hpl.jena.sparql.expr.aggregate.Aggregator;
-import com.hp.hpl.jena.sparql.expr.nodevalue.NodeValueDouble;
+import org.apache.jena.sparql.expr.E_NumAbs;
+import org.apache.jena.sparql.expr.E_NumCeiling;
+import org.apache.jena.sparql.expr.E_NumFloor;
+import org.apache.jena.sparql.expr.E_NumRound;
+import org.apache.jena.sparql.expr.E_Random;
+import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.sparql.expr.ExprAggregator;
+import org.apache.jena.sparql.expr.ExprList;
+import org.apache.jena.sparql.expr.aggregate.AggCountVar;
+import org.apache.jena.sparql.expr.aggregate.AggMax;
+import org.apache.jena.sparql.expr.aggregate.AggMin;
+import org.apache.jena.sparql.expr.aggregate.AggSum;
+import org.apache.jena.sparql.expr.aggregate.Aggregator;
+import org.apache.jena.sparql.expr.nodevalue.NodeValueDouble;
 
 public class NumericFunctionHandlerTests {
 	private NumericFunctionHandler handler;
@@ -182,7 +183,9 @@ public class NumericFunctionHandlerTests {
 		final ExprAggregator agg = (ExprAggregator) expr;
 		assertTrue(agg.getAggregator() instanceof AggCountVar);
 		final Aggregator agg2 = agg.getAggregator();
-		final Expr expr2 = agg2.getExpr();
+		final ExprList exprLst = agg2.getExprList();
+		assertEquals( 1, exprLst.size() );
+		Expr expr2 = exprLst.get(0);
 		assertTrue(expr2 instanceof ExprColumn);
 		assertEquals(columnName, ((ExprColumn) expr2).getColumnInfo().getName());
 	}
@@ -218,7 +221,9 @@ public class NumericFunctionHandlerTests {
 		final ExprAggregator agg = (ExprAggregator) expr;
 		assertTrue(agg.getAggregator() instanceof AggMax);
 		final Aggregator agg2 = agg.getAggregator();
-		final Expr expr2 = agg2.getExpr();
+		final ExprList exprLst = agg2.getExprList();
+		assertEquals( 1, exprLst.size() );
+		Expr expr2 = exprLst.get(0);
 		assertTrue(expr2 instanceof ExprColumn);
 		assertEquals(columnName, ((ExprColumn) expr2).getColumnInfo().getName());
 	}
@@ -236,7 +241,9 @@ public class NumericFunctionHandlerTests {
 		final ExprAggregator agg = (ExprAggregator) expr;
 		assertTrue(agg.getAggregator() instanceof AggMin);
 		final Aggregator agg2 = agg.getAggregator();
-		final Expr expr2 = agg2.getExpr();
+		final ExprList exprLst = agg2.getExprList();
+		assertEquals( 1, exprLst.size() );
+		Expr expr2 = exprLst.get(0);
 		assertTrue(expr2 instanceof ExprColumn);
 		assertEquals(columnName, ((ExprColumn) expr2).getColumnInfo().getName());
 	}
@@ -287,7 +294,9 @@ public class NumericFunctionHandlerTests {
 		final ExprAggregator agg = (ExprAggregator) expr;
 		assertTrue(agg.getAggregator() instanceof AggSum);
 		final Aggregator agg2 = agg.getAggregator();
-		final Expr expr2 = agg2.getExpr();
+		final ExprList exprLst = agg2.getExprList();
+		assertEquals( 1, exprLst.size() );
+		Expr expr2 = exprLst.get(0);
 		assertTrue(expr2 instanceof ExprColumn);
 		assertEquals(columnName, ((ExprColumn) expr2).getColumnInfo().getName());
 	}

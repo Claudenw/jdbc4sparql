@@ -22,9 +22,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.jena.util.iterator.WrappedIterator;
 import org.xenei.jdbc4sparql.sparql.items.NamedObject;
 
-import com.hp.hpl.jena.util.iterator.WrappedIterator;
 
 /**
  * Filters a namespacedObject by name.

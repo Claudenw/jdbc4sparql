@@ -20,7 +20,7 @@ import org.xenei.jdbc4sparql.sparql.items.QueryItemCollection;
 import org.xenei.jdbc4sparql.sparql.items.QueryItemInfo;
 import org.xenei.jdbc4sparql.sparql.items.QueryTableInfo;
 
-import com.hp.hpl.jena.util.iterator.ExtendedIterator;
+import org.apache.jena.util.iterator.ExtendedIterator;
 
 /**
  * A collection of all tables and columns in the query. The column names are

@@ -4,7 +4,7 @@ import org.xenei.jdbc4sparql.iface.name.GUIDObject;
 import org.xenei.jdbc4sparql.iface.name.ItemName;
 import org.xenei.jdbc4sparql.iface.name.NameSegments;
 
-import com.hp.hpl.jena.sparql.core.Var;
+import org.apache.jena.sparql.core.Var;
 
 /**
  * The base class for the Query items.

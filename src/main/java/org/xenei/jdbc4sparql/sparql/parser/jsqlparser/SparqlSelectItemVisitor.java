@@ -40,7 +40,7 @@ import org.xenei.jdbc4sparql.sparql.items.QueryTableInfo;
 import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlExprVisitor.ExprColumn;
 import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.proxies.ExprInfo;
 
-import com.hp.hpl.jena.sparql.expr.Expr;
+import org.apache.jena.sparql.expr.Expr;
 
 /**
  * A visitor that process the SQL select into the SparqlQueryBuilder.

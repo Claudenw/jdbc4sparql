@@ -13,7 +13,7 @@ import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.functions.NumericFunctionH
 import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.functions.StringFunctionHandler;
 import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.functions.SystemFunctionHandler;
 
-import com.hp.hpl.jena.sparql.expr.Expr;
+import org.apache.jena.sparql.expr.Expr;
 
 public class StandardFunctionHandler {
 

@@ -12,14 +12,15 @@ import org.xenei.jena.entities.EntityManagerFactory;
 import org.xenei.jena.entities.EntityManagerRequiredException;
 import org.xenei.jena.entities.MissingAnnotation;
 import org.xenei.jena.entities.ResourceWrapper;
+import org.xenei.jena.entities.SubjectInfo;
 import org.xenei.jena.entities.annotations.Predicate;
 import org.xenei.jena.entities.annotations.Subject;
 
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.Property;
-import com.hp.hpl.jena.rdf.model.RDFList;
-import com.hp.hpl.jena.rdf.model.RDFNode;
-import com.hp.hpl.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.RDFList;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.Resource;
 
 @Subject(namespace = "http://org.xenei.jdbc4sparql/entity/TableDef#")
 public class RdfTableDef extends RdfNamespacedObject implements TableDef,
@@ -255,6 +256,18 @@ ResourceWrapper {
 		throw new EntityManagerRequiredException();
 	}
 
+	@Override
+	@Predicate(impl = true)
+	public EntityManager getEntityManager() {
+		throw new EntityManagerRequiredException();
+	}
+
+	@Override
+	@Predicate(impl = true)
+	public SubjectInfo getSubjectInfo() {
+		throw new EntityManagerRequiredException();
+	}
+	
 	/**
 	 * Get the table sort order key. returns null if the table is not sorted.
 	 *

@@ -30,8 +30,8 @@ import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
 
 public class RDFSBuilderTest {
 	private RdfCatalog catalog;
@@ -76,7 +76,11 @@ public class RDFSBuilderTest {
 		schema = new RdfSchema.Builder().setCatalog(catalog)
 				.setName("builderTest").build(schemaModel);
 
+
+		schemaModel.write( System.out, "TURTLE");
+		
 		builder = new RDFSBuilder();
+		
 
 	}
 

@@ -7,6 +7,19 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.query.Query;
+import org.apache.jena.query.QueryExecution;
+import org.apache.jena.query.QueryExecutionFactory;
+import org.apache.jena.query.QueryFactory;
+import org.apache.jena.query.QuerySolution;
+import org.apache.jena.query.ResultSet;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.util.iterator.WrappedIterator;
+import org.apache.jena.vocabulary.RDFS;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xenei.jdbc4sparql.iface.Catalog;
@@ -18,25 +31,16 @@ import org.xenei.jena.entities.EntityManagerFactory;
 import org.xenei.jena.entities.EntityManagerRequiredException;
 import org.xenei.jena.entities.MissingAnnotation;
 import org.xenei.jena.entities.ResourceWrapper;
+import org.xenei.jena.entities.SubjectInfo;
 import org.xenei.jena.entities.annotations.Predicate;
 import org.xenei.jena.entities.annotations.Subject;
+import org.xenei.jena.entities.impl.EntityManagerImpl;
 
-import com.hp.hpl.jena.graph.Node;
-import com.hp.hpl.jena.graph.NodeFactory;
-import com.hp.hpl.jena.query.Query;
-import com.hp.hpl.jena.query.QueryExecution;
-import com.hp.hpl.jena.query.QueryExecutionFactory;
-import com.hp.hpl.jena.query.QueryFactory;
-import com.hp.hpl.jena.query.QuerySolution;
-import com.hp.hpl.jena.query.ResultSet;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.util.iterator.WrappedIterator;
-import com.hp.hpl.jena.vocabulary.RDFS;
+
 
 @Subject(namespace = "http://org.xenei.jdbc4sparql/entity/Catalog#")
 public class RdfCatalog implements Catalog, ResourceWrapper {
+	
 	public static class Builder implements Catalog {
 		public static String getFQName(final String shortName) {
 			return String.format("%s/instance/N%s",
@@ -46,6 +50,7 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 		private Model localModel;
 		private URL sparqlEndpoint;
 		private String name;
+		
 
 		private final Set<Schema> schemas = new HashSet<Schema>();
 
@@ -73,8 +78,9 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 			final String fqName = getFQName();
 			final ResourceBuilder builder = new ResourceBuilder(model);
 
-			final EntityManager entityManager = EntityManagerFactory
-					.getEntityManager();
+			//final EntityManager entityManager = EntityManagerFactory
+					//.getEntityManager();
+			EntityManager entityManager = new EntityManagerImpl( model );
 
 			// create catalog graph resource
 			Resource catalog = null;
@@ -331,6 +337,18 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 	public Resource getResource() {
 		throw new EntityManagerRequiredException();
 	}
+	
+	@Override
+	@Predicate(impl = true)
+	public EntityManager getEntityManager() {
+		throw new EntityManagerRequiredException();
+	}
+
+	@Override
+	@Predicate(impl = true)
+	public SubjectInfo getSubjectInfo() {
+		throw new EntityManagerRequiredException();
+	}
 
 	@Override
 	public Schema getSchema(final String schemaName) {
@@ -377,4 +395,7 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 	public String toString() {
 		return getName().toString();
 	}
+
+
+	
 }

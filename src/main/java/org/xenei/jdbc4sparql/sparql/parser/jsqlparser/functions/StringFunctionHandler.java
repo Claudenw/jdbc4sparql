@@ -12,13 +12,13 @@ import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlExprVisitor.AliasInfo;
 import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.proxies.ExprInfoFactory;
 
-import com.hp.hpl.jena.sparql.expr.E_StrLength;
-import com.hp.hpl.jena.sparql.expr.E_StrLowerCase;
-import com.hp.hpl.jena.sparql.expr.E_StrReplace;
-import com.hp.hpl.jena.sparql.expr.E_StrSubstring;
-import com.hp.hpl.jena.sparql.expr.E_StrUpperCase;
-import com.hp.hpl.jena.sparql.expr.Expr;
-import com.hp.hpl.jena.sparql.expr.nodevalue.NodeValueString;
+import org.apache.jena.sparql.expr.E_StrLength;
+import org.apache.jena.sparql.expr.E_StrLowerCase;
+import org.apache.jena.sparql.expr.E_StrReplace;
+import org.apache.jena.sparql.expr.E_StrSubstring;
+import org.apache.jena.sparql.expr.E_StrUpperCase;
+import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.sparql.expr.nodevalue.NodeValueString;
 
 public class StringFunctionHandler extends AbstractFunctionHandler {
 	public static final String[] STRING_FUNCTIONS = {

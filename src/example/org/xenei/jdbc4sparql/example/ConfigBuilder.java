@@ -25,10 +25,10 @@ import org.xenei.jdbc4sparql.J4SUrl;
 import org.xenei.jdbc4sparql.config.TDBDatasetProducer;
 import org.xenei.jena.entities.MissingAnnotation;
 
-import com.hp.hpl.jena.query.Dataset;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.tdb.TDBFactory;
+import org.apache.jena.query.Dataset;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.tdb.TDBFactory;
 
 public class ConfigBuilder {
 

@@ -5,6 +5,8 @@ import java.sql.SQLDataException;
 import java.sql.Types;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Resource;
 import org.xenei.jdbc4sparql.iface.ColumnDef;
 import org.xenei.jdbc4sparql.iface.TypeConverter;
 import org.xenei.jena.entities.EntityManager;
@@ -12,11 +14,10 @@ import org.xenei.jena.entities.EntityManagerFactory;
 import org.xenei.jena.entities.EntityManagerRequiredException;
 import org.xenei.jena.entities.MissingAnnotation;
 import org.xenei.jena.entities.ResourceWrapper;
+import org.xenei.jena.entities.SubjectInfo;
 import org.xenei.jena.entities.annotations.Predicate;
 import org.xenei.jena.entities.annotations.Subject;
 
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.Resource;
 
 @Subject(namespace = "http://org.xenei.jdbc4sparql/entity/ColumnDef#")
 public class RdfColumnDef implements ColumnDef, ResourceWrapper {
@@ -321,6 +322,18 @@ public class RdfColumnDef implements ColumnDef, ResourceWrapper {
 		throw new EntityManagerRequiredException();
 	}
 
+	@Override
+	@Predicate(impl = true)
+	public EntityManager getEntityManager() {
+		throw new EntityManagerRequiredException();
+	}
+
+	@Override
+	@Predicate(impl = true)
+	public SubjectInfo getSubjectInfo() {
+		throw new EntityManagerRequiredException();
+	}
+	
 	@Override
 	@Predicate(impl = true)
 	public int getScale() {

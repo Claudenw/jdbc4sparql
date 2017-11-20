@@ -24,8 +24,8 @@ import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlExprVisitor;
 import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlExprVisitor.AliasInfo;
 import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.proxies.ExprInfo;
 
-import com.hp.hpl.jena.sparql.expr.Expr;
-import com.hp.hpl.jena.sparql.expr.nodevalue.NodeValueString;
+import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.sparql.expr.nodevalue.NodeValueString;
 
 public class SystemFunctionHandlerTests {
 	private SystemFunctionHandler handler;

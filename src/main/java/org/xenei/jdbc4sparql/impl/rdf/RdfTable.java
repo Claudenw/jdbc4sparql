@@ -10,6 +10,15 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.jena.query.Query;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.RDFList;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.shared.Lock;
+import org.apache.jena.vocabulary.RDFS;
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.NameFilter;
@@ -26,18 +35,10 @@ import org.xenei.jena.entities.EntityManagerFactory;
 import org.xenei.jena.entities.EntityManagerRequiredException;
 import org.xenei.jena.entities.MissingAnnotation;
 import org.xenei.jena.entities.ResourceWrapper;
+import org.xenei.jena.entities.SubjectInfo;
 import org.xenei.jena.entities.annotations.Predicate;
 import org.xenei.jena.entities.annotations.Subject;
 
-import com.hp.hpl.jena.query.Query;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.Property;
-import com.hp.hpl.jena.rdf.model.RDFList;
-import com.hp.hpl.jena.rdf.model.RDFNode;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.ResourceFactory;
-import com.hp.hpl.jena.shared.Lock;
-import com.hp.hpl.jena.vocabulary.RDFS;
 
 @Subject(namespace = "http://org.xenei.jdbc4sparql/entity/Table#")
 public class RdfTable extends RdfNamespacedObject implements Table,
@@ -547,6 +548,18 @@ ResourceWrapper {
 		throw new EntityManagerRequiredException();
 	}
 
+	@Override
+	@Predicate(impl = true)
+	public EntityManager getEntityManager() {
+		throw new EntityManagerRequiredException();
+	}
+
+	@Override
+	@Predicate(impl = true)
+	public SubjectInfo getSubjectInfo() {
+		throw new EntityManagerRequiredException();
+	}
+	
 	public SparqlResultSet getResultSet(final Map<String, Catalog> catalogs,
 			final SparqlParser parser) throws SQLException {
 		return new SparqlResultSet(this, getQuery(catalogs, parser));

@@ -24,8 +24,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.TreeMap;
 
-import com.hp.hpl.jena.util.iterator.ExtendedIterator;
-import com.hp.hpl.jena.util.iterator.NiceIterator;
+import org.apache.jena.util.iterator.ExtendedIterator;
+import org.apache.jena.util.iterator.NiceIterator;
 
 /**
  * A bag that is sorted by key.

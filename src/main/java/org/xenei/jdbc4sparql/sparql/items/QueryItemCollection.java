@@ -5,16 +5,17 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 import org.xenei.jdbc4sparql.iface.name.ItemName;
 import org.xenei.jdbc4sparql.iface.name.NameSegments;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 
-import com.hp.hpl.jena.util.iterator.ExtendedIterator;
-import com.hp.hpl.jena.util.iterator.Filter;
-import com.hp.hpl.jena.util.iterator.Map1;
-import com.hp.hpl.jena.util.iterator.UniqueFilter;
-import com.hp.hpl.jena.util.iterator.WrappedIterator;
+import org.apache.jena.util.iterator.ExtendedIterator;
+
+import org.apache.jena.util.iterator.UniqueFilter;
+import org.apache.jena.util.iterator.WrappedIterator;
 
 /**
  * A collection of QueryItemInfo objects.
@@ -279,10 +280,10 @@ implements Collection<I> {
 
 	private boolean retainAllNamedObject(final Collection<NamedObject<?>> arg0) {
 		final List<ItemName> tmpLst = WrappedIterator.create(arg0.iterator())
-				.mapWith(new Map1<NamedObject<?>, ItemName>() {
+				.mapWith(new Function<NamedObject<?>, ItemName>() {
 
 					@Override
-					public ItemName map1(final NamedObject<?> o) {
+					public ItemName apply(final NamedObject<?> o) {
 						return o.getName();
 					}
 				}).toList();
@@ -473,7 +474,7 @@ implements Collection<I> {
 		final Iterator<I> iter = iterator();
 		int i = 0;
 		while (iter.hasNext()) {
-			if (nof.accept(iter.next())) {
+			if (nof.test(iter.next())) {
 				return i;
 			}
 			i++;
@@ -486,8 +487,7 @@ implements Collection<I> {
 		return lst.toString();
 	}
 
-	public static class ItemNameFilter<I extends QueryItemInfo<?, ?>> extends
-	Filter<I> {
+	public static class ItemNameFilter<I extends QueryItemInfo<?, ?>> implements Predicate<I> {
 
 		protected Collection<ItemName> others;
 
@@ -514,7 +514,7 @@ implements Collection<I> {
 		}
 
 		@Override
-		public boolean accept(final I item) {
+		public boolean test(final I item) {
 			final ItemName name = item.getName().clone(NameSegments.ALL);
 			for (final ItemName other : others) {
 				if (other.matches(name)) {
@@ -526,15 +526,14 @@ implements Collection<I> {
 
 	}
 
-	public class BaseObjectMap implements Map1<I, T> {
+	public class BaseObjectMap implements Function<I, T> {
 		@Override
-		public T map1(final I o) {
+		public T apply(final I o) {
 			return o.getBaseObject();
 		}
 	}
 
-	public class BaseObjectFilter<I extends QueryItemInfo<?, ?>> extends
-	Filter<I> {
+	public class BaseObjectFilter<I extends QueryItemInfo<?, ?>> implements Predicate<I> {
 
 		protected Collection<T> others;
 
@@ -558,7 +557,7 @@ implements Collection<I> {
 		}
 
 		@Override
-		public boolean accept(final I item) {
+		public boolean test(final I item) {
 			for (final T other : others) {
 				if (other.getName().getGUID()
 						.equals(item.getBaseObject().getName().getGUID())) {

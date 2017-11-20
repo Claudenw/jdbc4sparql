@@ -3,7 +3,7 @@ package org.xenei.jdbc4sparql.sparql.items;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import com.hp.hpl.jena.util.iterator.Filter;
+import org.apache.jena.util.iterator.Filter;
 
 public class NamedObjectFilter<T extends NamedObject<?>> extends Filter<T> {
 

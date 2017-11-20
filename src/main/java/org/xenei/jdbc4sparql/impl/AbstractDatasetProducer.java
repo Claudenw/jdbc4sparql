@@ -11,7 +11,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.xerces.util.XMLChar;
@@ -20,9 +20,9 @@ import org.xenei.jdbc4sparql.iface.DatasetProducer;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.utils.NoCloseZipInputStream;
 
-import com.hp.hpl.jena.query.Dataset;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.impl.Util;
+import org.apache.jena.query.Dataset;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.impl.Util;
 
 /**
  * Interface that defines the dataset producer.
@@ -41,7 +41,7 @@ abstract public class AbstractDatasetProducer implements DatasetProducer {
 			name = RdfCatalog.Builder.getFQName(name);
 		}
 		else {
-			final int i = Util.splitNamespace(name);
+			final int i = Util.splitNamespaceXML(name);
 			if (i == 1) {
 				if (XMLChar.isNCNameStart(name.charAt(0))) {// we have a short
 					// name

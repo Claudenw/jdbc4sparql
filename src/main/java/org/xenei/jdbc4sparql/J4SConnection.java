@@ -44,7 +44,13 @@ import java.util.Properties;
 import java.util.concurrent.Executor;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ResIterator;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.util.iterator.WrappedIterator;
+import org.apache.jena.vocabulary.RDF;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xenei.jdbc4sparql.config.MemDatasetProducer;
@@ -64,12 +70,12 @@ import org.xenei.jena.entities.EntityManager;
 import org.xenei.jena.entities.EntityManagerFactory;
 import org.xenei.jena.entities.MissingAnnotation;
 
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ResIterator;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.ResourceFactory;
-import com.hp.hpl.jena.util.iterator.WrappedIterator;
-import com.hp.hpl.jena.vocabulary.RDF;
+//import org.apache.jena.rdf.model.Model;
+//import org.apache.jena.rdf.model.ResIterator;
+//import org.apache.jena.rdf.model.Resource;
+//import org.apache.jena.rdf.model.ResourceFactory;
+//import org.apache.jena.util.iterator.WrappedIterator;
+//import org.apache.jena.vocabulary.RDF;
 
 public class J4SConnection implements Connection {
 	private Properties clientInfo;

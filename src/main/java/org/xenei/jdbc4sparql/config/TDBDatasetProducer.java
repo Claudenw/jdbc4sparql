@@ -21,9 +21,9 @@ import org.slf4j.LoggerFactory;
 import org.xenei.jdbc4sparql.iface.DatasetProducer;
 import org.xenei.jdbc4sparql.impl.AbstractDatasetProducer;
 
-import com.hp.hpl.jena.query.Dataset;
-import com.hp.hpl.jena.tdb.TDBFactory;
-import com.hp.hpl.jena.tdb.transaction.DatasetGraphTransaction;
+import org.apache.jena.query.Dataset;
+import org.apache.jena.tdb.TDBFactory;
+import org.apache.jena.tdb.transaction.DatasetGraphTransaction;
 
 public class TDBDatasetProducer extends AbstractDatasetProducer {
 	private final Lock metaDataLock = new ReentrantLock();

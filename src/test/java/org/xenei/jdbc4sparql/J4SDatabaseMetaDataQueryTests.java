@@ -41,13 +41,13 @@ import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.DatasetProducer;
 import org.xenei.jdbc4sparql.meta.MetaCatalogBuilder;
 
-import com.hp.hpl.jena.query.Query;
-import com.hp.hpl.jena.query.QueryExecution;
-import com.hp.hpl.jena.query.QueryExecutionFactory;
-import com.hp.hpl.jena.query.QueryFactory;
-import com.hp.hpl.jena.query.QuerySolution;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.util.iterator.WrappedIterator;
+import org.apache.jena.query.Query;
+import org.apache.jena.query.QueryExecution;
+import org.apache.jena.query.QueryExecutionFactory;
+import org.apache.jena.query.QueryFactory;
+import org.apache.jena.query.QuerySolution;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.util.iterator.WrappedIterator;
 
 public class J4SDatabaseMetaDataQueryTests {
 	private J4SConnection connection;
@@ -273,7 +273,7 @@ public class J4SDatabaseMetaDataQueryTests {
 	public void setup() throws Exception {
 		LoggingConfig.setConsole(Level.DEBUG);
 		LoggingConfig.setRootLogger(Level.INFO);
-		LoggingConfig.setLogger("com.hp.hpl.jena.", Level.INFO);
+		LoggingConfig.setLogger("org.apache.jena.", Level.INFO);
 		//LoggingConfig.setLogger("org.xenei.jdbc4sparql", Level.DEBUG);
 		final J4SDriver driver = new J4SDriver();
 		final URL url = J4SDatabaseMetaDataQueryTests.class

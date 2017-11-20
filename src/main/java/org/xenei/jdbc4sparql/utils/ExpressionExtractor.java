@@ -3,18 +3,19 @@ package org.xenei.jdbc4sparql.utils;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.hp.hpl.jena.sparql.expr.Expr;
-import com.hp.hpl.jena.sparql.expr.ExprAggregator;
-import com.hp.hpl.jena.sparql.expr.ExprFunction0;
-import com.hp.hpl.jena.sparql.expr.ExprFunction1;
-import com.hp.hpl.jena.sparql.expr.ExprFunction2;
-import com.hp.hpl.jena.sparql.expr.ExprFunction3;
-import com.hp.hpl.jena.sparql.expr.ExprFunctionN;
-import com.hp.hpl.jena.sparql.expr.ExprFunctionOp;
-import com.hp.hpl.jena.sparql.expr.ExprVar;
-import com.hp.hpl.jena.sparql.expr.ExprVisitor;
-import com.hp.hpl.jena.sparql.expr.NodeValue;
-import com.hp.hpl.jena.sparql.expr.aggregate.Aggregator;
+import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.sparql.expr.ExprAggregator;
+import org.apache.jena.sparql.expr.ExprFunction0;
+import org.apache.jena.sparql.expr.ExprFunction1;
+import org.apache.jena.sparql.expr.ExprFunction2;
+import org.apache.jena.sparql.expr.ExprFunction3;
+import org.apache.jena.sparql.expr.ExprFunctionN;
+import org.apache.jena.sparql.expr.ExprFunctionOp;
+import org.apache.jena.sparql.expr.ExprNone;
+import org.apache.jena.sparql.expr.ExprVar;
+import org.apache.jena.sparql.expr.ExprVisitor;
+import org.apache.jena.sparql.expr.NodeValue;
+import org.apache.jena.sparql.expr.aggregate.Aggregator;
 
 /**
  * Class for test classes to extract element types from query.
@@ -51,10 +52,6 @@ public class ExpressionExtractor implements ExprVisitor {
 
 	public ExpressionExtractor(final Class<? extends Expr> clazz) {
 		setMatchType(clazz);
-	}
-
-	@Override
-	public void startVisit() {
 	}
 
 	@Override
@@ -139,13 +136,18 @@ public class ExpressionExtractor implements ExprVisitor {
 		}
 		eAgg.getAggVar().visit(this);
 		final Aggregator agg = eAgg.getAggregator();
-		if (agg.getExpr() != null) {
-			agg.getExpr().visit(this);
+		if (agg.getExprList() != null) {
+			for (Expr x : agg.getExprList() ) {
+				x.visit(this);
+			}
 		}
 	}
 
 	@Override
-	public void finishVisit() {
+	public void visit(ExprNone exprNone) {
+		if (matchType.isAssignableFrom(exprNone.getClass())) {
+			extracted.add(exprNone);
+		}
 	}
 
 }

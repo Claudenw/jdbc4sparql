@@ -11,21 +11,21 @@ import org.xenei.jdbc4sparql.iface.name.ItemName;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 import org.xenei.jdbc4sparql.sparql.items.QueryColumnInfo;
 
-import com.hp.hpl.jena.sparql.core.Var;
-import com.hp.hpl.jena.sparql.expr.Expr;
-import com.hp.hpl.jena.sparql.expr.ExprAggregator;
-import com.hp.hpl.jena.sparql.expr.ExprFunction;
-import com.hp.hpl.jena.sparql.expr.ExprFunction0;
-import com.hp.hpl.jena.sparql.expr.ExprFunction1;
-import com.hp.hpl.jena.sparql.expr.ExprFunction2;
-import com.hp.hpl.jena.sparql.expr.ExprFunction3;
-import com.hp.hpl.jena.sparql.expr.ExprFunctionN;
-import com.hp.hpl.jena.sparql.expr.ExprFunctionOp;
-import com.hp.hpl.jena.sparql.expr.ExprList;
-import com.hp.hpl.jena.sparql.expr.ExprVar;
-import com.hp.hpl.jena.sparql.expr.ExprVisitor;
-import com.hp.hpl.jena.sparql.expr.NodeValue;
-import com.hp.hpl.jena.sparql.expr.aggregate.Aggregator;
+import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.sparql.expr.ExprAggregator;
+import org.apache.jena.sparql.expr.ExprFunction;
+import org.apache.jena.sparql.expr.ExprFunction0;
+import org.apache.jena.sparql.expr.ExprFunction1;
+import org.apache.jena.sparql.expr.ExprFunction2;
+import org.apache.jena.sparql.expr.ExprFunction3;
+import org.apache.jena.sparql.expr.ExprFunctionN;
+import org.apache.jena.sparql.expr.ExprFunctionOp;
+import org.apache.jena.sparql.expr.ExprList;
+import org.apache.jena.sparql.expr.ExprVar;
+import org.apache.jena.sparql.expr.ExprVisitor;
+import org.apache.jena.sparql.expr.NodeValue;
+import org.apache.jena.sparql.expr.aggregate.Aggregator;
 
 public abstract class ExpRewriter implements ExprVisitor {
 	protected final Map<ItemName, ItemName> aliasMap = new HashMap<ItemName, ItemName>();
@@ -47,10 +47,6 @@ public abstract class ExpRewriter implements ExprVisitor {
 			lst.add(stack.pop());
 		}
 		return lst;
-	}
-
-	@Override
-	public void finishVisit() {
 	}
 
 	public Expr getResult() {
@@ -78,18 +74,19 @@ public abstract class ExpRewriter implements ExprVisitor {
 	}
 
 	@Override
-	public void startVisit() {
-	}
-
-	@Override
 	public void visit(final ExprAggregator eAgg) {
 		final Aggregator agg = eAgg.getAggregator();
-		Expr exp = agg.getExpr();
-		if (exp != null) {
-			exp.visit(this);
-			exp = stack.pop();
+		ExprList exp = agg.getExprList();
+		ExprList lst2 = null;
+		if (exp != null) {	
+			lst2 = new ExprList();
+			for (Expr x : exp)
+			{
+				x.visit(this);
+				lst2.add(stack.pop());
+			}
 		}
-		stack.push(new ExprAggregator(eAgg.getVar(), agg.copy(exp)));
+		stack.push(new ExprAggregator(eAgg.getVar(), agg.copy(lst2)));
 	}
 
 	@Override

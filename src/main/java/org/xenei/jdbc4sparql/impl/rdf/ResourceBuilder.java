@@ -1,16 +1,17 @@
 package org.xenei.jdbc4sparql.impl.rdf;
 
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.vocabulary.RDF;
 import org.xenei.jdbc4sparql.iface.NamespacedObject;
 import org.xenei.jena.entities.EntityManager;
 import org.xenei.jena.entities.EntityManagerFactory;
 import org.xenei.jena.entities.annotations.Subject;
 
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.Property;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.vocabulary.RDF;
 
 public class ResourceBuilder {
+	
 	public static String getFQName(final Class<?> nsClass) {
 		final String s = ResourceBuilder.getNamespace(nsClass);
 

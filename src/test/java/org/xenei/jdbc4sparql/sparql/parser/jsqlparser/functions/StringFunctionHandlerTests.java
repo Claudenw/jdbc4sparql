@@ -29,14 +29,14 @@ import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlExprVisitor;
 import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlExprVisitor.AliasInfo;
 import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.proxies.ExprInfo;
 
-import com.hp.hpl.jena.sparql.expr.E_StrLength;
-import com.hp.hpl.jena.sparql.expr.E_StrLowerCase;
-import com.hp.hpl.jena.sparql.expr.E_StrReplace;
-import com.hp.hpl.jena.sparql.expr.E_StrSubstring;
-import com.hp.hpl.jena.sparql.expr.E_StrUpperCase;
-import com.hp.hpl.jena.sparql.expr.Expr;
-import com.hp.hpl.jena.sparql.expr.nodevalue.NodeValueInteger;
-import com.hp.hpl.jena.sparql.expr.nodevalue.NodeValueString;
+import org.apache.jena.sparql.expr.E_StrLength;
+import org.apache.jena.sparql.expr.E_StrLowerCase;
+import org.apache.jena.sparql.expr.E_StrReplace;
+import org.apache.jena.sparql.expr.E_StrSubstring;
+import org.apache.jena.sparql.expr.E_StrUpperCase;
+import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.sparql.expr.nodevalue.NodeValueInteger;
+import org.apache.jena.sparql.expr.nodevalue.NodeValueString;
 
 public class StringFunctionHandlerTests {
 	private StringFunctionHandler handler;

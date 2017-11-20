@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import com.hp.hpl.jena.sparql.expr.nodevalue.NodeValueString;
+import org.apache.jena.sparql.expr.nodevalue.NodeValueString;
 
 class RegexNodeValue extends NodeValueString {
 	private final boolean wildcard;

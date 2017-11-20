@@ -33,23 +33,24 @@ import org.xenei.jdbc4sparql.iface.name.NameSegments;
 import org.xenei.jdbc4sparql.impl.NameUtils;
 import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlVisitor;
 
-import com.hp.hpl.jena.query.Query;
-import com.hp.hpl.jena.rdf.model.Property;
-import com.hp.hpl.jena.sparql.core.Var;
-import com.hp.hpl.jena.sparql.expr.E_Equals;
-import com.hp.hpl.jena.sparql.expr.E_Function;
-import com.hp.hpl.jena.sparql.expr.E_NotEquals;
-import com.hp.hpl.jena.sparql.expr.Expr;
-import com.hp.hpl.jena.sparql.expr.ExprAggregator;
-import com.hp.hpl.jena.sparql.expr.ExprVar;
-import com.hp.hpl.jena.sparql.expr.nodevalue.NodeValueString;
-import com.hp.hpl.jena.sparql.syntax.Element;
-import com.hp.hpl.jena.sparql.syntax.ElementBind;
-import com.hp.hpl.jena.sparql.syntax.ElementFilter;
-import com.hp.hpl.jena.sparql.syntax.ElementOptional;
-import com.hp.hpl.jena.sparql.syntax.ElementPathBlock;
-import com.hp.hpl.jena.sparql.syntax.ElementService;
-import com.hp.hpl.jena.sparql.syntax.ElementSubQuery;
+import org.apache.jena.query.Query;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.expr.E_Equals;
+import org.apache.jena.sparql.expr.E_Function;
+import org.apache.jena.sparql.expr.E_NotEquals;
+import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.sparql.expr.ExprAggregator;
+import org.apache.jena.sparql.expr.ExprList;
+import org.apache.jena.sparql.expr.ExprVar;
+import org.apache.jena.sparql.expr.nodevalue.NodeValueString;
+import org.apache.jena.sparql.syntax.Element;
+import org.apache.jena.sparql.syntax.ElementBind;
+import org.apache.jena.sparql.syntax.ElementFilter;
+import org.apache.jena.sparql.syntax.ElementOptional;
+import org.apache.jena.sparql.syntax.ElementPathBlock;
+import org.apache.jena.sparql.syntax.ElementService;
+import org.apache.jena.sparql.syntax.ElementSubQuery;
 
 public class RemoteSparqlVisitorTest extends AbstractSparqlVisitorTest {
 
@@ -124,7 +125,9 @@ public class RemoteSparqlVisitorTest extends AbstractSparqlVisitorTest {
 		assertEquals(1, q.getProjectVars().size());
 		final ExprAggregator e = (ExprAggregator) q.getProject().getExpr(
 				q.getProjectVars().get(0));
-		final Var v2 = e.getAggregator().getExpr().asVar();
+		final ExprList exprLst = e.getAggregator().getExprList();
+		assertEquals( 1, exprLst.size() );
+		final Var v2 = exprLst.get(0).asVar();
 		assertTrue(v2.toString() + " missing from service call", q2
 				.getProjectVars().contains(v2));
 	}
@@ -148,7 +151,9 @@ public class RemoteSparqlVisitorTest extends AbstractSparqlVisitorTest {
 		assertEquals(1, q.getProjectVars().size());
 		final ExprAggregator e = (ExprAggregator) q.getProject().getExpr(
 				q.getProjectVars().get(0));
-		final Var v2 = e.getAggregator().getExpr().asVar();
+		final ExprList exprLst = e.getAggregator().getExprList();
+		assertEquals( 1, exprLst.size() );
+		final Var v2 = exprLst.get(0).asVar();
 		assertTrue(v2.toString() + " missing from service call", q2
 				.getProjectVars().contains(v2));
 

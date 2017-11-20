@@ -9,7 +9,7 @@ import org.xenei.jdbc4sparql.J4SConnection;
 import org.xenei.jdbc4sparql.J4SDriver;
 import org.xenei.jdbc4sparql.J4SUrl;
 
-import com.hp.hpl.jena.sparql.lang.sparql_11.ParseException;
+import org.apache.jena.sparql.lang.sparql_11.ParseException;
 
 public class ConfigSave {
 

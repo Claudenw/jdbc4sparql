@@ -20,12 +20,12 @@ package org.xenei.jdbc4sparql.iface;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.jena.graph.Node;
+import org.apache.jena.query.Query;
+import org.apache.jena.query.QuerySolution;
 import org.xenei.jdbc4sparql.iface.name.CatalogName;
 import org.xenei.jdbc4sparql.sparql.items.NamedObject;
 
-import com.hp.hpl.jena.graph.Node;
-import com.hp.hpl.jena.query.Query;
-import com.hp.hpl.jena.query.QuerySolution;
 
 public interface Catalog extends NamedObject<CatalogName> {
 	/**

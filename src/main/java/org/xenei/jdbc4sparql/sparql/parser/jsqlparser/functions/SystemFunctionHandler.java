@@ -11,8 +11,8 @@ import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlExprVisitor.AliasInfo;
 import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.proxies.ExprInfoFactory;
 
-import com.hp.hpl.jena.sparql.expr.Expr;
-import com.hp.hpl.jena.sparql.expr.nodevalue.NodeValueString;
+import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.sparql.expr.nodevalue.NodeValueString;
 
 public class SystemFunctionHandler extends AbstractFunctionHandler {
 	public static final String[] SYSTEM_FUNCTIONS = {

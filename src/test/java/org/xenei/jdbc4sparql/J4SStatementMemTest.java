@@ -18,13 +18,13 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.xenei.jdbc4sparql.iface.Catalog;
 
-import com.hp.hpl.jena.query.Query;
-import com.hp.hpl.jena.query.QueryExecution;
-import com.hp.hpl.jena.query.QueryExecutionFactory;
-import com.hp.hpl.jena.query.QueryFactory;
-import com.hp.hpl.jena.query.QuerySolution;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.util.iterator.WrappedIterator;
+import org.apache.jena.query.Query;
+import org.apache.jena.query.QueryExecution;
+import org.apache.jena.query.QueryExecutionFactory;
+import org.apache.jena.query.QueryFactory;
+import org.apache.jena.query.QuerySolution;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.util.iterator.WrappedIterator;
 
 public class J4SStatementMemTest extends AbstractJ4SStatementTest {
 	// file URL
@@ -37,7 +37,7 @@ public class J4SStatementMemTest extends AbstractJ4SStatementTest {
 	public void setup() throws Exception {
 		LoggingConfig.setConsole(Level.DEBUG);
 		LoggingConfig.setRootLogger(Level.INFO);
-		LoggingConfig.setLogger("com.hp.hpl.jena.", Level.INFO);
+		LoggingConfig.setLogger("org.apache.jena.", Level.INFO);
 		LoggingConfig.setLogger("org.xenei.jdbc4sparql", Level.INFO);
 		LoggingConfig.setLogger("org.xenei.jdbc4sparql.sparql", Level.DEBUG );
 		Class.forName("org.xenei.jdbc4sparql.J4SDriver");

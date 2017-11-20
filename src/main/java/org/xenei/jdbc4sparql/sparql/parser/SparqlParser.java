@@ -33,11 +33,11 @@ import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 
-import com.hp.hpl.jena.query.Query;
-import com.hp.hpl.jena.query.QueryException;
-import com.hp.hpl.jena.sparql.lang.sparql_11.ParseException;
-import com.hp.hpl.jena.sparql.lang.sparql_11.SPARQLParser11;
-import com.hp.hpl.jena.sparql.syntax.Element;
+import org.apache.jena.query.Query;
+import org.apache.jena.query.QueryException;
+import org.apache.jena.sparql.lang.sparql_11.ParseException;
+import org.apache.jena.sparql.lang.sparql_11.SPARQLParser11;
+import org.apache.jena.sparql.syntax.Element;
 
 /**
  * An interface that defines the SparqlParser.

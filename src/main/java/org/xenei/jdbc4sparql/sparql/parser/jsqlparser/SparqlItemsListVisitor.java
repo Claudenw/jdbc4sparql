@@ -11,7 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 
-import com.hp.hpl.jena.sparql.expr.ExprList;
+import org.apache.jena.sparql.expr.ExprList;
 
 public class SparqlItemsListVisitor implements ItemsListVisitor {
 	private static Logger LOG = LoggerFactory

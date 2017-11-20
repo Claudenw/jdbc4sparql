@@ -19,6 +19,7 @@ package org.xenei.jdbc4sparql.sparql;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.function.Function;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,8 +38,8 @@ import org.xenei.jdbc4sparql.impl.virtual.VirtualCatalog;
 import org.xenei.jdbc4sparql.impl.virtual.VirtualSchema;
 import org.xenei.jdbc4sparql.sparql.items.QueryColumnInfo;
 
-import com.hp.hpl.jena.util.iterator.Map1;
-import com.hp.hpl.jena.util.iterator.WrappedIterator;
+import org.apache.jena.util.iterator.Map1;
+import org.apache.jena.util.iterator.WrappedIterator;
 
 public class SparqlView extends AbstractTable {
 	class RenamedColumn implements Column {
@@ -135,10 +136,11 @@ public class SparqlView extends AbstractTable {
 	public NameFilter<Column> findColumns(final String columnNamePattern) {
 		return new NameFilter<Column>(columnNamePattern, WrappedIterator
 				.create(builder.getResultColumns().iterator()).mapWith(
-						new Map1<QueryColumnInfo, Column>() {
+						
+						new Function<QueryColumnInfo, Column>() {
 
 							@Override
-							public Column map1(final QueryColumnInfo o) {
+							public Column apply(final QueryColumnInfo o) {
 								return new RenamedColumn(o);
 							}
 						}));
@@ -154,10 +156,10 @@ public class SparqlView extends AbstractTable {
 		if (columns == null) {
 			columns = WrappedIterator
 					.create(builder.getResultColumns().iterator())
-					.mapWith(new Map1<QueryColumnInfo, Column>() {
+					.mapWith(new Function<QueryColumnInfo, Column>() {
 
 						@Override
-						public Column map1(final QueryColumnInfo o) {
+						public Column apply(final QueryColumnInfo o) {
 							return new RenamedColumn(o);
 						}
 					}).toList();

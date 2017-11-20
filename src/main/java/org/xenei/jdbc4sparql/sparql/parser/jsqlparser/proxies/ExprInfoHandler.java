@@ -11,7 +11,7 @@ import net.sf.cglib.proxy.MethodProxy;
 import org.xenei.jdbc4sparql.iface.name.ColumnName;
 import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlExprVisitor.ExprColumn;
 
-import com.hp.hpl.jena.sparql.expr.Expr;
+import org.apache.jena.sparql.expr.Expr;
 
 public class ExprInfoHandler implements MethodInterceptor {
 	private final Expr base;
