@@ -35,7 +35,7 @@ import org.xenei.jdbc4sparql.impl.rdf.RdfKeySegment;
 import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTableDef;
-
+import org.xenei.jena.entities.EntityManager;
 import org.apache.jena.query.QuerySolution;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.RDFNode;
@@ -74,7 +74,6 @@ public class SimpleNormalizingBuilder extends SimpleBuilder {
 			final RdfCatalog catalog, final RdfSchema schema,
 			final RdfTableDef.Builder tableDefBuilder, final Resource tName,
 			final String tableQuerySegment) {
-		final Model model = catalog.getResource().getModel();
 		final Map<String, String> colNames = new LinkedHashMap<String, String>();
 		final List<QuerySolution> solns = catalog.executeQuery(String.format(
 				SimpleNormalizingBuilder.COLUMN_QUERY, tName));
@@ -112,7 +111,7 @@ public class SimpleNormalizingBuilder extends SimpleBuilder {
 				builder.setType(Types.VARCHAR)
 				.setNullable(DatabaseMetaData.columnNullable)
 				.setScale(scale).setReadOnly(true);
-				tableDefBuilder.addColumnDef(builder.build(model));
+				tableDefBuilder.addColumnDef(builder.build(catalog.getEntityManager()));
 			}
 		}
 		return colNames;
@@ -121,7 +120,7 @@ public class SimpleNormalizingBuilder extends SimpleBuilder {
 	private void buildTable(final Set<RdfTable> tableSet,
 			final RdfCatalog catalog, final RdfSchema schema,
 			final Resource tName) {
-		final Model model = schema.getResource().getModel();
+		final EntityManager entityManager = schema.getEntityManager();
 		final RdfTableDef.Builder builder = new RdfTableDef.Builder();
 		final String tableQuerySegment = String.format(
 				SimpleNormalizingBuilder.TABLE_SEGMENT, "%1$s", tName.getURI());
@@ -136,12 +135,12 @@ public class SimpleNormalizingBuilder extends SimpleBuilder {
 
 			final RdfKey.Builder keyBldr = new RdfKey.Builder();
 			keyBldr.setUnique(true);
-			keyBldr.addSegment(keySegBuilder.build(model));
+			keyBldr.addSegment(keySegBuilder.build(entityManager));
 
-			builder.setPrimaryKey(keyBldr.build(model));
+			builder.setPrimaryKey(keyBldr.build(entityManager));
 
 			// build the def
-			final RdfTableDef tableDef = builder.build(model);
+			final RdfTableDef tableDef = builder.build(entityManager);
 
 			// build the table
 			final RdfTable.Builder tblBuilder = new RdfTable.Builder()
@@ -175,7 +174,7 @@ public class SimpleNormalizingBuilder extends SimpleBuilder {
 				i++;
 			}
 
-			tableSet.add(tblBuilder.build(model));
+			tableSet.add(tblBuilder.build(entityManager));
 		}
 
 	}
@@ -219,12 +218,11 @@ public class SimpleNormalizingBuilder extends SimpleBuilder {
 	@Override
 	public Set<RdfTable> getTables(final RdfSchema schema) {
 		final RdfCatalog catalog = schema.getCatalog();
-		final Model model = schema.getResource().getModel();
 		final RdfColumnDef.Builder colBuilder = new RdfColumnDef.Builder();
 		colBuilder.setType(Types.VARCHAR)
 		.setNullable(DatabaseMetaData.columnNoNulls).setReadOnly(true);
 		// FIXME does this need a scale?
-		idColumnDef = colBuilder.build(model);
+		idColumnDef = colBuilder.build(schema.getEntityManager());
 		final HashSet<RdfTable> retval = new HashSet<RdfTable>();
 		final List<QuerySolution> solns = catalog
 				.executeQuery(SimpleNormalizingBuilder.TABLE_QUERY);
@@ -238,7 +236,7 @@ public class SimpleNormalizingBuilder extends SimpleBuilder {
 			final RdfSchema schema, final String tableQuerySegment,
 			final String columnQuerySegment, final Resource tName,
 			final Resource cName) {
-		final Model model = catalog.getResource().getModel();
+		final EntityManager entityManager = catalog.getEntityManager();
 
 		final RdfTableDef.Builder tblDefBuilder = new RdfTableDef.Builder();
 
@@ -250,7 +248,7 @@ public class SimpleNormalizingBuilder extends SimpleBuilder {
 		builder.setType(Types.VARCHAR)
 		.setNullable(DatabaseMetaData.columnNoNulls).setScale(scale)
 		.setReadOnly(true);
-		tblDefBuilder.addColumnDef(builder.build(model));
+		tblDefBuilder.addColumnDef(builder.build(entityManager));
 
 		// add the key segments
 		RdfKeySegment.Builder keySegBuilder = new RdfKeySegment.Builder();
@@ -259,21 +257,21 @@ public class SimpleNormalizingBuilder extends SimpleBuilder {
 
 		final RdfKey.Builder keyBldr = new RdfKey.Builder();
 		keyBldr.setUnique(true);
-		keyBldr.addSegment(keySegBuilder.build(model));
+		keyBldr.addSegment(keySegBuilder.build(entityManager));
 
 		keySegBuilder = new RdfKeySegment.Builder();
 		keySegBuilder.setAscending(true);
 		keySegBuilder.setIdx(1);
-		keyBldr.addSegment(keySegBuilder.build(model));
+		keyBldr.addSegment(keySegBuilder.build(entityManager));
 
-		tblDefBuilder.setPrimaryKey(keyBldr.build(model));
+		tblDefBuilder.setPrimaryKey(keyBldr.build(entityManager));
 
 		// FIXME add foreign keys when avail
 
 		final String tblName = String.format("%s%s", tName.getLocalName(),
 				cName.getLocalName());
 
-		final RdfTableDef tableDef = tblDefBuilder.build(model);
+		final RdfTableDef tableDef = tblDefBuilder.build(entityManager);
 		final RdfTable.Builder tblBuilder = new RdfTable.Builder()
 		.setTableDef(tableDef)
 		.addQuerySegment(tableQuerySegment)
@@ -296,7 +294,7 @@ public class SimpleNormalizingBuilder extends SimpleBuilder {
 		.setRemarks(
 				"created by " + SimpleNormalizingBuilder.BUILDER_NAME);
 
-		return tblBuilder.build(model);
+		return tblBuilder.build(entityManager);
 	}
 
 	protected boolean multipleCardinality(final RdfCatalog catalog,

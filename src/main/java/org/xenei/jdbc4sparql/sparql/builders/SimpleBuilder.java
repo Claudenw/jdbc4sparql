@@ -33,7 +33,7 @@ import org.xenei.jdbc4sparql.impl.rdf.RdfColumnDef;
 import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTableDef;
-
+import org.xenei.jena.entities.EntityManager;
 import org.apache.jena.query.QuerySolution;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.RDFNode;
@@ -67,7 +67,6 @@ public class SimpleBuilder implements SchemaBuilder {
 	protected Map<String, String> addColumnDefs(final RdfCatalog catalog,
 			final RdfTableDef.Builder tableDefBuilder, final Resource tName,
 			final String tableQuerySegment) {
-		final Model model = catalog.getResource().getModel();
 		final Map<String, String> colNames = new LinkedHashMap<String, String>();
 		final List<QuerySolution> solns = catalog.executeQuery(String.format(
 				SimpleBuilder.COLUMN_QUERY, tName));
@@ -95,7 +94,7 @@ public class SimpleBuilder implements SchemaBuilder {
 			builder.setType(Types.VARCHAR)
 			.setNullable(DatabaseMetaData.columnNullable)
 			.setScale(scale).setReadOnly(true);
-			tableDefBuilder.addColumnDef(builder.build(model));
+			tableDefBuilder.addColumnDef(builder.build(catalog.getEntityManager()));
 		}
 		return colNames;
 	}
@@ -138,7 +137,7 @@ public class SimpleBuilder implements SchemaBuilder {
 	@Override
 	public Set<RdfTable> getTables(final RdfSchema schema) {
 		final RdfCatalog catalog = schema.getCatalog();
-		final Model model = schema.getResource().getModel();
+		final EntityManager entityManager = schema.getEntityManager();
 		final HashSet<RdfTable> retval = new HashSet<RdfTable>();
 		final List<QuerySolution> solns = catalog
 				.executeQuery(SimpleBuilder.TABLE_QUERY);
@@ -150,7 +149,7 @@ public class SimpleBuilder implements SchemaBuilder {
 			final Map<String, String> colNames = addColumnDefs(catalog,
 					builder, tName, tableQuerySegment);
 			if (colNames.size() > 0) {
-				final RdfTableDef tableDef = builder.build(model);
+				final RdfTableDef tableDef = builder.build(entityManager);
 				final RdfTable.Builder tblBuilder = new RdfTable.Builder()
 				.setTableDef(tableDef)
 				.addQuerySegment(tableQuerySegment)
@@ -177,7 +176,7 @@ public class SimpleBuilder implements SchemaBuilder {
 							"created by " + SimpleBuilder.BUILDER_NAME);
 					i++;
 				}
-				retval.add(tblBuilder.build(model));
+				retval.add(tblBuilder.build(entityManager));
 			}
 		}
 		return retval;

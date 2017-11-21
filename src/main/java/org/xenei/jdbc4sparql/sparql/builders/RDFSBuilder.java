@@ -186,24 +186,24 @@ public class RDFSBuilder implements SchemaBuilder {
 				.getLocalModel());
 
 		// we have to build the table defs piece by piece
-		final Model model = schema.getResource().getModel();
+		final EntityManager entityManager = schema.getEntityManager();
 		final Map<String, RdfTableDef.Builder> tables = new HashMap<String, Builder>();
 		final Map<String, List<Resource>> columnName = new HashMap<String, List<Resource>>();
 		for (final Statement stmt : rdfsOntology.listStatements(null,
 				RDFS.domain, (RDFNode) null).toList()) {
 			final RDFNode r = stmt.getObject();
 			if (r.isURIResource() && !skip.contains(r.asNode().getNameSpace())) {
-				final RdfTableDef.Builder idDef = getOrCreateIDTable(model,
+				final RdfTableDef.Builder idDef = getOrCreateIDTable(entityManager,
 						tables, r);
-				addDataTableColumn(model, tables, columnName, stmt, idDef);
+				addDataTableColumn(entityManager, tables, columnName, stmt, idDef);
 			}
 		}
 		// all the definitions are built so build the tables.
 		final HashSet<RdfTable> retval = new HashSet<RdfTable>();
 		for (final String fqName : tables.keySet()) {
-			model.createResource(fqName);
+			entityManager.createResource(fqName);
 			final RdfTable.Builder builder = new RdfTable.Builder()
-			.setTableDef(tables.get(fqName).build(model))
+			.setTableDef(tables.get(fqName).build(entityManager))
 			.setSchema(schema).setColumn(0, "id");
 			builder.getColumn(0).addQuerySegment("BIND( %1$s AS %2$s ) . ");
 			Resource baseR = null
@@ -242,7 +242,7 @@ public class RDFSBuilder implements SchemaBuilder {
 							"%s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <%s> .",
 							"%1$s", baseR.getURI())).setName(getName(baseR))
 							.setRemarks(getComment(baseR));
-			retval.add(builder.build(model));
+			retval.add(builder.build(entityManager));
 		}
 		return retval;
 	}

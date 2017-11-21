@@ -14,6 +14,7 @@ import java.util.zip.ZipOutputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
+import org.apache.jena.util.iterator.WrappedIterator;
 import org.apache.xerces.util.XMLChar;
 import org.xenei.jdbc4sparql.J4SPropertyNames;
 import org.xenei.jdbc4sparql.iface.DatasetProducer;
@@ -21,7 +22,10 @@ import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.utils.NoCloseZipInputStream;
 import org.xenei.jena.entities.EntityManager;
 import org.xenei.jena.entities.impl.EntityManagerImpl;
+import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.query.Dataset;
+import org.apache.jena.query.DatasetFactory;
+import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.impl.Util;
@@ -58,24 +62,20 @@ abstract public class AbstractDatasetProducer implements DatasetProducer {
 
 	private final RDFFormat format = RDFFormat.TRIG;
 
-	protected final Dataset localData;
-	protected final EntityManager localMgr;
-	protected final Dataset metaData;
-	protected final EntityManager metaMgr;
+	protected EntityManager localMgr;
+	protected EntityManager metaMgr;
 
 	protected AbstractDatasetProducer(final Properties properties,
 			final Dataset metaDataset, final Dataset localDataset) {
 		this.properties = properties;
-		this.metaData = metaDataset;
-		this.localData = localDataset;
-		this.metaMgr = new EntityManagerImpl( metaData );
-		this.localMgr = new EntityManagerImpl( localData );
+		this.metaMgr = new EntityManagerImpl( metaDataset );
+		this.localMgr = new EntityManagerImpl( localDataset );
 	}
 
 	@Override
 	public void addLocalDataModel(final String modelName, final Model model) {
 		final String name = AbstractDatasetProducer.getModelURI(localMgr,modelName);
-		getLocalDataset().addNamedModel(name, model);
+		getLocalEntityManager().getConnection().put(name, model);
 	}
 
 	/**
@@ -83,8 +83,8 @@ abstract public class AbstractDatasetProducer implements DatasetProducer {
 	 */
 	@Override
 	public void close() {
-		getMetaDataset().close();
-		getLocalDataset().close();
+		getMetaEntityManager().getConnection().close();
+		getLocalEntityManager().getConnection().close();
 	}
 
 	private String createFN(final String prefix) {
@@ -94,7 +94,7 @@ abstract public class AbstractDatasetProducer implements DatasetProducer {
 
 	@Override
 	public EntityManager getLocalDataEntityManager(final String modelName) {
-		return getEntityManager(getLocalDataset(), modelName);
+		return getEntityManager(getLocalEntityManager(), modelName);
 	}
 
 	/**
@@ -102,13 +102,13 @@ abstract public class AbstractDatasetProducer implements DatasetProducer {
 	 *
 	 * @return the local dataset
 	 */
-	protected Dataset getLocalDataset() {
-		return localData;
+	protected EntityManager getLocalEntityManager() {
+		return localMgr;
 	}
 
 	@Override
 	public EntityManager getMetaDataEntityManager(final String modelName) {
-		return getEntityManager(getMetaDataset(), modelName);
+		return getEntityManager(getMetaEntityManager(), modelName);
 	}
 
 	/**
@@ -116,8 +116,8 @@ abstract public class AbstractDatasetProducer implements DatasetProducer {
 	 *
 	 * @return the meta dataset.
 	 */
-	protected Dataset getMetaDataset() {
-		return metaData;
+	protected EntityManager getMetaEntityManager() {
+		return metaMgr;
 	}
 
 	/**
@@ -127,17 +127,13 @@ abstract public class AbstractDatasetProducer implements DatasetProducer {
 	 */
 	@Override
 	public Model getMetaDatasetUnionModel() {
-		return getMetaDataset().getNamedModel("urn:x-arq:UnionGraph");
+		return getMetaEntityManager().getConnection()
+				.fetch("urn:x-arq:UnionGraph");
 	}
 
-	private EntityManager getEntityManager(final Dataset dataset, final String modelName) {
+	private EntityManager getEntityManager(final EntityManager dataset, final String modelName) {
 		final String name = AbstractDatasetProducer.getModelURI(localMgr, modelName);
-		if (!dataset.containsNamedModel(name)) {
-			dataset.addNamedModel(name, ModelFactory.createDefaultModel());
-		}
-		
-		return new EntityManagerImpl( model );
-
+		return dataset.getNamedManager(name);
 	}
 
 	@Override
@@ -147,7 +143,10 @@ abstract public class AbstractDatasetProducer implements DatasetProducer {
 
 	@Override
 	public Iterator<String> listMetaDataNames() {
-		return getMetaDataset().listNames();
+		SelectBuilder sb = new SelectBuilder().addVar( "?g" )
+				.addGraph( "?g", new SelectBuilder().addWhere( "?s", "?p", "?o").setLimit(1));
+		ResultSet rs = getMetaEntityManager().getConnection().query( sb.build() ).execSelect();
+		return WrappedIterator.create(rs).mapWith( qs -> qs.getResource("g").getURI());
 	}
 
 	/**
@@ -178,11 +177,12 @@ abstract public class AbstractDatasetProducer implements DatasetProducer {
 	}
 
 	private void loadDataset(final ZipInputStream zis, final ZipEntry e,
-			final Dataset ds, final String prefix) {
+			final EntityManager em, final String prefix) {
 		if (e.getName().equals(createFN(prefix))) {
-
+			Dataset ds = DatasetFactory.create();
 			RDFDataMgr.read(ds, new NoCloseZipInputStream(zis),
 					format.getLang());
+			em.getConnection().putDataset(ds);
 		}
 		else {
 			throw new IllegalArgumentException("Entry name must be "
@@ -191,11 +191,11 @@ abstract public class AbstractDatasetProducer implements DatasetProducer {
 	}
 
 	protected void loadLocal(final ZipInputStream zis, final ZipEntry e) {
-		loadDataset(zis, e, localData, DatasetProducer.LOCAL_PREFIX);
+		loadDataset(zis, e, localMgr, DatasetProducer.LOCAL_PREFIX);
 	}
 
 	protected void loadMeta(final ZipInputStream zis, final ZipEntry e) {
-		loadDataset(zis, e, metaData, DatasetProducer.META_PREFIX);
+		loadDataset(zis, e, metaMgr, DatasetProducer.META_PREFIX);
 	}
 
 	@Override
@@ -225,20 +225,20 @@ abstract public class AbstractDatasetProducer implements DatasetProducer {
 		}
 	}
 
-	private void saveDataset(final ZipOutputStream out, final Dataset ds,
+	private void saveDataset(final ZipOutputStream out, final EntityManager em,
 			final String prefix) throws IOException {
 		final ZipEntry e = new ZipEntry(createFN(prefix));
-		out.putNextEntry(e);
-		RDFDataMgr.write(out, ds, format);
+		out.putNextEntry(e);		
+		RDFDataMgr.write(out, em.getConnection().fetchDataset(), format);
 		out.closeEntry();
 	}
 
 	protected void saveLocal(final ZipOutputStream out) throws IOException {
-		saveDataset(out, getLocalDataset(), DatasetProducer.LOCAL_PREFIX);
+		saveDataset(out, getLocalEntityManager(), DatasetProducer.LOCAL_PREFIX);
 	}
 
 	protected void saveMeta(final ZipOutputStream out) throws IOException {
-		saveDataset(out, getMetaDataset(), DatasetProducer.META_PREFIX);
+		saveDataset(out, getMetaEntityManager(), DatasetProducer.META_PREFIX);
 	}
 
 }

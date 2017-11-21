@@ -174,6 +174,6 @@ public class MemDatasetProducer extends AbstractDatasetProducer {
 		super(props, new MetaDS(DatasetFactory.create()), DatasetFactory
 				.create());
 		load(zis);
-		((MetaDS) getMetaDataset()).rescan();
+		((MetaDS) getMetaEntityManager()).rescan();
 	}
 }

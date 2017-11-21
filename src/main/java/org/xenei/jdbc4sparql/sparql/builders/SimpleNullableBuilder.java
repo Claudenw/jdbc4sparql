@@ -48,7 +48,6 @@ public class SimpleNullableBuilder extends SimpleBuilder {
 	protected Map<String, String> addColumnDefs(final RdfCatalog catalog,
 			final RdfTableDef.Builder tableDefBuilder, final Resource tName,
 			final String tableQuerySegment) {
-		final Model model = catalog.getResource().getModel();
 		final Map<String, String> colNames = new LinkedHashMap<String, String>();
 		final List<QuerySolution> solns = catalog.executeQuery(String.format(
 				SimpleBuilder.COLUMN_QUERY, tName));
@@ -76,7 +75,7 @@ public class SimpleNullableBuilder extends SimpleBuilder {
 			final int scale = calculateSize(catalog, tableQuerySegment,
 					columnQuerySegment);
 			builder.setType(type).setScale(scale).setReadOnly(true);
-			tableDefBuilder.addColumnDef(builder.build(model));
+			tableDefBuilder.addColumnDef(builder.build(catalog.getEntityManager()));
 		}
 		return colNames;
 	}

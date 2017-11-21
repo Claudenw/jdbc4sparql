@@ -45,6 +45,7 @@ import java.util.concurrent.Executor;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.ResIterator;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
@@ -146,21 +147,21 @@ public class J4SConnection implements Connection {
 	}
 
 	public RdfCatalog addCatalog(final RdfCatalog.Builder catalogBuilder) {
-		final Model model = dsProducer.getMetaDataEntityManager(catalogBuilder
+		final EntityManager metaEntityManager = dsProducer.getMetaDataEntityManager(catalogBuilder
 				.getName().getShortName());
-		EntityManager dataModel = catalogBuilder.getLocalModel();
+		String catName = catalogBuilder.getName().getShortName();
+		Model dataModel = catalogBuilder.getLocalModel();
 		if (dataModel != null) {
-			dsProducer.addLocalDataModel(catalogBuilder.getName()
-					.getShortName(), dataModel);
+			dsProducer.addLocalDataModel(catName, dataModel);
 		}
 		else {
-			dataModel = dsProducer.getLocalDataEntityManager(catalogBuilder.getName()
-					.getShortName());
+			dataModel = dsProducer.getLocalDataEntityManager(catName)
+					.getConnection().fetch(catName);
 			if (dataModel != null) {
 				catalogBuilder.setLocalModel(dataModel);
 			}
 		}
-		final RdfCatalog cat = catalogBuilder.build(model);
+		final RdfCatalog cat = catalogBuilder.build(metaEntityManager);
 		catalogMap.put(cat.getName().getShortName(), cat);
 		return cat;
 	}
@@ -232,9 +233,12 @@ public class J4SConnection implements Connection {
 			else {
 				final EntityManager dataModel = dsProducer
 						.getLocalDataEntityManager(getCatalog());
-				RDFDataMgr.read(dataModel, url.getEndpoint().toURL()
+				
+				Model model = ModelFactory.createDefaultModel();
+				RDFDataMgr.read(model, url.getEndpoint().toURL()
 						.openStream(), url.getLang());
-				catalog = new RdfCatalog.Builder().setLocalModel(dataModel)
+				dataModel.getConnection().load( dataModel.getModelName(), model);
+				catalog = new RdfCatalog.Builder().setLocalModel(model)
 						.setName(getCatalog()).build(metaDataModel);
 			}
 

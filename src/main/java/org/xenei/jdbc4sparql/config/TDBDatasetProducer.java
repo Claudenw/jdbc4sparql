@@ -20,7 +20,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xenei.jdbc4sparql.iface.DatasetProducer;
 import org.xenei.jdbc4sparql.impl.AbstractDatasetProducer;
-
+import org.xenei.jena.entities.EntityManager;
+import org.xenei.jena.entities.impl.EntityManagerImpl;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.tdb.TDBFactory;
 import org.apache.jena.tdb.transaction.DatasetGraphTransaction;
@@ -41,11 +42,11 @@ public class TDBDatasetProducer extends AbstractDatasetProducer {
 		super(properties, null, null);
 		metaDir = new File(System.getProperty("java.io.tmpdir"), UUID
 				.randomUUID().toString());
-		metaData = TDBFactory.createDataset(metaDir.getAbsolutePath());
+		this.metaMgr = new EntityManagerImpl( TDBFactory.createDataset(metaDir.getAbsolutePath()) );		
 		metaDataLoaded = true;
 		localDir = new File(System.getProperty("java.io.tmpdir"), UUID
 				.randomUUID().toString());
-		localData = TDBFactory.createDataset(localDir.getAbsolutePath());
+		this.localMgr = new EntityManagerImpl( TDBFactory.createDataset(localDir.getAbsolutePath()));
 		localDataLoaded = true;
 	}
 
@@ -68,7 +69,7 @@ public class TDBDatasetProducer extends AbstractDatasetProducer {
 	}
 
 	@Override
-	public Dataset getLocalDataset() {
+	public EntityManager getLocalEntityManager() {
 		if (!localDataLoaded) {
 			localDataLock.lock();
 			try {
@@ -81,11 +82,12 @@ public class TDBDatasetProducer extends AbstractDatasetProducer {
 				localDataLock.unlock();
 			}
 		}
-		return localData;
+		return super.getLocalEntityManager();
 	}
 
+	
 	@Override
-	public Dataset getMetaDataset() {
+	protected EntityManager getMetaEntityManager() {
 		if (!metaDataLoaded) {
 			metaDataLock.lock();
 			try {
@@ -98,7 +100,7 @@ public class TDBDatasetProducer extends AbstractDatasetProducer {
 
 			}
 		}
-		return metaData;
+		return super.getMetaEntityManager();
 	}
 
 	@Override
@@ -179,31 +181,32 @@ public class TDBDatasetProducer extends AbstractDatasetProducer {
 		}
 	}
 
-	@Override
-	protected void saveLocal(final ZipOutputStream out) throws IOException {
-		localDataLock.lock();
-		try {
-			localDataLoaded = false;
-			((DatasetGraphTransaction) (localData.asDatasetGraph())).sync();
-			saveDir(out, localDir, DatasetProducer.LOCAL_PREFIX);
-			localDataLoaded = true;
-		} finally {
-			localDataLock.unlock();
-		}
-	}
-
-	@Override
-	protected void saveMeta(final ZipOutputStream out) throws IOException {
-		metaDataLock.lock();
-		try {
-			metaDataLoaded = false;
-			((DatasetGraphTransaction) (metaData.asDatasetGraph())).sync();
-			saveDir(out, metaDir, DatasetProducer.META_PREFIX);
-			metaDataLoaded = true;
-		} finally {
-			metaDataLock.unlock();
-		}
-	}
+//	@Override
+//	protected void saveLocal(final ZipOutputStream out) throws IOException {
+//		localDataLock.lock();
+//		try {
+//			localDataLoaded = false;
+//			
+//			((DatasetGraphTransaction) (localData.asDatasetGraph())).sync();
+//			saveDir(out, localDir, DatasetProducer.LOCAL_PREFIX);
+//			localDataLoaded = true;
+//		} finally {
+//			localDataLock.unlock();
+//		}
+//	}
+//
+//	@Override
+//	protected void saveMeta(final ZipOutputStream out) throws IOException {
+//		metaDataLock.lock();
+//		try {
+//			metaDataLoaded = false;
+//			((DatasetGraphTransaction) (metaData.asDatasetGraph())).sync();
+//			saveDir(out, metaDir, DatasetProducer.META_PREFIX);
+//			metaDataLoaded = true;
+//		} finally {
+//			metaDataLock.unlock();
+//		}
+//	}
 
 	private void threadLoad(final CountDownLatch latch, final ZipInputStream zis) {
 
@@ -216,7 +219,7 @@ public class TDBDatasetProducer extends AbstractDatasetProducer {
 				metaDir.mkdirs();
 				e = readFiles(zis, zis.getNextEntry(),
 						DatasetProducer.META_PREFIX, metaDir);
-				metaData = TDBFactory.createDataset(metaDir.getAbsolutePath());
+				this.metaMgr = new EntityManagerImpl( TDBFactory.createDataset(metaDir.getAbsolutePath()) );						
 				metaDataLoaded = true;
 			} catch (final Exception e1) { // must catch here as when we unlock
 				// app may stop on failure.
@@ -227,7 +230,7 @@ public class TDBDatasetProducer extends AbstractDatasetProducer {
 			}
 			localDir.mkdirs();
 			e = readFiles(zis, e, DatasetProducer.LOCAL_PREFIX, localDir);
-			localData = TDBFactory.createDataset(localDir.getAbsolutePath());
+			this.localMgr = new EntityManagerImpl( TDBFactory.createDataset(localDir.getAbsolutePath()));
 			localDataLoaded = true;
 		} catch (final Exception e1) { // must catch here as when we unlock app
 			// may stop on failure.

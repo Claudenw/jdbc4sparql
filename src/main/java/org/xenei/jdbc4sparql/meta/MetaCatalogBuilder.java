@@ -152,7 +152,7 @@ public class MetaCatalogBuilder {
 
 	private final ColumnDef nonNullBoolean;
 
-	private final EntityManager model;
+	private final EntityManager entityManager;
 
 	private final RdfSchema schema;
 
@@ -160,7 +160,7 @@ public class MetaCatalogBuilder {
 
 	private MetaCatalogBuilder(final RdfSchema schema, final EntityManager model) {
 		this.schema = schema;
-		this.model = model;
+		this.entityManager = model;
 		resourceBuilder = new ResourceBuilder(model);
 		nonNullString = MetaCatalogBuilder.getNonNullStringBuilder().build(
 				model);
@@ -198,7 +198,7 @@ public class MetaCatalogBuilder {
 		.addColumnDef(nullableString) // SCOPE_SCHEMA
 		.addColumnDef(nullableString) // SCOPE_TABLE
 		.addColumnDef(nullableShort) // SOURCE_DATA_TYPE
-		.build(model);
+		.build(entityManager);
 
 		final RdfTable.Builder builder = new RdfTable.Builder()
 		.setSchema(schema).setTableDef(tableDef)
@@ -217,7 +217,7 @@ public class MetaCatalogBuilder {
 		.setColumn(17, "SCOPE_CATALOG").setColumn(18, "SCOPE_SCHEMA")
 		.setColumn(19, "SCOPE_TABLE").setColumn(20, "SOURCE_DATA_TYPE");
 		setNull(builder);
-		builder.build(model);
+		builder.build(entityManager);
 	}
 
 	private void addBestRowTable() {
@@ -241,8 +241,8 @@ public class MetaCatalogBuilder {
 		.setSortKey(
 				new RdfKey.Builder().addSegment(
 						new RdfKeySegment.Builder().setAscending(true)
-						.setIdx(0).build(model)).build(model))
-						.build(model);
+						.setIdx(0).build(entityManager)).build(entityManager))
+						.build(entityManager);
 
 		final RdfTable.Builder builder = new RdfTable.Builder()
 		.setSchema(schema).setTableDef(tableDef)
@@ -253,7 +253,7 @@ public class MetaCatalogBuilder {
 		.setColumn(2, "DATA_TYPE").setColumn(3, "TYPE_NAME")
 		.setColumn(4, "COLUMN_SIZE").setColumn(5, "BUFFER_LENGTH")
 		.setColumn(6, "DECIMAL_DIGITS").setColumn(7, "PSEUDO_COLUMN");
-		setNull(builder).build(model);
+		setNull(builder).build(entityManager);
 	}
 
 	private void addCatalogsTable() {
@@ -264,8 +264,8 @@ public class MetaCatalogBuilder {
 				.addSegment(
 						new RdfKeySegment.Builder()
 						.setAscending(true).setIdx(0)
-						.build(model)).setUnique(true)
-						.build(model)).build(model);
+						.build(entityManager)).setUnique(true)
+						.build(entityManager)).build(entityManager);
 
 		final RdfTable.Builder builder = new RdfTable.Builder()
 		.setSchema(schema)
@@ -275,12 +275,12 @@ public class MetaCatalogBuilder {
 		.setRemarks(MetaCatalogBuilder.REMARK)
 		.addQuerySegment(
 				makeQS("%1$s", RDF.type, makeNode(ResourceBuilder
-						.getFQName(RdfCatalog.class))))
+						.getFQName(entityManager, RdfCatalog.class))))
 						.setColumn(0, "TABLE_CAT");
 		builder.getColumn(0)
 		.addQuerySegment(makeQS("%1$s", RDFS.label, "%2$s"))
 		.setRemarks(MetaCatalogBuilder.REMARK);
-		builder.build(model);
+		builder.build(entityManager);
 	}
 
 	private void addClientInfoTable() {
@@ -294,8 +294,8 @@ public class MetaCatalogBuilder {
 				.addSegment(
 						new RdfKeySegment.Builder()
 						.setAscending(true).setIdx(0)
-						.build(model)).setUnique(true)
-						.build(model)).build(model);
+						.build(entityManager)).setUnique(true)
+						.build(entityManager)).build(entityManager);
 
 		final RdfTable.Builder builder = new RdfTable.Builder()
 		.setSchema(schema).setTableDef(tableDef)
@@ -305,7 +305,7 @@ public class MetaCatalogBuilder {
 		.setColumn(1, "MAX_LEN").setColumn(2, "DEFAULT_VALUE")
 		.setColumn(3, "DESCRIPTION");
 
-		setNull(builder).build(model);
+		setNull(builder).build(entityManager);
 	}
 
 	private void addColumnPriviligesTable() {
@@ -323,12 +323,12 @@ public class MetaCatalogBuilder {
 				.addSegment(
 						new RdfKeySegment.Builder()
 						.setAscending(true).setIdx(3)
-						.build(model))
+						.build(entityManager))
 						.addSegment(
 								new RdfKeySegment.Builder()
 								.setAscending(true).setIdx(6)
-								.build(model)).setUnique(false)
-								.build(model)).build(model);
+								.build(entityManager)).setUnique(false)
+								.build(entityManager)).build(entityManager);
 
 		final RdfTable.Builder builder = new RdfTable.Builder()
 		.setType(MetaCatalogBuilder.TABLE_TYPE)
@@ -340,7 +340,7 @@ public class MetaCatalogBuilder {
 		.setColumn(4, "GRANTOR").setColumn(5, "GRANTEE")
 		.setColumn(6, "PRIVILEGE").setColumn(7, "IS_GRANTABLE");
 
-		setNull(builder).build(model);
+		setNull(builder).build(entityManager);
 
 	}
 
@@ -375,20 +375,20 @@ public class MetaCatalogBuilder {
 				.addSegment(
 						new RdfKeySegment.Builder()
 						.setAscending(true).setIdx(0)
-						.build(model))
+						.build(entityManager))
 						.addSegment(
 								new RdfKeySegment.Builder()
 								.setAscending(true).setIdx(1)
-								.build(model))
+								.build(entityManager))
 								.addSegment(
 										new RdfKeySegment.Builder()
 										.setAscending(true).setIdx(2)
-										.build(model))
+										.build(entityManager))
 										.addSegment(
 												new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(16)
-												.build(model)).setUnique(true)
-												.build(model)).build(model);
+												.build(entityManager)).setUnique(true)
+												.build(entityManager)).build(entityManager);
 
 		final RdfTable.Builder builder = new RdfTable.Builder()
 		.setSchema(schema).setTableDef(tableDef)
@@ -419,7 +419,7 @@ public class MetaCatalogBuilder {
 
 		builder.addQuerySegment(
 				makeQS("%1$s", RDF.type,
-						makeNode(ResourceBuilder.getFQName(RdfColumn.class))))
+						makeNode(ResourceBuilder.getFQName(entityManager,RdfColumn.class))))
 						.addQuerySegment(
 								makeQS("%1$s", resourceBuilder.getProperty(
 										RdfColumn.class, "table"), vTable))
@@ -545,7 +545,7 @@ public class MetaCatalogBuilder {
 								"BIND( if( " + vInc + ", 'YES', 'NO') as %2$s)")
 								.setRemarks(MetaCatalogBuilder.REMARK);
 
-		builder.build(model);
+		builder.build(entityManager);
 	}
 
 	private void addExportedKeysTable() {
@@ -569,20 +569,20 @@ public class MetaCatalogBuilder {
 				.addSegment(
 						new RdfKeySegment.Builder()
 						.setAscending(true).setIdx(0)
-						.build(model))
+						.build(entityManager))
 						.addSegment(
 								new RdfKeySegment.Builder()
 								.setAscending(true).setIdx(1)
-								.build(model))
+								.build(entityManager))
 								.addSegment(
 										new RdfKeySegment.Builder()
 										.setAscending(true).setIdx(2)
-										.build(model))
+										.build(entityManager))
 										.addSegment(
 												new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(8)
-												.build(model)).setUnique(true)
-												.build(model)).build(model);
+												.build(entityManager)).setUnique(true)
+												.build(entityManager)).build(entityManager);
 
 		final RdfTable.Builder builder = new RdfTable.Builder()
 		.setType(MetaCatalogBuilder.TABLE_TYPE)
@@ -597,7 +597,7 @@ public class MetaCatalogBuilder {
 		.setColumn(10, "DELETE_RULE").setColumn(11, "FK_NAME")
 		.setColumn(12, "PK_NAME").setColumn(13, "DEFERRABILITY");
 
-		setNull(builder).build(model);
+		setNull(builder).build(entityManager);
 	}
 
 	private void addFunctionColumnsTable() {
@@ -624,20 +624,20 @@ public class MetaCatalogBuilder {
 				.addSegment(
 						new RdfKeySegment.Builder()
 						.setAscending(true).setIdx(0)
-						.build(model))
+						.build(entityManager))
 						.addSegment(
 								new RdfKeySegment.Builder()
 								.setAscending(true).setIdx(1)
-								.build(model))
+								.build(entityManager))
 								.addSegment(
 										new RdfKeySegment.Builder()
 										.setAscending(true).setIdx(2)
-										.build(model))
+										.build(entityManager))
 										.addSegment(
 												new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(16)
-												.build(model)).setUnique(true)
-												.build(model)).build(model);
+												.build(entityManager)).setUnique(true)
+												.build(entityManager)).build(entityManager);
 
 		final RdfTable.Builder builder = new RdfTable.Builder()
 		.setType(MetaCatalogBuilder.TABLE_TYPE)
@@ -654,7 +654,7 @@ public class MetaCatalogBuilder {
 		.setColumn(14, "ORDINAL_POSITION").setColumn(15, "IS_NULLABLE")
 		.setColumn(16, "SPECIFIC_NAME");
 
-		setNull(builder).build(model);
+		setNull(builder).build(entityManager);
 
 	}
 
@@ -671,20 +671,20 @@ public class MetaCatalogBuilder {
 				.addSegment(
 						new RdfKeySegment.Builder()
 						.setAscending(true).setIdx(0)
-						.build(model))
+						.build(entityManager))
 						.addSegment(
 								new RdfKeySegment.Builder()
 								.setAscending(true).setIdx(1)
-								.build(model))
+								.build(entityManager))
 								.addSegment(
 										new RdfKeySegment.Builder()
 										.setAscending(true).setIdx(2)
-										.build(model))
+										.build(entityManager))
 										.addSegment(
 												new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(5)
-												.build(model)).setUnique(true)
-												.build(model)).build(model);
+												.build(entityManager)).setUnique(true)
+												.build(entityManager)).build(entityManager);
 
 		final RdfTable.Builder builder = new RdfTable.Builder()
 		.setType(MetaCatalogBuilder.TABLE_TYPE)
@@ -694,7 +694,7 @@ public class MetaCatalogBuilder {
 		.setColumn(2, "FUNCTION_NAME").setColumn(3, "REMARKS")
 		.setColumn(4, "FUNCTION_TYPE").setColumn(5, "SPECIFIC_NAME");
 
-		setNull(builder).build(model);
+		setNull(builder).build(entityManager);
 
 	}
 
@@ -719,20 +719,20 @@ public class MetaCatalogBuilder {
 				.addSegment(
 						new RdfKeySegment.Builder()
 						.setAscending(true).setIdx(0)
-						.build(model))
+						.build(entityManager))
 						.addSegment(
 								new RdfKeySegment.Builder()
 								.setAscending(true).setIdx(1)
-								.build(model))
+								.build(entityManager))
 								.addSegment(
 										new RdfKeySegment.Builder()
 										.setAscending(true).setIdx(2)
-										.build(model))
+										.build(entityManager))
 										.addSegment(
 												new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(8)
-												.build(model)).setUnique(true)
-												.build(model)).build(model);
+												.build(entityManager)).setUnique(true)
+												.build(entityManager)).build(entityManager);
 
 		final RdfTable.Builder builder = new RdfTable.Builder()
 		.setType(MetaCatalogBuilder.TABLE_TYPE)
@@ -747,7 +747,7 @@ public class MetaCatalogBuilder {
 		.setColumn(10, "DELETE_RULE").setColumn(11, "FK_NAME")
 		.setColumn(12, "PK_NAME").setColumn(13, "DEFERRABILITY");
 
-		setNull(builder).build(model);
+		setNull(builder).build(entityManager);
 	}
 
 	private void addIndexInfoTable() {
@@ -770,16 +770,16 @@ public class MetaCatalogBuilder {
 				.addSegment(
 						new RdfKeySegment.Builder()
 						.setAscending(true).setIdx(3)
-						.build(model))
+						.build(entityManager))
 						.addSegment(
 								new RdfKeySegment.Builder()
 								.setAscending(true).setIdx(6)
-								.build(model))
+								.build(entityManager))
 								.addSegment(
 										new RdfKeySegment.Builder()
 										.setAscending(true).setIdx(5)
-										.build(model)).setUnique(false)
-										.build(model)).build(model);
+										.build(entityManager)).setUnique(false)
+										.build(entityManager)).build(entityManager);
 
 		final RdfTable.Builder builder = new RdfTable.Builder()
 		.setType(MetaCatalogBuilder.TABLE_TYPE)
@@ -793,7 +793,7 @@ public class MetaCatalogBuilder {
 		.setColumn(10, "CARDINALITY").setColumn(11, "PAGES")
 		.setColumn(12, "FILTER_CONDITION");
 
-		setNull(builder).build(model);
+		setNull(builder).build(entityManager);
 
 	}
 
@@ -810,8 +810,8 @@ public class MetaCatalogBuilder {
 				.addSegment(
 						new RdfKeySegment.Builder()
 						.setAscending(true).setIdx(4)
-						.build(model)).setUnique(false)
-						.build(model)).build(model);
+						.build(entityManager)).setUnique(false)
+						.build(entityManager)).build(entityManager);
 
 		final RdfTable.Builder builder = new RdfTable.Builder()
 		.setType(MetaCatalogBuilder.TABLE_TYPE)
@@ -822,7 +822,7 @@ public class MetaCatalogBuilder {
 		.setColumn(2, "TABLE_NAME").setColumn(3, "COLUMN_NAME")
 		.setColumn(4, "KEY_SEQ").setColumn(5, "PK_NAME");
 
-		setNull(builder).build(model);
+		setNull(builder).build(entityManager);
 	}
 
 	private void addProcedureColumnsTable() {
@@ -852,20 +852,20 @@ public class MetaCatalogBuilder {
 				.addSegment(
 						new RdfKeySegment.Builder()
 						.setAscending(true).setIdx(0)
-						.build(model))
+						.build(entityManager))
 						.addSegment(
 								new RdfKeySegment.Builder()
 								.setAscending(true).setIdx(1)
-								.build(model))
+								.build(entityManager))
 								.addSegment(
 										new RdfKeySegment.Builder()
 										.setAscending(true).setIdx(2)
-										.build(model))
+										.build(entityManager))
 										.addSegment(
 												new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(19)
-												.build(model)).setUnique(false)
-												.build(model)).build(model);
+												.build(entityManager)).setUnique(false)
+												.build(entityManager)).build(entityManager);
 
 		final RdfTable.Builder builder = new RdfTable.Builder()
 		.setType(MetaCatalogBuilder.TABLE_TYPE)
@@ -885,7 +885,7 @@ public class MetaCatalogBuilder {
 		.setColumn(17, "ORDINAL_POSITION").setColumn(18, "IS_NULLABLE")
 		.setColumn(19, "SPECIFIC_NAME");
 
-		setNull(builder).build(model);
+		setNull(builder).build(entityManager);
 
 	}
 
@@ -905,20 +905,20 @@ public class MetaCatalogBuilder {
 				.addSegment(
 						new RdfKeySegment.Builder()
 						.setAscending(true).setIdx(0)
-						.build(model))
+						.build(entityManager))
 						.addSegment(
 								new RdfKeySegment.Builder()
 								.setAscending(true).setIdx(1)
-								.build(model))
+								.build(entityManager))
 								.addSegment(
 										new RdfKeySegment.Builder()
 										.setAscending(true).setIdx(2)
-										.build(model))
+										.build(entityManager))
 										.addSegment(
 												new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(8)
-												.build(model)).setUnique(false)
-												.build(model)).build(model);
+												.build(entityManager)).setUnique(false)
+												.build(entityManager)).build(entityManager);
 
 		final RdfTable.Builder builder = new RdfTable.Builder()
 		.setType(MetaCatalogBuilder.TABLE_TYPE)
@@ -930,7 +930,7 @@ public class MetaCatalogBuilder {
 		.setColumn(6, "REMARKS").setColumn(7, "PROCEDURE_TYPE")
 		.setColumn(8, "SPECIFIC_NAME");
 
-		setNull(builder).build(model);
+		setNull(builder).build(entityManager);
 
 	}
 
@@ -943,12 +943,12 @@ public class MetaCatalogBuilder {
 				.addSegment(
 						new RdfKeySegment.Builder()
 						.setAscending(true).setIdx(1)
-						.build(model))
+						.build(entityManager))
 						.addSegment(
 								new RdfKeySegment.Builder()
 								.setAscending(true).setIdx(0)
-								.build(model)).setUnique(false)
-								.build(model)).build(model);
+								.build(entityManager)).setUnique(false)
+								.build(entityManager)).build(entityManager);
 
 		final RdfTable.Builder builder = new RdfTable.Builder()
 		.setType(MetaCatalogBuilder.TABLE_TYPE)
@@ -959,7 +959,7 @@ public class MetaCatalogBuilder {
 		final String vCat = "?" + NameUtils.createUUIDName();
 		builder.addQuerySegment(
 				makeQS("%1$s", RDF.type,
-						makeNode(ResourceBuilder.getFQName(RdfSchema.class))))
+						makeNode(ResourceBuilder.getFQName(entityManager,RdfSchema.class))))
 						.addQuerySegment(
 								makeQS(vCat, resourceBuilder.getProperty(
 										RdfCatalog.class, "schemas"), "%1$s"));
@@ -973,7 +973,7 @@ public class MetaCatalogBuilder {
 		builder.getColumn(1).addQuerySegment(makeQS(vCat, RDFS.label, "%2$s"))
 		.setRemarks(MetaCatalogBuilder.REMARK);
 
-		builder.build(model);
+		builder.build(entityManager);
 	}
 
 	private void addSuperTablesTable() {
@@ -982,7 +982,7 @@ public class MetaCatalogBuilder {
 		.addColumnDef(nullableString) // TABLE_SCHEM
 		.addColumnDef(nonNullString) // TABLE_NAME
 		.addColumnDef(nonNullString) // SUPERTABLE_NAME
-		.build(model);
+		.build(entityManager);
 
 		final RdfTable.Builder builder = new RdfTable.Builder()
 		.setType(MetaCatalogBuilder.TABLE_TYPE)
@@ -996,7 +996,7 @@ public class MetaCatalogBuilder {
 		final String vCat = "?" + NameUtils.createUUIDName();
 		builder.addQuerySegment(
 				makeQS("%1$s", RDF.type,
-						makeNode(ResourceBuilder.getFQName(RdfTable.class))))
+						makeNode(ResourceBuilder.getFQName(entityManager,RdfTable.class))))
 						.addQuerySegment(
 								makeQS(vSchema, resourceBuilder.getProperty(
 										RdfSchema.class, "tables"), "%1$s"))
@@ -1017,7 +1017,7 @@ public class MetaCatalogBuilder {
 		.setRemarks(MetaCatalogBuilder.REMARK);
 
 		setNull(builder.getColumn(3));
-		builder.build(model);
+		builder.build(entityManager);
 
 	}
 
@@ -1029,7 +1029,7 @@ public class MetaCatalogBuilder {
 		.addColumnDef(nullableString) // SUPERTYPE_CAT
 		.addColumnDef(nullableString) // SUPERTYPE_SCHEM
 		.addColumnDef(nonNullString) // SUPERTYPE_NAME
-		.build(model);
+		.build(entityManager);
 
 		final RdfTable.Builder builder = new RdfTable.Builder()
 		.setType(MetaCatalogBuilder.TABLE_TYPE)
@@ -1040,7 +1040,7 @@ public class MetaCatalogBuilder {
 		.setColumn(3, "SUPERTYPE_CAT").setColumn(4, "SUPERTYPE_SCHEM")
 		.setColumn(5, "SUPERTYPE_NAME");
 
-		setNull(builder).build(model);
+		setNull(builder).build(entityManager);
 	}
 
 	private void addTablePrivilegesTable() {
@@ -1057,20 +1057,20 @@ public class MetaCatalogBuilder {
 				.addSegment(
 						new RdfKeySegment.Builder()
 						.setAscending(true).setIdx(0)
-						.build(model))
+						.build(entityManager))
 						.addSegment(
 								new RdfKeySegment.Builder()
 								.setAscending(true).setIdx(1)
-								.build(model))
+								.build(entityManager))
 								.addSegment(
 										new RdfKeySegment.Builder()
 										.setAscending(true).setIdx(2)
-										.build(model))
+										.build(entityManager))
 										.addSegment(
 												new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(5)
-												.build(model)).setUnique(false)
-												.build(model)).build(model);
+												.build(entityManager)).setUnique(false)
+												.build(entityManager)).build(entityManager);
 
 		final RdfTable.Builder builder = new RdfTable.Builder()
 		.setType(MetaCatalogBuilder.TABLE_TYPE)
@@ -1082,7 +1082,7 @@ public class MetaCatalogBuilder {
 		.setColumn(4, "GRANTEE").setColumn(5, "PRIVILEGE")
 		.setColumn(6, "IS_GRANTABLE");
 
-		setNull(builder).build(model);
+		setNull(builder).build(entityManager);
 	}
 
 	private void addTablesTable() {
@@ -1102,20 +1102,20 @@ public class MetaCatalogBuilder {
 				.addSegment(
 						new RdfKeySegment.Builder()
 						.setAscending(true).setIdx(3)
-						.build(model))
+						.build(entityManager))
 						.addSegment(
 								new RdfKeySegment.Builder()
 								.setAscending(true).setIdx(0)
-								.build(model))
+								.build(entityManager))
 								.addSegment(
 										new RdfKeySegment.Builder()
 										.setAscending(true).setIdx(1)
-										.build(model))
+										.build(entityManager))
 										.addSegment(
 												new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(2)
-												.build(model)).setUnique(false)
-												.build(model)).build(model);
+												.build(entityManager)).setUnique(false)
+												.build(entityManager)).build(entityManager);
 
 		final RdfTable.Builder builder = new RdfTable.Builder()
 		.setType(MetaCatalogBuilder.TABLE_TYPE)
@@ -1132,7 +1132,7 @@ public class MetaCatalogBuilder {
 		final String vCat = "?" + NameUtils.createUUIDName();
 		builder.addQuerySegment(
 				makeQS("%1$s", RDF.type,
-						makeNode(ResourceBuilder.getFQName(RdfTable.class))))
+						makeNode(ResourceBuilder.getFQName(entityManager,RdfTable.class))))
 						.addQuerySegment(
 								makeQS(vSchema, resourceBuilder.getProperty(
 										RdfSchema.class, "tables"), "%1$s"))
@@ -1168,7 +1168,7 @@ public class MetaCatalogBuilder {
 		for (int i = 5; i < 10; i++) {
 			setNull(builder.getColumn(i));
 		}
-		builder.build(model);
+		builder.build(entityManager);
 
 	}
 
@@ -1180,8 +1180,8 @@ public class MetaCatalogBuilder {
 				.addSegment(
 						new RdfKeySegment.Builder()
 						.setAscending(true).setIdx(0)
-						.build(model)).setUnique(true)
-						.build(model)).build(model);
+						.build(entityManager)).setUnique(true)
+						.build(entityManager)).build(entityManager);
 
 		final RdfTable.Builder builder = new RdfTable.Builder()
 		.setType(MetaCatalogBuilder.TABLE_TYPE)
@@ -1191,14 +1191,14 @@ public class MetaCatalogBuilder {
 		.setRemarks(MetaCatalogBuilder.REMARK)
 		.addQuerySegment(
 				makeQS("%1$s", RDF.type, makeNode(ResourceBuilder
-						.getFQName(RdfTable.class))))
+						.getFQName(entityManager,RdfTable.class))))
 						.setColumn(0, "TABLE_TYPE");
 		builder.getColumn(0)
 		.addQuerySegment(
 				makeQS("%1$s", resourceBuilder.getProperty(
 						RdfTable.class, "type"), "%2$s"))
 						.setRemarks(MetaCatalogBuilder.REMARK);
-		builder.build(model);
+		builder.build(entityManager);
 	}
 
 	private void addTypeInfoTableTable() {
@@ -1221,7 +1221,7 @@ public class MetaCatalogBuilder {
 		.addColumnDef(nullableInt) // SQL_DATA_TYPE
 		.addColumnDef(nullableInt) // SQL_DATETIME_SUB
 		.addColumnDef(nullableInt) // NUM_PREC_RADIX
-		.build(model);
+		.build(entityManager);
 
 		final RdfTable.Builder builder = new RdfTable.Builder()
 		.setType(MetaCatalogBuilder.TABLE_TYPE)
@@ -1240,7 +1240,7 @@ public class MetaCatalogBuilder {
 		.setColumn(16, "SQL_DATETIME_SUB")
 		.setColumn(17, "NUM_PREC_RADIX");
 
-		setNull(builder).build(model);
+		setNull(builder).build(entityManager);
 	}
 
 	private void addUDTTable() {
@@ -1257,20 +1257,20 @@ public class MetaCatalogBuilder {
 				.addSegment(
 						new RdfKeySegment.Builder()
 						.setAscending(true).setIdx(4)
-						.build(model))
+						.build(entityManager))
 						.addSegment(
 								new RdfKeySegment.Builder()
 								.setAscending(true).setIdx(0)
-								.build(model))
+								.build(entityManager))
 								.addSegment(
 										new RdfKeySegment.Builder()
 										.setAscending(true).setIdx(1)
-										.build(model))
+										.build(entityManager))
 										.addSegment(
 												new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(2)
-												.build(model)).setUnique(false)
-												.build(model)).build(model);
+												.build(entityManager)).setUnique(false)
+												.build(entityManager)).build(entityManager);
 
 		final RdfTable.Builder builder = new RdfTable.Builder()
 		.setType(MetaCatalogBuilder.TABLE_TYPE)
@@ -1281,7 +1281,7 @@ public class MetaCatalogBuilder {
 		.setColumn(4, "DATA_TYPE").setColumn(5, "REMARKS")
 		.setColumn(6, "BASE_TYPE");
 
-		setNull(builder).build(model);
+		setNull(builder).build(entityManager);
 
 	}
 
@@ -1295,7 +1295,7 @@ public class MetaCatalogBuilder {
 		.addColumnDef(nullableInt) // BUFFER_LENGTH
 		.addColumnDef(nullableShort) // DECIMAL_DIGITS
 		.addColumnDef(nullableShort) // PSEUDO_COLUMN
-		.build(model);
+		.build(entityManager);
 
 		final RdfTable.Builder builder = new RdfTable.Builder()
 		.setType(MetaCatalogBuilder.TABLE_TYPE)
@@ -1307,7 +1307,7 @@ public class MetaCatalogBuilder {
 		.setColumn(5, "BUFFER_LENGTH").setColumn(6, "DECIMAL_DIGITS")
 		.setColumn(7, "PSEUDO_COLUMN");
 
-		setNull(builder).build(model);
+		setNull(builder).build(entityManager);
 	}
 
 	private void addXrefTable() {
@@ -1331,20 +1331,20 @@ public class MetaCatalogBuilder {
 				.addSegment(
 						new RdfKeySegment.Builder()
 						.setAscending(true).setIdx(4)
-						.build(model))
+						.build(entityManager))
 						.addSegment(
 								new RdfKeySegment.Builder()
 								.setAscending(true).setIdx(5)
-								.build(model))
+								.build(entityManager))
 								.addSegment(
 										new RdfKeySegment.Builder()
 										.setAscending(true).setIdx(6)
-										.build(model))
+										.build(entityManager))
 										.addSegment(
 												new RdfKeySegment.Builder()
 												.setAscending(true).setIdx(7)
-												.build(model)).setUnique(false)
-												.build(model)).build(model);
+												.build(entityManager)).setUnique(false)
+												.build(entityManager)).build(entityManager);
 
 		final RdfTable.Builder builder = new RdfTable.Builder()
 		.setType(MetaCatalogBuilder.TABLE_TYPE)
@@ -1358,7 +1358,7 @@ public class MetaCatalogBuilder {
 		.setColumn(10, "DELETE_RULE").setColumn(11, "FK_NAME")
 		.setColumn(12, "PK_NAME").setColumn(13, "DEFERRABILITY");
 
-		setNull(builder).build(model);
+		setNull(builder).build(entityManager);
 	}
 
 	public void build() {
