@@ -8,16 +8,19 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.xenei.jdbc4sparql.iface.ColumnDef;
-
+import org.xenei.jena.entities.EntityManager;
+import org.xenei.jena.entities.impl.EntityManagerImpl;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 
 public class ColumnDefBuilderTests {
 	private Model model;
+	private EntityManager mgr;
 
 	@Before
 	public void setUp() throws Exception {
 		model = ModelFactory.createDefaultModel();
+		mgr = new EntityManagerImpl( model );
 	}
 
 	@After
@@ -29,7 +32,7 @@ public class ColumnDefBuilderTests {
 	public void testIntegerCreation() {
 		final RdfColumnDef.Builder builder = RdfColumnDef.Builder
 				.getIntegerBuilder();
-		final ColumnDef cd = builder.build(model);
+		final ColumnDef cd = builder.build(mgr);
 
 		Assert.assertEquals(false, cd.isAutoIncrement());
 		Assert.assertEquals(false, cd.isCaseSensitive());
@@ -59,7 +62,7 @@ public class ColumnDefBuilderTests {
 				.setSearchable(true).setSigned(true).setTypeName("bar")
 				.setWritable(true);
 
-		final ColumnDef cd = builder.build(model);
+		final ColumnDef cd = builder.build( mgr );
 
 		Assert.assertEquals(true, cd.isAutoIncrement());
 		Assert.assertEquals(true, cd.isCaseSensitive());
@@ -82,7 +85,7 @@ public class ColumnDefBuilderTests {
 	public void testSmallIntCreation() {
 		final RdfColumnDef.Builder builder = RdfColumnDef.Builder
 				.getSmallIntBuilder();
-		final ColumnDef cd = builder.build(model);
+		final ColumnDef cd = builder.build( mgr );
 
 		Assert.assertEquals(false, cd.isAutoIncrement());
 		Assert.assertEquals(false, cd.isCaseSensitive());
@@ -104,7 +107,7 @@ public class ColumnDefBuilderTests {
 	public void testStandardCreation() {
 		final RdfColumnDef.Builder builder = new RdfColumnDef.Builder();
 		builder.setType(Types.VARCHAR);
-		final ColumnDef cd = builder.build(model);
+		final ColumnDef cd = builder.build( mgr );
 
 		Assert.assertEquals(false, cd.isAutoIncrement());
 		Assert.assertEquals(false, cd.isCaseSensitive());
@@ -126,7 +129,7 @@ public class ColumnDefBuilderTests {
 	public void testStringCreation() {
 		final RdfColumnDef.Builder builder = RdfColumnDef.Builder
 				.getStringBuilder();
-		final ColumnDef cd = builder.build(model);
+		final ColumnDef cd = builder.build( mgr );
 
 		Assert.assertEquals(false, cd.isAutoIncrement());
 		Assert.assertEquals(false, cd.isCaseSensitive());

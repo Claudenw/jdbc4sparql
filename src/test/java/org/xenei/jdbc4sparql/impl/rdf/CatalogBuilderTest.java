@@ -9,19 +9,21 @@ import org.junit.Test;
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.meta.MetaCatalogBuilder;
-
+import org.xenei.jena.entities.EntityManager;
+import org.xenei.jena.entities.impl.EntityManagerImpl;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 
 public class CatalogBuilderTest {
 
 	private Model model;
+	private EntityManager entityManager;
 	private RdfSchema.Builder schemaBldr;
 
 	@Before
 	public void setUp() throws Exception {
 		model = ModelFactory.createDefaultModel();
-
+		entityManager = new EntityManagerImpl(model);
 		schemaBldr = new RdfSchema.Builder().setName("testSchema");
 	}
 
@@ -35,13 +37,13 @@ public class CatalogBuilderTest {
 		final RdfCatalog.Builder builder = new RdfCatalog.Builder()
 				.setName("catalog");
 
-		final RdfCatalog catalog = builder.build(model);
+		final RdfCatalog catalog = builder.build(entityManager);
 		Assert.assertEquals("catalog", catalog.getName().getShortName());
 		Assert.assertNotNull(catalog.getSchemas());
 		Assert.assertEquals(0, catalog.getSchemas().size());
 		schemaBldr.setCatalog(catalog);
 
-		schemaBldr.build(model);
+		schemaBldr.build(entityManager);
 
 		Assert.assertNotNull(catalog.getSchemas());
 		Assert.assertEquals(1, catalog.getSchemas().size());
@@ -52,7 +54,7 @@ public class CatalogBuilderTest {
 		final RdfCatalog.Builder builder = new RdfCatalog.Builder()
 				.setName("catalog");
 
-		final Catalog catalog = builder.build(model);
+		final Catalog catalog = builder.build(entityManager);
 
 		Assert.assertEquals("catalog", catalog.getName().getShortName());
 		Assert.assertNotNull(catalog.getSchemas());
@@ -65,9 +67,9 @@ public class CatalogBuilderTest {
 		final RdfCatalog.Builder builder = new RdfCatalog.Builder()
 				.setName("catalog");
 
-		final RdfCatalog catalog = builder.build(model);
+		final RdfCatalog catalog = builder.build(entityManager);
 
-		schemaBldr.setCatalog(catalog).build(model);
+		schemaBldr.setCatalog(catalog).build(entityManager);
 
 		Assert.assertNotNull(catalog.findSchemas("testSchema"));
 
@@ -79,9 +81,9 @@ public class CatalogBuilderTest {
 		final RdfCatalog.Builder builder = new RdfCatalog.Builder()
 				.setName("catalog");
 
-		final RdfCatalog catalog = builder.build(model);
+		final RdfCatalog catalog = builder.build(entityManager);
 
-		schemaBldr.setCatalog(catalog).build(model);
+		schemaBldr.setCatalog(catalog).build(entityManager);
 
 		Assert.assertNotNull(catalog.getSchema("testSchema"));
 
@@ -92,7 +94,7 @@ public class CatalogBuilderTest {
 		final RdfCatalog.Builder builder = new RdfCatalog.Builder()
 				.setName("catalog");
 
-		final RdfCatalog catalog = builder.build(model);
+		final RdfCatalog catalog = builder.build(entityManager);
 
 		Set<? extends Schema> schemas = catalog.getSchemas();
 		Assert.assertNotNull(schemas);
@@ -101,7 +103,7 @@ public class CatalogBuilderTest {
 
 		schemaBldr.setCatalog(catalog);
 
-		schemaBldr.build(model);
+		schemaBldr.build(entityManager);
 
 		schemas = catalog.getSchemas();
 		Assert.assertNotNull(schemas);

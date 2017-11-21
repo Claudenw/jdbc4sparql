@@ -8,26 +8,29 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.xenei.jdbc4sparql.iface.Schema;
-
+import org.xenei.jena.entities.EntityManager;
+import org.xenei.jena.entities.impl.EntityManagerImpl;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 
 public class SchemaBuilderTest {
 
 	private Model model;
+	private EntityManager mgr;
 	private RdfTable.Builder tableBldr;
 	private RdfCatalog mockCatalog;
 
 	@Before
 	public void setUp() throws Exception {
 		model = ModelFactory.createDefaultModel();
+		mgr = new EntityManagerImpl( model );
 		final RdfTableDef.Builder builder = new RdfTableDef.Builder()
 				.addColumnDef(
-						RdfColumnDef.Builder.getStringBuilder().build(model))
+						RdfColumnDef.Builder.getStringBuilder().build( mgr ))
 				.addColumnDef(
-						RdfColumnDef.Builder.getIntegerBuilder().build(model));
+						RdfColumnDef.Builder.getIntegerBuilder().build( mgr ));
 		tableBldr = new RdfTable.Builder().setName("testTable")
-				.setTableDef(builder.build(model)).setColumn(0, "StringCol")
+				.setTableDef(builder.build( mgr )).setColumn(0, "StringCol")
 				.setColumn(1, "IntCol");
 		mockCatalog = mock(RdfCatalog.class);
 		when(mockCatalog.getResource()).thenReturn(
@@ -45,9 +48,9 @@ public class SchemaBuilderTest {
 		final RdfSchema.Builder builder = new RdfSchema.Builder().setName(
 				"schema").setCatalog(mockCatalog);
 
-		final RdfSchema schema = builder.build(model);
+		final RdfSchema schema = builder.build( mgr );
 
-		tableBldr.setSchema(schema).setType("test table").build(model);
+		tableBldr.setSchema(schema).setType("test table").build( mgr );
 
 		schema.getTables();
 
@@ -61,10 +64,10 @@ public class SchemaBuilderTest {
 		final RdfSchema.Builder builder = new RdfSchema.Builder().setName(
 				"schema").setCatalog(mockCatalog);
 
-		final RdfSchema schema = builder.build(model);
+		final RdfSchema schema = builder.build( mgr );
 		Assert.assertEquals(0, schema.getTables().size());
 
-		tableBldr.setSchema(schema).setType("Test table").build(model);
+		tableBldr.setSchema(schema).setType("Test table").build( mgr );
 
 		Assert.assertEquals("schema", schema.getName().getShortName());
 		Assert.assertNotNull(schema.getTables());
@@ -76,7 +79,7 @@ public class SchemaBuilderTest {
 		final RdfSchema.Builder builder = new RdfSchema.Builder().setName(
 				"schema").setCatalog(mockCatalog);
 
-		final Schema schema = builder.build(model);
+		final Schema schema = builder.build( mgr );
 		schema.getTables();
 		Assert.assertEquals("schema", schema.getName().getShortName());
 		Assert.assertNotNull(schema.getTables());

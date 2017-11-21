@@ -289,8 +289,9 @@ public class MetaCatalogTests {
 		final Query query = QueryFactory.create(String.format(queryString,
 				tblName));
 
-		final QueryExecution qexec = QueryExecutionFactory.create(query,
-				dpProducer.getMetaDatasetUnionModel());
+		
+		final QueryExecution qexec = dpProducer.getMetaDataEntityManager().getConnection().query(query);
+		
 		try {
 			final ResultSet results = qexec.execSelect();
 

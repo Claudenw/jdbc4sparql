@@ -37,11 +37,15 @@ import org.xenei.jdbc4sparql.sparql.ForceTypeF;
 import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.proxies.ExprInfo;
 import org.xenei.jdbc4sparql.utils.ElementExtractor;
-
+import org.xenei.jena.entities.EntityManager;
+import org.xenei.jena.entities.impl.EntityManagerImpl;
 import org.apache.jena.graph.Node;
+import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.query.Query;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdfconnection.RDFConnection;
+import org.apache.jena.rdfconnection.RDFConnectionFactory;
 import org.apache.jena.sparql.core.TriplePath;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.E_Function;
@@ -86,26 +90,28 @@ abstract public class AbstractSparqlParserTest {
 		LoggingConfig.setLogger("org.xenei.jdbc4sparql", Level.DEBUG);
 
 		model = ModelFactory.createDefaultModel();
-		final Model localModel = ModelFactory.createDefaultModel();
-		catalog = new RdfCatalog.Builder().setLocalConnection(localModel)
-				.setName("testCatalog").build(model);
+		EntityManager em = new EntityManagerImpl( model );
+		final RDFConnection connection = RDFConnectionFactory.connect( DatasetFactory.create());
+		
+		catalog = new RdfCatalog.Builder().setLocalConnection(connection)
+				.setName("testCatalog").build(em);
 		catalogs.put(catalog.getShortName(), catalog);
 
 		schema = new RdfSchema.Builder().setCatalog(catalog)
-				.setName("testSchema").build(model);
+				.setName("testSchema").build(em);
 
 		// create the foo table
 		final RdfTableDef tableDef = new RdfTableDef.Builder()
 		.addColumnDef(
 				MetaCatalogBuilder.getNonNullStringBuilder().build(
-						model))
+						em))
 						.addColumnDef(
-								MetaCatalogBuilder.getNullStringBuilder().build(model))
+								MetaCatalogBuilder.getNullStringBuilder().build(em))
 								.addColumnDef(
-										MetaCatalogBuilder.getNonNullIntBuilder().build(model))
+										MetaCatalogBuilder.getNonNullIntBuilder().build(em))
 										.addColumnDef(
-												MetaCatalogBuilder.getNullIntBuilder().build(model))
-												.build(model);
+												MetaCatalogBuilder.getNullIntBuilder().build(em))
+												.build(em);
 
 		RdfTable.Builder bldr = new RdfTable.Builder().setTableDef(tableDef)
 				.setColumn(0, "StringCol").setColumn(1, "NullableStringCol")
@@ -121,7 +127,7 @@ abstract public class AbstractSparqlParserTest {
 		bldr.getColumn(3).addQuerySegment(
 				"%1$s <http://example.com/three> %2$s .");
 		fooTableName = bldr.getName();
-		bldr.build(model);
+		bldr.build(em);
 
 		bldr = new RdfTable.Builder().setTableDef(tableDef)
 				.setColumn(0, "BarStringCol")
@@ -140,7 +146,7 @@ abstract public class AbstractSparqlParserTest {
 		bldr.getColumn(3).addQuerySegment(
 				"%1$s <http://example.com/three> %2$s . ");
 		barTableName = bldr.getName();
-		bldr.build(model);
+		bldr.build(em);
 		parser = new SparqlParserImpl();
 		tests = new HashMap<Class<? extends Element>, Integer>();
 	}

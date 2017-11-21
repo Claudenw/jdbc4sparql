@@ -40,13 +40,15 @@ import org.xenei.jdbc4sparql.config.MemDatasetProducer;
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.DatasetProducer;
 import org.xenei.jdbc4sparql.meta.MetaCatalogBuilder;
-
+import org.apache.jena.query.Dataset;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QueryExecutionFactory;
 import org.apache.jena.query.QueryFactory;
 import org.apache.jena.query.QuerySolution;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.util.iterator.WrappedIterator;
 
 public class J4SDatabaseMetaDataQueryTests {
@@ -220,8 +222,7 @@ public class J4SDatabaseMetaDataQueryTests {
 				// +eol+
 				"";
 		final Query q = QueryFactory.create(queryStr);
-		final Model model = dp.getMetaDatasetUnionModel();
-		final QueryExecution qexec = QueryExecutionFactory.create(q, model);
+		final QueryExecution qexec = dp.getLocalDataEntityManager(null).getConnection().query(q);
 		try {
 			final List<QuerySolution> retval = WrappedIterator.create(
 					qexec.execSelect()).toList();
@@ -287,8 +288,8 @@ public class J4SDatabaseMetaDataQueryTests {
 		final Catalog cat = MetaCatalogBuilder.getInstance(dp);
 
 		if (J4SDatabaseMetaDataQueryTests.LOG.isDebugEnabled()) {
-			dp.getMetaDatasetUnionModel().write(
-					new FileOutputStream("/tmp/cat.ttl"), "TURTLE");
+			Dataset ds = dp.getLocalDataEntityManager(null).getConnection().fetchDataset();
+			RDFDataMgr.write(new FileOutputStream("/tmp/cat.trig"), ds, Lang.TRIG);
 		}
 		catalogs.put(cat.getName().getShortName(), cat);
 		metadata = new J4SDatabaseMetaData(connection, driver);

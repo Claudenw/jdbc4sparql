@@ -70,7 +70,6 @@ public class RemoteSparqlParserTest extends AbstractSparqlParserTest {
 				"sparqlEndpoint");
 		
 		catalog.getResource().addProperty(p, SERVICE_URI );	
-		assertTrue( "Catalog was not set to service", catalog.isService() );
 	}
 	
 	@Test

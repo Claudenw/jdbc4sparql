@@ -10,8 +10,9 @@ import org.mockito.Mockito;
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.NameFilter;
 import org.xenei.jdbc4sparql.iface.name.SchemaName;
+import org.xenei.jena.entities.EntityManager;
 import org.xenei.jena.entities.EntityManagerFactory;
-
+import org.xenei.jena.entities.impl.EntityManagerImpl;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;
@@ -23,16 +24,18 @@ public class TableBuilderTest {
 	private Model model;
 	private RdfTableDef tableDef;
 	private RdfSchema mockSchema;
+	private EntityManager mgr;
 
 	@Before
 	public void setUp() throws Exception {
 		model = ModelFactory.createDefaultModel();
+		mgr = new EntityManagerImpl( model );
 		final RdfTableDef.Builder builder = new RdfTableDef.Builder()
 				.addColumnDef(
-						RdfColumnDef.Builder.getStringBuilder().build(model))
+						RdfColumnDef.Builder.getStringBuilder().build( mgr ))
 				.addColumnDef(
-						RdfColumnDef.Builder.getIntegerBuilder().build(model));
-		tableDef = builder.build(model);
+						RdfColumnDef.Builder.getIntegerBuilder().build( mgr ));
+		tableDef = builder.build( mgr );
 		mockSchema = Mockito.mock(RdfSchema.class);
 		Mockito.when(mockSchema.getResource()).thenReturn(
 				model.createResource("http://example.com/mockSchema"));
@@ -51,7 +54,7 @@ public class TableBuilderTest {
 				.setTableDef(tableDef).setName("table")
 				.setColumn(0, "StringCol").setColumn(1, "IntCol")
 				.setSchema(mockSchema).setType("testing Table");
-		final RdfTable table = builder.build(model);
+		final RdfTable table = builder.build( mgr );
 
 		Assert.assertEquals(2, table.getColumnCount());
 		Assert.assertEquals("table", table.getName().getShortName());
@@ -64,7 +67,7 @@ public class TableBuilderTest {
 		EntityManagerFactory.getEntityManager();
 
 		final Property p = model.createProperty(
-				ResourceBuilder.getNamespace(RdfTable.class), "column");
+				ResourceBuilder.getNamespace(mgr,RdfTable.class), "column");
 
 		final List<RDFNode> columns = table.getResource()
 				.getRequiredProperty(p).getResource().as(RDFList.class)

@@ -32,7 +32,8 @@ import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlParserImpl;
-
+import org.xenei.jena.entities.EntityManager;
+import org.xenei.jena.entities.impl.EntityManagerImpl;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;
@@ -46,8 +47,10 @@ public class SimpleBuilderTest {
 	private RdfSchema schema;
 	// data model
 	private Model model;
+	private EntityManager mgr;
 	// schema model
 	private Model schemaModel;
+	private EntityManager sMgr;
 	private SchemaBuilder builder;
 	private Map<String, Catalog> catalogs;
 	private SparqlParser parser;
@@ -159,14 +162,16 @@ public class SimpleBuilderTest {
 	@Before
 	public void setup() {
 		model = ModelFactory.createDefaultModel();
+		mgr = new EntityManagerImpl( model );
 		schemaModel = ModelFactory.createDefaultModel();
+		sMgr = new EntityManagerImpl( schemaModel );
 		addModelData(model);
-		catalog = new RdfCatalog.Builder().setLocalConnection(model)
-				.setName("SimpleSparql").build(schemaModel);
+		catalog = new RdfCatalog.Builder().setLocalConnection(mgr.getConnection())
+				.setName("SimpleSparql").build(sMgr);
 		catalogs = new HashMap<String, Catalog>();
 		catalogs.put(catalog.getName().getShortName(), catalog);
 		schema = new RdfSchema.Builder().setCatalog(catalog)
-				.setName("builderTest").build(schemaModel);
+				.setName("builderTest").build(sMgr);
 
 		builder = new SimpleBuilder();
 		parser = new SparqlParserImpl();

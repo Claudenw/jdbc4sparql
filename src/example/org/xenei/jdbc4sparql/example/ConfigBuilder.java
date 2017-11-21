@@ -17,7 +17,10 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.io.FileUtils;
+import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFLanguages;
+import org.apache.jena.riot.RDFWriter;
 import org.xenei.jdbc4sparql.J4SConnection;
 import org.xenei.jdbc4sparql.J4SDriver;
 import org.xenei.jdbc4sparql.J4SPropertyNames;
@@ -161,11 +164,11 @@ public class ConfigBuilder {
 		final DatabaseMetaData metaData = connection.getMetaData();
 
 		System.out.println("creating metadata file");
-		final File outfile = File.createTempFile("cfgmtd", ".ttl");
+		final File outfile = File.createTempFile("cfgmtd", ".trig");
 		final FileOutputStream fos2 = new FileOutputStream(outfile);
 		System.out.println("Writing metadata to " + outfile.getCanonicalPath());
-		connection.getDatasetProducer().getMetaDatasetUnionModel()
-		.write(fos2, "N-TRIPLE");
+		Dataset ds = connection.getDatasetProducer().getMetaDataEntityManager().getConnection().fetchDataset();
+		RDFDataMgr.write(fos2, ds, Lang.TRIG);		
 
 		metaData.getColumns(null, null, null, null);
 		System.out.println("Writing configuration to "

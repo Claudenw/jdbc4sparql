@@ -5,16 +5,19 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.xenei.jdbc4sparql.iface.KeySegment;
-
+import org.xenei.jena.entities.EntityManager;
+import org.xenei.jena.entities.impl.EntityManagerImpl;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 
 public class KeySegmentBuilderTests {
 	private Model model;
+	private EntityManager mgr;
 
 	@Before
 	public void setUp() throws Exception {
 		model = ModelFactory.createDefaultModel();
+		mgr = new EntityManagerImpl( model );
 	}
 
 	@After
@@ -25,7 +28,7 @@ public class KeySegmentBuilderTests {
 	@Test
 	public void testDefault() {
 		final RdfKeySegment.Builder builder = new RdfKeySegment.Builder();
-		final KeySegment seg = builder.build(model);
+		final KeySegment seg = builder.build( mgr );
 
 		Assert.assertEquals(0, seg.getIdx());
 		Assert.assertEquals(true, seg.isAscending());
@@ -55,7 +58,7 @@ public class KeySegmentBuilderTests {
 	public void testSetValues() {
 		final RdfKeySegment.Builder builder = new RdfKeySegment.Builder()
 				.setIdx(5).setAscending(false);
-		final KeySegment seg = builder.build(model);
+		final KeySegment seg = builder.build( mgr );
 
 		Assert.assertEquals(5, seg.getIdx());
 		Assert.assertEquals(false, seg.isAscending());

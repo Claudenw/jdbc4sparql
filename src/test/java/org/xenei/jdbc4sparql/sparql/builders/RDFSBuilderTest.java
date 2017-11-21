@@ -29,7 +29,8 @@ import org.junit.Test;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
-
+import org.xenei.jena.entities.EntityManager;
+import org.xenei.jena.entities.impl.EntityManagerImpl;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 
@@ -38,8 +39,10 @@ public class RDFSBuilderTest {
 	private RdfSchema schema;
 	// data model
 	private Model model;
+	private EntityManager mgr;
 	// schema model
 	private Model schemaModel;
+	private EntityManager sMgr;
 
 	private SchemaBuilder builder;
 
@@ -62,7 +65,9 @@ public class RDFSBuilderTest {
 	@Before
 	public void setup() {
 		model = ModelFactory.createDefaultModel();
+		mgr = new EntityManagerImpl( model );
 		schemaModel = ModelFactory.createDefaultModel();
+		sMgr = new EntityManagerImpl( schemaModel );
 		URL url = RDFSBuilderTest.class.getResource("./foaf.rdf");
 		model.read(url.toExternalForm());
 		url = RDFSBuilderTest.class.getResource("./jena.rdf");
@@ -70,11 +75,11 @@ public class RDFSBuilderTest {
 		url = RDFSBuilderTest.class.getResource("./doap.rdf");
 		model.read(url.toExternalForm());
 		model = ModelFactory.createRDFSModel(model);
-		catalog = new RdfCatalog.Builder().setLocalConnection(model)
-				.setName("SimpleSparql").build(schemaModel);
+		catalog = new RdfCatalog.Builder().setLocalConnection(mgr.getConnection())
+				.setName("SimpleSparql").build( sMgr );
 
 		schema = new RdfSchema.Builder().setCatalog(catalog)
-				.setName("builderTest").build(schemaModel);
+				.setName("builderTest").build(sMgr);
 
 
 		schemaModel.write( System.out, "TURTLE");

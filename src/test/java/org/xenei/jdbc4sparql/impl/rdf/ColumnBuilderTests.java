@@ -10,19 +10,22 @@ import org.junit.Test;
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.ColumnDef;
 import org.xenei.jdbc4sparql.iface.name.TableName;
-
+import org.xenei.jena.entities.EntityManager;
+import org.xenei.jena.entities.impl.EntityManagerImpl;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 
 public class ColumnBuilderTests {
 	private Model model;
+	private EntityManager mgr;
 	private ColumnDef columnDef;
 	private RdfTable mockTable;
 
 	@Before
 	public void setUp() throws Exception {
 		model = ModelFactory.createDefaultModel();
-		columnDef = RdfColumnDef.Builder.getStringBuilder().build(model);
+		mgr = new EntityManagerImpl( model );
+		columnDef = RdfColumnDef.Builder.getStringBuilder().build(mgr);
 		mockTable = mock(RdfTable.class);
 		when(mockTable.getResource()).thenReturn(
 				model.createResource("http://example.com/mockTable"));
@@ -39,7 +42,7 @@ public class ColumnBuilderTests {
 	public void testStandardCreation() {
 		final RdfColumn.Builder builder = new RdfColumn.Builder()
 				.setColumnDef(columnDef).setName("test").setTable(mockTable);
-		final Column cd = builder.build(model);
+		final Column cd = builder.build(mgr);
 		Assert.assertEquals("test", cd.getName().getShortName());
 		Assert.assertEquals(false, cd.getColumnDef().isAutoIncrement());
 		Assert.assertEquals(false, cd.getColumnDef().isCaseSensitive());

@@ -65,7 +65,7 @@ public class RemoteSparqlVisitorTest extends AbstractSparqlVisitorTest {
 				"sparqlEndpoint");
 
 		catalog.getResource().addProperty(p, SERVICE_URI);
-		assertTrue("Catalog was not set to service", catalog.isService());
+		
 		// recreate the visitor to handle service catalog
 		sv = new SparqlVisitor(catalogs, parser, catalog, schema);
 	}
