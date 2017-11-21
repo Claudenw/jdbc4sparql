@@ -87,7 +87,7 @@ public class TDBDatasetProducer extends AbstractDatasetProducer {
 
 	
 	@Override
-	protected EntityManager getMetaEntityManager() {
+	public EntityManager getMetaDataEntityManager() {
 		if (!metaDataLoaded) {
 			metaDataLock.lock();
 			try {
@@ -100,7 +100,7 @@ public class TDBDatasetProducer extends AbstractDatasetProducer {
 
 			}
 		}
-		return super.getMetaEntityManager();
+		return super.getMetaDataEntityManager();
 	}
 
 	@Override

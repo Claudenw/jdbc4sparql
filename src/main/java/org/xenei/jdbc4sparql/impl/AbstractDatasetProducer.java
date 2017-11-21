@@ -23,12 +23,14 @@ import org.xenei.jdbc4sparql.utils.NoCloseZipInputStream;
 import org.xenei.jena.entities.EntityManager;
 import org.xenei.jena.entities.impl.EntityManagerImpl;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.impl.Util;
+import org.apache.jena.rdfconnection.RDFConnection;
 
 /**
  * Interface that defines the dataset producer.
@@ -83,7 +85,7 @@ abstract public class AbstractDatasetProducer implements DatasetProducer {
 	 */
 	@Override
 	public void close() {
-		getMetaEntityManager().getConnection().close();
+		getMetaDataEntityManager().getConnection().close();
 		getLocalEntityManager().getConnection().close();
 	}
 
@@ -108,7 +110,7 @@ abstract public class AbstractDatasetProducer implements DatasetProducer {
 
 	@Override
 	public EntityManager getMetaDataEntityManager(final String modelName) {
-		return getEntityManager(getMetaEntityManager(), modelName);
+		return getEntityManager(getMetaDataEntityManager(), modelName);
 	}
 
 	/**
@@ -116,24 +118,24 @@ abstract public class AbstractDatasetProducer implements DatasetProducer {
 	 *
 	 * @return the meta dataset.
 	 */
-	protected EntityManager getMetaEntityManager() {
+	public EntityManager getMetaDataEntityManager() {
 		return metaMgr;
 	}
 
-	/**
-	 * Retrieve the model that is the union of all models in the data set.
-	 *
-	 * @return
-	 */
-	@Override
-	public Model getMetaDatasetUnionModel() {
-		return getMetaEntityManager().getConnection()
-				.fetch("urn:x-arq:UnionGraph");
-	}
+//	/**
+//	 * Retrieve the model that is the union of all models in the data set.
+//	 *
+//	 * @return
+//	 */
+//	@Override
+//	public EntityManager getMetaDatasetUnionConnection() {
+//		return getMetaEntityManager("urn:x-arq:UnionGraph");//.getConnection()
+//			//	.fetch("urn:x-arq:UnionGraph");
+//	}
 
 	private EntityManager getEntityManager(final EntityManager dataset, final String modelName) {
 		final String name = AbstractDatasetProducer.getModelURI(localMgr, modelName);
-		return dataset.getNamedManager(name);
+		return dataset.getNamedManager(NodeFactory.createURI(name));
 	}
 
 	@Override
@@ -145,7 +147,7 @@ abstract public class AbstractDatasetProducer implements DatasetProducer {
 	public Iterator<String> listMetaDataNames() {
 		SelectBuilder sb = new SelectBuilder().addVar( "?g" )
 				.addGraph( "?g", new SelectBuilder().addWhere( "?s", "?p", "?o").setLimit(1));
-		ResultSet rs = getMetaEntityManager().getConnection().query( sb.build() ).execSelect();
+		ResultSet rs = getMetaDataEntityManager().getConnection().query( sb.build() ).execSelect();
 		return WrappedIterator.create(rs).mapWith( qs -> qs.getResource("g").getURI());
 	}
 
@@ -238,7 +240,7 @@ abstract public class AbstractDatasetProducer implements DatasetProducer {
 	}
 
 	protected void saveMeta(final ZipOutputStream out) throws IOException {
-		saveDataset(out, getMetaEntityManager(), DatasetProducer.META_PREFIX);
+		saveDataset(out, getMetaDataEntityManager(), DatasetProducer.META_PREFIX);
 	}
 
 }

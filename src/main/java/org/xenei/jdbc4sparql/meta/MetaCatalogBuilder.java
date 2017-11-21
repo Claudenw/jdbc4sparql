@@ -37,6 +37,7 @@ import org.xenei.jdbc4sparql.impl.rdf.ResourceBuilder;
 import org.xenei.jena.entities.EntityManager;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
+import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 
@@ -46,7 +47,8 @@ public class MetaCatalogBuilder {
 				.getMetaDataEntityManager(MetaCatalogBuilder.LOCAL_NAME);
 		final RdfCatalog cat = new RdfCatalog.Builder()
 		.setName(MetaCatalogBuilder.LOCAL_NAME)
-		.setLocalModel(dsProducer.getMetaDatasetUnionModel())
+		.setLocalConnection(dsProducer.getMetaDataEntityManager().getConnection())
+		.setGraphName( Quad.unionGraph )
 		.build(model);
 
 		final RdfSchema schema = new RdfSchema.Builder().setCatalog(cat)

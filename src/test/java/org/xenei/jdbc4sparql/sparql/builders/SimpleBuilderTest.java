@@ -161,7 +161,7 @@ public class SimpleBuilderTest {
 		model = ModelFactory.createDefaultModel();
 		schemaModel = ModelFactory.createDefaultModel();
 		addModelData(model);
-		catalog = new RdfCatalog.Builder().setLocalModel(model)
+		catalog = new RdfCatalog.Builder().setLocalConnection(model)
 				.setName("SimpleSparql").build(schemaModel);
 		catalogs = new HashMap<String, Catalog>();
 		catalogs.put(catalog.getName().getShortName(), catalog);

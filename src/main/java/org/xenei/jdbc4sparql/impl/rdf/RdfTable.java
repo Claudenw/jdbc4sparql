@@ -456,8 +456,7 @@ ResourceWrapper {
 	public synchronized List<Column> getColumnList() {
 		if (columns == null) {
 			readTableDef(); // force read of table def.
-			final EntityManager entityManager = EntityManagerFactory
-					.getEntityManager();
+			
 			columns = new ArrayList<Column>();
 			final Resource tbl = this.getResource();
 			final Model model = tbl.getModel();
@@ -469,7 +468,7 @@ ResourceWrapper {
 					.getResource().as(RDFList.class).asJavaList();
 			for (final RDFNode n : resLst) {
 				try {
-					final RdfColumn col = entityManager
+					final RdfColumn col = getEntityManager()
 							.read(n, RdfColumn.class);
 					columns.add(RdfColumn.Builder.fixupTable(this, col));
 				} catch (final MissingAnnotation e) {

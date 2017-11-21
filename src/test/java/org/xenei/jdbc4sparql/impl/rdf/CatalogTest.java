@@ -34,7 +34,7 @@ public class CatalogTest {
 		model = ModelFactory.createDefaultModel();
 		dataModel = ModelFactory.createDefaultModel();
 		catalog = new RdfCatalog.Builder().setName("testCatalog")
-				.setLocalModel(dataModel).build(model);
+				.setLocalConnection(dataModel).build(model);
 		entityManager = EntityManagerFactory.getEntityManager();
 	}
 
@@ -57,7 +57,7 @@ public class CatalogTest {
 	@Test
 	public void testCloseMultiple() {
 		new RdfCatalog.Builder().setName("testCatalog2")
-				.setLocalModel(dataModel).build(model);
+				.setLocalConnection(dataModel).build(model);
 		Assert.assertFalse(model.isClosed());
 		Assert.assertFalse(dataModel.isClosed());
 		catalog.close();
@@ -87,7 +87,7 @@ public class CatalogTest {
 		final RdfCatalog cat3 = new RdfCatalog.Builder()
 				.setName("testCatalog2")
 				.setSparqlEndpoint(new URL("http://example.com"))
-				.setLocalModel(dataModel).build(model);
+				.setLocalConnection(dataModel).build(model);
 
 		lqs = cat3.executeLocalQuery(query);
 		Assert.assertEquals(2, lqs.size());

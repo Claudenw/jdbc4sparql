@@ -95,7 +95,7 @@ abstract public class AbstractSparqlVisitorTest {
 
 		model = ModelFactory.createDefaultModel();
 		final Model localModel = ModelFactory.createDefaultModel();
-		catalog = new RdfCatalog.Builder().setLocalModel(localModel)
+		catalog = new RdfCatalog.Builder().setLocalConnection(localModel)
 				.setName("testCatalog").build(model);
 		catalogs.put(catalog.getShortName(), catalog);
 

@@ -70,7 +70,7 @@ public class RDFSBuilderTest {
 		url = RDFSBuilderTest.class.getResource("./doap.rdf");
 		model.read(url.toExternalForm());
 		model = ModelFactory.createRDFSModel(model);
-		catalog = new RdfCatalog.Builder().setLocalModel(model)
+		catalog = new RdfCatalog.Builder().setLocalConnection(model)
 				.setName("SimpleSparql").build(schemaModel);
 
 		schema = new RdfSchema.Builder().setCatalog(catalog)

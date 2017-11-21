@@ -39,6 +39,7 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.vocabulary.RDF;
@@ -183,7 +184,7 @@ public class RDFSBuilder implements SchemaBuilder {
 	public Set<RdfTable> getTables(final RdfSchema schema) {
 		final RdfCatalog catalog = schema.getCatalog();
 		final InfModel rdfsOntology = ModelFactory.createRDFSModel(catalog
-				.getLocalModel());
+				.getLocalConnection().fetch( catalog.getGraphName().getURI()));
 
 		// we have to build the table defs piece by piece
 		final EntityManager entityManager = schema.getEntityManager();
@@ -210,11 +211,11 @@ public class RDFSBuilder implements SchemaBuilder {
 					// .setRemarks(getComment( tblRes ))
 					;
 			if (fqName.endsWith("_ID")) {
-				baseR = catalog.getLocalModel().getResource(
+				baseR =catalog.getResource(
 						fqName.substring(0, fqName.length() - 3));
 			}
 			else { // _data
-				baseR = catalog.getLocalModel().getResource(
+				baseR = catalog.getResource(
 						fqName.substring(0, fqName.length() - 5));
 
 				/*

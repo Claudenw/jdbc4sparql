@@ -38,18 +38,26 @@ import java.sql.Savepoint;
 import java.sql.Statement;
 import java.sql.Struct;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.query.Dataset;
+import org.apache.jena.query.DatasetFactory;
+import org.apache.jena.query.Query;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.ResIterator;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.rdfconnection.RDFConnection;
+import org.apache.jena.rdfconnection.RDFConnectionFactory;
 import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.util.iterator.WrappedIterator;
 import org.apache.jena.vocabulary.RDF;
 import org.slf4j.Logger;
@@ -147,20 +155,8 @@ public class J4SConnection implements Connection {
 	}
 
 	public RdfCatalog addCatalog(final RdfCatalog.Builder catalogBuilder) {
-		final EntityManager metaEntityManager = dsProducer.getMetaDataEntityManager(catalogBuilder
-				.getName().getShortName());
 		String catName = catalogBuilder.getName().getShortName();
-		Model dataModel = catalogBuilder.getLocalModel();
-		if (dataModel != null) {
-			dsProducer.addLocalDataModel(catName, dataModel);
-		}
-		else {
-			dataModel = dsProducer.getLocalDataEntityManager(catName)
-					.getConnection().fetch(catName);
-			if (dataModel != null) {
-				catalogBuilder.setLocalModel(dataModel);
-			}
-		}
+		final EntityManager metaEntityManager = dsProducer.getMetaDataEntityManager(catName);		
 		final RdfCatalog cat = catalogBuilder.build(metaEntityManager);
 		catalogMap.put(cat.getName().getShortName(), cat);
 		return cat;
@@ -231,14 +227,12 @@ public class J4SConnection implements Connection {
 				.setName(getCatalog()).build(metaDataModel);
 			}
 			else {
-				final EntityManager dataModel = dsProducer
-						.getLocalDataEntityManager(getCatalog());
-				
-				Model model = ModelFactory.createDefaultModel();
-				RDFDataMgr.read(model, url.getEndpoint().toURL()
+				Dataset ds = DatasetFactory.create();
+				RDFDataMgr.read(ds, url.getEndpoint().toURL()
 						.openStream(), url.getLang());
-				dataModel.getConnection().load( dataModel.getModelName(), model);
-				catalog = new RdfCatalog.Builder().setLocalModel(model)
+				
+				RDFConnection connection = RDFConnectionFactory.connect(ds);
+				catalog = new RdfCatalog.Builder().setLocalConnection(connection)
 						.setName(getCatalog()).build(metaDataModel);
 			}
 
@@ -415,28 +409,33 @@ public class J4SConnection implements Connection {
 
 		// create the catalogs
 		final Resource catType = ResourceFactory.createResource(ResourceBuilder
-				.getFQName(RdfCatalog.class));
-		final EntityManager entityManager = EntityManagerFactory
-				.getEntityManager();
+				.getFQName(dsProducer.getMetaDataEntityManager(),RdfCatalog.class));
+		Query q = new SelectBuilder().addVar( "?s").addWhere( "?s", RDF.type, catType ).build();
 		final List<String> names = WrappedIterator.create(
 				dsProducer.listMetaDataNames()).toList();
 
 		for (final String name : names) {
-			final Model metaModel = dsProducer.getMetaDataEntityManager(name);
-			final ResIterator ri = metaModel.listSubjectsWithProperty(RDF.type,
-					catType);
+			final EntityManager entityManager = dsProducer.getMetaDataEntityManager(name);
+			
+			final Iterator<Resource> ri = 
+					WrappedIterator.create(entityManager.getConnection().query(q)
+							.execSelect()).mapWith( qs -> qs.getResource("s"));
 			while (ri.hasNext()) {
 				RdfCatalog cat = entityManager
 						.read(ri.next(), RdfCatalog.class);
 				final RdfCatalog.Builder builder = new RdfCatalog.Builder(cat);
-				if (AbstractDatasetProducer.getModelURI(
+				EntityManager em = null;
+				if (AbstractDatasetProducer.getModelURI(dsProducer.getMetaDataEntityManager(),
 						MetaCatalogBuilder.LOCAL_NAME).equals(name)) {
-					builder.setLocalModel(dsProducer.getMetaDatasetUnionModel());
+					em = dsProducer.getMetaDataEntityManager();
 				}
 				else {
-					builder.setLocalModel(dsProducer.getLocalDataEntityManager(name));
+					em = dsProducer.getLocalDataEntityManager(name);
+					
 				}
-				cat = builder.build(metaModel);
+				builder.setLocalConnection(em.getConnection());
+				builder.setGraphName( em.getModelName() );
+				cat = builder.build(entityManager);
 
 				catalogMap.put(cat.getName().getShortName(), cat);
 			}

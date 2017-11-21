@@ -211,8 +211,7 @@ ResourceWrapper {
 	public List<ColumnDef> getColumnDefs() {
 
 		if (columns == null) {
-			final EntityManager entityManager = EntityManagerFactory
-					.getEntityManager();
+			
 			columns = new ArrayList<ColumnDef>();
 			final Resource resource = getResource();
 			final Property p = resource.getModel().createProperty(
@@ -221,7 +220,7 @@ ResourceWrapper {
 					.getResource().as(RDFList.class).asJavaList();
 			for (final RDFNode n : resLst) {
 				try {
-					columns.add(entityManager.read(n.asResource(), colDefClass));
+					columns.add(getEntityManager().read(n.asResource(), colDefClass));
 				} catch (final MissingAnnotation e) {
 					throw new RuntimeException(e);
 				}

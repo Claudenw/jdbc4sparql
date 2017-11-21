@@ -14,6 +14,7 @@ import org.xenei.jdbc4sparql.iface.name.CatalogName;
 import org.apache.jena.graph.Node;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QuerySolution;
+import org.apache.jena.sparql.core.Quad;
 
 public class VirtualCatalog implements Catalog {
 	public static final String NAME = "";
@@ -56,18 +57,7 @@ public class VirtualCatalog implements Catalog {
 	}
 
 	@Override
-	public boolean isService() {
-		return false;
-	}
-
-	@Override
-	public Node getServiceNode() {
-		return null;
-	}
-
-	@Override
 	public String getShortName() {
 		return getName().getCatalog();
 	}
-
 }

@@ -202,13 +202,12 @@ public class RdfKey implements Key<RdfKeySegment>, ResourceWrapper {
 	public List<RdfKeySegment> getSegments() {
 		if (segments == null) {
 			final RDFList lst = getKeySegments().as(RDFList.class);
-			final EntityManager entityManager = EntityManagerFactory
-					.getEntityManager();
+			
 			segments = new ArrayList<RdfKeySegment>();
 
 			for (final RDFNode n : lst.asJavaList()) {
 				try {
-					segments.add(entityManager.read(n.asResource(),
+					segments.add(getEntityManager().read(n.asResource(),
 							RdfKeySegment.class));
 				} catch (final MissingAnnotation e) {
 					throw new RuntimeException(e);

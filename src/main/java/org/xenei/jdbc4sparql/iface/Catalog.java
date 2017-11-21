@@ -73,8 +73,4 @@ public interface Catalog extends NamedObject<CatalogName> {
 
 	String getShortName();
 
-	boolean isService();
-
-	Node getServiceNode();
-
 }

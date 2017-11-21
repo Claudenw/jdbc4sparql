@@ -212,10 +212,9 @@ ResourceWrapper {
 					ResourceBuilder.getNamespace(getEntityManager(),RdfCatalog.class), "schemas");
 			Resource r = this.getResource();
 			r = r.getModel().listSubjectsWithProperty(p, r).next();
-			final EntityManager entityManager = EntityManagerFactory
-					.getEntityManager();
+			
 			try {
-				catalog = entityManager.read(r, RdfCatalog.class);
+				catalog = getEntityManager().read(r, RdfCatalog.class);
 			} catch (final MissingAnnotation e) {
 				throw new RuntimeException(e.getMessage(), e);
 			}
