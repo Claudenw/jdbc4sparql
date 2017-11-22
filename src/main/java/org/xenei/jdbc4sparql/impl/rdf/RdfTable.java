@@ -19,6 +19,8 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.shared.Lock;
 import org.apache.jena.vocabulary.RDFS;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.NameFilter;
@@ -132,7 +134,10 @@ ResourceWrapper {
 
 				final Property p = builder.getProperty(typeClass, "column");
 				table.addProperty(p, lst);
-
+				if (LOG.isDebugEnabled())
+				{
+					retval.getResource().listProperties().forEachRemaining( stmt -> LOG.debug( "build result: "+stmt ));
+				}
 				return retval;
 
 			} catch (final MissingAnnotation e) {
@@ -367,6 +372,7 @@ ResourceWrapper {
 		}
 	}
 
+	private static Logger LOG = LoggerFactory.getLogger(RdfTable.class);
 	private List<Column> columns;
 	private RdfTableDef tableDef;
 	private RdfSchema schema;

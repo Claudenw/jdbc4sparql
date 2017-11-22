@@ -11,6 +11,8 @@ import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.shared.Lock;
 import org.apache.jena.vocabulary.RDFS;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.ColumnDef;
@@ -92,7 +94,7 @@ ResourceWrapper {
 
 			
 			try {
-				final RdfColumn retval = entityManager.read(column, typeClass);
+				RdfColumn retval = entityManager.read(column, typeClass);
 				RdfTable tbl = null;
 				if (table instanceof RdfTable.Builder) {
 					tbl = ((RdfTable.Builder) table).build(entityManager);
@@ -107,7 +109,12 @@ ResourceWrapper {
 				// table is now a real RdfTable so add it as a property
 				column.addProperty(builder.getProperty(typeClass, "table"),
 						tbl.getResource());
-				return Builder.fixupTable(tbl, retval);
+				retval = Builder.fixupTable(tbl, retval);
+				if (LOG.isDebugEnabled())
+				{
+					retval.getResource().listProperties().forEachRemaining( stmt -> LOG.debug( "build result: "+stmt ));
+				}
+				return retval;
 			} catch (final MissingAnnotation e) {
 				throw new RuntimeException(e);
 			}
@@ -236,6 +243,7 @@ ResourceWrapper {
 		}
 	}
 
+	private static Logger LOG = LoggerFactory.getLogger(RdfColumn.class);
 	private RdfTable table;
 	private ColumnName columnName;
 

@@ -7,6 +7,8 @@ import java.sql.Types;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xenei.jdbc4sparql.iface.ColumnDef;
 import org.xenei.jdbc4sparql.iface.TypeConverter;
 import org.xenei.jena.entities.EntityManager;
@@ -121,7 +123,12 @@ public class RdfColumnDef implements ColumnDef, ResourceWrapper {
 
 			
 			try {
-				return entityManager.read(columnDef, typeClass);
+				RdfColumnDef retval = entityManager.read(columnDef, typeClass);
+				if (LOG.isDebugEnabled())
+				{
+					retval.getResource().listProperties().forEachRemaining( stmt -> LOG.debug( "build result: "+stmt ));
+				}
+				return retval;
 			} catch (final MissingAnnotation e) {
 				throw new RuntimeException(e);
 			}
@@ -291,6 +298,8 @@ public class RdfColumnDef implements ColumnDef, ResourceWrapper {
 
 	}
 
+	private static Logger LOG = LoggerFactory.getLogger(RdfColumnDef.class);
+	
 	@Override
 	@Predicate(impl = true)
 	public String getColumnClassName() {

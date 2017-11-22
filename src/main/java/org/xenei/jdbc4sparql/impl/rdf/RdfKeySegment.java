@@ -19,6 +19,8 @@ package org.xenei.jdbc4sparql.impl.rdf;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xenei.jdbc4sparql.iface.KeySegment;
 import org.xenei.jena.entities.EntityManager;
 import org.xenei.jena.entities.EntityManagerFactory;
@@ -58,7 +60,12 @@ public class RdfKeySegment implements KeySegment, ResourceWrapper {
 			}
 
 			try {
-				return entityManager.read(keySegment, RdfKeySegment.class);
+				RdfKeySegment retval = entityManager.read(keySegment, RdfKeySegment.class);
+				if (LOG.isDebugEnabled())
+				{
+					retval.getResource().listProperties().forEachRemaining( stmt -> LOG.debug( "build result: "+stmt ));
+				}
+				return retval;
 			} catch (final MissingAnnotation e) {
 				throw new RuntimeException(e);
 			}
@@ -99,6 +106,8 @@ public class RdfKeySegment implements KeySegment, ResourceWrapper {
 			return this;
 		}
 	}
+	
+	private static Logger LOG = LoggerFactory.getLogger(RdfKeySegment.class);
 
 	@Override
 	public final int compare(final Comparable<Object>[] data1,

@@ -27,6 +27,8 @@ import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFList;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xenei.jdbc4sparql.iface.Key;
 import org.xenei.jdbc4sparql.iface.KeySegment;
 import org.xenei.jena.entities.EntityManager;
@@ -96,7 +98,12 @@ public class RdfKey implements Key<RdfKeySegment>, ResourceWrapper {
 
 		
 			try {
-				return entityManager.read(key, RdfKey.class);
+				RdfKey retval = entityManager.read(key, RdfKey.class);
+				if (LOG.isDebugEnabled())
+				{
+					retval.getResource().listProperties().forEachRemaining( stmt -> LOG.debug( "build result: "+stmt ));
+				}
+				return retval;
 			} catch (final MissingAnnotation e) {
 				throw new RuntimeException(e);
 			}
@@ -151,6 +158,7 @@ public class RdfKey implements Key<RdfKeySegment>, ResourceWrapper {
 		}
 	}
 
+	private static Logger LOG = LoggerFactory.getLogger(RdfKey.class);
 	private List<RdfKeySegment> segments;
 
 	@Override

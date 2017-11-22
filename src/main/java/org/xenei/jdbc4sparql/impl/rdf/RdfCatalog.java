@@ -130,6 +130,10 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 						retval.connection = RDFConnectionFactory.connect(DatasetFactory.create());
 					}
 				}
+				if (LOG.isDebugEnabled())
+				{
+					retval.getResource().listProperties().forEachRemaining( stmt -> LOG.debug( "build result: "+stmt ));
+				}
 				return retval;
 			} catch (final MissingAnnotation e) {
 				RdfCatalog.LOG.error(

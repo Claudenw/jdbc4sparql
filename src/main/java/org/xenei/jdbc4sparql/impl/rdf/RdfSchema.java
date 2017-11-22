@@ -10,6 +10,8 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.shared.Lock;
 import org.apache.jena.vocabulary.RDFS;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.NameFilter;
 import org.xenei.jdbc4sparql.iface.Schema;
@@ -70,6 +72,10 @@ ResourceWrapper {
 				RdfSchema retval = entityManager.read(schema, RdfSchema.class);
 				retval = Builder.fixupCatalog(entityManager,catalog, retval);
 				retval.getResource().getModel().register(retval.new ChangeListener());
+				if (LOG.isDebugEnabled())
+				{
+					retval.getResource().listProperties().forEachRemaining( stmt -> LOG.debug( "build result: "+stmt ));
+				}
 				return retval;
 			} catch (final MissingAnnotation e) {
 				throw new RuntimeException(e);
@@ -165,7 +171,7 @@ ResourceWrapper {
 		}
 
 	}
-
+	private static Logger LOG = LoggerFactory.getLogger(RdfSchema.class);
 	private RdfCatalog catalog;
 	private SchemaName schemaName = null;
 

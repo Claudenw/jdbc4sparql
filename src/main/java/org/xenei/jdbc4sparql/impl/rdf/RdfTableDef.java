@@ -21,6 +21,8 @@ import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFList;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Subject(namespace = "http://org.xenei.jdbc4sparql/entity/TableDef#")
 public class RdfTableDef extends RdfNamespacedObject implements TableDef,
@@ -97,7 +99,12 @@ ResourceWrapper {
 
 			}
 			try {
-				return entityManager.read(tableDef, typeClass);
+				RdfTableDef retval = entityManager.read(tableDef, typeClass);
+				if (LOG.isDebugEnabled())
+				{
+					retval.getResource().listProperties().forEachRemaining( stmt -> LOG.debug( "build result: "+stmt ));
+				}
+				return retval;
 			} catch (final MissingAnnotation e) {
 				throw new RuntimeException(e);
 			}
@@ -193,6 +200,7 @@ ResourceWrapper {
 
 	}
 
+	private static Logger LOG = LoggerFactory.getLogger(RdfTableDef.class);
 	private List<ColumnDef> columns;
 
 	private final Class<? extends RdfColumnDef> colDefClass = RdfColumnDef.class;
