@@ -429,7 +429,7 @@ public class SparqlQueryBuilderTest {
 		query.getQueryPattern().visit(extractor);
 		final List<Element> lst = extractor.getExtracted();
 		assertEquals(1, lst.size());
-		assertEquals("alias", ((ElementBind) lst.get(0)).getVar().getName());
+		assertEquals(alias.getGUID(), ((ElementBind) lst.get(0)).getVar().getName());
 	}
 
 	@Test
@@ -608,14 +608,14 @@ public class SparqlQueryBuilderTest {
 
 		final List<Var> vLst = query.getProjectVars();
 		assertEquals(1, vLst.size());
-		assertEquals(Var.alloc(colName.getSPARQLName()), vLst.get(0));
+		assertEquals(Var.alloc(colName.getGUID()), vLst.get(0));
 
 		final VarExprList eLst = query.getProject();
 		assertEquals(1, eLst.size());
 		final Var v = eLst.getVars().get(0);
 		final Expr e = eLst.getExpr(v);
 		assertNull(e);
-		assertEquals(Var.alloc(colName.getSPARQLName()), v);
+		assertEquals(Var.alloc(colName.getGUID()), v);
 	}
 
 	@Test
@@ -651,14 +651,14 @@ public class SparqlQueryBuilderTest {
 
 		final List<Var> vLst = query.getProjectVars();
 		assertEquals(1, vLst.size());
-		assertEquals(Var.alloc(alias.getSPARQLName()), vLst.get(0));
+		assertEquals(Var.alloc(alias.getGUID()), vLst.get(0));
 
 		final VarExprList eLst = query.getProject();
 		assertEquals(1, eLst.size());
 		final Var v = eLst.getVars().get(0);
 		final Expr e = eLst.getExpr(v);
 		assertEquals(expr, e);
-		assertEquals(Var.alloc(alias.getSPARQLName()), v);
+		assertEquals(Var.alloc(alias.getGUID()), v);
 	}
 
 	@Test
@@ -777,7 +777,7 @@ public class SparqlQueryBuilderTest {
 		builder.addDefinedColumns();
 		builder.setAllColumns();
 		builder.build();
-		final int i = builder.getColumnIndex(colName.getSPARQLName());
+		final int i = builder.getColumnIndex(colName.getGUID());
 		assertEquals(0, i);
 
 	}
@@ -950,7 +950,7 @@ public class SparqlQueryBuilderTest {
 		assertEquals(1, lst.size());
 		final SortCondition sc = lst.get(0);
 		assertEquals(Query.ORDER_ASCENDING, sc.getDirection());
-		assertEquals(new ExprVar(colName.getSPARQLName()), sc.getExpression());
+		assertEquals(new ExprVar(colName.getGUID()), sc.getExpression());
 
 	}
 
@@ -1043,20 +1043,20 @@ public class SparqlQueryBuilderTest {
 		assertEquals(1, lst.size());
 		final SortCondition sc = lst.get(0);
 		assertEquals(Query.ORDER_ASCENDING, sc.getDirection());
-		assertEquals(new ExprVar(colName.getSPARQLName()), sc.getExpression());
+		assertEquals(new ExprVar(colName.getGUID()), sc.getExpression());
 
 	}
 
-	@Test
-	public void testSetGUID() throws Exception {
-		final QueryInfoSet infoSet = getInfoSet();
-		assertFalse(infoSet.useGUID());
-		builder.setUseGUID(true);
-		assertTrue(infoSet.useGUID());
-		builder.setUseGUID(false);
-		assertFalse(infoSet.useGUID());
-
-	}
+//	@Test
+//	public void testSetGUID() throws Exception {
+//		final QueryInfoSet infoSet = getInfoSet();
+//		assertFalse(infoSet.useGUID());
+//		builder.setUseGUID(true);
+//		assertTrue(infoSet.useGUID());
+//		builder.setUseGUID(false);
+//		assertFalse(infoSet.useGUID());
+//
+//	}
 
 	@Test
 	public void testGetColumn_Node() throws Exception {

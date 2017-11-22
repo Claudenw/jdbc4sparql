@@ -10,6 +10,12 @@ import org.xenei.jdbc4sparql.iface.TableDef;
 import org.xenei.jdbc4sparql.iface.name.TableName;
 import org.xenei.jdbc4sparql.impl.AbstractTable;
 
+/**
+ * The Virtual table for virtual columns.
+ * 
+ * This table has the name "system".
+ *
+ */
 public class VirtualTable extends AbstractTable {
 	public static final String SYSTEM_TABLE = "system";
 	public static final String NAME = "";

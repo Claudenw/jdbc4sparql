@@ -392,16 +392,7 @@ implements Collection<I> {
 		return lst.get(i);
 	}
 
-	// public I findGUID(GUIDObject name) {
-	// NamedObjectGUIDFilter<I> nof = new NamedObjectGUIDFilter<I>(name);
-	// ExtendedIterator<I> iter = iterator().filterKeep(nof);
-	// if (iter.hasNext()) {
-	// return iter.next();
-	// }
-	// return null;
-	//
-	// }
-	//
+	
 	public I findGUIDVar(final String guid) {
 
 		final ExtendedIterator<I> iter = iterator();

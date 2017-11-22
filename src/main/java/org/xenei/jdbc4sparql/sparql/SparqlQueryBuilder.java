@@ -170,7 +170,7 @@ public class SparqlQueryBuilder {
 		this.isBuilt = false;
 		this.infoSet = new QueryInfoSet();
 		this.columnsInUsing = new ArrayList<String>();
-		this.infoSet.setUseGUID(true);
+//		this.infoSet.setUseGUID(true);
 		query.setQuerySelectType();
 	}
 
@@ -182,18 +182,18 @@ public class SparqlQueryBuilder {
 	 */
 	public SparqlQueryBuilder(final SparqlQueryBuilder parent) {
 		this(parent.catalogs, parent.parser, parent.catalog, parent.schema);
-		this.infoSet.setUseGUID(parent.infoSet.useGUID());
+//		this.infoSet.setUseGUID(parent.infoSet.useGUID());
 	}
 
-	/**
-	 * Set the use GUID flag;
-	 *
-	 * @param state
-	 * @return the last state.
-	 */
-	public boolean setUseGUID(final boolean state) {
-		return this.infoSet.setUseGUID(state);
-	}
+//	/**
+//	 * Set the use GUID flag;
+//	 *
+//	 * @param state
+//	 * @return the last state.
+//	 */
+//	public boolean setUseGUID(final boolean state) {
+//		return this.infoSet.setUseGUID(state);
+//	}
 
 	public QueryColumnInfo addAlias(final ColumnName orig,
 			final ColumnName alias) throws SQLDataException {
@@ -742,7 +742,7 @@ public class SparqlQueryBuilder {
 	}
 
 	public QueryColumnInfo getColumn(final Var v) {
-		return infoSet.getColumn(createColumnName(v));
+		return infoSet.findColumnByGUIDVar(v.getName());
 	}
 
 	public QueryTableInfo getTable(final Var v) {

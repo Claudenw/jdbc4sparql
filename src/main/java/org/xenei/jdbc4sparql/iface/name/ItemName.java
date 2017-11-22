@@ -78,7 +78,7 @@ public abstract class ItemName implements GUIDObject {
 	// the bitmap of the used segments.
 	private NameSegments usedSegments;
 	// if true then this object reports its name as it's GUID.
-	private boolean useGUID;
+	//private boolean useGUID;
 
 	/**
 	 * A wild item name. All display segments are null so it matches all other
@@ -167,7 +167,7 @@ public abstract class ItemName implements GUIDObject {
 			throw new IllegalArgumentException("segments may not be null.");
 		}
 		this.fqName = name.fqName;
-		this.useGUID = name.useGUID;
+		//this.useGUID = name.useGUID;
 		this.usedSegments = segments;
 	}
 
@@ -187,14 +187,14 @@ public abstract class ItemName implements GUIDObject {
 		this.usedSegments = segments;
 	}
 
-	/**
-	 * If set true this item will refer to itself by its GUID.
-	 *
-	 * @param state
-	 */
-	public void setUseGUID(final boolean state) {
-		this.useGUID = state;
-	}
+//	/**
+//	 * If set true this item will refer to itself by its GUID.
+//	 *
+//	 * @param state
+//	 */
+//	public void setUseGUID(final boolean state) {
+//		this.useGUID = state;
+//	}
 
 	/**
 	 * Change the used segments. This effectively changes the name of the object
@@ -249,7 +249,7 @@ public abstract class ItemName implements GUIDObject {
 	 * @return
 	 */
 	public String getDBName() {
-		return useGUID ? getGUID() : createName(NameUtils.DB_DOT);
+		return createName(NameUtils.DB_DOT);
 	}
 
 	/**
@@ -284,7 +284,7 @@ public abstract class ItemName implements GUIDObject {
 	 * @return
 	 */
 	public String getSPARQLName() {
-		return useGUID ? getGUID() : createName(NameUtils.SPARQL_DOT);
+		return createName(NameUtils.SPARQL_DOT);
 	}
 
 	/**
@@ -327,14 +327,14 @@ public abstract class ItemName implements GUIDObject {
 				&& (getTable() == null) && (getColumn() == null);
 	}
 
-	/**
-	 * See if we are using the GUID as the name.
-	 *
-	 * @return true if GUID is used as the name.
-	 */
-	public boolean isUseGUID() {
-		return useGUID;
-	}
+//	/**
+//	 * See if we are using the GUID as the name.
+//	 *
+//	 * @return true if GUID is used as the name.
+//	 */
+//	public boolean isUseGUID() {
+//		return useGUID;
+//	}
 
 	/**
 	 * check if this matches that.
@@ -386,12 +386,12 @@ public abstract class ItemName implements GUIDObject {
 	}
 
 	/**
-	 * Items are equal if their sparqlNames are equal.
+	 * Items are equal if their dnNames are equal.
 	 */
 	@Override
 	public boolean equals(final Object o) {
-		return (o instanceof ItemName) ? getSPARQLName().equals(
-				((ItemName) o).getSPARQLName()) : false;
+		return (o instanceof ItemName) ? 
+				((ItemName) o).getDBName().equals(getDBName()) : false;
 	}
 
 	/**

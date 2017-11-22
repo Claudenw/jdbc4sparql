@@ -153,7 +153,7 @@ public abstract class ExpRewriter implements ExprVisitor {
 					mapTo = new ColumnName(mapTo.getCatalog(),
 							mapTo.getSchema(), mapTo.getTable(), ci.getName()
 							.getColumn());
-					stack.push(new ExprVar(mapTo.getSPARQLName()));
+					stack.push(new ExprVar(mapTo.getGUID()));
 					return;
 				}
 			}

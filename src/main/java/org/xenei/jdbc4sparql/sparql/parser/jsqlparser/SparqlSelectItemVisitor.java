@@ -121,7 +121,7 @@ class SparqlSelectItemVisitor implements SelectItemVisitor {
 		if (expr instanceof ExprInfo) {
 			final ExprInfo exprInfo = (ExprInfo) expr;
 			queryBuilder.addVar(exprInfo.getExpr(), exprInfo.getName()
-					.getSPARQLName());
+					.getGUID());
 			for (final ExprColumn column : exprInfo.getColumns()) {
 				final QueryColumnInfo paramColumnInfo = column.getColumnInfo();
 				queryBuilder.getTable(paramColumnInfo.getName().getTableName())
@@ -134,7 +134,7 @@ class SparqlSelectItemVisitor implements SelectItemVisitor {
 			final ColumnName columnName = exprColumn.getColumnInfo().getName();
 			queryBuilder.getTable(columnName.getTableName()).addDataFilter(
 					exprColumn.getColumnInfo());
-			if (exprColumn.getVarName().equals(columnName.getSPARQLName())) {
+			if (exprColumn.getVarName().equals(columnName.getGUID())) {
 				try {
 					queryBuilder.addVar(columnName);
 				} catch (final SQLException e) {

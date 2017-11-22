@@ -11,6 +11,10 @@ import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.name.SchemaName;
 
+/**
+ * The Virtual schema for all virtual tables.
+ *
+ */
 public class VirtualSchema implements Schema {
 	public static final String NAME = "";
 	private final Catalog catalog;

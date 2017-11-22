@@ -379,7 +379,7 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor {
 
 		deparseOrderBy(plainSelect.getOrderByElements());
 
-		// TOP is implements in SPARQL as LIMIT
+		// TOP is implemented in SPARQL as LIMIT
 		final Top top = plainSelect.getTop();
 		Limit limit = plainSelect.getLimit();
 		if ((top != null) && (limit != null)) {

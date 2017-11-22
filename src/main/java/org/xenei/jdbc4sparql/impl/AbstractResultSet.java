@@ -47,10 +47,11 @@ import org.xenei.jdbc4sparql.J4SResultSetMetaData;
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.TypeConverter;
+import org.xenei.jdbc4sparql.iface.name.ColumnName;
 
 public abstract class AbstractResultSet implements ResultSet {
 	private final Table table;
-	private final Map<String, Integer> columnNameIdx;
+	private final Map<ColumnName, Integer> columnNameIdx;
 	private int fetchDirection;
 	private final int holdability;
 	protected int concurrency;
@@ -75,10 +76,10 @@ public abstract class AbstractResultSet implements ResultSet {
 		this.fetchDirection = ResultSet.FETCH_FORWARD;
 		this.holdability = ResultSet.CLOSE_CURSORS_AT_COMMIT;
 		this.concurrency = ResultSet.CONCUR_READ_ONLY;
-		columnNameIdx = new HashMap<String, Integer>();
+		columnNameIdx = new HashMap<ColumnName, Integer>();
 		for (int i = 0; i < table.getColumnCount(); i++) {
 			// FIXME change to withSegments( table.getSegments() ).getDBName()
-			columnNameIdx.put(table.getColumn(i).getName().getShortName(), i);
+			columnNameIdx.put(table.getColumn(i).getName(), i);
 		}
 	}
 
@@ -108,7 +109,8 @@ public abstract class AbstractResultSet implements ResultSet {
 
 	@Override
 	public int findColumn(final String columnName) throws SQLException {
-		final Integer idx = columnNameIdx.get(columnName);
+		ColumnName cn = new ColumnName( "","","",columnName);
+		final Integer idx = columnNameIdx.get(cn);
 		if (idx == null) {
 			throw new SQLException(columnName + " is not a column");
 		}
@@ -291,7 +293,8 @@ public abstract class AbstractResultSet implements ResultSet {
 	}
 
 	private int getColumnIndex(final String columnLabel) throws SQLException {
-		final int i = columnNameIdx.get(columnLabel);// table.getColumnIndex(columnLabel);
+		ColumnName cn = new ColumnName( "","","",columnLabel );
+		final int i = columnNameIdx.get(cn);// table.getColumnIndex(columnLabel);
 		if (i < 0) {
 			throw new SQLException(String.format(
 					"%s is not found in result set", columnLabel));

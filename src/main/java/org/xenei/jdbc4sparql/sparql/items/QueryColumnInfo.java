@@ -69,10 +69,6 @@ public class QueryColumnInfo extends QueryItemInfo<Column, ColumnName> {
 	public boolean isAlias() {
 		return aliasFor != null;
 	}
-
-//	public QueryColumnInfo getAliasFor() {
-//		return aliasFor;
-//	}
 	
 	public QueryColumnInfo getBaseColumnInfo() {
 		return aliasFor != null? aliasFor.getBaseColumnInfo() : this;

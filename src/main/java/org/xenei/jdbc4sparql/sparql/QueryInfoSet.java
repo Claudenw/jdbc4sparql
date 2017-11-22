@@ -43,7 +43,7 @@ public class QueryInfoSet {
 	 */
 	private NameSegments segments;
 
-	private boolean guidFlg;
+	//private boolean guidFlg;
 
 	public QueryInfoSet() {
 		this.tablesInQuery = new QueryItemCollection<QueryTableInfo, Table, TableName>();
@@ -52,7 +52,7 @@ public class QueryInfoSet {
 	}
 
 	public boolean addColumn(final QueryColumnInfo columnInfo) {
-		columnInfo.getName().setUseGUID(guidFlg);
+		//columnInfo.getName().setUseGUID(guidFlg);
 		columnInfo.setSegments(segments);
 		if (LOG.isDebugEnabled()) {
 			QueryInfoSet.LOG.debug("adding column: {}", columnInfo);
@@ -60,23 +60,23 @@ public class QueryInfoSet {
 		return columnsInQuery.add(columnInfo);
 	}
 
-	public boolean setUseGUID(final boolean state) {
-		boolean retval = this.guidFlg;
-		if (this.guidFlg != state) {
-			this.guidFlg = state;
-			for (final QueryItemInfo<Column, ColumnName> columnInfo : columnsInQuery) {
-				columnInfo.getName().setUseGUID(state);
-			}
-			for (final QueryItemInfo<Table, TableName> tableInfo : tablesInQuery) {
-				tableInfo.getName().setUseGUID(state);
-			}
-		}
-		return retval;
-	}
-
-	public boolean useGUID() {
-		return guidFlg;
-	}
+//	public boolean setUseGUID(final boolean state) {
+//		boolean retval = this.guidFlg;
+//		if (this.guidFlg != state) {
+//			this.guidFlg = state;
+//			for (final QueryItemInfo<Column, ColumnName> columnInfo : columnsInQuery) {
+//				columnInfo.getName().setUseGUID(state);
+//			}
+//			for (final QueryItemInfo<Table, TableName> tableInfo : tablesInQuery) {
+//				tableInfo.getName().setUseGUID(state);
+//			}
+//		}
+//		return retval;
+//	}
+//
+//	public boolean useGUID() {
+//		return guidFlg;
+//	}
 
 	public void addDefinedColumns(final List<String> columnsInUsing)
 			throws SQLDataException {
@@ -90,7 +90,7 @@ public class QueryInfoSet {
 
 	public void addTable(final QueryTableInfo tbl) {
 		if (!tablesInQuery.contains(tbl)) {
-			tbl.getName().setUseGUID(guidFlg);
+//			tbl.getName().setUseGUID(guidFlg);
 			if (LOG.isDebugEnabled()) {
 				QueryInfoSet.LOG.debug("adding table: {}", tbl);
 			}
@@ -122,17 +122,6 @@ public class QueryInfoSet {
 		return columnsInQuery.get(name);
 	}
 
-	// /**
-	// * Find the column in the query by its GUID. returns null if not found
-	// *
-	// * @param name
-	// * The column name defining the GUID
-	// * @return the QueryColumnInfo or null.
-	// */
-	// public QueryColumnInfo findColumnByGUID(final ColumnName name) {
-	// return (QueryColumnInfo) columnsInQuery.findGUID(name);
-	// }
-	//
 	/**
 	 * Find the column in the query by its GUID. returns null if not found
 	 *

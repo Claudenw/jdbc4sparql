@@ -89,8 +89,8 @@ abstract public class AbstractSparqlParserTest {
 
 	@Before
 	public void setup() {
-		RQD_NAME.setUseGUID(true);
-		OPT_NAME.setUseGUID(true);
+//		RQD_NAME.setUseGUID(true);
+//		OPT_NAME.setUseGUID(true);
 		catalogs = new HashMap<String, Catalog>();
 		catalogs.put(VirtualCatalog.NAME, new VirtualCatalog());
 		LoggingConfig.setConsole(Level.DEBUG);
@@ -174,20 +174,6 @@ abstract public class AbstractSparqlParserTest {
 	public void testGetSupportedSystemFunctions() {
 		assertNotNull(parser.getSupportedSystemFunctions());
 	}
-
-	// /**
-	// * Parse the SQL string and then deparse it back into SQL to provide the
-	// SQL
-	// * string native to the parser. This is used in support of nativeSQL() in
-	// * the Driver.
-	// *
-	// * @param sqlQuery
-	// * the original SQL string
-	// * @return the native SQL string
-	// * @throws SQLException
-	// * on error.
-	// */
-	// String nativeSQL(String sqlQuery) throws SQLException;
 
 	protected Query getQuery(final String sql) throws SQLDataException,
 	JSQLParserException {

@@ -33,6 +33,8 @@ import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTableDef;
 import org.xenei.jdbc4sparql.impl.virtual.VirtualCatalog;
+import org.xenei.jdbc4sparql.impl.virtual.VirtualSchema;
+import org.xenei.jdbc4sparql.impl.virtual.VirtualTable;
 import org.xenei.jdbc4sparql.meta.MetaCatalogBuilder;
 import org.xenei.jdbc4sparql.sparql.ForceTypeF;
 import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
@@ -641,7 +643,14 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 				fooTableName.getGUID());
 		verifyBinds(results.get(ElementBind.class), vars);
 		tests.clear();
-		assertEquals("var0", query.getProjectVars().get(0).getName());
+		ColumnName columnName = ColumnName.getNameInstance(
+				VirtualCatalog.NAME, VirtualSchema.NAME, VirtualTable.NAME,
+				"var0");
+		assertEquals(columnName.getGUID(), query.getProjectVars().get(0).getName());
+	}
+
+	@Test
+	public void testSumFunctionSelect_as() throws Exception {
 
 		query = getQuery("SELECT SUM(IntCol) as arg FROM foo");
 		tests.put(ElementBind.class, 1);
@@ -653,7 +662,8 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 				fooTableName.getGUID());
 		verifyBinds(results.get(ElementBind.class), vars);
 		tests.clear();
-		assertEquals("arg", query.getProjectVars().get(0).getName());
+		
+		assertEquals( fooTableName.getColumnName("arg").getGUID(), query.getProjectVars().get(0).getName());
 	}
 
 	@Test

@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.CompareToBuilder;
+import org.xenei.jdbc4sparql.impl.NameUtils;
 
 /**
  * A class that represents the Fully qualified name of a JDBC object.
@@ -44,15 +45,8 @@ public interface FQName extends GUIDObject {
 		 */
 		public static boolean equals(final Object fqName1, final Object fqName2) {
 			if ((fqName1 instanceof FQName) && (fqName2 instanceof FQName)) {
-				return ((FQName) fqName1).getGUID().equals(
-						((FQName) fqName2).getGUID());
-				// FQName bn1 = (FQName) fqName1;
-				// FQName bn2 = (FQName) fqName2;
-				// return new EqualsBuilder()
-				// .append(bn1.getCatalog(), bn2.getCatalog())
-				// .append(bn1.getSchema(), bn2.getSchema())
-				// .append(bn1.getTable(), bn2.getTable())
-				// .append(bn1.getColumn(), bn2.getColumn()).isEquals();
+				return ((FQName) fqName1).toString().equals(
+						((FQName) fqName2).toString());
 			}
 			return false;
 		}
@@ -66,18 +60,18 @@ public interface FQName extends GUIDObject {
 		 */
 		public static int hashCode(final FQName fqName) {
 			return fqName.getGUID().hashCode();
-			// return new HashCodeBuilder().append(fqName.getCatalog())
-			// .append(fqName.getSchema()).append(fqName.getTable())
-			// .append(fqName.getColumn()).toHashCode();
-
 		}
 
 		public static String makeGUID(final String catalog,
 				final String schema, final String table, final String column) {
-			final String t = StringUtils.defaultString(catalog)
-					+ StringUtils.defaultString(schema)
-					+ StringUtils.defaultString(table)
-					+ StringUtils.defaultString(column);
+			final String t = String.format( "%s%s%s%s%s%s%s", 
+					StringUtils.defaultString(catalog),
+					NameUtils.DB_DOT,
+					 StringUtils.defaultString(schema),
+						NameUtils.DB_DOT,
+					 StringUtils.defaultString(table),
+						NameUtils.DB_DOT,
+					 StringUtils.defaultString(column));
 			return "v_"
 			+ (UUID.nameUUIDFromBytes(t.getBytes()).toString().replace(
 							"-", "_"));

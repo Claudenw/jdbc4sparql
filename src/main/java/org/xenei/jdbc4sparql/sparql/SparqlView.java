@@ -104,6 +104,11 @@ public class SparqlView extends AbstractTable {
 		public boolean isOptional() {
 			return columnInfo.isOptional();
 		}
+		
+		@Override
+		public String toString() {
+			return columnInfo.getName().getDBName();
+		}
 
 	}
 

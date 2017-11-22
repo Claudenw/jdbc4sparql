@@ -79,10 +79,10 @@ implements NamedObject<N>, GUIDObject {
 	/**
 	 * Get the variable for the query item.
 	 *
-	 * @return The variable based on the column name.
+	 * @return The variable based on the column GUID.
 	 */
 	public Var getVar() {
-		return Var.alloc(this.name.getSPARQLName());
+		return Var.alloc(this.name.getGUID());
 	}
 
 	@Override
