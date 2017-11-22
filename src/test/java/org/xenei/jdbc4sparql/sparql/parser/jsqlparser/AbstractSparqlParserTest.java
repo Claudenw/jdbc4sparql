@@ -26,6 +26,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.xenei.jdbc4sparql.LoggingConfig;
 import org.xenei.jdbc4sparql.iface.Catalog;
+import org.xenei.jdbc4sparql.iface.name.ColumnName;
 import org.xenei.jdbc4sparql.iface.name.TableName;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
@@ -66,7 +67,9 @@ abstract public class AbstractSparqlParserTest {
 	protected SparqlParser parser;
 	protected Map<String, Catalog> catalogs;
 	protected RdfCatalog catalog;
+	protected final static String CATALOG_NAME = "testCatalog";
 	protected RdfSchema schema;
+	protected final static String SCHEMA_NAME = "testSchema";
 	protected final CCJSqlParserManager parserManager = new CCJSqlParserManager();
 	protected Query query;
 	protected Map<Class<? extends Element>, Integer> tests;
@@ -76,12 +79,18 @@ abstract public class AbstractSparqlParserTest {
 	protected List<String> vars;
 
 	protected static String RQD = "IntCol";
+	protected static ColumnName RQD_NAME = new ColumnName( CATALOG_NAME, SCHEMA_NAME,
+			"foo", RQD);
 	protected static String OPT = "NullableStringCol";
+	protected static ColumnName OPT_NAME = new ColumnName( CATALOG_NAME, SCHEMA_NAME,
+			"foo", OPT);
 	protected static String RQD_TEST = "StringCol";
 	protected static String OPT_TEST = "NullableIntCol";
 
 	@Before
 	public void setup() {
+		RQD_NAME.setUseGUID(true);
+		OPT_NAME.setUseGUID(true);
 		catalogs = new HashMap<String, Catalog>();
 		catalogs.put(VirtualCatalog.NAME, new VirtualCatalog());
 		LoggingConfig.setConsole(Level.DEBUG);
@@ -94,11 +103,11 @@ abstract public class AbstractSparqlParserTest {
 		final RDFConnection connection = RDFConnectionFactory.connect( DatasetFactory.create());
 		
 		catalog = new RdfCatalog.Builder().setLocalConnection(connection)
-				.setName("testCatalog").build(em);
+				.setName(CATALOG_NAME).build(em);
 		catalogs.put(catalog.getShortName(), catalog);
 
 		schema = new RdfSchema.Builder().setCatalog(catalog)
-				.setName("testSchema").build(em);
+				.setName(SCHEMA_NAME).build(em);
 
 		// create the foo table
 		final RdfTableDef tableDef = new RdfTableDef.Builder()

@@ -23,6 +23,7 @@ import net.sf.jsqlparser.statement.Statement;
 import org.apache.log4j.Level;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.xenei.jdbc4sparql.LoggingConfig;
 import org.xenei.jdbc4sparql.iface.Catalog;
@@ -59,6 +60,7 @@ import org.apache.jena.sparql.syntax.ElementService;
  * Class that validates the parser correctly parses the SQL into SPARQL
  *
  */
+@Ignore( "No difference between local and remote")
 public class RemoteSparqlParserTest extends AbstractSparqlParserTest {
 
 	private static final String SERVICE_URI="http://example.com/sparql";

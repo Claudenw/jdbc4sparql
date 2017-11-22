@@ -86,7 +86,7 @@ public class SparqlSelectItemVisitorTest {
 		visitor.visit(allColumns);
 		final List<Var> lst = query.getProjectVars();
 		assertEquals(1, lst.size());
-		assertEquals(columnName.getSPARQLName(), lst.get(0).getName());
+		assertEquals(columnName.getGUID(), lst.get(0).getName());
 	}
 
 	@Test
@@ -97,7 +97,7 @@ public class SparqlSelectItemVisitorTest {
 		visitor.visit(allTableColumns);
 		final List<Var> lst = query.getProjectVars();
 		assertEquals(1, lst.size());
-		assertEquals(columnName.getSPARQLName(), lst.get(0).getName());
+		assertEquals(columnName.getGUID(), lst.get(0).getName());
 	}
 
 	@Test
@@ -113,8 +113,7 @@ public class SparqlSelectItemVisitorTest {
 		visitor.visit(selectExpression);
 		final List<Var> lv = query.getProjectVars();
 		assertEquals(
-				Var.alloc("testSchema" + NameUtils.SPARQL_DOT + "testTable"
-						+ NameUtils.SPARQL_DOT + "testCol"), lv.get(0).asNode());
+				Var.alloc( columnName.getGUID()), lv.get(0).asNode());
 	}
 
 	@Before

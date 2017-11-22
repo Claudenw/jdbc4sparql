@@ -63,7 +63,9 @@ abstract public class AbstractSparqlVisitorTest {
 	protected TableName tableName;
 	protected Model model;
 	protected RdfCatalog catalog;
+	protected static final String CATALOG_NAME = "testCatalog";
 	protected RdfSchema schema;
+	protected static final String SCHEMA_NAME = "testSchema";
 
 	protected Map<Class<? extends Element>, Integer> tests;
 	protected Map<Class<? extends Element>, Wrapper> results;
@@ -101,11 +103,11 @@ abstract public class AbstractSparqlVisitorTest {
 		RDFConnection connection = RDFConnectionFactory.connect( DatasetFactory.create(model) );
 		EntityManager mgr = new EntityManagerImpl( connection );
 		catalog = new RdfCatalog.Builder().setLocalConnection(connection)
-				.setName("testCatalog").build(mgr);
+				.setName(CATALOG_NAME).build(mgr);
 		catalogs.put(catalog.getShortName(), catalog);
 
 		schema = new RdfSchema.Builder().setCatalog(catalog)
-				.setName("testSchema").build( mgr );
+				.setName(SCHEMA_NAME).build( mgr );
 
 		// create the foo table
 		final RdfTableDef tableDef = new RdfTableDef.Builder()

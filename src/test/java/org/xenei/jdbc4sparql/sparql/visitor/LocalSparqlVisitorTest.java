@@ -66,9 +66,9 @@ public class LocalSparqlVisitorTest extends AbstractSparqlVisitorTest {
 		results = validate(q, tests);
 
 		final List<Var> vLst = q.getProjectVars();
-		Assert.assertEquals(7, vLst.size());
+		Assert.assertEquals( 8, vLst.size());
 		for (final Var v : vLst) {
-			Assert.assertTrue(Arrays.asList(colNames).contains(v.getName()));
+			Assert.assertTrue("Missing: "+v.getName(), Arrays.asList(colNames).contains(v.getName()));
 		}
 
 		for (final Element el : results.get(ElementBind.class).lst) {
@@ -109,7 +109,10 @@ public class LocalSparqlVisitorTest extends AbstractSparqlVisitorTest {
 	@Test
 	public void testNoColParse() throws Exception {
 		final String[] colNames = {
-				"StringCol", "NullableStringCol", "IntCol", "NullableIntCol"
+				new ColumnName( CATALOG_NAME, SCHEMA_NAME, "foo", "StringCol").getGUID(),
+				new ColumnName( CATALOG_NAME, SCHEMA_NAME, "foo", "NullableStringCol").getGUID(),
+				new ColumnName( CATALOG_NAME, SCHEMA_NAME, "foo", "IntCol").getGUID(),
+				new ColumnName( CATALOG_NAME, SCHEMA_NAME, "foo", "NullableIntCol").getGUID()
 		};
 
 		final Query q = getQuery("SELECT * FROM foo");
@@ -139,14 +142,15 @@ public class LocalSparqlVisitorTest extends AbstractSparqlVisitorTest {
 		tests.put(ElementOptional.class, 2);
 		results = validate(q, tests);
 
+		ColumnName strCol = new ColumnName( CATALOG_NAME, SCHEMA_NAME, "foo", "StringCol");
 		final List<Var> vLst = q.getProjectVars();
 		Assert.assertEquals(1, vLst.size());
-		Assert.assertEquals(Var.alloc("StringCol"), vLst.get(0));
+		Assert.assertEquals(Var.alloc(strCol.getGUID()), vLst.get(0));
 
 		// 1 required column
 		final ElementBind eb = (ElementBind) results.get(ElementBind.class).lst
 				.get(0);
-		Assert.assertEquals("StringCol", eb.getVar().getName());
+		Assert.assertEquals(strCol.getGUID(), eb.getVar().getName());
 	}
 
 	@Test
@@ -158,13 +162,14 @@ public class LocalSparqlVisitorTest extends AbstractSparqlVisitorTest {
 		tests.put(ElementOptional.class, 2);
 		results = validate(q, tests);
 
+		ColumnName barName = new ColumnName( CATALOG_NAME, SCHEMA_NAME, "foo", "bar");
 		final List<Var> vLst = q.getProjectVars();
 		Assert.assertEquals(1, vLst.size());
-		Assert.assertEquals(Var.alloc("bar"), vLst.get(0));
+		Assert.assertEquals(Var.alloc( barName.getGUID()), vLst.get(0));
 
 		final ElementBind eb = (ElementBind) results.get(ElementBind.class).lst
 				.get(0);
-		Assert.assertEquals("bar", eb.getVar().getName());
+		Assert.assertEquals(barName.getGUID(), eb.getVar().getName());
 	}
 
 	@Test
@@ -180,21 +185,22 @@ public class LocalSparqlVisitorTest extends AbstractSparqlVisitorTest {
 
 		final ElementBind eb = (ElementBind) results.get(ElementBind.class).lst
 				.get(0);
-		Assert.assertEquals("StringCol", eb.getVar().getName());
+		ColumnName strgCol = new ColumnName( CATALOG_NAME, SCHEMA_NAME, "foo", "StringCol");
+		Assert.assertEquals(strgCol.getGUID(), eb.getVar().getName());
 
 		// should be the last one
 		final Expr expr = ((ElementFilter) results.get(ElementFilter.class).lst
 				.get(1)).getExpr();
 		Assert.assertTrue(expr instanceof E_NotEquals);
 		final E_NotEquals expr2 = (E_NotEquals) expr;
-		Assert.assertEquals("StringCol",
+		Assert.assertEquals(strgCol.getGUID(),
 				((ExprVar) (expr2.getArg1())).getVarName());
 		Assert.assertEquals("baz",
 				((NodeValueString) (expr2.getArg2())).asString());
 
 		final List<Var> vLst = q.getProjectVars();
 		Assert.assertEquals(1, vLst.size());
-		Assert.assertEquals(Var.alloc("StringCol"), vLst.get(0));
+		Assert.assertEquals(Var.alloc(strgCol.getGUID()), vLst.get(0));
 
 	}
 
@@ -210,18 +216,18 @@ public class LocalSparqlVisitorTest extends AbstractSparqlVisitorTest {
 
 		final List<Var> vLst = q.getProjectVars();
 		Assert.assertEquals(1, vLst.size());
-		Assert.assertEquals(Var.alloc("StringCol"), vLst.get(0));
+		Assert.assertEquals(Var.alloc( new ColumnName( CATALOG_NAME, SCHEMA_NAME, "bar", "StringCol").getGUID()), vLst.get(0));
 
 		final ElementBind eb = (ElementBind) results.get(ElementBind.class).lst
 				.get(0);
-		Assert.assertEquals("StringCol", eb.getVar().getName());
+		Assert.assertEquals( new ColumnName( CATALOG_NAME, SCHEMA_NAME, "bar", "StringCol").getGUID(), eb.getVar().getName());
 
 		// should be the last one
 		final Expr expr = ((ElementFilter) results.get(ElementFilter.class).lst
 				.get(1)).getExpr();
 		Assert.assertTrue(expr instanceof E_NotEquals);
 		final E_NotEquals expr2 = (E_NotEquals) expr;
-		Assert.assertEquals("StringCol",
+		Assert.assertEquals( new ColumnName( CATALOG_NAME, SCHEMA_NAME, "bar", "StringCol").getGUID(),
 				((ExprVar) (expr2.getArg1())).getVarName());
 		Assert.assertEquals("baz",
 				((NodeValueString) (expr2.getArg2())).asString());

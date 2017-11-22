@@ -187,7 +187,7 @@ public class NumericFunctionHandlerTests {
 		assertEquals( 1, exprLst.size() );
 		Expr expr2 = exprLst.get(0);
 		assertTrue(expr2 instanceof ExprColumn);
-		assertEquals(columnName, ((ExprColumn) expr2).getColumnInfo().getName());
+		assertEquals(columnName.getGUID(), ((ExprColumn) expr2).getColumnInfo().getName().getGUID());
 	}
 
 	@Test
@@ -225,7 +225,7 @@ public class NumericFunctionHandlerTests {
 		assertEquals( 1, exprLst.size() );
 		Expr expr2 = exprLst.get(0);
 		assertTrue(expr2 instanceof ExprColumn);
-		assertEquals(columnName, ((ExprColumn) expr2).getColumnInfo().getName());
+		assertEquals(columnName.getGUID(), ((ExprColumn) expr2).getColumnInfo().getName().getGUID());
 	}
 
 	@Test
@@ -245,7 +245,7 @@ public class NumericFunctionHandlerTests {
 		assertEquals( 1, exprLst.size() );
 		Expr expr2 = exprLst.get(0);
 		assertTrue(expr2 instanceof ExprColumn);
-		assertEquals(columnName, ((ExprColumn) expr2).getColumnInfo().getName());
+		assertEquals(columnName.getGUID(), ((ExprColumn) expr2).getColumnInfo().getName().getGUID());
 	}
 
 	@Test
@@ -298,6 +298,6 @@ public class NumericFunctionHandlerTests {
 		assertEquals( 1, exprLst.size() );
 		Expr expr2 = exprLst.get(0);
 		assertTrue(expr2 instanceof ExprColumn);
-		assertEquals(columnName, ((ExprColumn) expr2).getColumnInfo().getName());
+		assertEquals(columnName.getGUID(), ((ExprColumn) expr2).getColumnInfo().getName().getGUID());
 	}
 }
