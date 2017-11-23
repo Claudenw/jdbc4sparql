@@ -84,9 +84,8 @@ public class QueryTableInfoTest {
 
 	@Test
 	public void testGetVar() {
-		final String dbName = "schema" + NameUtils.SPARQL_DOT + "table";
 		final Var v = tableInfo.getVar();
-		assertEquals(dbName, v.getName());
+		assertEquals(tableName.getGUID(), v.getName());
 	}
 
 	@Test
@@ -184,7 +183,7 @@ public class QueryTableInfoTest {
 		pth = epb.patternElts().next();
 		assertEquals(tableInfo.getGUIDVar(), pth.asTriple().getSubject());
 		assertEquals(NodeFactory.createURI("b"), pth.asTriple().getPredicate());
-		assertEquals(Var.alloc("v_906819fe_e4e6_30eb_8431_4483a755c4f4"), pth
+		assertEquals(Var.alloc( columnName.getGUID()), pth
 				.asTriple().getObject());
 
 	}

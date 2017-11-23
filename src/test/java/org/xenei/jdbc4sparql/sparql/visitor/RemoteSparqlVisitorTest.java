@@ -27,6 +27,7 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.xenei.jdbc4sparql.iface.name.ColumnName;
 import org.xenei.jdbc4sparql.iface.name.NameSegments;
@@ -52,6 +53,7 @@ import org.apache.jena.sparql.syntax.ElementPathBlock;
 import org.apache.jena.sparql.syntax.ElementService;
 import org.apache.jena.sparql.syntax.ElementSubQuery;
 
+@Ignore( "No difference between local an remote")
 public class RemoteSparqlVisitorTest extends AbstractSparqlVisitorTest {
 
 	private static final String SERVICE_URI = "http://example.com/sparql";

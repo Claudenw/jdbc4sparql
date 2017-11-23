@@ -421,9 +421,9 @@ ResourceWrapper {
 	}
 
 	@Override
-	public Column getColumn(final String name) {
+	public Column getColumn(final String shortName) {
 		for (final Column col : getColumnList()) {
-			if (col.getName().getShortName().equals(name)) {
+			if (col.getName().getShortName().equals(shortName)) {
 				return col;
 			}
 		}

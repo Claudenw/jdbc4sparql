@@ -124,7 +124,7 @@ public class StringFunctionHandler extends AbstractFunctionHandler {
 
 		final Expr expr = new E_StrReplace(arg1, arg2, arg3, null);
 		// final ColumnName colName = tblName.getColumnName(func.getName());
-		final ColumnName colName = tblName.getColumnName(alias.getAlias());
+		final ColumnName colName = getColumnName( alias );
 		builder.registerFunction(colName, java.sql.Types.VARCHAR);
 		return ExprInfoFactory.getInstance(expr, exprVisitor.getColumns(),
 				colName);
@@ -163,7 +163,7 @@ public class StringFunctionHandler extends AbstractFunctionHandler {
 
 		final Expr expr = new E_StrSubstring(expr1, expr2, expr3);
 		// final ColumnName colName = tblName.getColumnName(func.getName());
-		final ColumnName colName = tblName.getColumnName(alias.getAlias());
+		final ColumnName colName = getColumnName( alias );
 		builder.registerFunction(colName, java.sql.Types.VARCHAR);
 		return ExprInfoFactory.getInstance(expr, exprVisitor.getColumns(),
 				colName);

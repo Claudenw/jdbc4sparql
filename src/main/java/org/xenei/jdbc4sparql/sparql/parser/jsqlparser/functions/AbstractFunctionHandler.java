@@ -25,17 +25,22 @@ import org.apache.jena.sparql.expr.ExprFunction1;
 public abstract class AbstractFunctionHandler {
 	protected SparqlQueryBuilder builder;
 	protected final SparqlExprVisitor exprVisitor;
-	protected final TableName tblName;
+	private final TableName tblName;
 
 	public AbstractFunctionHandler(final SparqlQueryBuilder builder) {
 		this.builder = builder;
 		this.exprVisitor = new SparqlExprVisitor(builder,
 				SparqlQueryBuilder.REQUIRED, false);
-		tblName = new TableName(VirtualCatalog.NAME, VirtualSchema.NAME,
+		tblName = new TableName(builder.getCatalogName(), VirtualSchema.NAME,
 				VirtualTable.NAME);
 		builder.getTable(tblName);
 	}
 
+	protected ColumnName getColumnName( AliasInfo aliasInfo )
+	{
+		return tblName.getColumnName( aliasInfo.getAlias());
+	}
+	
 	protected IllegalArgumentException getNoArgumentEx(final Function func,
 			final String count) {
 		return new IllegalArgumentException(String.format(
@@ -79,7 +84,7 @@ public abstract class AbstractFunctionHandler {
 			final ExprFunction0 expr = clazz.newInstance();
 			// stack.push(expr);
 			// final ColumnName colName = tblName.getColumnName(func.getName());
-			final ColumnName colName = tblName.getColumnName(alias.getAlias());
+			final ColumnName colName = getColumnName(alias);
 			builder.registerFunction(colName, type);
 			return ExprInfoFactory.getInstance(expr, colName);
 		} catch (final InstantiationException e) {
@@ -109,7 +114,7 @@ public abstract class AbstractFunctionHandler {
 
 			// stack.push(expr);
 			// final ColumnName colName = tblName.getColumnName(func.getName());
-			final ColumnName colName = tblName.getColumnName(alias.getAlias());
+			final ColumnName colName = getColumnName( alias );
 			builder.registerFunction(colName, type);
 			return ExprInfoFactory.getInstance(expr, exprVisitor.getColumns(),
 					colName);

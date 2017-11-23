@@ -74,16 +74,16 @@ public class ColumnName extends ItemName {
 		final String[] parts = name.split(separator);
 		switch (parts.length) {
 			case 4:
-				return new ColumnName(parts[0], parts[1], parts[2], parts[4]);
+				return new ColumnName(parts[0], parts[1], parts[2], parts[4], NameSegments.ALL);
 
 			case 3:
-				return new ColumnName(catalog, parts[0], parts[1], parts[2]);
+				return new ColumnName(catalog, parts[0], parts[1], parts[2], NameSegments.FTTT);
 
 			case 2:
-				return new ColumnName(catalog, schema, parts[0], parts[1]);
+				return new ColumnName(catalog, schema, parts[0], parts[1], NameSegments.FFTT);
 
 			case 1:
-				return new ColumnName(catalog, schema, table, parts[0]);
+				return new ColumnName(catalog, schema, table, parts[0], NameSegments.FFFT);
 
 			default:
 				throw new IllegalArgumentException(String.format(
@@ -203,10 +203,10 @@ public class ColumnName extends ItemName {
 						column, "column")), segments);
 	}
 
-	@Override
-	public String getShortName() {
-		return getColumn();
-	}
+//	@Override
+//	public String getShortName() {
+//		return getColumn();
+//	}
 
 	/**
 	 * Returns the TableName object for column
@@ -217,26 +217,26 @@ public class ColumnName extends ItemName {
 		return new TableName(this);
 	}
 
-	@Override
-	protected String createName(final String separator) {
-
-		final StringBuilder sb = new StringBuilder();
-
-		if (StringUtils.isNotEmpty(getSchema())) {
-			sb.append(getSchema()).append(separator);
-		}
-
-		final String tbl = StringUtils.defaultString(getTable());
-		if ((tbl.length() > 0) || (sb.length() > 0)) {
-			sb.append(tbl).append(separator);
-		}
-
-		if (StringUtils.isNotEmpty(getColumn())) {
-			sb.append(getColumn());
-		}
-		return sb.toString();
-
-	}
+//	@Override
+//	protected String createName(final String separator) {
+//
+//		final StringBuilder sb = new StringBuilder();
+//
+//		if (StringUtils.isNotEmpty(getSchema())) {
+//			sb.append(getSchema()).append(separator);
+//		}
+//
+//		final String tbl = StringUtils.defaultString(getTable());
+//		if ((tbl.length() > 0) || (sb.length() > 0)) {
+//			sb.append(tbl).append(separator);
+//		}
+//
+//		if (StringUtils.isNotEmpty(getColumn())) {
+//			sb.append(getColumn());
+//		}
+//		return sb.toString();
+//
+//	}
 
 	/**
 	 * Clone this column name with different segments.

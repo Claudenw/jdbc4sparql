@@ -104,18 +104,18 @@ public class SchemaName extends ItemName {
 				tblName);
 	}
 
-	@Override
-	protected String createName(final String separator) {
-		return StringUtils.defaultString(getSchema());
-	}
+//	@Override
+//	protected String createName(final String separator) {
+//		return StringUtils.defaultString(getSchema());
+//	}
 
 	/**
 	 * Returns the schema name.
 	 */
-	@Override
-	public String getShortName() {
-		return getSchema();
-	}
+//	@Override
+//	public String getShortName() {
+//		return getSchema();
+//	}
 
 	@Override
 	public SchemaName clone(final NameSegments segs) {

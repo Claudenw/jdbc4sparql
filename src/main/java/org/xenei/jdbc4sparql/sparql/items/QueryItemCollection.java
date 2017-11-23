@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -75,17 +76,6 @@ implements Collection<I> {
 		lst.clear();
 	}
 
-	// public boolean contains(ItemName name) {
-	// return match(name).hasNext();
-	// }
-
-	// public boolean contains(GUIDObject guidObj) {
-	// return findGUID( guidObj ) != null;
-	// }
-	// public boolean contains(NamedObject<?> arg0) {
-	// return match(arg0.getName()).hasNext();
-	// }
-
 	/**
 	 * Executes one of the NamedObject, QueryItemInfo, and ItemName contains()
 	 * methods or throws an IllegalArgumentException if not one of the above.
@@ -119,13 +109,13 @@ implements Collection<I> {
 	/**
 	 * Looks in the list for any QueryItemInfo.getBaseObject.equals();
 	 *
-	 * @param arg0
+	 * @param namedObject
 	 *            the Named object to look for
 	 * @return true if the named object is found.
 	 */
-	public boolean contains(final NamedObject<?> arg0) {
+	public boolean contains(final NamedObject<?> namedObject) {
 		for (final QueryItemInfo<?, ?> itemInfo : lst) {
-			if (itemInfo.getBaseObject().getName().matches(arg0.getName())) {
+			if (itemInfo.getBaseObject().getName().matches(namedObject.getName(), namedObject.getName().getUsedSegments())) {
 				return true;
 			}
 		}
@@ -140,7 +130,7 @@ implements Collection<I> {
 	 * @return true if the named object is found.
 	 */
 	public boolean contains(final ItemName arg0) {
-		return match(arg0).hasNext();
+		return match(arg0, arg0.getUsedSegments()).hasNext();
 	}
 
 	/**
@@ -199,7 +189,7 @@ implements Collection<I> {
 	 */
 	public boolean remove(final ItemName arg0) {
 		final int startSize = lst.size();
-		lst = notMatch(arg0).toList();
+		lst = notMatch(arg0, arg0.getUsedSegments()).toList();
 		return startSize != lst.size();
 	}
 
@@ -239,6 +229,17 @@ implements Collection<I> {
 				"Must be a QueryItemInfo, NamedObject, or ItemName");
 	}
 
+	public boolean remove(final String guid) {
+		boolean removed = false;
+		Iterator<I> iter = WrappedIterator.create(lst.iterator()).filterKeep( i -> guid.equals(i.getName().getGUID() ));
+		while( iter.hasNext() )
+		{
+			iter.next();
+			iter.remove();
+			removed = true;
+		}
+		return removed;
+	}
 	/**
 	 * removes all the objects in the collection if they are a QueryItemInfo,
 	 * NamedObject or ItemName.
@@ -343,7 +344,7 @@ implements Collection<I> {
 	 *             if more than one object matches.
 	 */
 	public I get(final ItemName name) {
-		final Iterator<I> iter = match(name);
+		final Iterator<I> iter = match(name,name.getUsedSegments());
 		if (iter.hasNext()) {
 			final I retval = iter.next();
 			if (iter.hasNext()) {
@@ -412,18 +413,27 @@ implements Collection<I> {
 	}
 
 	public int count(final ItemName name) {
-		return match(name).toList().size();
+		return match(name, name.getUsedSegments()).toList().size();
+	}
+	
+	public int count(final ItemName name, NameSegments segs) {
+		return match(name,segs).toList().size();
 	}
 
 	public int count(final T namedObject) {
 		return match(namedObject).toList().size();
 	}
 
-	public ExtendedIterator<I> match(final ItemName name) {
-		final ItemNameFilter<I> nof = new ItemNameFilter<I>(name);
+	public ExtendedIterator<I> match(final ItemName name, NameSegments segs) {
+		final ItemNameFilter<I> nof = new ItemNameFilter<I>(name, segs);
 		return iterator().filterKeep(nof);
 	}
 
+	public I match(final String guid) {
+		Optional<I> opt = lst.stream().filter( f -> guid.equals( f.getGUID())).findFirst();
+		return opt.isPresent()?opt.get():null;
+	}
+	
 	public ExtendedIterator<I> match(final T name) {
 		final NamedObjectFilter<I> nof = new NamedObjectFilter<I>(name);
 		return iterator().filterKeep(nof);
@@ -433,8 +443,8 @@ implements Collection<I> {
 		return iterator().filterKeep(new BaseObjectFilter<I>(baseObject));
 	}
 
-	public ExtendedIterator<I> notMatch(final ItemName name) {
-		final ItemNameFilter<I> nof = new ItemNameFilter<I>(name);
+	public ExtendedIterator<I> notMatch(final ItemName name, NameSegments segs) {
+		final ItemNameFilter<I> nof = new ItemNameFilter<I>(name,segs);
 		return iterator().filterDrop(nof);
 	}
 
@@ -460,8 +470,8 @@ implements Collection<I> {
 		return -1;
 	}
 
-	public int indexOf(final ItemName name) {
-		final ItemNameFilter<I> nof = new ItemNameFilter<I>(name);
+	public int indexOf(final ItemName name, NameSegments segs) {
+		final ItemNameFilter<I> nof = new ItemNameFilter<I>(name,segs);
 		final Iterator<I> iter = iterator();
 		int i = 0;
 		while (iter.hasNext()) {
@@ -480,15 +490,18 @@ implements Collection<I> {
 
 	public static class ItemNameFilter<I extends QueryItemInfo<?, ?>> implements Predicate<I> {
 
-		protected Collection<ItemName> others;
+		protected final Collection<ItemName> others;
+		protected final NameSegments segs;
 
-		public ItemNameFilter(final ItemName other) {
+		public ItemNameFilter(final ItemName other, NameSegments segs) {
 			this.others = new ArrayList<ItemName>();
 			this.others.add(other);
+			this.segs = segs;
 		}
 
-		public ItemNameFilter(final Collection<?> others) {
+		public ItemNameFilter(final Collection<?> others, NameSegments segs) {
 			this.others = new ArrayList<ItemName>();
+			this.segs = segs;
 			for (final Object t : others) {
 				if (t instanceof ItemName) {
 					this.others.add((ItemName) t);
@@ -506,9 +519,8 @@ implements Collection<I> {
 
 		@Override
 		public boolean test(final I item) {
-			final ItemName name = item.getName().clone(NameSegments.ALL);
 			for (final ItemName other : others) {
-				if (other.matches(name)) {
+				if (other.matches(item.getName(),segs)) {
 					return true;
 				}
 			}

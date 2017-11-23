@@ -85,10 +85,7 @@ public class QueryColumnInfoTest {
 
 	@Test
 	public void testGetVar() {
-		final String dbName = "schema" + NameUtils.SPARQL_DOT + "table"
-				+ NameUtils.SPARQL_DOT + "column";
-		final Var v = columnInfo.getVar();
-		assertEquals(dbName, v.getName());
+		assertEquals(columnName.getGUID(), columnInfo.getVar().getName());
 	}
 
 	@Test

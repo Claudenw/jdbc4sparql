@@ -60,25 +60,7 @@ public class QueryInfoSet {
 		return columnsInQuery.add(columnInfo);
 	}
 
-//	public boolean setUseGUID(final boolean state) {
-//		boolean retval = this.guidFlg;
-//		if (this.guidFlg != state) {
-//			this.guidFlg = state;
-//			for (final QueryItemInfo<Column, ColumnName> columnInfo : columnsInQuery) {
-//				columnInfo.getName().setUseGUID(state);
-//			}
-//			for (final QueryItemInfo<Table, TableName> tableInfo : tablesInQuery) {
-//				tableInfo.getName().setUseGUID(state);
-//			}
-//		}
-//		return retval;
-//	}
-//
-//	public boolean useGUID() {
-//		return guidFlg;
-//	}
-
-	public void addDefinedColumns(final List<String> columnsInUsing)
+	public void addDefinedColumns(final List<ColumnName> columnsInUsing)
 			throws SQLDataException {
 		if (tablesInQuery.isEmpty()) {
 			throw new IllegalArgumentException("Must have at least one table");
@@ -90,7 +72,6 @@ public class QueryInfoSet {
 
 	public void addTable(final QueryTableInfo tbl) {
 		if (!tablesInQuery.contains(tbl)) {
-//			tbl.getName().setUseGUID(guidFlg);
 			if (LOG.isDebugEnabled()) {
 				QueryInfoSet.LOG.debug("adding table: {}", tbl);
 			}
@@ -143,7 +124,7 @@ public class QueryInfoSet {
 					"There must be at lease 1 table in the query.");
 		}
 		if (tablesInQuery.size() == 1) {
-			segments = NameSegments.getInstance(false, false, false, true);
+			segments = NameSegments.FFFT;
 		}
 		else {
 			boolean duplicateTable = false;
@@ -153,14 +134,14 @@ public class QueryInfoSet {
 			// have to specify schema
 			for (final QueryItemInfo<Table, TableName> qti : tablesInQuery) {
 				final TableName sn = qti.getName().clone(
-						NameSegments.getInstance(false, true, true, true));
+						NameSegments.FTTT);
 				duplicateTable |= names.contains(sn.getTable());
 				names.add(sn.getTable());
 			}
 			names.clear();
 			for (final QueryColumnInfo qci : columnsInQuery) {
 				final ColumnName sn = qci.getName().clone(
-						NameSegments.getInstance(false, true, true, true));
+						NameSegments.FTTT);
 				duplicateColumn |= names.contains(sn.getTable());
 				names.add(sn.getTable());
 			}
@@ -204,7 +185,7 @@ public class QueryInfoSet {
 	 * @return the index (0 based) or -1 if not present
 	 */
 	public int getColumnIndex(final ColumnName name) {
-		return columnsInQuery.indexOf(name);
+		return columnsInQuery.indexOf(name, name.getUsedSegments());
 	}
 
 	/**
@@ -243,7 +224,7 @@ public class QueryInfoSet {
 	 * @return The list o
 	 */
 	public List<QueryColumnInfo> listColumns(final ItemName name) {
-		return columnsInQuery.match(name).toList();
+		return columnsInQuery.match(name, name.getUsedSegments()).toList();
 	}
 
 	public Set<Column> uniqueColumns() {
@@ -251,7 +232,7 @@ public class QueryInfoSet {
 	}
 
 	public ExtendedIterator<QueryColumnInfo> iterateColumns(final ItemName name) {
-		return columnsInQuery.match(name);
+		return columnsInQuery.match(name,name.getUsedSegments());
 	}
 
 	public Collection<QueryTableInfo> listTables(final ItemName name) {
@@ -260,11 +241,10 @@ public class QueryInfoSet {
 			final NameSegments segs = name.getUsedSegments();
 			final NameSegments newSegs = NameSegments.getInstance(
 					segs.isCatalog(), segs.isSchema(), segs.isTable(), false);
-			searchName.setUsedSegments(newSegs);
-			return tablesInQuery.match(searchName).toList();
+			return tablesInQuery.match(searchName, newSegs).toList();
 		}
 		else {
-			return tablesInQuery.match(name).toList();
+			return tablesInQuery.match(name,name.getUsedSegments()).toList();
 		}
 
 	}

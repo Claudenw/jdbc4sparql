@@ -58,13 +58,13 @@ public interface Table extends NamedObject<TableName> {
 	Column getColumn(int idx);
 
 	/**
-	 * Get the column by name
+	 * Get the column by short name
 	 *
-	 * @param name
-	 *            the name of the column to retrieve
+	 * @param shortName
+	 *            the short name of the column to retrieve
 	 * @return the column or null if name not found.
 	 */
-	Column getColumn(String name);
+	Column getColumn(String shortName);
 
 	int getColumnCount();
 

@@ -72,11 +72,7 @@ public class QueryItemInfoTest {
 
 	@Test
 	public void testGetVar() {
-		final String dbName = "catalog" + NameUtils.SPARQL_DOT + "schema"
-				+ NameUtils.SPARQL_DOT + "table" + NameUtils.SPARQL_DOT
-				+ "column";
-		final Var v = itemInfo.getVar();
-		assertEquals(dbName, v.getName());
+		assertEquals(itemName.getGUID(), itemInfo.getVar().getName());
 	}
 
 	@Test

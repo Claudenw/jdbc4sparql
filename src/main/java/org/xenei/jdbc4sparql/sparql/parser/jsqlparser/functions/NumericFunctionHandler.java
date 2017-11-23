@@ -9,10 +9,6 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 
-import org.xenei.jdbc4sparql.iface.name.ColumnName;
-import org.xenei.jdbc4sparql.impl.virtual.VirtualCatalog;
-import org.xenei.jdbc4sparql.impl.virtual.VirtualSchema;
-import org.xenei.jdbc4sparql.impl.virtual.VirtualTable;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlExprVisitor.AliasInfo;
 import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.proxies.ExprInfoFactory;
@@ -158,11 +154,8 @@ public class NumericFunctionHandler extends AbstractFunctionHandler {
 		final String aliasStr = alias.getAlias();
 		final ExprAggregator expr = builder.register(agg,
 				java.sql.Types.NUMERIC, aliasStr);
-		final ColumnName columnName = ColumnName.getNameInstance(
-				VirtualCatalog.NAME, VirtualSchema.NAME, VirtualTable.NAME,
-				aliasStr);
 		return ExprInfoFactory.getInstance(expr, exprVisitor.getColumns(),
-				columnName);
+				getColumnName( alias ));
 
 	}
 
@@ -207,10 +200,7 @@ public class NumericFunctionHandler extends AbstractFunctionHandler {
 		final String aliasStr = alias.getAlias();
 		final ExprAggregator expr = builder.register(agg,
 				java.sql.Types.NUMERIC, aliasStr);
-		final ColumnName columnName = ColumnName.getNameInstance(
-				VirtualCatalog.NAME, VirtualSchema.NAME, VirtualTable.NAME,
-				aliasStr);
 		return ExprInfoFactory.getInstance(expr, exprVisitor.getColumns(),
-				columnName);
+				getColumnName( alias ));
 	}
 }

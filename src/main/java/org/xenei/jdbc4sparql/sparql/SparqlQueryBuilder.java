@@ -41,7 +41,6 @@ import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.name.ColumnName;
 import org.xenei.jdbc4sparql.iface.name.ItemName;
 import org.xenei.jdbc4sparql.iface.name.NameSegments;
-import org.xenei.jdbc4sparql.iface.name.SearchName;
 import org.xenei.jdbc4sparql.iface.name.TableName;
 import org.xenei.jdbc4sparql.impl.NameUtils;
 import org.xenei.jdbc4sparql.impl.virtual.VirtualCatalog;
@@ -128,7 +127,7 @@ public class SparqlQueryBuilder {
 	// the list of columns not to be included in the "all columns" result.
 	// perhaps this should store column so that tables may be checked in case
 	// tables are added to the query later. But I don't think so.
-	private final List<String> columnsInUsing;
+	private final List<ColumnName> columnsInUsing;
 
 	// columns indexed by var.
 	// private final List<Column> columnsInResult;
@@ -169,8 +168,7 @@ public class SparqlQueryBuilder {
 		this.query = new Query();
 		this.isBuilt = false;
 		this.infoSet = new QueryInfoSet();
-		this.columnsInUsing = new ArrayList<String>();
-//		this.infoSet.setUseGUID(true);
+		this.columnsInUsing = new ArrayList<ColumnName>();
 		query.setQuerySelectType();
 	}
 
@@ -182,18 +180,7 @@ public class SparqlQueryBuilder {
 	 */
 	public SparqlQueryBuilder(final SparqlQueryBuilder parent) {
 		this(parent.catalogs, parent.parser, parent.catalog, parent.schema);
-//		this.infoSet.setUseGUID(parent.infoSet.useGUID());
 	}
-
-//	/**
-//	 * Set the use GUID flag;
-//	 *
-//	 * @param state
-//	 * @return the last state.
-//	 */
-//	public boolean setUseGUID(final boolean state) {
-//		return this.infoSet.setUseGUID(state);
-//	}
 
 	public QueryColumnInfo addAlias(final ColumnName orig,
 			final ColumnName alias) throws SQLDataException {
@@ -379,6 +366,10 @@ public class SparqlQueryBuilder {
 		getElementGroup().addElement(unionElement);
 	}
 
+	/**
+	 * Add the column name as a using across the tables in the current infoset.
+	 * @param columnName the name to add
+	 */
 	public void addUsing(final String columnName) {
 		if (LOG.isDebugEnabled()) {
 			SparqlQueryBuilder.LOG.debug("adding Using {}", columnName);
@@ -399,7 +390,8 @@ public class SparqlQueryBuilder {
 					"column %s not found in %s", columnName,
 					tableInfo.getSQLName()));
 		}
-		columnsInUsing.add(columnName);
+		cName.setUsedSegments( NameSegments.FFFT);
+		columnsInUsing.add(cName);
 		while (iter.hasNext()) {
 			final QueryTableInfo tableInfo2 = iter.next();
 			cName = tableInfo2.getName().getColumnName(columnName);
@@ -729,16 +721,17 @@ public class SparqlQueryBuilder {
 	}
 
 	private ColumnName createColumnName(final Var v) {
-		final int segs = v.getName().split(NameUtils.SPARQL_DOT).length;
-		if (segs > 4) {
-			throw new IllegalArgumentException(
-					"Name may not have more than 4 segments");
-		}
-		final ColumnName cName = ColumnName.getNameInstance("", "", "",
-				v.getName());
-		cName.setUsedSegments(NameSegments.getInstance(segs == 4, segs >= 3,
-				segs >= 2, true));
-		return cName;
+//		final int segs = v.getName().split(NameUtils.SPARQL_DOT).length;
+//		if (segs > 4) {
+//			throw new IllegalArgumentException(
+//					"Name may not have more than 4 segments");
+//		}
+//		final ColumnName cName = ColumnName.getNameInstance("", "", "",
+//				v.getName());
+//		cName.setUsedSegments(NameSegments.getInstance(segs == 4, segs >= 3,
+//				segs >= 2, true));
+//		return cName;
+		return getColumn( v ).getName();
 	}
 
 	public QueryColumnInfo getColumn(final Var v) {
@@ -869,34 +862,29 @@ public class SparqlQueryBuilder {
 		}
 
 		// find shortest name without name collision. skipping columns in using.
-		NameSegments segs = NameSegments.getInstance(false, false, false, true);
+		NameSegments segs = NameSegments.FFFT;
 		for (final QueryColumnInfo columnInfo : colInfoList) {
 			if (!columnsInUsing.contains(columnInfo.getName().getShortName())) {
-				SearchName sn = new SearchName(columnInfo.getName(), segs);
-				while ((colInfoList.count(sn) > 1)
-						&& !sn.getUsedSegments().isCatalog()) {
+				//SearchName sn = new SearchName(columnInfo.getName(), segs);
+				while ((colInfoList.count(columnInfo.getName(), segs) > 1)
+						&& !segs.isCatalog()) {
 					if (segs.isSchema()) {
-						segs = NameSegments.getInstance(true, true, true, true);
+						segs = NameSegments.ALL;
 					}
 					else if (segs.isTable()) {
-						segs = NameSegments
-								.getInstance(false, true, true, true);
+						segs = NameSegments.FTTT;
 					}
 					else {
-						segs = NameSegments.getInstance(false, false, true,
-								true);
+						segs = NameSegments.FFTT;
 					}
-					sn = new SearchName(columnInfo.getName(), segs);
+					//sn = new SearchName(columnInfo.getName(), segs);
 				}
 			}
 		}
 
 		// remove the variables
 		for (final Var v : query.getProjectVars()) {
-			for (final QueryColumnInfo columnInfo : colInfoList.match(
-					createColumnName(v)).toList()) {
-				colInfoList.remove(columnInfo);
-			}
+			colInfoList.remove(v.getName());			
 		}
 		// anything left needs to be added
 
@@ -1008,12 +996,14 @@ public class SparqlQueryBuilder {
 		return table.getName().getShortName();
 	}
 
+	/**
+	 * Set the number of segments necessary to display the results properly.
+	 */
 	public void setSegmentCount() {
 		infoSet.setMinimumColumnSegments();
-		for (final String columnName : columnsInUsing) {
-			final SearchName sn = new SearchName(null, null, null, columnName);
-			for (final QueryColumnInfo columnInfo : infoSet.listColumns(sn)) {
-				columnInfo.setSegments(sn.getUsedSegments());
+		for (final ColumnName columnName : columnsInUsing) {
+			for (final QueryColumnInfo columnInfo : infoSet.listColumns(columnName)) {
+				columnInfo.setSegments(columnName.getUsedSegments());
 			}
 		}
 	}

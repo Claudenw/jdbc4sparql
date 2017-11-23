@@ -1,11 +1,8 @@
 package org.xenei.jdbc4sparql.sparql.parser.jsqlparser;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.StringReader;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLDataException;
@@ -33,10 +30,11 @@ import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTableDef;
 import org.xenei.jdbc4sparql.impl.virtual.VirtualCatalog;
+import org.xenei.jdbc4sparql.impl.virtual.VirtualSchema;
+import org.xenei.jdbc4sparql.impl.virtual.VirtualTable;
 import org.xenei.jdbc4sparql.meta.MetaCatalogBuilder;
 import org.xenei.jdbc4sparql.sparql.ForceTypeF;
 import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
-import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.proxies.ExprInfo;
 import org.xenei.jdbc4sparql.utils.ElementExtractor;
 import org.xenei.jena.entities.EntityManager;
 import org.xenei.jena.entities.impl.EntityManagerImpl;
@@ -53,8 +51,6 @@ import org.apache.jena.sparql.expr.E_Function;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.syntax.Element;
 import org.apache.jena.sparql.syntax.ElementBind;
-import org.apache.jena.sparql.syntax.ElementFilter;
-import org.apache.jena.sparql.syntax.ElementOptional;
 import org.apache.jena.sparql.syntax.ElementPathBlock;
 
 /**
@@ -76,6 +72,7 @@ abstract public class AbstractSparqlParserTest {
 	protected Map<Class<? extends Element>, Wrapper> results;
 	protected TableName fooTableName;
 	protected TableName barTableName;
+	protected TableName virtualTableName = new TableName( CATALOG_NAME, VirtualSchema.NAME, VirtualTable.NAME);
 	protected List<String> vars;
 
 	protected static String RQD = "IntCol";
@@ -89,8 +86,6 @@ abstract public class AbstractSparqlParserTest {
 
 	@Before
 	public void setup() {
-//		RQD_NAME.setUseGUID(true);
-//		OPT_NAME.setUseGUID(true);
 		catalogs = new HashMap<String, Catalog>();
 		catalogs.put(VirtualCatalog.NAME, new VirtualCatalog());
 		LoggingConfig.setConsole(Level.DEBUG);

@@ -96,15 +96,18 @@ public class QueryColumnInfo extends QueryItemInfo<Column, ColumnName> {
 		}
 		return false;
 	}
-
-	public Column getColumn() {
-		return getBaseObject();
-	}
-
+	
 	@Override
 	public int hashCode() {
 		return getName().hashCode();
 	}
+	
+	
+	public Column getColumn() {
+		return getBaseObject();
+	}
+
+	
 
 	@Override
 	public void setOptional(final boolean optional) {
@@ -118,8 +121,12 @@ public class QueryColumnInfo extends QueryItemInfo<Column, ColumnName> {
 
 	@Override
 	public String toString() {
-		return String.format("QueryColumnInfo[%s(%s)]", getColumn()
-				.getSQLName(), getName());
+		StringBuilder sb = new StringBuilder( String.format("QueryColumnInfo[%s]", getColumn()
+				.getSQLName()));
+		if (isAlias()) {
+			sb.append( "alias for ").append( aliasFor.getColumn().getSQLName());
+		}
+		return sb.toString();
 	}
 
 }

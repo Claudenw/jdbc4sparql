@@ -44,6 +44,7 @@ public class SystemFunctionHandlerTests {
 		final Column column = mock(Column.class);
 		colDef = mock(ColumnDef.class);
 		when(builder.getCatalog()).thenReturn(catalog);
+		when(builder.getCatalogName()).thenReturn( catName.getCatalog() );
 		when(catalog.getName()).thenReturn(catName);
 		when(builder.getColumn((ColumnName) any())).thenReturn(colInfo);
 		when(colInfo.getColumn()).thenReturn(column);

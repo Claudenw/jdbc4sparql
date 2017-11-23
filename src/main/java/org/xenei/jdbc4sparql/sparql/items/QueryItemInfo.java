@@ -38,8 +38,8 @@ implements NamedObject<N>, GUIDObject {
 	public boolean equals(final Object o) {
 		if (o instanceof QueryItemInfo) {
 			final QueryItemInfo<?, ?> other = (QueryItemInfo<?, ?>) o;
-			return this.getName().equals(other.getName());
-			// && this.isOptional() == other.isOptional();
+			return this.getName().equals(other.getName())
+			 && this.getSegments().equals(other.getSegments());
 		}
 		return false;
 	}

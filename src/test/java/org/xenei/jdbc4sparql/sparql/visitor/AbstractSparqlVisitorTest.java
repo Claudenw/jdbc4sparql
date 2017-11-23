@@ -66,7 +66,9 @@ abstract public class AbstractSparqlVisitorTest {
 	protected static final String CATALOG_NAME = "testCatalog";
 	protected RdfSchema schema;
 	protected static final String SCHEMA_NAME = "testSchema";
-
+	protected static final TableName FOO_TABLE_NAME = new TableName( CATALOG_NAME, SCHEMA_NAME, "foo");
+	protected static final TableName BAR_TABLE_NAME = new TableName( CATALOG_NAME, SCHEMA_NAME, "bar");
+	
 	protected Map<Class<? extends Element>, Integer> tests;
 	protected Map<Class<? extends Element>, Wrapper> results;
 

@@ -20,6 +20,13 @@ public class VirtualSchema implements Schema {
 	private final Catalog catalog;
 	private final Map<String, Table> tables;
 	private final SchemaName schemaName;
+	
+	/**
+	 * @return the default virtual schema name.
+	 */
+	public static SchemaName getDefaultName() {
+		return VirtualCatalog.getDefaultName().getSchemaName(NAME);
+	}
 
 	public VirtualSchema(final Catalog catalog) {
 		this(catalog, NAME);

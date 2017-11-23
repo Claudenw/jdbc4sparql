@@ -170,7 +170,7 @@ public class SparqlSelectVisitor implements SelectVisitor, OrderByVisitor {
 			}
 			if (join.getUsingColumns() != null) {
 				for (final Object c : join.getUsingColumns()) {
-					queryBuilder.addUsing(((Column) c).getColumnName());
+					queryBuilder.addUsing( ((Column) c).getColumnName());
 				}
 			}
 		}

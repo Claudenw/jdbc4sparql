@@ -38,14 +38,14 @@ public class SystemFunctionHandler extends AbstractFunctionHandler {
 				str = new NodeValueString(builder.getCatalog().getName()
 						.getShortName());
 				// colName = tblName.getColumnName(func.getName());
-				colName = tblName.getColumnName(alias.getAlias());
+				colName = getColumnName( alias );
 				builder.registerFunction(colName, java.sql.Types.VARCHAR);
 				return ExprInfoFactory.getInstance(str, colName);
 
 			case VERSION:
 				str = new NodeValueString(J4SDriver.getVersion());
 				// colName = tblName.getColumnName(func.getName());
-				colName = tblName.getColumnName(alias.getAlias());
+				colName = getColumnName( alias );
 				builder.registerFunction(colName, java.sql.Types.VARCHAR);
 				return ExprInfoFactory.getInstance(str, colName);
 			default:

@@ -15,7 +15,13 @@ public class ItemNameTest {
 
 	@Before
 	public void setup() {
-		itemName = new SearchName("catalog", "schema", "table", "column");
+		itemName = new ItemName("catalog", "schema", "table", "column", NameSegments.ALL) {
+
+			@Override
+			public ItemName clone(NameSegments segs) {
+				// TODO Auto-generated method stub
+				return null;
+			}};
 	}
 
 	@Test
@@ -147,7 +153,7 @@ public class ItemNameTest {
 	@Test
 	public void testMatches() {
 		assertFalse(itemName.matches(null));
-		SearchName tn = new SearchName("catalog", "schema", "table", "column");
+		ColumnName tn = new ColumnName("catalog", "schema", "table", "column",NameSegments.ALL);
 		assertTrue(itemName.matches(tn));
 		tn.setUsedSegments(NameSegments.TTTF);
 		assertTrue(tn.matches(itemName));
@@ -157,22 +163,22 @@ public class ItemNameTest {
 		assertTrue(tn.matches(itemName));
 		tn.setUsedSegments(NameSegments.FTTT);
 
-		tn = new SearchName("catalog", "schema", "table", "column1");
+		tn = new ColumnName("catalog", "schema", "table", "column1",NameSegments.ALL);
 		assertFalse(tn.matches(itemName));
 		tn.setUsedSegments(NameSegments.TTTF);
 		assertTrue(tn.matches(itemName));
 
-		tn = new SearchName("catalog", "schema", "table1", "column");
+		tn = new ColumnName("catalog", "schema", "table1", "column",NameSegments.ALL);
 		assertFalse(tn.matches(itemName));
 		tn.setUsedSegments(NameSegments.TTFT);
 		assertTrue(tn.matches(itemName));
 
-		tn = new SearchName("catalog", "schema1", "table", "column");
+		tn = new ColumnName("catalog", "schema1", "table", "column",NameSegments.ALL);
 		assertFalse(tn.matches(itemName));
 		tn.setUsedSegments(NameSegments.TFTT);
 		assertTrue(tn.matches(itemName));
 
-		tn = new SearchName("catalog1", "schema", "table", "column");
+		tn = new ColumnName("catalog1", "schema", "table", "column",NameSegments.ALL);
 		assertFalse(tn.matches(itemName));
 		tn.setUsedSegments(NameSegments.FTTT);
 		assertTrue(tn.matches(itemName));
@@ -182,7 +188,7 @@ public class ItemNameTest {
 	public void testShorterMatches() {
 		itemName.setUsedSegments(NameSegments.TTTF);
 		assertFalse(itemName.matches(null));
-		SearchName tn = new SearchName("catalog", "schema", "table", "column");
+		ColumnName tn = new ColumnName("catalog", "schema", "table", "column", NameSegments.ALL);
 		assertTrue(itemName.matches(tn));
 		tn.setUsedSegments(NameSegments.TTTF);
 		assertTrue(tn.matches(itemName));
@@ -192,22 +198,22 @@ public class ItemNameTest {
 		assertTrue(tn.matches(itemName));
 		tn.setUsedSegments(NameSegments.FTTT);
 
-		tn = new SearchName("catalog", "schema", "table", "column1");
+		tn = new ColumnName("catalog", "schema", "table", "column1", NameSegments.ALL);
 		assertTrue(tn.matches(itemName));
 		tn.setUsedSegments(NameSegments.TTTF);
 		assertTrue(tn.matches(itemName));
 
-		tn = new SearchName("catalog", "schema", "table1", "column");
+		tn = new ColumnName("catalog", "schema", "table1", "column", NameSegments.ALL);
 		assertFalse(tn.matches(itemName));
 		tn.setUsedSegments(NameSegments.TTFT);
 		assertTrue(tn.matches(itemName));
 
-		tn = new SearchName("catalog", "schema1", "table", "column");
+		tn = new ColumnName("catalog", "schema1", "table", "column", NameSegments.ALL);
 		assertFalse(tn.matches(itemName));
 		tn.setUsedSegments(NameSegments.TFTT);
 		assertTrue(tn.matches(itemName));
 
-		tn = new SearchName("catalog1", "schema", "table", "column");
+		tn = new ColumnName("catalog1", "schema", "table", "column", NameSegments.ALL);
 		assertFalse(tn.matches(itemName));
 		tn.setUsedSegments(NameSegments.FTTT);
 		assertTrue(tn.matches(itemName));
@@ -223,7 +229,7 @@ public class ItemNameTest {
 			for (final boolean schemaFlg : tf) {
 				for (final boolean tableFlg : tf) {
 					for (final boolean columnFlg : tf) {
-						itemName2 = new SearchName(itemName,
+						itemName2 = new ColumnName(itemName,
 								NameSegments.getInstance(catalogFlg, schemaFlg,
 										tableFlg, columnFlg));
 						if (catalogFlg && schemaFlg && tableFlg && columnFlg) {

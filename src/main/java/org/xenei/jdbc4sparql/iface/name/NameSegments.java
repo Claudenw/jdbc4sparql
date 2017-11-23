@@ -4,41 +4,25 @@ package org.xenei.jdbc4sparql.iface.name;
  * An immutable bitmap of name segments to be displayed.
  *
  */
-public class NameSegments {
+public enum NameSegments {
 
-	public static final NameSegments FFFF = new NameSegments(false, false,
-			false, false);
-	public static final NameSegments FFFT = new NameSegments(false, false,
-			false, true);
-	public static final NameSegments FFTF = new NameSegments(false, false,
-			true, false);
-	public static final NameSegments FFTT = new NameSegments(false, false,
-			true, true);
-	public static final NameSegments FTFF = new NameSegments(false, true,
-			false, false);
-	public static final NameSegments FTFT = new NameSegments(false, true,
-			false, true);
-	public static final NameSegments FTTF = new NameSegments(false, true, true,
-			false);
-	public static final NameSegments FTTT = new NameSegments(false, true, true,
-			true);
-	public static final NameSegments TFFF = new NameSegments(true, false,
-			false, false);
-	public static final NameSegments TFFT = new NameSegments(true, false,
-			false, true);
-	public static final NameSegments TFTF = new NameSegments(true, false, true,
-			false);
-	public static final NameSegments TFTT = new NameSegments(true, false, true,
-			true);
-	public static final NameSegments TTFF = new NameSegments(true, true, false,
-			false);
-	public static final NameSegments TTFT = new NameSegments(true, true, false,
-			true);
-	public static final NameSegments TTTF = new NameSegments(true, true, true,
-			false);
-	public static final NameSegments TTTT = new NameSegments(true, true, true,
-			true);
-
+	 FFFF( (byte)0 ),
+	 FFFT( (byte)1 ),
+	FFTF( (byte)2 ),
+	FFTT( (byte)3 ),
+	FTFF( (byte)4 ),
+	FTFT( (byte)5 ),
+	FTTF( (byte)6 ),
+	FTTT( (byte)7 ),
+	TFFF( (byte)8 ),
+	TFFT( (byte)9 ),
+	TFTF( (byte)10 ),
+	TFTT( (byte)11 ),
+	TTFF( (byte)12 ),
+	TTFT( (byte)13 ),
+	TTTF( (byte)14 ),
+	TTTT( (byte)15 );
+	
 	private static final NameSegments[] LST = {
 			FFFF, FFFT, FFTF, FFTT, FTFF, FTFT, FTTF, FTTT, TFFF, TFFT, TFTF,
 			TFTT, TTFF, TTFT, TTTF, TTTT
@@ -69,14 +53,14 @@ public class NameSegments {
 	 */
 	public static final NameSegments COLUMN = FTTT;
 
-	// the catalog flag
-	private final boolean catalog;
-	// the schema flag
-	private final boolean schema;
-	// the table flag
-	private final boolean table;
-	// the column flag
-	private final boolean column;
+	private final byte flag;
+	
+	private static final byte CAT_B = (byte)1 << 3;
+	private static final byte SCH_B = (byte)1 << 2;
+	private static final byte TBL_B = (byte)1 << 1;
+	private static final byte COL_B = (byte)1;
+	
+	
 
 	/**
 	 * Get an instance of the Name segments.
@@ -92,31 +76,38 @@ public class NameSegments {
 	 */
 	public static NameSegments getInstance(final boolean catalog,
 			final boolean schema, final boolean table, final boolean column) {
-		final int idx = (catalog ? 8 : 0) + (schema ? 4 : 0) + (table ? 2 : 0)
-				+ (column ? 1 : 0);
-		return LST[idx];
+		return LST[ makeIdx( catalog, schema, table, column )];
+	}
+	
+	private static byte makeIdx( final boolean catalog,
+			final boolean schema, final boolean table, final boolean column) {
+		return (byte)((catalog?CAT_B:0) | (schema?SCH_B:0) | (table?TBL_B:0) | (column?COL_B:0));
+	}
+	
+	private NameSegments( byte flag) {
+		this.flag=flag;
 	}
 
-	/**
-	 * Constructor.
-	 *
-	 * @param catalog
-	 *            the display catalog flag.
-	 * @param schema
-	 *            the display schema flag.
-	 * @param table
-	 *            the display table flag.
-	 * @param column
-	 *            the display column flag.
-	 */
-	private NameSegments(final boolean catalog, final boolean schema,
-			final boolean table, final boolean column) {
-		this.catalog = catalog;
-		this.schema = schema;
-		this.table = table;
-		this.column = column;
+	public NameSegments getLastSegment()
+	{
+		if (isColumn())
+		{
+			return LST[COL_B];
+		}
+		if (isTable())
+		{
+			return LST[TBL_B];
+		}
+		if (isSchema())
+		{
+			return LST[SCH_B];
+		}
+		if (isCatalog())
+		{
+			return LST[CAT_B];
+		}
+		return FFFF;
 	}
-
 	/**
 	 * Get the catalog to display from the name.
 	 *
@@ -125,7 +116,12 @@ public class NameSegments {
 	 * @return The catalog name or null if not displayed.
 	 */
 	public String getCatalog(final FQName name) {
-		return catalog ? name.getCatalog() : null;
+		return isCatalog() ? name.getCatalog() : null;
+	}
+	
+	public boolean match( NameSegments other )
+	{
+		return (flag & other.flag) > 0;
 	}
 
 	/**
@@ -136,7 +132,7 @@ public class NameSegments {
 	 * @return The column name or null if not displayed.
 	 */
 	public String getColumn(final FQName name) {
-		return column ? name.getColumn() : null;
+		return isColumn() ? name.getColumn() : null;
 	}
 
 	/**
@@ -147,7 +143,7 @@ public class NameSegments {
 	 * @return The schema name or null if not displayed.
 	 */
 	public String getSchema(final FQName name) {
-		return schema ? name.getSchema() : null;
+		return isSchema() ? name.getSchema() : null;
 	}
 
 	/**
@@ -158,7 +154,7 @@ public class NameSegments {
 	 * @return The table name or null if not displayed.
 	 */
 	public String getTable(final FQName name) {
-		return table ? name.getTable() : null;
+		return isTable() ? name.getTable() : null;
 	}
 
 	/**
@@ -167,7 +163,7 @@ public class NameSegments {
 	 * @return true if the catalog is displayed, false otherwise.
 	 */
 	public boolean isCatalog() {
-		return catalog;
+		return ((flag & CAT_B) == CAT_B);
 	}
 
 	/**
@@ -176,7 +172,7 @@ public class NameSegments {
 	 * @return true if the schema is displayed, false otherwise.
 	 */
 	public boolean isSchema() {
-		return schema;
+		return ((flag & SCH_B) == SCH_B);
 	}
 
 	/**
@@ -185,7 +181,7 @@ public class NameSegments {
 	 * @return true if the table is displayed, false otherwise.
 	 */
 	public boolean isTable() {
-		return table;
+		return ((flag & TBL_B) == TBL_B);
 	}
 
 	/**
@@ -194,35 +190,13 @@ public class NameSegments {
 	 * @return true if the column is displayed, false otherwise.
 	 */
 	public boolean isColumn() {
-		return column;
+		return ((flag & COL_B) == COL_B);
 	}
 
 	@Override
 	public String toString() {
-		return String.format("C:%s S:%s T:%s C:%s", catalog, schema, table,
-				column);
-	}
-
-	/**
-	 * Equality is determined by the flags matching.
-	 */
-	@Override
-	public boolean equals(final Object o) {
-		if (o instanceof NameSegments) {
-			final NameSegments other = (NameSegments) o;
-			return (this.isCatalog() == other.isCatalog())
-					&& (this.isSchema() == other.isSchema())
-					&& (this.isTable() == other.isTable())
-					&& (this.isColumn() == other.isColumn());
-		}
-		return false;
-	}
-
-	@Override
-	public int hashCode() {
-		return (isCatalog() ? 8 : 0) + (isSchema() ? 4 : 0)
-				+ (isTable() ? 2 : 0) + (isColumn() ? 1 : 0);
-
+		return String.format("C:%s S:%s T:%s C:%s", isCatalog(), isSchema(), isTable(),
+				isColumn());
 	}
 
 	/**
@@ -233,8 +207,21 @@ public class NameSegments {
 	 *            The other segment to be ANDed with this one.
 	 * @return merged NameSegments object
 	 */
-	NameSegments and(final NameSegments other) {
-		final int idx = hashCode() & other.hashCode();
+	public NameSegments and(final NameSegments other) {
+		final int idx = flag & other.flag;
+		return LST[idx];
+	}
+	
+	/**
+	 * And this name segment with the other. All segments that are on in both
+	 * will be on in result. All others will be off.
+	 *
+	 * @param other
+	 *            The other segment to be ANDed with this one.
+	 * @return merged NameSegments object
+	 */
+	public NameSegments or(final NameSegments other) {
+		final int idx = flag ^ other.flag;
 		return LST[idx];
 	}
 }

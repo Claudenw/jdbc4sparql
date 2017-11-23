@@ -144,23 +144,23 @@ public class TableName extends ItemName {
 				NameSegments.TABLE);
 	}
 
-	@Override
-	public String createName(final String separator) {
-		final StringBuilder sb = new StringBuilder();
-
-		if (StringUtils.isNotEmpty(getSchema())) {
-			sb.append(getSchema()).append(separator);
-		}
-
-		if (StringUtils.isNotEmpty(getTable()) || (sb.length() > 0)) {
-			sb.append(getTable());
-		}
-
-		return sb.toString();
-	}
+//	@Override
+//	public String createName(final String separator) {
+//		final StringBuilder sb = new StringBuilder();
+//
+//		if (StringUtils.isNotEmpty(getSchema())) {
+//			sb.append(getSchema()).append(separator);
+//		}
+//
+//		if (StringUtils.isNotEmpty(getTable()) || (sb.length() > 0)) {
+//			sb.append(getTable());
+//		}
+//
+//		return sb.toString();
+//	}
 
 	/**
-	 * Create a column name int this table.
+	 * Create a column name in this table.
 	 *
 	 * @param column
 	 *            the columnName string
@@ -172,10 +172,10 @@ public class TableName extends ItemName {
 		return ColumnName.getNameInstance(this, column);
 	}
 
-	@Override
-	public String getShortName() {
-		return getTable();
-	}
+//	@Override
+//	public String getShortName() {
+//		return getTable();
+//	}
 
 	/**
 	 * clone this table name with different segments.

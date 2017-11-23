@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.name.ColumnName;
+import org.xenei.jdbc4sparql.iface.name.ItemNameMatcher;
 import org.xenei.jdbc4sparql.iface.name.NameSegments;
 import org.xenei.jdbc4sparql.iface.name.TableName;
 import org.xenei.jdbc4sparql.sparql.CheckTypeF;
@@ -302,7 +303,7 @@ public class QueryTableInfo extends QueryItemInfo<Table, TableName> {
 	 *            columns that are in a SQL "Using" clause.
 	 * @throws SQLDataException
 	 */
-	public void addDefinedColumns(final List<String> columnsInUsing)
+	public void addDefinedColumns(final List<ColumnName> columnsInUsing)
 			throws SQLDataException {
 		if (LOG.isDebugEnabled()) {
 			QueryTableInfo.LOG
@@ -334,7 +335,7 @@ public class QueryTableInfo extends QueryItemInfo<Table, TableName> {
 		for (final Iterator<Column> colIter = getTable().getColumns(); colIter
 				.hasNext();) {
 			final Column column = colIter.next();
-			if (columnsInUsing.contains(column.getName().getShortName())) {
+			if (ItemNameMatcher.contains(columnsInUsing, column.getName(), NameSegments.FFFT)) {
 				final QueryColumnInfo columnInfo = getColumn(column.getName());
 				if (columnInfo == null) {
 					throw new SQLDataException(String.format(
@@ -362,12 +363,12 @@ public class QueryTableInfo extends QueryItemInfo<Table, TableName> {
 	 *
 	 */
 	public void addTableColumns(final Query query,
-			final List<String> columnsInUsing) {
+			final List<ColumnName> columnsInUsing) {
 		final Iterator<Column> iter = getTable().getColumns();
 		while (iter.hasNext()) {
 			final Column column = iter.next();
 			QueryColumnInfo columnInfo = null;
-			if (columnsInUsing.contains(column.getName().getShortName())) {
+			if (ItemNameMatcher.contains( columnsInUsing,column.getName(), NameSegments.FFFT)) {
 				columnInfo = infoSet.getColumn(column.getName());
 			}
 			else {

@@ -11,10 +11,8 @@ import org.xenei.jdbc4sparql.iface.NameFilter;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.name.CatalogName;
 
-import org.apache.jena.graph.Node;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QuerySolution;
-import org.apache.jena.sparql.core.Quad;
 
 /**
  * The Virtual catalog for all virtual schema and tables.
@@ -22,9 +20,17 @@ import org.apache.jena.sparql.core.Quad;
  */
 public class VirtualCatalog implements Catalog {
 	public static final String NAME = "";
-	private final CatalogName name = new CatalogName(NAME);
+	private static final CatalogName name = new CatalogName(NAME);
 	private Map<String, Schema> schemas;
 
+	/**
+	 * @return The default virtual catalog name.
+	 */
+	public static CatalogName getDefaultName()
+	{
+		return name;
+	}
+	
 	public VirtualCatalog() {
 		schemas = new HashMap<String, Schema>();
 		schemas.put(VirtualSchema.NAME, new VirtualSchema(this));

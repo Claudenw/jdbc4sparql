@@ -13,21 +13,49 @@ import org.xenei.jdbc4sparql.impl.AbstractTable;
 /**
  * The Virtual table for virtual columns.
  * 
- * This table has the name "system".
  *
  */
 public class VirtualTable extends AbstractTable {
+	/**
+	 * The name for the SYSTEM table.
+	 */
 	public static final String SYSTEM_TABLE = "system";
+	/**
+	 * The default name for this table.
+	 */
 	public static final String NAME = "";
 	private final Schema schema;
 	private final TableName tableName;
 	private final List<Column> columns;
 	private TableDef tableDef;
-
-	public VirtualTable(final Schema schema) {
-		this(schema, SYSTEM_TABLE);
+	
+	/**
+	 * @return the default virtual table name.
+	 */
+	public static TableName getDefaultName() {
+		return VirtualSchema.getDefaultName().getTableName(NAME);
 	}
 
+	/**
+	 * @return the default system table name.
+	 */
+	public static TableName getDefaultSystemName() {
+		return VirtualSchema.getDefaultName().getTableName(SYSTEM_TABLE);
+	}
+	
+	/**
+	 * Constructor.
+	 * @param schema THe schema to build the table in.
+	 */
+	public VirtualTable(final Schema schema) {
+		this(schema, NAME);
+	}
+
+	/**
+	 * Constructor.
+	 * @param schema THe schema to build the table in.
+	 * @param name the name for the table.
+	 */
 	public VirtualTable(final Schema schema, final String name) {
 		this.tableName = schema.getName().getTableName(name);
 		this.columns = new ArrayList<Column>();

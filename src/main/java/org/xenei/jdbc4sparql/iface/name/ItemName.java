@@ -1,6 +1,7 @@
 package org.xenei.jdbc4sparql.iface.name;
 
 import java.util.Comparator;
+import java.util.function.Predicate;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.CompareToBuilder;
@@ -38,8 +39,7 @@ public abstract class ItemName implements GUIDObject {
 	 * @param <T>
 	 *            and ItemName implementation.
 	 */
-	public static class Filter<T extends ItemName> extends
-	org.apache.jena.util.iterator.Filter<T> {
+	public static class Filter<T extends ItemName> implements Predicate<T> {
 		private final ItemName compareTo;
 
 		public Filter(final ItemName compareTo) {
@@ -47,7 +47,7 @@ public abstract class ItemName implements GUIDObject {
 		}
 
 		@Override
-		public boolean accept(final T o) {
+		public boolean test(final T o) {
 			return COMPARATOR.compare(o, compareTo) == 0;
 		};
 	}
@@ -77,8 +77,7 @@ public abstract class ItemName implements GUIDObject {
 	private final FQName fqName;
 	// the bitmap of the used segments.
 	private NameSegments usedSegments;
-	// if true then this object reports its name as it's GUID.
-	//private boolean useGUID;
+
 
 	/**
 	 * A wild item name. All display segments are null so it matches all other
@@ -86,11 +85,6 @@ public abstract class ItemName implements GUIDObject {
 	 */
 	public static final ItemName WILD = new ItemName("", "", "", "",
 			NameSegments.WILD) {
-
-		@Override
-		protected String createName(final String separator) {
-			return getShortName();
-		}
 
 		@Override
 		public String getShortName() {
@@ -167,7 +161,6 @@ public abstract class ItemName implements GUIDObject {
 			throw new IllegalArgumentException("segments may not be null.");
 		}
 		this.fqName = name.fqName;
-		//this.useGUID = name.useGUID;
 		this.usedSegments = segments;
 	}
 
@@ -186,15 +179,6 @@ public abstract class ItemName implements GUIDObject {
 		this.fqName = name;
 		this.usedSegments = segments;
 	}
-
-//	/**
-//	 * If set true this item will refer to itself by its GUID.
-//	 *
-//	 * @param state
-//	 */
-//	public void setUseGUID(final boolean state) {
-//		this.useGUID = state;
-//	}
 
 	/**
 	 * Change the used segments. This effectively changes the name of the object
@@ -223,7 +207,42 @@ public abstract class ItemName implements GUIDObject {
 	 *            The string to use between name segments
 	 * @return The fully qualified name
 	 */
-	abstract protected String createName(final String separator);
+	public final String createName(final String separator) {
+		return createName( separator, getUsedSegments());
+	}
+	
+	public final String createName(final String separator, NameSegments nameSegments) {
+		final StringBuilder sb = new StringBuilder();
+
+		
+		if (StringUtils.isNotEmpty(nameSegments.getCatalog(fqName))) {
+			sb.append(nameSegments.getCatalog(fqName));
+		}
+		if (StringUtils.isNotEmpty(nameSegments.getSchema(fqName))) {
+			if (sb.length()>0)
+			{
+				sb.append(separator);
+			}
+			sb.append(nameSegments.getSchema(fqName));
+		}
+
+		if (StringUtils.isNotEmpty(nameSegments.getTable(fqName))) {
+			if (sb.length()>0)
+			{
+				sb.append(separator);
+			}
+			sb.append(nameSegments.getTable(fqName));
+		}
+
+		if (StringUtils.isNotEmpty(nameSegments.getColumn(fqName))) {
+			if (sb.length()>0)
+			{
+				sb.append(separator);
+			}
+			sb.append(nameSegments.getColumn(fqName));
+		}		
+		return sb.toString();
+	}
 
 	/**
 	 * Get the base name for this item name.
@@ -239,7 +258,7 @@ public abstract class ItemName implements GUIDObject {
 	 *
 	 * @return
 	 */
-	public String getColumn() {
+	public final String getColumn() {
 		return usedSegments.getColumn(fqName);
 	}
 
@@ -257,7 +276,7 @@ public abstract class ItemName implements GUIDObject {
 	 *
 	 * @return The catalog name string.
 	 */
-	public String getCatalog() {
+	public final String getCatalog() {
 		return usedSegments.getCatalog(fqName);
 	}
 
@@ -266,7 +285,7 @@ public abstract class ItemName implements GUIDObject {
 	 *
 	 * @return the schema segment string.
 	 */
-	public String getSchema() {
+	public final String getSchema() {
 		return usedSegments.getSchema(fqName);
 	}
 
@@ -276,7 +295,10 @@ public abstract class ItemName implements GUIDObject {
 	 *
 	 * @return the short name for the object.
 	 */
-	abstract public String getShortName();
+	public String getShortName() {
+		return createName( "", usedSegments.getLastSegment());
+		
+	}
 
 	/**
 	 * Get the complete name in SPARQL format
@@ -302,7 +324,7 @@ public abstract class ItemName implements GUIDObject {
 	 *
 	 * @return the table name string
 	 */
-	public String getTable() {
+	public final String getTable() {
 		return usedSegments.getTable(fqName);
 	}
 
@@ -327,15 +349,10 @@ public abstract class ItemName implements GUIDObject {
 				&& (getTable() == null) && (getColumn() == null);
 	}
 
-//	/**
-//	 * See if we are using the GUID as the name.
-//	 *
-//	 * @return true if GUID is used as the name.
-//	 */
-//	public boolean isUseGUID() {
-//		return useGUID;
-//	}
-
+	
+	public boolean matches(final ItemName that) {
+		return that==null?false:matches( that, usedSegments.and(that.getUsedSegments()));
+	}
 	/**
 	 * check if this matches that.
 	 *
@@ -345,13 +362,14 @@ public abstract class ItemName implements GUIDObject {
 	 *
 	 * @param that
 	 *            the other ItemName.
+	 * @param matchSets the segments to match on
 	 * @return true if they match, false otherwise.
 	 */
-	public boolean matches(final ItemName that) {
+	public boolean matches(final ItemName that, NameSegments matchSegs ) {
 		if (that == null) {
 			return false;
 		}
-		final NameSegments matchSegs = usedSegments.and(that.getUsedSegments());
+		//final NameSegments matchSegs = usedSegments.and(that.getUsedSegments());
 		final EqualsBuilder eb = new EqualsBuilder();
 		if (matchSegs.isCatalog()) {
 			eb.append(matchSegs.getCatalog(this.fqName),
@@ -391,7 +409,7 @@ public abstract class ItemName implements GUIDObject {
 	@Override
 	public boolean equals(final Object o) {
 		return (o instanceof ItemName) ? 
-				((ItemName) o).getDBName().equals(getDBName()) : false;
+				((ItemName) o).getGUID().equals(getGUID()) : false;
 	}
 
 	/**

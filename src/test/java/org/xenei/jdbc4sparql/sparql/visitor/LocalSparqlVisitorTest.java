@@ -27,7 +27,7 @@ import org.junit.Test;
 import org.xenei.jdbc4sparql.iface.name.ColumnName;
 import org.xenei.jdbc4sparql.iface.name.NameSegments;
 import org.xenei.jdbc4sparql.impl.NameUtils;
-
+import org.xenei.jdbc4sparql.impl.virtual.VirtualTable;
 import org.apache.jena.query.Query;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.core.VarExprList;
@@ -46,16 +46,18 @@ import org.apache.jena.sparql.syntax.ElementPathBlock;
 
 public class LocalSparqlVisitorTest extends AbstractSparqlVisitorTest {
 
+	
 	@Test
 	public void testInnerJoinParse() throws Exception {
-		final String fmt = "%s" + NameUtils.SPARQL_DOT + "%s";
 		final String[] colNames = {
-				String.format(fmt, "foo", "StringCol"),
-				String.format(fmt, "foo", "NullableStringCol"),
-				String.format(fmt, "foo", "IntCol"), "NullableIntCol",
-				String.format(fmt, "bar", "BarStringCol"),
-				String.format(fmt, "bar", "BarNullableStringCol"),
-				String.format(fmt, "bar", "BarIntCol")
+				FOO_TABLE_NAME.getColumnName("StringCol").getGUID(),
+				FOO_TABLE_NAME.getColumnName("NullableStringCol").getGUID(),
+				FOO_TABLE_NAME.getColumnName("IntCol").getGUID(),
+				FOO_TABLE_NAME.getColumnName("NullableIntCol").getGUID(),
+				BAR_TABLE_NAME.getColumnName("BarStringCol").getGUID(),
+				BAR_TABLE_NAME.getColumnName("BarNullableStringCol").getGUID(),
+				BAR_TABLE_NAME.getColumnName("BarIntCol").getGUID(),
+				BAR_TABLE_NAME.getColumnName("NullableIntCol").getGUID()				
 		};
 
 		final Query q = getQuery("SELECT * FROM foo inner join bar using (NullableIntCol)");
@@ -102,7 +104,7 @@ public class LocalSparqlVisitorTest extends AbstractSparqlVisitorTest {
 
 		Assert.assertEquals(1, q.getProject().size());
 		Assert.assertEquals(1, q.getProjectVars().size());
-		Assert.assertEquals("bar", q.getProjectVars().get(0).getVarName());
+		Assert.assertEquals( VirtualTable.getDefaultName().getColumnName( "bar").getGUID(), q.getProjectVars().get(0).getVarName());
 
 	}
 
@@ -237,15 +239,15 @@ public class LocalSparqlVisitorTest extends AbstractSparqlVisitorTest {
 
 	@Test
 	public void testTwoTableJoin() throws Exception {
-		final String[] columnNames = {
-				"foo" + NameUtils.SPARQL_DOT + "IntCol",
-				"foo" + NameUtils.SPARQL_DOT + "StringCol",
-				"foo" + NameUtils.SPARQL_DOT + "NullableStringCol",
-				"foo" + NameUtils.SPARQL_DOT + "NullableIntCol",
-				"bar" + NameUtils.SPARQL_DOT + "BarStringCol",
-				"bar" + NameUtils.SPARQL_DOT + "BarNullableStringCol",
-				"bar" + NameUtils.SPARQL_DOT + "BarIntCol",
-				"bar" + NameUtils.SPARQL_DOT + "NullableIntCol"
+		final ColumnName[] columnNames = {
+				FOO_TABLE_NAME.getColumnName("IntCol"),
+				FOO_TABLE_NAME.getColumnName("StringCol"),
+				FOO_TABLE_NAME.getColumnName("NullableStringCol"),
+				FOO_TABLE_NAME.getColumnName("NullableIntCol"),
+				BAR_TABLE_NAME.getColumnName("BarIntCol"),
+				BAR_TABLE_NAME.getColumnName("BarStringCol"),
+				BAR_TABLE_NAME.getColumnName("BarNullableStringCol"),
+				BAR_TABLE_NAME.getColumnName("NullableIntCol")
 		};
 		final Query q = getQuery("SELECT * FROM foo, bar WHERE foo.IntCol = bar.BarIntCol");
 
@@ -257,21 +259,19 @@ public class LocalSparqlVisitorTest extends AbstractSparqlVisitorTest {
 
 		final List<Var> vLst = q.getProjectVars();
 		Assert.assertEquals(columnNames.length, vLst.size());
-		for (final Var v : vLst) {
-			final ColumnName tn = ColumnName.getNameInstance("testCatalog",
-					"testSchema", "table", v.getName());
-			tn.setUsedSegments(NameSegments.FFTT);
-			Assert.assertTrue("missing " + tn.getSPARQLName(),
-					Arrays.asList(columnNames).contains(tn.getSPARQLName()));
+		for (final ColumnName cn: columnNames) {
+			
+			Assert.assertTrue("missing " + cn.getSPARQLName(),
+					vLst.contains(Var.alloc(cn.getGUID())));
 		}
 
 		final Expr expr = ((ElementFilter) results.get(ElementFilter.class).lst
 				.get(2)).getExpr();
 		Assert.assertTrue(expr instanceof E_Equals);
 		final E_Equals expr2 = (E_Equals) expr;
-		Assert.assertEquals("foo" + NameUtils.SPARQL_DOT + "IntCol",
+		Assert.assertEquals(FOO_TABLE_NAME.getColumnName("IntCol").getGUID(),
 				((ExprVar) (expr2.getArg1())).getVarName());
-		Assert.assertEquals("bar" + NameUtils.SPARQL_DOT + "BarIntCol",
+		Assert.assertEquals(BAR_TABLE_NAME.getColumnName("BarIntCol").getGUID(),
 				((ExprVar) (expr2.getArg2())).getVarName());
 	}
 
@@ -301,7 +301,7 @@ public class LocalSparqlVisitorTest extends AbstractSparqlVisitorTest {
 		Assert.assertTrue(expr instanceof E_LogicalNot);
 		expr = ((E_LogicalNot) expr).getArg();
 		Assert.assertTrue(expr instanceof E_Bound);
-		Assert.assertEquals("v_39a47853_59fe_3101_9dc3_57a586635865",
+		Assert.assertEquals( FOO_TABLE_NAME.getColumnName("NullableIntCol").getGUID(),
 				((E_Bound) expr).getArg().asVar().getName());
 
 	}
