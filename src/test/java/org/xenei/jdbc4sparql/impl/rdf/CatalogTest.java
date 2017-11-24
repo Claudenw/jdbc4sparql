@@ -42,7 +42,7 @@ public class CatalogTest {
 		dataConnection = RDFConnectionFactory.connect( DatasetFactory.create(dataModel) );
 		catalog = new RdfCatalog.Builder().setName("testCatalog")
 				.setLocalConnection(dataConnection).build( em );
-		entityManager = EntityManagerFactory.getEntityManager();
+		entityManager = em;
 	}
 
 	@After

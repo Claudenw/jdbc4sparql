@@ -42,13 +42,6 @@ public class QueryColumnInfoTest {
 		columnInfo = new QueryColumnInfo(column, false);
 	}
 
-	// @Test
-	// public void testGetExpr() {
-	// assertNull(columnInfo.getExpr());
-	// columnInfo.setExpr(new NodeValueString("foo"));
-	// assertEquals(new NodeValueString("foo"), columnInfo.getExpr());
-	// }
-
 	@Test
 	public void testSegments() {
 		assertEquals("C:false S:true T:true C:true", columnInfo.getSegments()
@@ -57,7 +50,7 @@ public class QueryColumnInfoTest {
 		columnInfo.setSegments(NameSegments.CATALOG);
 		assertEquals("C:true S:false T:false C:true", columnInfo.getSegments()
 				.toString());
-		assertEquals("column", columnInfo.getName().getDBName());
+		assertEquals("catalog.schema.table.column", columnInfo.getName().getDBName());
 		columnInfo.setSegments(NameSegments.SCHEMA);
 		assertEquals("C:false S:true T:true C:true", columnInfo.getSegments()
 				.toString());
@@ -73,7 +66,7 @@ public class QueryColumnInfoTest {
 		columnInfo.setSegments(NameSegments.TTTF);
 		assertEquals("C:true S:true T:true C:true", columnInfo.getSegments()
 				.toString());
-		assertEquals("schema.table.column", columnInfo.getName().getDBName());
+		assertEquals("catalog.schema.table.column", columnInfo.getName().getDBName());
 
 	}
 

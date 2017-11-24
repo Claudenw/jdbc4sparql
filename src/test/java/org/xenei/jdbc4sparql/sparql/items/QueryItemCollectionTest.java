@@ -15,8 +15,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.xenei.jdbc4sparql.iface.name.ItemName;
 import org.xenei.jdbc4sparql.iface.name.NameSegments;
-//import org.xenei.jdbc4sparql.iface.name.RenamedBaseName;
-import org.xenei.jdbc4sparql.iface.name.SearchName;
 
 public class QueryItemCollectionTest {
 
@@ -48,7 +46,7 @@ public class QueryItemCollectionTest {
 
 			@Override
 			public ItemName getName() {
-				return new SearchName("", "", "", "ItemName");
+				return new DummyItemName("", "", "", "ItemName", NameSegments.ALL);
 			}
 		};
 
@@ -67,7 +65,7 @@ public class QueryItemCollectionTest {
 					for (final String column : new String[] {
 							"column", "column2"
 					}) {
-						name = new SearchName(catalog, schema, table, column);
+						name = new DummyItemName(catalog, schema, table, column, NameSegments.ALL);
 						final TestingNamedObject tno = new TestingNamedObject(
 								name);
 						qii = new QueryItemInfo<NamedObject<ItemName>, ItemName>(
@@ -83,7 +81,7 @@ public class QueryItemCollectionTest {
 	public void testAdd() {
 		final int size = itemCollection.size();
 
-		ItemName name = new SearchName("catalog", "schema", "table", "column");
+		ItemName name = new DummyItemName("catalog", "schema", "table", "column", NameSegments.ALL);
 		QueryItemInfo<NamedObject<ItemName>, ItemName> qii = new QueryItemInfo<NamedObject<ItemName>, ItemName>(
 				namedObject, name, false);
 		assertFalse(itemCollection.add(qii));
@@ -95,7 +93,7 @@ public class QueryItemCollectionTest {
 		assertFalse(itemCollection.add(qii));
 		assertEquals(size, itemCollection.size());
 
-		name = new SearchName("catalog", "schema", "table", "column3");
+		name = new DummyItemName("catalog", "schema", "table", "column3", NameSegments.ALL);
 		qii = new QueryItemInfo<NamedObject<ItemName>, ItemName>(namedObject,
 				name, false);
 		assertTrue(itemCollection.add(qii));
@@ -120,7 +118,7 @@ public class QueryItemCollectionTest {
 					for (final String column : new String[] {
 							"column3", "column4"
 					}) {
-						name = new SearchName(catalog, schema, table, column);
+						name = new DummyItemName(catalog, schema, table, column, NameSegments.ALL);
 						qii = new QueryItemInfo<NamedObject<ItemName>, ItemName>(
 								namedObject, name, false);
 						lst.add(qii);
@@ -146,15 +144,15 @@ public class QueryItemCollectionTest {
 
 	@Test
 	public void testContains_ItemName() {
-		ItemName name = new SearchName("catalog", "schema", "table", "column");
+		ItemName name = new DummyItemName("catalog", "schema", "table", "column", NameSegments.ALL);
 		assertTrue(itemCollection.contains(name));
-		name = new SearchName("catalog", "schema", "table", "column4");
+		name = new DummyItemName("catalog", "schema", "table", "column4", NameSegments.ALL);
 		assertFalse(itemCollection.contains(name));
 		// test that null is wild card
-		name = new SearchName("catalog", "schema", "table", "column");
+		name = new DummyItemName("catalog", "schema", "table", "column", NameSegments.ALL);
 		name.setUsedSegments(NameSegments.TTFT);
 		assertTrue(itemCollection.contains(name));
-		name = new SearchName("catalog", "schema", "table", "column4");
+		name = new DummyItemName("catalog", "schema", "table", "column4", NameSegments.ALL);
 		name.setUsedSegments(NameSegments.TTFT);
 		assertFalse(itemCollection.contains(name));
 	}
@@ -162,21 +160,21 @@ public class QueryItemCollectionTest {
 	@Test
 	public void testContains_NamedObject() {
 
-		ItemName name = new SearchName("catalog", "schema", "table", "column");
+		ItemName name = new DummyItemName("catalog", "schema", "table", "column", NameSegments.ALL);
 		final TestingNamedObject testNamedObject = new TestingNamedObject(name);
 		assertTrue(itemCollection.contains(testNamedObject));
 
-		testNamedObject.setName(new SearchName("catalog", "schema", "table",
-				"column4"));
+		testNamedObject.setName(new DummyItemName("catalog", "schema", "table",
+				"column4", NameSegments.ALL));
 		assertFalse(itemCollection.contains(testNamedObject));
 
 		// test that null is wild card
-		name = new SearchName("catalog", "schema", "table", "column");
+		name = new DummyItemName("catalog", "schema", "table", "column", NameSegments.ALL);
 		name.setUsedSegments(NameSegments.TTFT);
 		testNamedObject.setName(name);
 		assertTrue(itemCollection.contains(testNamedObject));
 
-		name = new SearchName("catalog", "schema", "table", "column4");
+		name = new DummyItemName("catalog", "schema", "table", "column4", NameSegments.ALL);
 		name.setUsedSegments(NameSegments.TTFT);
 		testNamedObject.setName(name);
 		assertFalse(itemCollection.contains(testNamedObject));
@@ -198,7 +196,7 @@ public class QueryItemCollectionTest {
 						"table", "table2"
 				}) {
 
-					name = new SearchName(catalog, schema, table, "column");
+					name = new DummyItemName(catalog, schema, table, "column", NameSegments.ALL);
 					qii = new QueryItemInfo<NamedObject<ItemName>, ItemName>(
 							namedObject, name, false);
 					lst.add(qii);
@@ -207,7 +205,7 @@ public class QueryItemCollectionTest {
 		}
 
 		assertTrue(itemCollection.containsAll(lst));
-		name = new SearchName("catalog3", "schema", "table", "column");
+		name = new DummyItemName("catalog3", "schema", "table", "column", NameSegments.ALL);
 		qii = new QueryItemInfo<NamedObject<ItemName>, ItemName>(namedObject,
 				name, false);
 		lst.add(qii);
@@ -216,8 +214,8 @@ public class QueryItemCollectionTest {
 
 	@Test
 	public void testGet_int() {
-		final ItemName name = new SearchName("catalog", "schema", "table",
-				"column");
+		final ItemName name = new DummyItemName("catalog", "schema", "table",
+				"column", NameSegments.ALL);
 		final QueryItemInfo<NamedObject<ItemName>, ItemName> qii = itemCollection
 				.get(0);
 		assertNotNull(qii);
@@ -233,54 +231,54 @@ public class QueryItemCollectionTest {
 
 	@Test
 	public void testGet_ItemName() {
-		ItemName name = new SearchName("catalog", "schema", "table", "column");
+		ItemName name = new DummyItemName("catalog", "schema", "table", "column", NameSegments.ALL);
 		final QueryItemInfo<NamedObject<ItemName>, ItemName> qii = itemCollection
-				.get(name);
+				.get(name, NameSegments.ALL);
 		assertNotNull(qii);
 		assertEquals(0, ItemName.COMPARATOR.compare(name, qii.getName()));
 
-		name = new SearchName("catalog", "schema", null, "column");
+		name = new DummyItemName("catalog", "schema", null, "column", NameSegments.TTFT);
 		try {
-			itemCollection.get(name);
+			itemCollection.get(name, NameSegments.TTFT);
 			fail("Should have thrown IllegalArgumentException");
 		} catch (final IllegalArgumentException expected) {
 			// do nothing;
 		}
 
-		name = new SearchName("catalog", "schema", "table3", "column");
-		assertNull(itemCollection.get(name));
+		name = new DummyItemName("catalog", "schema", "table3", "column", NameSegments.ALL);
+		assertNull(itemCollection.get(name, NameSegments.ALL));
 	}
 
 	@Test
 	public void testIndexOf_ItemName() {
-		ItemName name = new SearchName("catalog", "schema", "table", "column");
-		int i = itemCollection.indexOf(name);
+		ItemName name = new DummyItemName("catalog", "schema", "table", "column", NameSegments.ALL);
+		int i = itemCollection.indexOf(name, NameSegments.ALL);
 		assertEquals(0, i);
 
-		name = new SearchName("catalog2", "schema2", "table2", "column2");
-		i = itemCollection.indexOf(name);
+		name = new DummyItemName("catalog2", "schema2", "table2", "column2", NameSegments.ALL);
+		i = itemCollection.indexOf(name, NameSegments.ALL);
 		assertEquals(15, i);
 
-		name = new SearchName("catalog3", "schema2", "table2", "column2");
-		i = itemCollection.indexOf(name);
+		name = new DummyItemName("catalog3", "schema2", "table2", "column2", NameSegments.ALL);
+		i = itemCollection.indexOf(name, NameSegments.ALL);
 		assertEquals(-1, i);
 
 	}
 
 	@Test
 	public void testMatch_ItemName() {
-		ItemName name = new SearchName("catalog", "schema", "table", "column");
+		ItemName name = new DummyItemName("catalog", "schema", "table", "column", NameSegments.ALL);
 
 		Iterator<QueryItemInfo<NamedObject<ItemName>, ItemName>> iter = itemCollection
-				.match(name);
+				.match(name, NameSegments.ALL);
 		assertTrue(iter.hasNext());
 		final QueryItemInfo<NamedObject<ItemName>, ItemName> qii = iter.next();
 		assertNotNull(qii);
 		assertFalse(iter.hasNext());
 		assertEquals(0, ItemName.COMPARATOR.compare(name, qii.getName()));
 
-		name = new SearchName("catalog", "schema", "table", null);
-		iter = itemCollection.match(name);
+		name = new DummyItemName("catalog", "schema", "table", null, NameSegments.TTTF);
+		iter = itemCollection.match(name, name.getUsedSegments());
 		assertTrue(iter.hasNext());
 		iter.next();
 		assertTrue(iter.hasNext());
@@ -290,11 +288,11 @@ public class QueryItemCollectionTest {
 
 	@Test
 	public void testNotMatch_ItemName() {
-		final ItemName name = new SearchName("catalog", "schema", "table",
-				"column");
+		final ItemName name = new DummyItemName("catalog", "schema", "table",
+				"column", NameSegments.ALL);
 
 		final Iterator<QueryItemInfo<NamedObject<ItemName>, ItemName>> iter = itemCollection
-				.notMatch(name);
+				.notMatch(name, name.getUsedSegments());
 
 		assertTrue(iter.hasNext());
 		while (iter.hasNext()) {
@@ -307,13 +305,13 @@ public class QueryItemCollectionTest {
 
 	@Test
 	public void testRemove() {
-		ItemName name = new SearchName("catalog3", "schema", "table", "column");
+		ItemName name = new DummyItemName("catalog3", "schema", "table", "column", NameSegments.ALL);
 		QueryItemInfo<NamedObject<ItemName>, ItemName> qii = new QueryItemInfo<NamedObject<ItemName>, ItemName>(
 				namedObject, name, false);
 		assertFalse(itemCollection.remove(qii));
 
 		final int size = itemCollection.size();
-		name = new SearchName("catalog", "schema", "table", "column");
+		name = new DummyItemName("catalog", "schema", "table", "column", NameSegments.ALL);
 		qii = new QueryItemInfo<NamedObject<ItemName>, ItemName>(namedObject,
 				name, false);
 		assertTrue(itemCollection.remove(qii));
@@ -336,7 +334,7 @@ public class QueryItemCollectionTest {
 						"table", "table2"
 				}) {
 
-					name = new SearchName(catalog, schema, table, "column");
+					name = new DummyItemName(catalog, schema, table, "column", NameSegments.ALL);
 					qii = new QueryItemInfo<NamedObject<ItemName>, ItemName>(
 							namedObject, name, false);
 					lst.add(qii);
@@ -367,7 +365,7 @@ public class QueryItemCollectionTest {
 						"table", "table2"
 				}) {
 
-					name = new SearchName(catalog, schema, table, "column");
+					name = new DummyItemName(catalog, schema, table, "column", NameSegments.ALL);
 					qii = new QueryItemInfo<NamedObject<ItemName>, ItemName>(
 							namedObject, name, false);
 					lst.add(qii);
@@ -375,7 +373,7 @@ public class QueryItemCollectionTest {
 			}
 		}
 		final int startSize = lst.size();
-		name = new SearchName("catalog4", "schema4", "table4", "column");
+		name = new DummyItemName("catalog4", "schema4", "table4", "column", NameSegments.ALL);
 		qii = new QueryItemInfo<NamedObject<ItemName>, ItemName>(namedObject,
 				name, false);
 		lst.add(qii);
@@ -403,7 +401,7 @@ public class QueryItemCollectionTest {
 						"table", "table2"
 				}) {
 
-					name = new SearchName(catalog, schema, table, "column");
+					name = new DummyItemName(catalog, schema, table, "column", NameSegments.ALL);
 					qii = new QueryItemInfo<NamedObject<ItemName>, ItemName>(
 							namedObject, name, false);
 					lst.add(qii);
@@ -429,7 +427,7 @@ public class QueryItemCollectionTest {
 						"table", "table2"
 				}) {
 
-					lst.add(new SearchName(catalog, schema, table, "column"));
+					lst.add(new DummyItemName(catalog, schema, table, "column", NameSegments.ALL));
 				}
 			}
 		}
@@ -453,7 +451,7 @@ public class QueryItemCollectionTest {
 						"table", "table2"
 				}) {
 
-					name = new SearchName(catalog, schema, table, "column");
+					name = new DummyItemName(catalog, schema, table, "column", NameSegments.ALL);
 					lst.add(new TestingNamedObject(name));
 				}
 			}
@@ -479,7 +477,7 @@ public class QueryItemCollectionTest {
 						"table", "table2"
 				}) {
 
-					name = new SearchName(catalog, schema, table, "column");
+					name = new DummyItemName(catalog, schema, table, "column", NameSegments.ALL);
 					qii = new QueryItemInfo<NamedObject<ItemName>, ItemName>(
 							namedObject, name, false);
 					lst.add(qii);
@@ -487,7 +485,7 @@ public class QueryItemCollectionTest {
 			}
 		}
 
-		name = new SearchName("catalog4", "schema4", "table4", "column");
+		name = new DummyItemName("catalog4", "schema4", "table4", "column", NameSegments.ALL);
 		qii = new QueryItemInfo<NamedObject<ItemName>, ItemName>(namedObject,
 				name, false);
 		lst.add(qii);
@@ -517,13 +515,13 @@ public class QueryItemCollectionTest {
 
 	@Test
 	public void testFindGUID_String() {
-		ItemName name = new SearchName("catalog", "schema", "table", "column");
+		ItemName name = new DummyItemName("catalog", "schema", "table", "column", NameSegments.ALL);
 		QueryItemInfo<?, ?> itemInfo = itemCollection.findGUIDVar(name
 				.getGUID());
 		assertNotNull(itemInfo);
 		assertEquals(name, itemInfo.getName());
 
-		name = new SearchName("catalog", "schema", "table", "column5");
+		name = new DummyItemName("catalog", "schema", "table", "column5", NameSegments.ALL);
 		itemInfo = itemCollection.findGUIDVar(name.getGUID());
 		assertNull(itemInfo);
 	}

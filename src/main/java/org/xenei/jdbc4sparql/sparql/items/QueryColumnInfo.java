@@ -121,12 +121,17 @@ public class QueryColumnInfo extends QueryItemInfo<Column, ColumnName> {
 
 	@Override
 	public String toString() {
-		StringBuilder sb = new StringBuilder( String.format("QueryColumnInfo[%s]", getColumn()
-				.getSQLName()));
-		if (isAlias()) {
-			sb.append( "alias for ").append( aliasFor.getColumn().getSQLName());
+		StringBuilder sb = new StringBuilder("QueryColumnInfo[");
+	
+		if (isAlias())
+		{
+			sb.append( String.format( "%s alias for %s", aliasFor.getName(), getName()));
 		}
-		return sb.toString();
+		else
+		{
+			sb.append( getName() );
+		}
+		return sb.append("]").toString();
 	}
 
 }

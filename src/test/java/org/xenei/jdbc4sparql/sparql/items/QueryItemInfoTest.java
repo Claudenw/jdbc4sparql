@@ -10,7 +10,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.xenei.jdbc4sparql.iface.name.ItemName;
 import org.xenei.jdbc4sparql.iface.name.NameSegments;
-import org.xenei.jdbc4sparql.iface.name.SearchName;
 import org.xenei.jdbc4sparql.impl.NameUtils;
 
 import org.apache.jena.sparql.core.Var;
@@ -24,7 +23,7 @@ public class QueryItemInfoTest {
 	@Before
 	public void setup() {
 
-		itemName = new SearchName("catalog", "schema", "table", "column");
+		itemName = new DummyItemName("catalog", "schema", "table", "column", NameSegments.ALL);
 		itemName.setUsedSegments(NameSegments.ALL);
 
 		namedObject = new NamedObject<ItemName>() {
@@ -49,19 +48,19 @@ public class QueryItemInfoTest {
 		itemInfo.setSegments(NameSegments.CATALOG);
 		assertEquals("C:true S:false T:false C:false", itemInfo.getSegments()
 				.toString());
-		assertEquals("catalog.null.null.null", itemInfo.getName().getDBName());
+		assertEquals("catalog", itemInfo.getName().getDBName());
 		itemInfo.setSegments(NameSegments.SCHEMA);
 		assertEquals("C:false S:true T:false C:false", itemInfo.getSegments()
 				.toString());
-		assertEquals("null.schema.null.null", itemInfo.getName().getDBName());
+		assertEquals("schema", itemInfo.getName().getDBName());
 		itemInfo.setSegments(NameSegments.TABLE);
 		assertEquals("C:false S:true T:true C:false", itemInfo.getSegments()
 				.toString());
-		assertEquals("null.schema.table.null", itemInfo.getName().getDBName());
+		assertEquals("schema.table", itemInfo.getName().getDBName());
 		itemInfo.setSegments(NameSegments.COLUMN);
 		assertEquals("C:false S:true T:true C:true", itemInfo.getSegments()
 				.toString());
-		assertEquals("null.schema.table.column", itemInfo.getName().getDBName());
+		assertEquals("schema.table.column", itemInfo.getName().getDBName());
 	}
 
 	@Test
@@ -100,7 +99,7 @@ public class QueryItemInfoTest {
 			for (final boolean schemaFlg : tf) {
 				for (final boolean tableFlg : tf) {
 					for (final boolean columnFlg : tf) {
-						itemName2 = new SearchName(itemName,
+						itemName2 = itemName.clone(
 								NameSegments.getInstance(catalogFlg, schemaFlg,
 										tableFlg, columnFlg));
 						itemInfo2 = new QueryItemInfo<NamedObject<ItemName>, ItemName>(

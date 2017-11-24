@@ -122,20 +122,21 @@ public class ColumnNameConstructorTests {
 	public void testGetInstance() {
 		final ColumnName cName = new ColumnName("catalog", "schema", "table",
 				"column");
+		// standard segment configurations.
 		final NameSegments segs[] = {
-				NameSegments.TTTT, NameSegments.FTTT, NameSegments.TFTT,
-				NameSegments.FFTT, NameSegments.TFFT, NameSegments.FFFT
+				NameSegments.TTTT, NameSegments.FTTT, NameSegments.FFTT,
+				 NameSegments.FFFT
 		};
 		for (final NameSegments seg : segs) {
 			final ColumnName sn = cName.clone(seg);
 			ColumnName result = ColumnName.getNameInstance("catalog2",
 					"schema2", "table2", sn.getSPARQLName());
+			// make it so we can see all the columns
 			ColumnName answer = result.clone(NameSegments.ALL);
-			assertEquals(sn.getSPARQLName(), "catalog2", answer.getCatalog());
-			assertEquals(sn.getSPARQLName(), seg.isSchema() ? "schema"
-					: "schema2", answer.getSchema());
+			assertEquals(sn.getSPARQLName(), "catalog2" ,  answer.getCatalog());
+			assertEquals(sn.getSPARQLName(), seg.isSchema() ? "schema" : "schema2", answer.getSchema());
 			assertEquals(sn.getSPARQLName(),
-					seg.isSchema() || seg.isTable() ? "table" : "table2",
+					seg.isTable() ? "table" : "table2",
 					answer.getTable());
 			assertEquals(sn.getSPARQLName(), column, answer.getColumn());
 
@@ -146,7 +147,7 @@ public class ColumnNameConstructorTests {
 			assertEquals(sn.getSPARQLName(), seg.isSchema() ? "schema"
 					: "schema2", answer.getSchema());
 			assertEquals(sn.getSPARQLName(),
-					seg.isSchema() || seg.isTable() ? "table" : "table2",
+					seg.isTable() ? "table" : "table2",
 					answer.getTable());
 			assertEquals(sn.getSPARQLName(), column, answer.getColumn());
 		}

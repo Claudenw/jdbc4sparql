@@ -211,14 +211,18 @@ public abstract class ItemName implements GUIDObject {
 		return createName( separator, getUsedSegments());
 	}
 	
-	public final String createName(final String separator, NameSegments nameSegments) {
+	protected NameSegments modifyNameSegments( NameSegments segs ) {
+		return segs;
+	}
+	
+	public final String createName(final String separator, NameSegments segs) {
 		final StringBuilder sb = new StringBuilder();
-
+		NameSegments nameSegments = modifyNameSegments( segs );
 		
-		if (StringUtils.isNotEmpty(nameSegments.getCatalog(fqName))) {
+		if (nameSegments.isCatalog()) {
 			sb.append(nameSegments.getCatalog(fqName));
 		}
-		if (StringUtils.isNotEmpty(nameSegments.getSchema(fqName))) {
+		if (nameSegments.isSchema()) {
 			if (sb.length()>0)
 			{
 				sb.append(separator);
@@ -226,7 +230,7 @@ public abstract class ItemName implements GUIDObject {
 			sb.append(nameSegments.getSchema(fqName));
 		}
 
-		if (StringUtils.isNotEmpty(nameSegments.getTable(fqName))) {
+		if (nameSegments.isTable()) {
 			if (sb.length()>0)
 			{
 				sb.append(separator);
@@ -234,7 +238,7 @@ public abstract class ItemName implements GUIDObject {
 			sb.append(nameSegments.getTable(fqName));
 		}
 
-		if (StringUtils.isNotEmpty(nameSegments.getColumn(fqName))) {
+		if (nameSegments.isColumn()) {
 			if (sb.length()>0)
 			{
 				sb.append(separator);
@@ -259,7 +263,7 @@ public abstract class ItemName implements GUIDObject {
 	 * @return
 	 */
 	public final String getColumn() {
-		return usedSegments.getColumn(fqName);
+		return modifyNameSegments(usedSegments).getColumn(fqName);
 	}
 
 	/**
@@ -277,7 +281,7 @@ public abstract class ItemName implements GUIDObject {
 	 * @return The catalog name string.
 	 */
 	public final String getCatalog() {
-		return usedSegments.getCatalog(fqName);
+		return modifyNameSegments(usedSegments).getCatalog(fqName);
 	}
 
 	/**
@@ -286,7 +290,7 @@ public abstract class ItemName implements GUIDObject {
 	 * @return the schema segment string.
 	 */
 	public final String getSchema() {
-		return usedSegments.getSchema(fqName);
+		return modifyNameSegments(usedSegments).getSchema(fqName);
 	}
 
 	/**
@@ -325,7 +329,7 @@ public abstract class ItemName implements GUIDObject {
 	 * @return the table name string
 	 */
 	public final String getTable() {
-		return usedSegments.getTable(fqName);
+		return modifyNameSegments(usedSegments).getTable(fqName);
 	}
 
 	/**

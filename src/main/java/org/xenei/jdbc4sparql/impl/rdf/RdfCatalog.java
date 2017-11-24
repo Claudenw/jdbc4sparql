@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.ConstructBuilder;
 import org.apache.jena.graph.Node;
@@ -265,7 +266,10 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 
 	@Override
 	public void close() {
-		connection.close();
+		if (connection != null)
+		{
+			connection.close();
+		}
 		connection = null;
 		schemaList = null;
 	}
@@ -281,6 +285,10 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 	@Override
 	public List<QuerySolution> executeLocalQuery(final Query query) {
 
+		connection.fetch().write( System.out, "TURTLE" );
+		connection.fetchDataset().listNames().forEachRemaining( s -> System.out.println( s ));
+	
+		
 		final QueryExecution qexec = connection.query(query);
 		try {
 			final ResultSet rs = qexec.execSelect();

@@ -56,7 +56,7 @@ public class QueryTableInfoTest {
 		tableInfo.setSegments(NameSegments.CATALOG);
 		assertEquals("C:true S:false T:true C:false", tableInfo.getSegments()
 				.toString());
-		assertEquals("table", tableInfo.getName().getDBName());
+		assertEquals("catalog.schema.table", tableInfo.getName().getDBName());
 		tableInfo.setSegments(NameSegments.SCHEMA);
 		assertEquals("C:false S:true T:true C:false", tableInfo.getSegments()
 				.toString());
@@ -72,7 +72,7 @@ public class QueryTableInfoTest {
 		tableInfo.setSegments(NameSegments.TTTT);
 		assertEquals("C:true S:true T:true C:false", tableInfo.getSegments()
 				.toString());
-		assertEquals("schema.table", tableInfo.getName().getDBName());
+		assertEquals("catalog.schema.table", tableInfo.getName().getDBName());
 
 	}
 
@@ -166,7 +166,7 @@ public class QueryTableInfoTest {
 		cols.add(column);
 		when(table.getColumns()).thenReturn(cols.iterator());
 
-		tableInfo.addDefinedColumns(Collections.<String> emptyList());
+		tableInfo.addDefinedColumns(Collections.emptyList());
 
 		final ElementExtractor extractor = new ElementExtractor(
 				ElementPathBlock.class);

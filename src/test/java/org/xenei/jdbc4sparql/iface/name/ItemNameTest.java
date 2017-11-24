@@ -32,19 +32,23 @@ public class ItemNameTest {
 		itemName.setUsedSegments(NameSegments.CATALOG);
 		assertEquals("C:true S:false T:false C:false", itemName
 				.getUsedSegments().toString());
-		assertEquals("catalog.null.null.null", itemName.getDBName());
+//		assertEquals("catalog.null.null.null", itemName.getDBName());
+		assertEquals("catalog", itemName.getDBName());
 		itemName.setUsedSegments(NameSegments.SCHEMA);
 		assertEquals("C:false S:true T:false C:false", itemName
 				.getUsedSegments().toString());
-		assertEquals("null.schema.null.null", itemName.getDBName());
+//		assertEquals("null.schema.null.null", itemName.getDBName());
+		assertEquals("schema", itemName.getDBName());
 		itemName.setUsedSegments(NameSegments.TABLE);
 		assertEquals("C:false S:true T:true C:false", itemName
 				.getUsedSegments().toString());
-		assertEquals("null.schema.table.null", itemName.getDBName());
+//		assertEquals("null.schema.table.null", itemName.getDBName());
+		assertEquals("schema.table", itemName.getDBName());
 		itemName.setUsedSegments(NameSegments.COLUMN);
 		assertEquals("C:false S:true T:true C:true", itemName.getUsedSegments()
 				.toString());
-		assertEquals("null.schema.table.column", itemName.getDBName());
+//		assertEquals("null.schema.table.column", itemName.getDBName());
+		assertEquals("schema.table.column", itemName.getDBName());
 	}
 
 	@Test

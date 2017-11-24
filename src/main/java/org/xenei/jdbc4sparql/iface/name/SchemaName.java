@@ -25,6 +25,10 @@ public class SchemaName extends ItemName {
 		return name;
 	}
 
+	protected NameSegments modifyNameSegments( NameSegments segs ) {
+		return adjustSegments( segs );
+	}
+	
 	/**
 	 * Ensure that the schema segment is on, and the table and column segments
 	 * are off.
@@ -39,11 +43,7 @@ public class SchemaName extends ItemName {
 		if (segments == null) {
 			throw new IllegalArgumentException("Segments may not be null");
 		}
-		if (segments.isSchema() && !segments.isTable() && !segments.isColumn()) {
-			return segments;
-		}
-		return NameSegments.getInstance(segments.isCatalog(), true, false,
-				false);
+		return segments.or( NameSegments.FTFF ).and( NameSegments.TTFF);
 	}
 
 	/**

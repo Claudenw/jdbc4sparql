@@ -261,9 +261,9 @@ public class ColumnNameTests {
 					final ColumnName result = new ColumnName(columnName,
 							segments);
 					assertEquals("Bad schema: " + segments.toString(),
-							schemaFlg ? schema : null, result.getSchema());
+							schemaFlg  ? schema : null, result.getSchema());
 					assertEquals("Bad table: " + segments.toString(),
-							tableFlg ? table : null, result.getTable());
+							schemaFlg | tableFlg ? table : null, result.getTable());
 					assertEquals("Bad column: " + segments.toString(), column,
 							result.getColumn()); // column is always returned
 				}

@@ -173,21 +173,21 @@ public class QueryTableInfo extends QueryItemInfo<Table, TableName> {
 	 *
 	 * @param column
 	 *            The column to add
-	 * @param cName
+	 * @param alias
 	 *            The name for the column in the query.
 	 * @param optional
 	 *            if true the column is optional.
 	 * @return The variable Node for the column.
 	 */
 	public QueryColumnInfo addColumnToQuery(final Column column,
-			final ColumnName cName, final boolean optional) {
+			final ColumnName alias, final boolean optional) {
 
 		QueryColumnInfo columnInfo = new QueryColumnInfo(column, getName()
 				.getColumnName(column.getName().getShortName()), optional);
 
 		// see if this is an alias
-		if (!column.getName().getGUID().equals(cName.getGUID())) {
-			columnInfo = columnInfo.createAlias(cName);
+		if (!column.getName().getGUID().equals(alias.getGUID())) {
+			columnInfo = columnInfo.createAlias(alias);
 		}
 
 		if (LOG.isDebugEnabled()) {

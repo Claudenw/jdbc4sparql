@@ -165,8 +165,10 @@ public class MemDatasetProducer extends AbstractDatasetProducer {
 	}
 
 	public MemDatasetProducer(final Properties props) {
-		super(props, new MetaDS(DatasetFactory.create()), DatasetFactory
-				.create());
+		super(props, DatasetFactory.create(), DatasetFactory
+					.create());
+	//	super(props, new MetaDS(DatasetFactory.create()), DatasetFactory
+	//			.create());
 	}
 
 	public MemDatasetProducer(final Properties props, final ZipInputStream zis)

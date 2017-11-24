@@ -53,7 +53,7 @@ public class QueryInfoSet {
 
 	public boolean addColumn(final QueryColumnInfo columnInfo) {
 		//columnInfo.getName().setUseGUID(guidFlg);
-		columnInfo.setSegments(segments);
+		//columnInfo.setSegments(segments);
 		if (LOG.isDebugEnabled()) {
 			QueryInfoSet.LOG.debug("adding column: {}", columnInfo);
 		}
@@ -100,7 +100,7 @@ public class QueryInfoSet {
 	 * @return columnInfo for column or null if not found.
 	 */
 	public QueryColumnInfo findColumn(final ColumnName name) {
-		return columnsInQuery.get(name);
+		return columnsInQuery.get(name, name.getUsedSegments());
 	}
 
 	/**
@@ -170,7 +170,7 @@ public class QueryInfoSet {
 	 */
 	public QueryColumnInfo getColumn(final ColumnName name) {
 
-		final QueryColumnInfo retval = columnsInQuery.get(name);
+		final QueryColumnInfo retval = columnsInQuery.get(name, name.getUsedSegments());
 		if (retval == null) {
 			throw new IllegalArgumentException(String.format(
 					SparqlQueryBuilder.NOT_FOUND_IN_QUERY, name));
@@ -208,7 +208,7 @@ public class QueryInfoSet {
 	 *             if more than one object matches.
 	 */
 	public QueryTableInfo getTable(final TableName name) {
-		return tablesInQuery.get(name);
+		return tablesInQuery.get(name, name.getUsedSegments());
 	}
 
 	public QueryItemCollection<QueryTableInfo, Table, TableName> getTables() {

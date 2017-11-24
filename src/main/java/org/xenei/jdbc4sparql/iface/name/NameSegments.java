@@ -221,7 +221,7 @@ public enum NameSegments {
 	 * @return merged NameSegments object
 	 */
 	public NameSegments or(final NameSegments other) {
-		final int idx = flag ^ other.flag;
+		final int idx = flag | other.flag;
 		return LST[idx];
 	}
 }

@@ -343,8 +343,8 @@ implements Collection<I> {
 	 * @throws IllegalArgumentException
 	 *             if more than one object matches.
 	 */
-	public I get(final ItemName name) {
-		final Iterator<I> iter = match(name,name.getUsedSegments());
+	public I get(final ItemName name, NameSegments segs ) {
+		final Iterator<I> iter = match(name,segs);
 		if (iter.hasNext()) {
 			final I retval = iter.next();
 			if (iter.hasNext()) {

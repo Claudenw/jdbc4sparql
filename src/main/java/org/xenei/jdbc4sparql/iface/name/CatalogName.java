@@ -50,6 +50,10 @@ public class CatalogName extends ItemName {
 						null), NameSegments.CATALOG);
 	}
 
+	protected NameSegments modifyNameSegments( NameSegments segs ) {
+		return NameSegments.CATALOG;		
+	}
+	
 	/**
 	 * Create a schemas name in this catalog.
 	 *

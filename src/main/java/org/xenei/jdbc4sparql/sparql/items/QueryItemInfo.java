@@ -73,7 +73,7 @@ implements NamedObject<N>, GUIDObject {
 	}
 
 	public NameSegments getSegments() {
-		return this.name.getUsedSegments();
+		return name.getUsedSegments();
 	}
 
 	/**

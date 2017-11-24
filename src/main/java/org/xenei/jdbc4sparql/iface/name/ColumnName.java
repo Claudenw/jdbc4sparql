@@ -74,22 +74,26 @@ public class ColumnName extends ItemName {
 		final String[] parts = name.split(separator);
 		switch (parts.length) {
 			case 4:
-				return new ColumnName(parts[0], parts[1], parts[2], parts[4], NameSegments.ALL);
+				return new ColumnName(catalog, parts[1], parts[2], parts[3]);
 
 			case 3:
-				return new ColumnName(catalog, parts[0], parts[1], parts[2], NameSegments.FTTT);
+				return new ColumnName(catalog, parts[0], parts[1], parts[2]);
 
 			case 2:
-				return new ColumnName(catalog, schema, parts[0], parts[1], NameSegments.FFTT);
+				return new ColumnName(catalog, schema, parts[0], parts[1]);
 
 			case 1:
-				return new ColumnName(catalog, schema, table, parts[0], NameSegments.FFFT);
+				return new ColumnName(catalog, schema, table, parts[0]);
 
 			default:
 				throw new IllegalArgumentException(String.format(
 						"Column name must be 1 to 3 segments not %s as in %s",
 						parts.length, name));
 		}
+	}
+	
+	protected NameSegments modifyNameSegments( NameSegments segs ) {
+		return adjustSegments( segs );
 	}
 
 	/**
@@ -124,11 +128,17 @@ public class ColumnName extends ItemName {
 		if (segments == null) {
 			throw new IllegalArgumentException("segments may not be null");
 		}
-		if (segments.isColumn()) {
-			return segments;
+		if (segments.isCatalog())
+		{
+			return NameSegments.ALL;
 		}
-		return NameSegments.getInstance(segments.isCatalog(),
-				segments.isSchema(), segments.isTable(), true);
+		
+		if (segments.isSchema())
+		{
+			return NameSegments.FTTT;
+		}
+		
+		return 	segments.or( NameSegments.FFFT);		
 	}
 
 	/**

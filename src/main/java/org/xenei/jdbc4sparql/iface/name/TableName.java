@@ -73,11 +73,12 @@ public class TableName extends ItemName {
 		if (segments == null) {
 			throw new IllegalArgumentException("segments may not be null");
 		}
-		if (segments.isTable() && !segments.isColumn()) {
-			return segments;
+		NameSegments segs = segments;
+		if (segments.isCatalog())
+		{
+			segs = segs.or( NameSegments.FTFF);
 		}
-		return NameSegments.getInstance(segments.isCatalog(),
-				segments.isSchema(), true, false);
+		return segs.or( NameSegments.FFTF).and( NameSegments.TTTF);
 	}
 
 	/**
@@ -142,6 +143,10 @@ public class TableName extends ItemName {
 		super(new FQNameImpl(checkNotNull(catalog, "catalog"), checkNotNull(
 				schema, "schema"), checkNotNull(table, "table"), null),
 				NameSegments.TABLE);
+	}
+	
+	protected NameSegments modifyNameSegments( NameSegments segs ) {
+		return adjustSegments( segs );
 	}
 
 //	@Override

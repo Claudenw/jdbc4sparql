@@ -24,7 +24,7 @@ import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 import org.xenei.jdbc4sparql.sparql.SparqlResultSet;
 import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlParserImpl;
-
+import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QueryExecutionFactory;
@@ -32,19 +32,22 @@ import org.apache.jena.query.QueryFactory;
 import org.apache.jena.query.QuerySolution;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Literal;
+import org.apache.jena.vocabulary.RDF;
 
 public class MetaCatalogValuesTests {
 	private Map<String, Catalog> catalogs;
 	private SparqlParser parser;
 	private DatasetProducer dpProducer;
 	private RdfCatalog catalog;
-	private final String queryString = "PREFIX  rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> "
-			+ "SELECT ?tbl ?colName WHERE { ?tbl a <http://org.xenei.jdbc4sparql/entity/Table> ;"
-			+ "<http://www.w3.org/2000/01/rdf-schema#label> '%s' ;"
-			+ "<http://org.xenei.jdbc4sparql/entity/Table#column> ?list ."
-			+ "?list rdf:rest*/rdf:first ?column ."
-			+ "?column <http://www.w3.org/2000/01/rdf-schema#label> ?colName ; "
-			+ " }";
+	private SelectBuilder innerSelectBuilder = new SelectBuilder().addPrefix("rdf","http://www.w3.org/1999/02/22-rdf-syntax-ns#")
+			.addWhere( "?tbl", RDF.type, "<http://org.xenei.jdbc4sparql/entity/Table>")
+			.addWhere( "?tbl", "<http://www.w3.org/2000/01/rdf-schema#label>", "?lbl")
+			.addWhere( "?tbl", "<http://org.xenei.jdbc4sparql/entity/Table#column>", "?list")
+			.addWhere( "?list", "rdf:rest*/rdf:first", "?column")
+			.addWhere( "?column", "<http://www.w3.org/2000/01/rdf-schema#label>", "?colName" );
+	private SelectBuilder selectBuilder = new SelectBuilder().addVar( "?tbl").addVar( "?colName")
+			.addGraph( "<http://org.xenei.jdbc4sparql/entity/Catalog/instance/NMETADATA>", innerSelectBuilder);
+
 
 	@Before
 	public void setup() throws FileNotFoundException, IOException {
@@ -342,11 +345,11 @@ public class MetaCatalogValuesTests {
 	private void verifyNames(final String tblName, final String[] colNames) {
 		final List<String> names = Arrays.asList(colNames);
 		int count = 0;
-		final Query query = QueryFactory.create(String.format(queryString,
-				tblName));
-	
-		final QueryExecution qexec = dpProducer.getMetaDataEntityManager().getConnection().query(query);
+		selectBuilder.setVar( "?lbl", tblName);
+		final Query query = selectBuilder.build();	
 		
+		final QueryExecution qexec = dpProducer.getMetaDataEntityManager().getConnection().query(query);
+				
 		try {
 			final ResultSet results = qexec.execSelect();
 

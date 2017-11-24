@@ -55,7 +55,6 @@ public class SchemaNameTests {
 		else {
 			DBName = "";
 			SPARQLName = "";
-
 		}
 
 	}
