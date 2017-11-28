@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.name.ColumnName;
+import org.xenei.jdbc4sparql.iface.name.GUIDObject;
 import org.xenei.jdbc4sparql.iface.name.ItemName;
 import org.xenei.jdbc4sparql.iface.name.NameSegments;
 import org.xenei.jdbc4sparql.iface.name.TableName;
@@ -19,7 +20,7 @@ import org.xenei.jdbc4sparql.sparql.items.QueryColumnInfo;
 import org.xenei.jdbc4sparql.sparql.items.QueryItemCollection;
 import org.xenei.jdbc4sparql.sparql.items.QueryItemInfo;
 import org.xenei.jdbc4sparql.sparql.items.QueryTableInfo;
-
+import org.apache.jena.sparql.core.Var;
 import org.apache.jena.util.iterator.ExtendedIterator;
 
 /**
@@ -76,7 +77,7 @@ public class QueryInfoSet {
 				QueryInfoSet.LOG.debug("adding table: {}", tbl);
 			}
 			tablesInQuery.add(tbl);
-			tbl.setSegments(NameSegments.ALL);
+//			tbl.setSegments(NameSegments.ALL);
 		}
 	}
 
@@ -110,10 +111,21 @@ public class QueryInfoSet {
 	 *            The column name defining the GUID
 	 * @return the QueryColumnInfo or null.
 	 */
-	public QueryColumnInfo findColumnByGUIDVar(final String guid) {
-		return columnsInQuery.findGUIDVar(guid);
+	public QueryColumnInfo findColumnByGUID(final GUIDObject guid) {
+		return columnsInQuery.findGUID(guid);
 	}
 
+	/**
+	 * Find the column in the query by its GUID. returns null if not found
+	 *
+	 * @param name
+	 *            The column name defining the GUID
+	 * @return the QueryColumnInfo or null.
+	 */
+	public QueryColumnInfo findColumnByGUID(final Var guidVar) {
+		return columnsInQuery.findGUID(guidVar);
+	}
+	
 	/**
 	 * Force this infoset to use short names for columns.
 	 */

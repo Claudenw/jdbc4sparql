@@ -16,7 +16,7 @@ import org.xenei.jdbc4sparql.impl.NameUtils;
  */
 public abstract class ItemName implements GUIDObject {
 	/**
-	 * Compaes ItemNames.
+	 * Compares ItemNames.
 	 */
 	public static Comparator<ItemName> COMPARATOR = new Comparator<ItemName>() {
 
@@ -251,9 +251,9 @@ public abstract class ItemName implements GUIDObject {
 	/**
 	 * Get the base name for this item name.
 	 *
-	 * @return
+	 * @return the fully qualified name for this item.
 	 */
-	protected FQName getFQName() {
+	public final FQName getFQName() {
 		return fqName;
 	}
 

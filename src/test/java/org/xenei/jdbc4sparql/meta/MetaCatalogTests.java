@@ -21,12 +21,12 @@ import org.apache.jena.rdf.model.Literal;
 public class MetaCatalogTests {
 	private DatasetProducer dpProducer;
 	private final String queryString = "PREFIX  rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> "
-			+ "SELECT ?tbl ?colName  WHERE { ?tbl a <http://org.xenei.jdbc4sparql/entity/Table> ;"
+			+ "SELECT ?tbl ?colName  WHERE { GRAPH <http://org.xenei.jdbc4sparql/entity/Catalog/instance/NMETADATA> { ?tbl a <http://org.xenei.jdbc4sparql/entity/Table> ;"
 			+ "<http://www.w3.org/2000/01/rdf-schema#label> '%s' ;"
 			+ "<http://org.xenei.jdbc4sparql/entity/Table#column> ?list ."
 			+ "?list rdf:rest*/rdf:first ?column ."
 			+ "?column <http://www.w3.org/2000/01/rdf-schema#label> ?colName ; "
-			+ " }";
+			+ " }}";
 
 	@Before
 	public void setup() {
@@ -288,8 +288,7 @@ public class MetaCatalogTests {
 		int count = 0;
 		final Query query = QueryFactory.create(String.format(queryString,
 				tblName));
-
-		
+	
 		final QueryExecution qexec = dpProducer.getMetaDataEntityManager().getConnection().query(query);
 		
 		try {

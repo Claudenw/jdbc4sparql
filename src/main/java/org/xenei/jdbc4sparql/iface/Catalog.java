@@ -57,7 +57,7 @@ public interface Catalog extends NamedObject<CatalogName> {
 	 * Get the schema
 	 *
 	 * @param schema
-	 * @return
+	 * @return the schema or null if not found.
 	 */
 	Schema getSchema(String schemaName);
 

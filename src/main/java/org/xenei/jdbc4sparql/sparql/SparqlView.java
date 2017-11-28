@@ -47,6 +47,10 @@ public class SparqlView extends AbstractTable {
 		QueryColumnInfo columnInfo;
 
 		RenamedColumn(final QueryColumnInfo columnInfo) {
+			if(columnInfo == null)
+			{
+				throw new IllegalArgumentException( "ColumnInfo may not be null");
+			}
 			this.columnInfo = columnInfo;
 		}
 
@@ -159,6 +163,7 @@ public class SparqlView extends AbstractTable {
 	@Override
 	public List<Column> getColumnList() {
 		if (columns == null) {
+			builder.getResultColumns().forEach( qci -> System.out.println( "debug: "+qci ));//
 			columns = WrappedIterator
 					.create(builder.getResultColumns().iterator())
 					.mapWith(new Function<QueryColumnInfo, Column>() {

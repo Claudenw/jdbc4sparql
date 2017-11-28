@@ -72,9 +72,7 @@ public interface FQName extends GUIDObject {
 					 StringUtils.defaultString(table),
 						NameUtils.DB_DOT,
 					 StringUtils.defaultString(column));
-			return "v_"
-			+ (UUID.nameUUIDFromBytes(t.getBytes()).toString().replace(
-							"-", "_"));
+			return UUID.nameUUIDFromBytes(t.getBytes()).toString().replace( "-", "_" );
 		}
 	}
 

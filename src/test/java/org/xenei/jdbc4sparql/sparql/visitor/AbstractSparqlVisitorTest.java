@@ -22,6 +22,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.xenei.jdbc4sparql.LoggingConfig;
 import org.xenei.jdbc4sparql.iface.Catalog;
+import org.xenei.jdbc4sparql.iface.name.GUIDObject;
 import org.xenei.jdbc4sparql.iface.name.TableName;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
@@ -71,25 +72,6 @@ abstract public class AbstractSparqlVisitorTest {
 	
 	protected Map<Class<? extends Element>, Integer> tests;
 	protected Map<Class<? extends Element>, Wrapper> results;
-
-	// protected Model model;
-	// protected SparqlParser parser;
-	// protected Map<String, Catalog> catalogs;
-	// protected RdfCatalog catalog;
-	// protected RdfSchema schema;
-	// protected final CCJSqlParserManager parserManager = new
-	// CCJSqlParserManager();
-	// protected Query query;
-	// protected Map<Class<? extends Element>, Integer> tests;
-	// protected Map<Class<? extends Element>, Wrapper> results;
-	// protected TableName fooTableName;
-	// protected TableName barTableName;
-	// protected List<String> vars;
-	//
-	// protected static String RQD = "IntCol";
-	// protected static String OPT = "NullableStringCol";
-	// protected static String RQD_TEST = "StringCol";
-	// protected static String OPT_TEST = "NullableIntCol";
 
 	@Before
 	public void setup() throws Exception {
@@ -211,7 +193,7 @@ abstract public class AbstractSparqlVisitorTest {
 		}
 	}
 
-	protected List<String> verifyTable(final Wrapper w, final String name) {
+	protected List<String> verifyTable(final Wrapper w, final GUIDObject name) {
 		final List<String> retval = new ArrayList<String>();
 		for (final Element el : w.lst) {
 			final ElementPathBlock epb = (ElementPathBlock) el;
@@ -219,7 +201,7 @@ abstract public class AbstractSparqlVisitorTest {
 			while (iter.hasNext()) {
 				final TriplePath t = iter.next();
 				Assert.assertTrue(t.getSubject().isVariable());
-				Assert.assertEquals(name, t.getSubject().getName());
+				Assert.assertEquals(GUIDObject.asVar(name), t.getSubject());
 				final Node n = t.getObject();
 				if (n.isVariable()) {
 					retval.add(t.getObject().getName());

@@ -15,6 +15,7 @@ import org.junit.Test;
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.ColumnDef;
 import org.xenei.jdbc4sparql.iface.name.ColumnName;
+import org.xenei.jdbc4sparql.iface.name.GUIDObject;
 import org.xenei.jdbc4sparql.iface.name.ItemName;
 import org.xenei.jdbc4sparql.iface.name.NameSegments;
 import org.xenei.jdbc4sparql.impl.NameUtils;
@@ -78,14 +79,12 @@ public class QueryColumnInfoTest {
 
 	@Test
 	public void testGetVar() {
-		assertEquals(columnName.getGUID(), columnInfo.getVar().getName());
+		assertEquals(GUIDObject.asVar( columnName), columnInfo.getVar());
 	}
 
 	@Test
 	public void testGetGUID() {
-		final String varName = columnInfo.getName().getGUID();
-		assertNotNull(columnInfo.getGUIDVar());
-		assertEquals(varName, columnInfo.getGUIDVar().getVarName());
+		assertEquals( columnInfo.getGUID(), columnInfo.getName().getGUID());
 	}
 
 	@Test

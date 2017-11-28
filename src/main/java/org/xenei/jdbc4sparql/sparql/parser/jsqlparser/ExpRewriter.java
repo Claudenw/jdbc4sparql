@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Stack;
 
 import org.xenei.jdbc4sparql.iface.name.ColumnName;
+import org.xenei.jdbc4sparql.iface.name.GUIDObject;
 import org.xenei.jdbc4sparql.iface.name.ItemName;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 import org.xenei.jdbc4sparql.sparql.items.QueryColumnInfo;
@@ -153,7 +154,7 @@ public abstract class ExpRewriter implements ExprVisitor {
 					mapTo = new ColumnName(mapTo.getCatalog(),
 							mapTo.getSchema(), mapTo.getTable(), ci.getName()
 							.getColumn());
-					stack.push(new ExprVar(mapTo.getGUID()));
+					stack.push(new ExprVar( GUIDObject.asVar(mapTo)));
 					return;
 				}
 			}

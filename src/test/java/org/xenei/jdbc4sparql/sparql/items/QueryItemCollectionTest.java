@@ -516,13 +516,12 @@ public class QueryItemCollectionTest {
 	@Test
 	public void testFindGUID_String() {
 		ItemName name = new DummyItemName("catalog", "schema", "table", "column", NameSegments.ALL);
-		QueryItemInfo<?, ?> itemInfo = itemCollection.findGUIDVar(name
-				.getGUID());
+		QueryItemInfo<?, ?> itemInfo = itemCollection.findGUID(name);
 		assertNotNull(itemInfo);
 		assertEquals(name, itemInfo.getName());
 
 		name = new DummyItemName("catalog", "schema", "table", "column5", NameSegments.ALL);
-		itemInfo = itemCollection.findGUIDVar(name.getGUID());
+		itemInfo = itemCollection.findGUID(name);
 		assertNull(itemInfo);
 	}
 

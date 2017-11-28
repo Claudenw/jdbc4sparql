@@ -17,6 +17,7 @@ import org.junit.Test;
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.name.ColumnName;
+import org.xenei.jdbc4sparql.iface.name.GUIDObject;
 import org.xenei.jdbc4sparql.iface.name.ItemName;
 import org.xenei.jdbc4sparql.iface.name.NameSegments;
 import org.xenei.jdbc4sparql.iface.name.TableName;
@@ -84,15 +85,14 @@ public class QueryTableInfoTest {
 
 	@Test
 	public void testGetVar() {
-		final Var v = tableInfo.getVar();
-		assertEquals(tableName.getGUID(), v.getName());
+		assertEquals(GUIDObject.asVar(tableName), tableInfo.getVar());
 	}
 
 	@Test
 	public void testGetAlias() {
-		final String varName = tableInfo.getName().getGUID();
+		final Var varName = GUIDObject.asVar(tableInfo.getName());
 		assertNotNull(tableInfo.getGUIDVar());
-		assertEquals(varName, tableInfo.getGUIDVar().getVarName());
+		assertEquals(varName, tableInfo.getGUIDVar());
 	}
 
 	@Test
@@ -183,8 +183,7 @@ public class QueryTableInfoTest {
 		pth = epb.patternElts().next();
 		assertEquals(tableInfo.getGUIDVar(), pth.asTriple().getSubject());
 		assertEquals(NodeFactory.createURI("b"), pth.asTriple().getPredicate());
-		assertEquals(Var.alloc( columnName.getGUID()), pth
-				.asTriple().getObject());
+		assertEquals(GUIDObject.asVar(columnName), pth.asTriple().getObject());
 
 	}
 

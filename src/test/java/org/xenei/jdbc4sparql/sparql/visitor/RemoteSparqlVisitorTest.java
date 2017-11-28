@@ -30,7 +30,9 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.xenei.jdbc4sparql.iface.name.ColumnName;
+import org.xenei.jdbc4sparql.iface.name.GUIDObject;
 import org.xenei.jdbc4sparql.iface.name.NameSegments;
+import org.xenei.jdbc4sparql.iface.name.TableName;
 import org.xenei.jdbc4sparql.impl.NameUtils;
 import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlVisitor;
 
@@ -282,7 +284,7 @@ public class RemoteSparqlVisitorTest extends AbstractSparqlVisitorTest {
 	@Test
 	public void testTableAliasParse() throws Exception {
 		final Query q = getQuery("SELECT StringCol FROM foo bar WHERE StringCol != 'baz'");
-
+		
 		tests.put(ElementBind.class, 1);
 		tests.put(ElementFilter.class, 2);
 		tests.put(ElementOptional.class, 2);
@@ -310,13 +312,13 @@ public class RemoteSparqlVisitorTest extends AbstractSparqlVisitorTest {
 				.get(0)).getExpr();
 		Assert.assertTrue(expr instanceof E_NotEquals);
 		final E_NotEquals expr2 = (E_NotEquals) expr;
-		Assert.assertEquals("v_c7b696e2_e6e6_372c_807d_51154bb155e1",
+		Assert.assertEquals( GUIDObject.asVarName(BAR_TABLE_NAME.getColumnName("StringCol")),
 				((ExprVar) (expr2.getArg1())).getVarName());
 		Assert.assertEquals("baz",
 				((NodeValueString) (expr2.getArg2())).asString());
 
 		verifyTable(results.get(ElementPathBlock.class),
-				"v_31c94ccf_f177_3e10_a2f3_e790f85b33c5");
+				BAR_TABLE_NAME);
 
 	}
 

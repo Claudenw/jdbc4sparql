@@ -9,10 +9,11 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import org.xenei.jdbc4sparql.iface.name.GUIDObject;
 import org.xenei.jdbc4sparql.iface.name.ItemName;
 import org.xenei.jdbc4sparql.iface.name.NameSegments;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
-
+import org.apache.jena.sparql.core.Var;
 import org.apache.jena.util.iterator.ExtendedIterator;
 
 import org.apache.jena.util.iterator.UniqueFilter;
@@ -394,16 +395,33 @@ implements Collection<I> {
 	}
 
 	
-	public I findGUIDVar(final String guid) {
-
+	public I findGUID(final Var guidVar) {
 		final ExtendedIterator<I> iter = iterator();
 		I backupResult = null;
 		while (iter.hasNext()) {
 			final I item = iter.next();
-			if (item.getName().getGUID().equals(guid)) {
+			if (GUIDObject.asVarName(item.getName()).equals(guidVar.getName())) {
 				return item;
 			}
-			if ((backupResult == null) && item.getGUID().equals(guid)) {
+			if ((backupResult == null) && GUIDObject.asVarName(item).equals(guidVar.getName())) {
+				backupResult = item;
+			}
+		}
+
+		return backupResult;
+
+	}
+
+	public I findGUID(final GUIDObject guid) {
+		
+		final ExtendedIterator<I> iter = iterator();
+		I backupResult = null;
+		while (iter.hasNext()) {
+			final I item = iter.next();
+			if (item.getName().getGUID().equals(guid.getGUID())) {
+				return item;
+			}
+			if ((backupResult == null) && item.getGUID().equals(guid.getGUID())) {
 				backupResult = item;
 			}
 		}

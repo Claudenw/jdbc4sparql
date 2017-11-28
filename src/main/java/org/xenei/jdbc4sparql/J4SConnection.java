@@ -434,7 +434,7 @@ public class J4SConnection implements Connection {
 					
 				}
 				builder.setLocalConnection(em.getConnection());
-				builder.setGraphName( em.getModelName() );
+				builder.setGraphName( ResourceFactory.createResource(em.getModelName().getURI()) );
 				cat = builder.build(entityManager);
 
 				catalogMap.put(cat.getName().getShortName(), cat);

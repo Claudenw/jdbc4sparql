@@ -23,11 +23,14 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -39,6 +42,7 @@ import org.xenei.jdbc4sparql.iface.KeySegment;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.name.ColumnName;
+import org.xenei.jdbc4sparql.iface.name.FQName;
 import org.xenei.jdbc4sparql.iface.name.ItemName;
 import org.xenei.jdbc4sparql.iface.name.NameSegments;
 import org.xenei.jdbc4sparql.iface.name.TableName;
@@ -51,8 +55,10 @@ import org.xenei.jdbc4sparql.sparql.items.QueryItemCollection;
 import org.xenei.jdbc4sparql.sparql.items.QueryTableInfo;
 import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.functions.FunctionColumn;
-
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.Query;
+import org.apache.jena.query.SortCondition;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.core.VarExprList;
 import org.apache.jena.sparql.expr.E_Equals;
@@ -63,6 +69,7 @@ import org.apache.jena.sparql.expr.ExprAggregator;
 import org.apache.jena.sparql.expr.ExprVar;
 import org.apache.jena.sparql.expr.NodeValue;
 import org.apache.jena.sparql.expr.aggregate.Aggregator;
+import org.apache.jena.sparql.graph.NodeTransform;
 import org.apache.jena.sparql.syntax.Element;
 import org.apache.jena.sparql.syntax.ElementBind;
 import org.apache.jena.sparql.syntax.ElementFilter;
@@ -483,6 +490,7 @@ public class SparqlQueryBuilder {
 		query.getResultVars();
 	}
 
+	
 	/**
 	 * Get the SPARQL query.
 	 *
@@ -493,7 +501,8 @@ public class SparqlQueryBuilder {
 
 		if (!isBuilt) {
 			
-				// apply the type filters to each subpart.
+		/* apply the type filters to each subpart.
+		 may change variable names in result */
 				for (final QueryTableInfo tableInfo : infoSet.getTables()) {
 					try {
 						tableInfo.addQueryFilters(infoSet);
@@ -502,10 +511,50 @@ public class SparqlQueryBuilder {
 					}
 				}
 			
+		/* change the variable names in groupBy */
+				ChangeToProjectVars transformer = new ChangeToProjectVars();
+				
+
+			    // replace result values
+				
+				Map<Var,Expr> map = query.getProject().getExprs();
+				List<Var> varLst = query.getProject().getVars();
+				for (int i=0;i<varLst.size();i++)
+				{
+					Var v = varLst.get(i);
+					Var r = transformer.transform( v );
+					if (!v.equals(r))
+					{
+						varLst.set( i, r );
+						if (map.containsKey( v ))
+						{
+							map.put( r, map.get(v));
+							map.remove( v );
+						}
+					}
+				}
+				
+				// replace Expression values in projected expressions.
+				query.getProject().getExprs().values().forEach( transformer );
+				
+				
+				// replace Group by Expression values
+				query.getGroupBy().getExprs().values().forEach( transformer );
+				
+				// replace having expression
+				query.getHavingExprs().forEach( transformer );
+				
+				// replace orderby expressions 
+				List<SortCondition> lsc = query.getOrderBy();
+				if (lsc != null)
+				{
+					lsc.forEach( sc -> sc.expression = sc.expression.applyNodeTransform( transformer ));
+				}
+				
 
 			// renumber the Bnodes.
-			final Element e = new BnodeRenumber().renumber(query
-					.getQueryPattern());
+			final Element e = new BnodeRenumber().renumber(query.getQueryPattern());
+			
 			query.setQueryPattern(e);
 
 			
@@ -709,33 +758,17 @@ public class SparqlQueryBuilder {
 		return query.getProjectVars().size();
 	}
 
-	public int getColumnIndex(final String columnName) {
-		final ColumnName cName = ColumnName.getNameInstance(
-				catalog.getShortName(), schema.getName().getShortName(), null,
-				columnName);
-		return infoSet.getColumnIndex(cName);
+	public int getColumnIndex(final ColumnName columnName) {
+		
+		return infoSet.getColumnIndex(columnName);
 	}
 
 	private ElementGroup getElementGroup() {
 		return SparqlQueryBuilder.getElementGroup(query);
 	}
 
-	private ColumnName createColumnName(final Var v) {
-//		final int segs = v.getName().split(NameUtils.SPARQL_DOT).length;
-//		if (segs > 4) {
-//			throw new IllegalArgumentException(
-//					"Name may not have more than 4 segments");
-//		}
-//		final ColumnName cName = ColumnName.getNameInstance("", "", "",
-//				v.getName());
-//		cName.setUsedSegments(NameSegments.getInstance(segs == 4, segs >= 3,
-//				segs >= 2, true));
-//		return cName;
-		return getColumn( v ).getName();
-	}
-
 	public QueryColumnInfo getColumn(final Var v) {
-		return infoSet.findColumnByGUIDVar(v.getName());
+		return infoSet.findColumnByGUID(v);
 	}
 
 	public QueryTableInfo getTable(final Var v) {
@@ -751,6 +784,11 @@ public class SparqlQueryBuilder {
 		return infoSet.getTable(tName);
 	}
 
+	/**
+	 * Get the list of query columns for the variables in the project vars.  If the var is not found
+	 * in the query info then null is returned.  Such values are calculated in a return function.
+	 * @return
+	 */
 	public List<QueryColumnInfo> getResultColumns() {
 		final List<QueryColumnInfo> retval = new ArrayList<QueryColumnInfo>();
 		for (final Var v : query.getProjectVars()) {
@@ -772,12 +810,24 @@ public class SparqlQueryBuilder {
 		return infoSet.getTable(name);
 	}
 
+	/**
+	 * Register an aggregator.
+	 * 
+	 * The aggregator will be registered as a column with in the virtual table for the 
+	 * virtual schema of the current catalog.
+	 * 
+	 * @param agg The aggregator to register.
+	 * @param type they SQL data type of the aggregator result.
+	 * @param alias the alias for the aggregator.
+	 * @return the aggregator function.
+	 * @throws SQLException
+	 */
 	public ExprAggregator register(final Aggregator agg, final int type,
 			final String alias) throws SQLException {
 		final ExprAggregator expr = (ExprAggregator) query.allocAggregate(agg);
 
 		final ColumnName columnName = ColumnName.getNameInstance(
-				VirtualCatalog.NAME, VirtualSchema.NAME, VirtualTable.NAME,
+				catalog.getShortName(), VirtualSchema.NAME, VirtualTable.NAME,
 				alias);
 		if (infoSet.findColumn(columnName) == null) {
 			registerFunctionColumn(columnName, type);
@@ -795,26 +845,22 @@ public class SparqlQueryBuilder {
 	}
 
 	public QueryColumnInfo registerFunctionColumn(
-			final ColumnName columnNameArg, final int type) {
-		final ColumnName columnName = new ColumnName(StringUtils.defaultString(
-				columnNameArg.getCatalog(), VirtualCatalog.NAME),
-				StringUtils.defaultString(columnNameArg.getSchema(),
-						VirtualSchema.NAME), StringUtils.defaultString(
-						columnNameArg.getTable(), VirtualTable.NAME),
-				columnNameArg.getShortName());
+			final ColumnName columnName, final int type) {
+
 		QueryTableInfo tableInfo = infoSet.getTable(columnName.getTableName());
 		Column column = null;
 		if (tableInfo == null) {
+			FQName fqName = columnName.getFQName();
 			final Catalog cat = getCatalog(VirtualCatalog.NAME);
-			Schema schema = cat.getSchema(columnName.getSchema());
+			Schema schema = cat.getSchema(fqName.getSchema());
 			if (schema == null) {
-				schema = new VirtualSchema(cat, columnName.getSchema());
+				schema = new VirtualSchema(cat, fqName.getSchema());
 			}
-			Table table = schema.getTable(columnName.getTable());
+			Table table = schema.getTable(fqName.getTable());
 			if (table == null) {
-				table = new VirtualTable(schema, columnName.getTable());
+				table = new VirtualTable(schema, fqName.getTable());
 			}
-			column = new FunctionColumn(table, columnName.getShortName(), type);
+			column = new FunctionColumn(table, fqName.getColumn(), type);
 			// new QueryTableInfo adds table to infoSet
 			tableInfo = new QueryTableInfo(infoSet, null, table,
 					columnName.getTableName(), false);
@@ -1010,5 +1056,41 @@ public class SparqlQueryBuilder {
 
 	public NameSegments getSegments() {
 		return infoSet.getSegments();
+	}
+	
+	private class ChangeToProjectVars implements NodeTransform, Consumer<Expr>
+	{
+		Map<Node,Var> vars = new HashMap<Node,Var>();
+		
+		ChangeToProjectVars()
+		{
+			
+			for (Var v : query.getProjectVars() )
+			{
+				QueryColumnInfo qci = infoSet.findColumnByGUID( v );		
+				vars.put(v.asNode(), Var.alloc(qci.getName().getSPARQLName()));
+			}
+
+		}
+	
+
+		public Var transform(Var t) {
+			Var retval = vars.get(t.asNode());
+			return retval==null?t:retval;
+		}
+		
+		@Override
+		public Node apply(Node t) {
+			Var retval = vars.get(t);
+			return retval==null?t:retval.asNode();
+		}
+
+
+		@Override
+		public void accept(Expr ex) {
+			if (ex != null) {
+				ex.applyNodeTransform(this);
+			}
+		}
 	}
 }

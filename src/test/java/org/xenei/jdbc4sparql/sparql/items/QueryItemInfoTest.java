@@ -8,6 +8,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.xenei.jdbc4sparql.iface.name.GUIDObject;
 import org.xenei.jdbc4sparql.iface.name.ItemName;
 import org.xenei.jdbc4sparql.iface.name.NameSegments;
 import org.xenei.jdbc4sparql.impl.NameUtils;
@@ -71,14 +72,14 @@ public class QueryItemInfoTest {
 
 	@Test
 	public void testGetVar() {
-		assertEquals(itemName.getGUID(), itemInfo.getVar().getName());
+		assertEquals(GUIDObject.asVar(itemName), itemInfo.getVar());
 	}
 
 	@Test
 	public void testGetAlias() {
-		final String varName = itemInfo.getName().getGUID();
+		final Var varName = GUIDObject.asVar(itemInfo.getName());
 		assertNotNull(itemInfo.getGUIDVar());
-		assertEquals(varName, itemInfo.getGUIDVar().getVarName());
+		assertEquals(varName, itemInfo.getGUIDVar());
 	}
 
 	@Test

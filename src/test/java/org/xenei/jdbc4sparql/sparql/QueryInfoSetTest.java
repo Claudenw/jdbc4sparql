@@ -27,6 +27,7 @@ import org.xenei.jdbc4sparql.iface.ColumnDef;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.name.CatalogName;
 import org.xenei.jdbc4sparql.iface.name.ColumnName;
+import org.xenei.jdbc4sparql.iface.name.GUIDObject;
 import org.xenei.jdbc4sparql.iface.name.ItemName;
 import org.xenei.jdbc4sparql.iface.name.NameSegments;
 import org.xenei.jdbc4sparql.iface.name.SchemaName;
@@ -140,13 +141,13 @@ public class QueryInfoSetTest {
 		TriplePath pth = epb.patternElts().next();
 		assertEquals(Var.alloc("tbl"), pth.asTriple().getSubject());
 		assertEquals(NodeFactory.createURI("a"), pth.asTriple().getPredicate());
-		assertEquals(Var.alloc(tName.getGUID()), pth.asTriple().getObject());
+		assertEquals(GUIDObject.asVar(tName), pth.asTriple().getObject());
 
 		epb = (ElementPathBlock) extractor.getExtracted().get(1);
 		pth = epb.patternElts().next();
-		assertEquals(Var.alloc(tName.getGUID()), pth.asTriple().getSubject());
+		assertEquals(GUIDObject.asVar(tName), pth.asTriple().getSubject());
 		assertEquals(NodeFactory.createURI("b"), pth.asTriple().getPredicate());
-		assertEquals(Var.alloc(cName.getGUID()), pth.asTriple().getObject());
+		assertEquals(GUIDObject.asVar(cName), pth.asTriple().getObject());
 
 	}
 
@@ -179,7 +180,7 @@ public class QueryInfoSetTest {
 				queryElementGroup, table, false);
 		queryInfo.addTable(tableInfo);
 
-		assertEquals(NameSegments.TTTF, tableInfo.getSegments());
+		assertEquals(NameSegments.FTTF, tableInfo.getSegments());
 		assertEquals(1, queryInfo.getTables().size());
 		assertEquals(tableInfo.getGUID(), queryInfo.getTables().iterator()
 				.next().getGUID());
@@ -188,8 +189,8 @@ public class QueryInfoSetTest {
 				queryElementGroup, table2, false);
 		queryInfo.addTable(tableInfo2);
 
-		assertEquals(NameSegments.TTTF, tableInfo.getSegments());
-		assertEquals(NameSegments.TTTF, tableInfo2.getSegments());
+		assertEquals(NameSegments.FTTF, tableInfo.getSegments());
+		assertEquals(NameSegments.FTTF, tableInfo2.getSegments());
 		assertEquals(2, queryInfo.getTables().size());
 		final Set<String> guids = new HashSet<String>();
 		for (final QueryTableInfo qti : queryInfo.getTables()) {
@@ -543,7 +544,7 @@ public class QueryInfoSetTest {
 	@Test
 	public void testFindColumnByGUIDVar_String() throws SQLDataException {
 		QueryColumnInfo colInfo = queryInfo
-				.findColumnByGUIDVar(cName.getGUID());
+				.findColumnByGUID(cName);
 		assertNull(colInfo);
 
 		final ElementGroup queryElementGroup = new ElementGroup();
@@ -552,7 +553,7 @@ public class QueryInfoSetTest {
 		queryInfo.addTable(tableInfo);
 		queryInfo.addDefinedColumns(Collections.emptyList());
 
-		colInfo = queryInfo.findColumnByGUIDVar(cName.getGUID());
+		colInfo = queryInfo.findColumnByGUID(cName);
 		assertNotNull(colInfo);
 		assertEquals(cName.getGUID(), colInfo.getName().getGUID());
 		assertEquals(cName.getGUID(), colInfo.getGUID());

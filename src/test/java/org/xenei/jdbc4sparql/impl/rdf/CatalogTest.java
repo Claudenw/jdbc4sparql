@@ -14,6 +14,9 @@ import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jena.entities.EntityManager;
 import org.xenei.jena.entities.EntityManagerFactory;
 import org.xenei.jena.entities.impl.EntityManagerImpl;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryFactory;
@@ -28,61 +31,68 @@ import org.apache.jena.rdfconnection.RDFConnectionFactory;
 
 public class CatalogTest {
 	private Model model;
-	private Model dataModel;
+	private Dataset dataset;
 	private RDFConnection dataConnection;
-	private EntityManager em;
+
 	private RdfCatalog catalog;
 	private EntityManager entityManager;
 
 	@Before
 	public void setUp() throws Exception {
 		model = ModelFactory.createDefaultModel();
-		em = new EntityManagerImpl( model );
-		dataModel = ModelFactory.createDefaultModel();
-		dataConnection = RDFConnectionFactory.connect( DatasetFactory.create(dataModel) );
+		entityManager = new EntityManagerImpl( model );
+		dataset = DatasetFactory.create();
+			
+		dataConnection = RDFConnectionFactory.connect( dataset );
 		catalog = new RdfCatalog.Builder().setName("testCatalog")
-				.setLocalConnection(dataConnection).build( em );
-		entityManager = em;
+				.setLocalConnection(dataConnection).build( entityManager );
+		System.out.println("GHellop");
 	}
 
 	@After
 	public void tearDown() throws Exception {
 		catalog.close();
 		model.close();
-		dataModel.close();
+		dataConnection.close();
 	}
 
 	@Test
 	public void testClose() {
 		Assert.assertFalse(model.isClosed());
-		Assert.assertFalse(dataModel.isClosed());
 		catalog.close();
 		Assert.assertFalse(model.isClosed());
-		Assert.assertFalse(dataModel.isClosed());
 	}
 
 	@Test
 	public void testCloseMultiple() {
 		new RdfCatalog.Builder().setName("testCatalog2")
-				.setLocalConnection(dataConnection).build( em );
+				.setLocalConnection(dataConnection).build( entityManager );
 		Assert.assertFalse(model.isClosed());
-		Assert.assertFalse(dataModel.isClosed());
+		Assert.assertFalse(dataConnection.isClosed());
 		catalog.close();
 		Assert.assertFalse(model.isClosed());
-		Assert.assertFalse(dataModel.isClosed());
+		Assert.assertTrue(dataConnection.isClosed());
+		catalog.close();
+		Assert.assertFalse(model.isClosed());
+		Assert.assertTrue(dataConnection.isClosed());
+		catalog.close();
 	}
 
 	@Test
 	public void testExecuteLocalQuery() throws Exception {
+		
+		Model dataModel = ModelFactory.createDefaultModel();
 		final Resource r = dataModel.createResource("http://example.com/res");
 		final Property p = dataModel.createProperty("http://example.com/prop");
 		r.addLiteral(p, "foo");
 		r.addLiteral(p, "bar");
+		dataset.setDefaultModel(dataModel);
 
 		final String qry = "Select * WHERE { ?s ?p ?o }";
 		final Query query = QueryFactory.create(qry);
 
 		List<QuerySolution> lqs = catalog.executeLocalQuery(query);
+		lqs.forEach( lq -> System.out.println( lq ));
 		Assert.assertEquals(2, lqs.size());
 
 		/*
@@ -94,7 +104,7 @@ public class CatalogTest {
 		final RdfCatalog cat3 = new RdfCatalog.Builder()
 				.setName("testCatalog2")
 				.setSparqlEndpoint(new URL("http://example.com"))
-				.setLocalConnection(dataConnection).build( em );
+				.setLocalConnection(dataConnection).build( entityManager );
 
 		lqs = cat3.executeLocalQuery(query);
 		Assert.assertEquals(2, lqs.size());
@@ -110,11 +120,13 @@ public class CatalogTest {
 
 	@Test
 	public void testExecuteQueryQuery() throws Exception {
+		Model dataModel = ModelFactory.createDefaultModel();
 		final Resource r = dataModel.createResource("http://example.com/res");
 		final Property p = dataModel.createProperty("http://example.com/prop");
 		r.addLiteral(p, "foo");
 		r.addLiteral(p, "bar");
-
+		dataset.setDefaultModel(dataModel);
+		
 		final String qry = "Select * WHERE { ?s ?p ?o }";
 		final Query query = QueryFactory.create(qry);
 
@@ -122,16 +134,17 @@ public class CatalogTest {
 		Assert.assertEquals(2, lqs.size());
 
 		new RdfCatalog.Builder().setName("testCatalog2")
-				.setSparqlEndpoint(new URL("http://example.com")).build( em );
+				.setSparqlEndpoint(new URL("http://example.com")).build( entityManager );
 	}
 
 	@Test
 	public void testExecuteQueryString() throws Exception {
-
+		Model dataModel = ModelFactory.createDefaultModel();
 		final Resource r = dataModel.createResource("http://example.com/res");
 		final Property p = dataModel.createProperty("http://example.com/prop");
 		r.addLiteral(p, "foo");
 		r.addLiteral(p, "bar");
+		dataset.setDefaultModel(dataModel);
 
 		final String query = "Select * WHERE { ?s ?p ?o }";
 
@@ -139,17 +152,17 @@ public class CatalogTest {
 		Assert.assertEquals(2, lqs.size());
 
 		new RdfCatalog.Builder().setName("testCatalog2")
-				.setSparqlEndpoint(new URL("http://example.com")).build( em );
+				.setSparqlEndpoint(new URL("http://example.com")).build( entityManager );
 	}
 
 	@Test
 	public void testFindSchemas() throws Exception {
 
 		new RdfSchema.Builder().setName("testSchema1").setCatalog(catalog)
-				.build( em );
+				.build( entityManager );
 
 		new RdfSchema.Builder().setName("testSchema2").setCatalog(catalog)
-				.build( em );
+				.build( entityManager );
 
 		NameFilter<Schema> schemas = catalog.findSchemas(null);
 		Assert.assertEquals(2, schemas.toList().size());
@@ -199,7 +212,7 @@ public class CatalogTest {
 		Assert.assertNull(catalog.getSchema("testSchema2"));
 
 		new RdfSchema.Builder().setName("testSchema1").setCatalog(catalog)
-				.build( em );
+				.build( entityManager );
 
 		Assert.assertNull(catalog.getSchema(null));
 		Assert.assertNull(catalog.getSchema(""));
@@ -211,7 +224,7 @@ public class CatalogTest {
 		Assert.assertNull(catalog.getSchema("testSchema2"));
 
 		new RdfSchema.Builder().setName("testSchema2").setCatalog(catalog)
-				.build( em );
+				.build( entityManager );
 
 		Assert.assertNull(catalog.getSchema(null));
 		Assert.assertNull(catalog.getSchema(""));
@@ -247,7 +260,7 @@ public class CatalogTest {
 		Assert.assertEquals(0, schemas.size());
 
 		new RdfSchema.Builder().setName("testSchema1").setCatalog(catalog)
-				.build( em );
+				.build( entityManager );
 		names.add("testSchema1");
 		schemas = catalog.getSchemas();
 		Assert.assertEquals(1, schemas.size());
@@ -257,7 +270,7 @@ public class CatalogTest {
 		}
 
 		new RdfSchema.Builder().setName("testSchema2").setCatalog(catalog)
-				.build( em );
+				.build( entityManager );
 		names.add("testSchema2");
 		schemas = catalog.getSchemas();
 		Assert.assertEquals(2, schemas.size());

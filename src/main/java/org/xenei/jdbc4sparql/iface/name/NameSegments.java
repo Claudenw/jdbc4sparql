@@ -195,8 +195,8 @@ public enum NameSegments {
 
 	@Override
 	public String toString() {
-		return String.format("C:%s S:%s T:%s C:%s", isCatalog(), isSchema(), isTable(),
-				isColumn());
+		return String.format("%s%s%s%s", isCatalog()?"T":"F", isSchema()?"T":"F", isTable()?"T":"F",
+				isColumn()?"T":"F");
 	}
 
 	/**

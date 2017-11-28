@@ -27,6 +27,7 @@ import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryException;
 import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.core.VarExprList;
 import org.apache.jena.sparql.expr.E_Function;
 import org.apache.jena.sparql.expr.E_LogicalAnd;
 import org.apache.jena.sparql.expr.Expr;
@@ -399,7 +400,7 @@ public class QueryTableInfo extends QueryItemInfo<Table, TableName> {
 			}
 		}
 
-		addTypeFilters(infoSet, columnInfoList, dataFilterList, joinElementList, eg, egWrapper);
+		addTypeFilters( infoSet, columnInfoList, dataFilterList, joinElementList, eg, egWrapper);
 	}
 
 	/**
@@ -422,7 +423,8 @@ public class QueryTableInfo extends QueryItemInfo<Table, TableName> {
 	 *            The ElementGroup for the type filters.
 	 * @throws SQLDataException
 	 */
-	public static void addTypeFilters(final QueryInfoSet infoSet,
+	public static void addTypeFilters(
+			final QueryInfoSet infoSet,
 			final Collection<QueryColumnInfo> typeFilterList,
 			final Collection<QueryColumnInfo> dataFilterList,
 			final Collection<Element> joinFilterList,

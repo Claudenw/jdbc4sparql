@@ -177,11 +177,6 @@ public class TableName extends ItemName {
 		return ColumnName.getNameInstance(this, column);
 	}
 
-//	@Override
-//	public String getShortName() {
-//		return getTable();
-//	}
-
 	/**
 	 * clone this table name with different segments.
 	 */

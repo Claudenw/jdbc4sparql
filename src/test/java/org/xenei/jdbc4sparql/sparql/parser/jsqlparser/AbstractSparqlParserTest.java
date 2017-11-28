@@ -24,6 +24,7 @@ import org.junit.Test;
 import org.xenei.jdbc4sparql.LoggingConfig;
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.name.ColumnName;
+import org.xenei.jdbc4sparql.iface.name.GUIDObject;
 import org.xenei.jdbc4sparql.iface.name.TableName;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
@@ -214,14 +215,14 @@ abstract public class AbstractSparqlParserTest {
 		return retval;
 	}
 	
-	protected void verifyVars(final List<Var> vars, final String[] names) {
+	protected void verifyVars(final List<Var> vars, final GUIDObject[] names) {
 		assertEquals(names.length, vars.size());
 		for (int i = 0; i < names.length; i++) {
-			assertEquals(names[i], vars.get(i).getName());
+			assertEquals(GUIDObject.asVar(names[i]), vars.get(i));
 		}
 	}
 
-	protected List<String> verifyTable(final Wrapper w, final String name) {
+	protected List<String> verifyTable(final Wrapper w, final GUIDObject name) {
 		final List<String> retval = new ArrayList<String>();
 		for (final Element el : w.lst) {
 			final ElementPathBlock epb = (ElementPathBlock) el;
@@ -229,7 +230,7 @@ abstract public class AbstractSparqlParserTest {
 			while (iter.hasNext()) {
 				final TriplePath t = iter.next();
 				Assert.assertTrue(t.getSubject().isVariable());
-				Assert.assertEquals(name, t.getSubject().getName());
+				Assert.assertEquals(GUIDObject.asVarName(name), t.getSubject().getName());
 				final Node n = t.getObject();
 				if (n.isVariable()) {
 					retval.add(t.getObject().getName());

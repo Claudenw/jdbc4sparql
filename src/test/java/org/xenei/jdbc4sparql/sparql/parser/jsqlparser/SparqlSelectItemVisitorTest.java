@@ -27,6 +27,7 @@ import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.name.CatalogName;
 import org.xenei.jdbc4sparql.iface.name.ColumnName;
+import org.xenei.jdbc4sparql.iface.name.GUIDObject;
 import org.xenei.jdbc4sparql.iface.name.SchemaName;
 import org.xenei.jdbc4sparql.iface.name.TableName;
 import org.xenei.jdbc4sparql.impl.NameUtils;
@@ -86,7 +87,7 @@ public class SparqlSelectItemVisitorTest {
 		visitor.visit(allColumns);
 		final List<Var> lst = query.getProjectVars();
 		assertEquals(1, lst.size());
-		assertEquals(columnName.getGUID(), lst.get(0).getName());
+		assertEquals(GUIDObject.asVarName(columnName), lst.get(0).getName());
 	}
 
 	@Test
@@ -97,7 +98,7 @@ public class SparqlSelectItemVisitorTest {
 		visitor.visit(allTableColumns);
 		final List<Var> lst = query.getProjectVars();
 		assertEquals(1, lst.size());
-		assertEquals(columnName.getGUID(), lst.get(0).getName());
+		assertEquals(GUIDObject.asVarName(columnName), lst.get(0).getName());
 	}
 
 	@Test
@@ -113,7 +114,7 @@ public class SparqlSelectItemVisitorTest {
 		visitor.visit(selectExpression);
 		final List<Var> lv = query.getProjectVars();
 		assertEquals(
-				Var.alloc( columnName.getGUID()), lv.get(0).asNode());
+				GUIDObject.asVar(columnName), lv.get(0));
 	}
 
 	@Before

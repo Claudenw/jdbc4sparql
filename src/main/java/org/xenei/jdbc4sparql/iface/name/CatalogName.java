@@ -66,16 +66,6 @@ public class CatalogName extends ItemName {
 		return new SchemaName(getFQName().getCatalog(), name);
 	}
 
-//	@Override
-//	protected String createName(final String separator) {
-//		return StringUtils.defaultString(getCatalog(), "");
-//	}
-
-//	@Override
-//	public String getShortName() {
-//		return getCatalog();
-//	}
-
 	@Override
 	public String toString() {
 		return getCatalog();

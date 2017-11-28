@@ -26,26 +26,26 @@ public class ItemNameTest {
 
 	@Test
 	public void testSegments() {
-		assertEquals("C:true S:true T:true C:true", itemName.getUsedSegments()
+		assertEquals("TTTT", itemName.getUsedSegments()
 				.toString());
 		assertEquals("catalog.schema.table.column", itemName.getDBName());
 		itemName.setUsedSegments(NameSegments.CATALOG);
-		assertEquals("C:true S:false T:false C:false", itemName
+		assertEquals("TFFF", itemName
 				.getUsedSegments().toString());
 //		assertEquals("catalog.null.null.null", itemName.getDBName());
 		assertEquals("catalog", itemName.getDBName());
 		itemName.setUsedSegments(NameSegments.SCHEMA);
-		assertEquals("C:false S:true T:false C:false", itemName
+		assertEquals("FTFF", itemName
 				.getUsedSegments().toString());
 //		assertEquals("null.schema.null.null", itemName.getDBName());
 		assertEquals("schema", itemName.getDBName());
 		itemName.setUsedSegments(NameSegments.TABLE);
-		assertEquals("C:false S:true T:true C:false", itemName
+		assertEquals("FTTF", itemName
 				.getUsedSegments().toString());
 //		assertEquals("null.schema.table.null", itemName.getDBName());
 		assertEquals("schema.table", itemName.getDBName());
 		itemName.setUsedSegments(NameSegments.COLUMN);
-		assertEquals("C:false S:true T:true C:true", itemName.getUsedSegments()
+		assertEquals("FTTT", itemName.getUsedSegments()
 				.toString());
 //		assertEquals("null.schema.table.column", itemName.getDBName());
 		assertEquals("schema.table.column", itemName.getDBName());

@@ -30,6 +30,7 @@ import net.sf.jsqlparser.statement.select.SelectItemVisitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xenei.jdbc4sparql.iface.name.ColumnName;
+import org.xenei.jdbc4sparql.iface.name.GUIDObject;
 import org.xenei.jdbc4sparql.iface.name.TableName;
 import org.xenei.jdbc4sparql.impl.virtual.VirtualCatalog;
 import org.xenei.jdbc4sparql.impl.virtual.VirtualSchema;
@@ -120,8 +121,7 @@ class SparqlSelectItemVisitor implements SelectItemVisitor {
 		Expr expr = v.getResult();
 		if (expr instanceof ExprInfo) {
 			final ExprInfo exprInfo = (ExprInfo) expr;
-			queryBuilder.addVar(exprInfo.getExpr(), exprInfo.getName()
-					.getGUID());
+			queryBuilder.addVar(exprInfo.getExpr(), GUIDObject.asVarName(exprInfo.getName()));
 			for (final ExprColumn column : exprInfo.getColumns()) {
 				final QueryColumnInfo paramColumnInfo = column.getColumnInfo();
 				queryBuilder.getTable(paramColumnInfo.getName().getTableName())
@@ -134,7 +134,7 @@ class SparqlSelectItemVisitor implements SelectItemVisitor {
 			final ColumnName columnName = exprColumn.getColumnInfo().getName();
 			queryBuilder.getTable(columnName.getTableName()).addDataFilter(
 					exprColumn.getColumnInfo());
-			if (exprColumn.getVarName().equals(columnName.getGUID())) {
+			if (exprColumn.getVarName().equals( GUIDObject.asVarName(columnName))) {
 				try {
 					queryBuilder.addVar(columnName);
 				} catch (final SQLException e) {

@@ -5,14 +5,32 @@ import org.slf4j.LoggerFactory;
 import org.xenei.jdbc4sparql.iface.TypeConverter;
 import org.xenei.jdbc4sparql.sparql.items.QueryColumnInfo;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Stack;
+
+import org.apache.jena.graph.Node;
+import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.core.VarExprList;
 import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.sparql.expr.E_Function;
+import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.sparql.expr.ExprAggregator;
 import org.apache.jena.sparql.expr.ExprEvalException;
+import org.apache.jena.sparql.expr.ExprFunction0;
+import org.apache.jena.sparql.expr.ExprFunction1;
+import org.apache.jena.sparql.expr.ExprFunction2;
+import org.apache.jena.sparql.expr.ExprFunction3;
+import org.apache.jena.sparql.expr.ExprFunctionN;
+import org.apache.jena.sparql.expr.ExprFunctionOp;
 import org.apache.jena.sparql.expr.ExprList;
+import org.apache.jena.sparql.expr.ExprNone;
 import org.apache.jena.sparql.expr.ExprVar;
+import org.apache.jena.sparql.expr.ExprVisitor;
 import org.apache.jena.sparql.expr.NodeValue;
 import org.apache.jena.sparql.expr.nodevalue.NodeValueBoolean;
 import org.apache.jena.sparql.function.FunctionEnv;
+import org.apache.jena.sparql.graph.NodeTransform;
 import org.apache.jena.sparql.syntax.ElementBind;
 
 /**
@@ -28,8 +46,9 @@ public class ForceTypeF extends CheckTypeF {
 		return new E_Function(IRI, getExprList(columnInfo));
 	}
 
-	public static ElementBind getBinding(final QueryColumnInfo columnInfo) {
-		return new ElementBind(columnInfo.getVar(), getFunction(columnInfo));
+	public static ElementBind getBinding(final QueryColumnInfo columnInfo) {		
+	    Var replace = Var.alloc( columnInfo.getName().getSPARQLName());
+		return new ElementBind(replace, getFunction(columnInfo));
 	}
 
 	@Override
@@ -41,7 +60,7 @@ public class ForceTypeF extends CheckTypeF {
 					.getValue());
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("ForceTypeF( {} ) is {} ({})", args.get(0), retval, binding.get( ((ExprVar) args.get(0)).asVar()));
-			}
+			}			
 			return retval;
 		}
 		throw new ExprEvalException(

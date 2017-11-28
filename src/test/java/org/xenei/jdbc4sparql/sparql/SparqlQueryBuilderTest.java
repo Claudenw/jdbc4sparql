@@ -34,12 +34,14 @@ import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.name.CatalogName;
 import org.xenei.jdbc4sparql.iface.name.ColumnName;
+import org.xenei.jdbc4sparql.iface.name.GUIDObject;
 import org.xenei.jdbc4sparql.iface.name.NameSegments;
 import org.xenei.jdbc4sparql.iface.name.SchemaName;
 import org.xenei.jdbc4sparql.iface.name.TableName;
 import org.xenei.jdbc4sparql.impl.NameUtils;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.impl.virtual.VirtualCatalog;
+import org.xenei.jdbc4sparql.impl.virtual.VirtualTable;
 import org.xenei.jdbc4sparql.sparql.items.QueryColumnInfo;
 import org.xenei.jdbc4sparql.sparql.items.QueryItemCollection;
 import org.xenei.jdbc4sparql.sparql.items.QueryTableInfo;
@@ -354,7 +356,7 @@ public class SparqlQueryBuilderTest {
 		List<TriplePath> etb = ((ElementPathBlock) lst.get(0)).getPattern()
 				.getList();
 		assertEquals(1, etb.size());
-		final Var tVar = Var.alloc(tName.getGUID());
+		final Var tVar = GUIDObject.asVar(tName);
 		TriplePath t = new TriplePath(new Triple(tVar,
 				NodeFactory.createURI("a"), NodeFactory.createLiteral("table")));
 		assertTrue(etb.contains(t));
@@ -362,13 +364,13 @@ public class SparqlQueryBuilderTest {
 		etb = ((ElementPathBlock) lst.get(1)).getPattern().getList();
 		assertEquals(1, etb.size());
 		t = new TriplePath(new Triple(tVar, NodeFactory.createURI("of"),
-				Var.alloc(colName.getGUID())));
+				GUIDObject.asVar(colName)));
 		assertTrue(etb.contains(t));
 
 		etb = ((ElementPathBlock) lst.get(2)).getPattern().getList();
 		assertEquals(1, etb.size());
 		t = new TriplePath(new Triple(tVar, NodeFactory.createURI("of"),
-				Var.alloc(col2Name.getGUID())));
+				GUIDObject.asVar(col2Name)));
 		assertTrue(etb.contains(t));
 
 		query.getQueryPattern().visit(
@@ -429,7 +431,7 @@ public class SparqlQueryBuilderTest {
 		query.getQueryPattern().visit(extractor);
 		final List<Element> lst = extractor.getExtracted();
 		assertEquals(1, lst.size());
-		assertEquals(alias.getGUID(), ((ElementBind) lst.get(0)).getVar().getName());
+		assertEquals(GUIDObject.asVarName(alias), ((ElementBind) lst.get(0)).getVar().getName());
 	}
 
 	@Test
@@ -589,9 +591,10 @@ public class SparqlQueryBuilderTest {
 		final Field f = SparqlQueryBuilder.class
 				.getDeclaredField("columnsInUsing");
 		f.setAccessible(true);
-		final List<String> inUsing = (List<String>) f.get(builder);
+		final List<ColumnName> inUsing = (List<ColumnName>) f.get(builder);
 		assertEquals(1, inUsing.size());
-		assertEquals(colName.getShortName(), inUsing.get(0));
+		assertEquals(colName, inUsing.get(0));
+		assertEquals( NameSegments.FFFT, inUsing.get(0).getUsedSegments());
 
 		final Query query = builder.build();
 
@@ -608,14 +611,14 @@ public class SparqlQueryBuilderTest {
 
 		final List<Var> vLst = query.getProjectVars();
 		assertEquals(1, vLst.size());
-		assertEquals(Var.alloc(colName.getGUID()), vLst.get(0));
+		assertEquals(GUIDObject.asVar(colName), vLst.get(0));
 
 		final VarExprList eLst = query.getProject();
 		assertEquals(1, eLst.size());
 		final Var v = eLst.getVars().get(0);
 		final Expr e = eLst.getExpr(v);
 		assertNull(e);
-		assertEquals(Var.alloc(colName.getGUID()), v);
+		assertEquals(GUIDObject.asVar(colName), v);
 	}
 
 	@Test
@@ -651,14 +654,14 @@ public class SparqlQueryBuilderTest {
 
 		final List<Var> vLst = query.getProjectVars();
 		assertEquals(1, vLst.size());
-		assertEquals(Var.alloc(alias.getGUID()), vLst.get(0));
+		assertEquals(GUIDObject.asVar(alias), vLst.get(0));
 
 		final VarExprList eLst = query.getProject();
 		assertEquals(1, eLst.size());
 		final Var v = eLst.getVars().get(0);
 		final Expr e = eLst.getExpr(v);
 		assertEquals(expr, e);
-		assertEquals(Var.alloc(alias.getGUID()), v);
+		assertEquals(GUIDObject.asVar(alias), v);
 	}
 
 	@Test
@@ -710,7 +713,8 @@ public class SparqlQueryBuilderTest {
 				.getColumns();
 		assertEquals(1, cols.size());
 
-		assertEquals("alias", cols.get(0).getVar().getName());
+		ColumnName alias = new ColumnName( catalog.getShortName(),VirtualTable.NAME,VirtualTable.NAME, "alias");
+		assertEquals( GUIDObject.asVarName(alias), cols.get(0).getVar().getName());
 		final Column col = cols.get(0).getColumn();
 		assertTrue(col instanceof FunctionColumn);
 		final ColumnDef cd = col.getColumnDef();
@@ -777,7 +781,7 @@ public class SparqlQueryBuilderTest {
 		builder.addDefinedColumns();
 		builder.setAllColumns();
 		builder.build();
-		final int i = builder.getColumnIndex(colName.getGUID());
+		final int i = builder.getColumnIndex(colName);
 		assertEquals(0, i);
 
 	}
@@ -950,7 +954,7 @@ public class SparqlQueryBuilderTest {
 		assertEquals(1, lst.size());
 		final SortCondition sc = lst.get(0);
 		assertEquals(Query.ORDER_ASCENDING, sc.getDirection());
-		assertEquals(new ExprVar(colName.getGUID()), sc.getExpression());
+		assertEquals(new ExprVar(GUIDObject.asVar(colName)), sc.getExpression());
 
 	}
 
@@ -1043,27 +1047,16 @@ public class SparqlQueryBuilderTest {
 		assertEquals(1, lst.size());
 		final SortCondition sc = lst.get(0);
 		assertEquals(Query.ORDER_ASCENDING, sc.getDirection());
-		assertEquals(new ExprVar(colName.getGUID()), sc.getExpression());
+		assertEquals(new ExprVar(GUIDObject.asVar(colName)), sc.getExpression());
 
 	}
 
-//	@Test
-//	public void testSetGUID() throws Exception {
-//		final QueryInfoSet infoSet = getInfoSet();
-//		assertFalse(infoSet.useGUID());
-//		builder.setUseGUID(true);
-//		assertTrue(infoSet.useGUID());
-//		builder.setUseGUID(false);
-//		assertFalse(infoSet.useGUID());
-//
-//	}
-
 	@Test
 	public void testGetColumn_Node() throws Exception {
-		final Var n = Var.alloc("testColumn");
+		final Var n = GUIDObject.asVar( colName );
 		try {
-			builder.getColumn(n);
-			fail("Should have thrown IllegalArgumentException");
+			QueryColumnInfo qci = builder.getColumn(n);
+			assertNull(qci);
 		} catch (final IllegalArgumentException expected) {
 
 		}

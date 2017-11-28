@@ -24,6 +24,7 @@ import org.xenei.jdbc4sparql.iface.TypeConverter;
 import org.xenei.jdbc4sparql.impl.ListResultSet;
 
 import org.apache.jena.query.Query;
+import org.apache.jena.query.QueryFactory;
 import org.apache.jena.query.QuerySolution;
 import org.apache.jena.rdf.model.RDFNode;
 
@@ -33,7 +34,7 @@ public class SparqlResultSet extends ListResultSet {
 	public SparqlResultSet(final Table table, final Query query)
 			throws SQLException {
 		super(table.getCatalog().executeLocalQuery(query), table);
-		this.query = query;
+		this.query = query;	
 	}
 
 	@Override

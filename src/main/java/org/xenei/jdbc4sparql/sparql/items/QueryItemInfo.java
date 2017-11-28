@@ -29,7 +29,7 @@ implements NamedObject<N>, GUIDObject {
 		}
 		this.baseObject = baseObject;
 		this.name = name;
-		this.guidVar = Var.alloc(this.name.getGUID());
+		this.guidVar = GUIDObject.asVar( name );
 		this.optional = optional;
 
 	}
@@ -82,7 +82,7 @@ implements NamedObject<N>, GUIDObject {
 	 * @return The variable based on the column GUID.
 	 */
 	public Var getVar() {
-		return Var.alloc(this.name.getGUID());
+		return GUIDObject.asVar(this.name);
 	}
 
 	@Override
