@@ -75,7 +75,7 @@ public class TableNameTests {
 		assertEquals(table, tableName.getTable());
 		assertNull(tableName.getColumn());
 		assertEquals(DBName, tableName.getDBName());
-		assertEquals(SPARQLName, tableName.getSPARQLName());
+		assertEquals(SPARQLName, tableName.getSPARQLName(tableName.getUsedSegments()));
 		assertEquals(table, tableName.getShortName());
 	}
 
@@ -161,7 +161,7 @@ public class TableNameTests {
 		assertEquals(table, tableName.getTable());
 		assertNull(tableName.getColumn());
 		assertEquals(DBName, tableName.getDBName());
-		assertEquals(SPARQLName, tableName.getSPARQLName());
+		assertEquals(SPARQLName, tableName.getSPARQLName(tableName.getUsedSegments()));
 		assertEquals(table, tableName.getShortName());
 
 	}

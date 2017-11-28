@@ -31,7 +31,7 @@ public class NameUtils {
 	}
 
 	public static String getSPARQLName(final NamedObject<?> namedObject) {
-		return namedObject.getName().getSPARQLName();
+		return namedObject.getName().getSPARQLName( namedObject.getName().getDefaultSegments());
 	}
 
 	public static final String DB_DOT = ".";

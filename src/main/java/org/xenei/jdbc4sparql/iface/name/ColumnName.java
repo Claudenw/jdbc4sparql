@@ -213,11 +213,6 @@ public class ColumnName extends ItemName {
 						column, "column")), segments);
 	}
 
-//	@Override
-//	public String getShortName() {
-//		return getColumn();
-//	}
-
 	/**
 	 * Returns the TableName object for column
 	 *
@@ -226,27 +221,11 @@ public class ColumnName extends ItemName {
 	public TableName getTableName() {
 		return new TableName(this);
 	}
-
-//	@Override
-//	protected String createName(final String separator) {
-//
-//		final StringBuilder sb = new StringBuilder();
-//
-//		if (StringUtils.isNotEmpty(getSchema())) {
-//			sb.append(getSchema()).append(separator);
-//		}
-//
-//		final String tbl = StringUtils.defaultString(getTable());
-//		if ((tbl.length() > 0) || (sb.length() > 0)) {
-//			sb.append(tbl).append(separator);
-//		}
-//
-//		if (StringUtils.isNotEmpty(getColumn())) {
-//			sb.append(getColumn());
-//		}
-//		return sb.toString();
-//
-//	}
+	@Override
+	public NameSegments getDefaultSegments() {
+		return NameSegments.COLUMN;
+	}
+	
 
 	/**
 	 * Clone this column name with different segments.

@@ -21,6 +21,11 @@ public class ItemNameTest {
 			public ItemName clone(NameSegments segs) {
 				// TODO Auto-generated method stub
 				return null;
+			}
+
+			@Override
+			public NameSegments getDefaultSegments() {
+				return NameSegments.ALL;
 			}};
 	}
 
@@ -108,7 +113,7 @@ public class ItemNameTest {
 		final String dbName = "catalog" + NameUtils.SPARQL_DOT + "schema"
 				+ NameUtils.SPARQL_DOT + "table" + NameUtils.SPARQL_DOT
 				+ "column";
-		assertEquals(dbName, itemName.getSPARQLName());
+		assertEquals(dbName, itemName.getSPARQLName( itemName.getUsedSegments()));
 	}
 
 	@Test

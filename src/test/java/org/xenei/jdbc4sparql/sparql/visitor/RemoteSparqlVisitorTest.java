@@ -348,8 +348,8 @@ public class RemoteSparqlVisitorTest extends AbstractSparqlVisitorTest {
 			final ColumnName tn = ColumnName.getNameInstance("testCatalog",
 					"testSchema", "table", v.getName());
 			tn.setUsedSegments(NameSegments.FFTT);
-			Assert.assertTrue("missing " + tn.getSPARQLName(),
-					Arrays.asList(columnNames).contains(tn.getSPARQLName()));
+			Assert.assertTrue("missing " + tn.getSPARQLName(tn.getDefaultSegments()),
+					Arrays.asList(columnNames).contains(tn.getSPARQLName(tn.getUsedSegments())));
 		}
 
 		final Expr expr = ((ElementFilter) results.get(ElementFilter.class).lst

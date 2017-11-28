@@ -149,21 +149,11 @@ public class TableName extends ItemName {
 		return adjustSegments( segs );
 	}
 
-//	@Override
-//	public String createName(final String separator) {
-//		final StringBuilder sb = new StringBuilder();
-//
-//		if (StringUtils.isNotEmpty(getSchema())) {
-//			sb.append(getSchema()).append(separator);
-//		}
-//
-//		if (StringUtils.isNotEmpty(getTable()) || (sb.length() > 0)) {
-//			sb.append(getTable());
-//		}
-//
-//		return sb.toString();
-//	}
-
+	@Override
+	public NameSegments getDefaultSegments() {
+		return NameSegments.TABLE;
+	}
+	
 	/**
 	 * Create a column name in this table.
 	 *

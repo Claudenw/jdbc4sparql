@@ -638,7 +638,7 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 		private final QueryColumnInfo columnInfo;
 
 		public ExprColumn(final QueryColumnInfo columnInfo) {
-			super(columnInfo.getVar());
+			super(columnInfo.getGUIDVar());
 			this.columnInfo = columnInfo;
 		}
 

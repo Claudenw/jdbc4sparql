@@ -130,26 +130,26 @@ public class ColumnNameConstructorTests {
 		for (final NameSegments seg : segs) {
 			final ColumnName sn = cName.clone(seg);
 			ColumnName result = ColumnName.getNameInstance("catalog2",
-					"schema2", "table2", sn.getSPARQLName());
+					"schema2", "table2", sn.getSPARQLName( sn.getUsedSegments()));
 			// make it so we can see all the columns
 			ColumnName answer = result.clone(NameSegments.ALL);
-			assertEquals(sn.getSPARQLName(), "catalog2" ,  answer.getCatalog());
-			assertEquals(sn.getSPARQLName(), seg.isSchema() ? "schema" : "schema2", answer.getSchema());
-			assertEquals(sn.getSPARQLName(),
+			assertEquals(sn.getSPARQLName(sn.getUsedSegments()), "catalog2" ,  answer.getCatalog());
+			assertEquals(sn.getSPARQLName(sn.getUsedSegments()), seg.isSchema() ? "schema" : "schema2", answer.getSchema());
+			assertEquals(sn.getSPARQLName(sn.getUsedSegments()),
 					seg.isTable() ? "table" : "table2",
 					answer.getTable());
-			assertEquals(sn.getSPARQLName(), column, answer.getColumn());
+			assertEquals(sn.getSPARQLName(sn.getDefaultSegments()), column, answer.getColumn());
 
 			result = ColumnName.getNameInstance("catalog2", "schema2",
 					"table2", sn.getDBName());
 			answer = result.clone(NameSegments.ALL);
-			assertEquals(sn.getSPARQLName(), "catalog2", answer.getCatalog());
-			assertEquals(sn.getSPARQLName(), seg.isSchema() ? "schema"
+			assertEquals(sn.getSPARQLName(sn.getUsedSegments()), "catalog2", answer.getCatalog());
+			assertEquals(sn.getSPARQLName(sn.getUsedSegments()), seg.isSchema() ? "schema"
 					: "schema2", answer.getSchema());
-			assertEquals(sn.getSPARQLName(),
+			assertEquals(sn.getSPARQLName(sn.getUsedSegments()),
 					seg.isTable() ? "table" : "table2",
 					answer.getTable());
-			assertEquals(sn.getSPARQLName(), column, answer.getColumn());
+			assertEquals(sn.getSPARQLName(sn.getUsedSegments()), column, answer.getColumn());
 		}
 
 	}

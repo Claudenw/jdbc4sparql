@@ -375,7 +375,7 @@ public class QueryTableInfo extends QueryItemInfo<Table, TableName> {
 			else {
 				columnInfo = addColumnToQuery(column);
 			}
-			final Var v = columnInfo.getVar();
+			final Var v = columnInfo.getGUIDVar();
 			if (!query.getResultVars().contains(v.toString())) {
 				addDataFilter(columnInfo);
 				query.addResultVar(v);
@@ -624,13 +624,13 @@ public class QueryTableInfo extends QueryItemInfo<Table, TableName> {
 		}
 		if (optional) {
 			eg.addElement(new ElementOptional(getQuerySegments(
-					tableColumnInfo.getColumn(), getVar(),
-					aliasColumnInfo.getVar())));
+					tableColumnInfo.getColumn(), getGUIDVar(),
+					aliasColumnInfo.getGUIDVar())));
 		}
 		else {
 			eg.addElement(new ElementOptional(getQuerySegments(
-					tableColumnInfo.getColumn(), getVar(),
-					aliasColumnInfo.getVar())));
+					tableColumnInfo.getColumn(), getGUIDVar(),
+					aliasColumnInfo.getGUIDVar())));
 		}
 	}
 

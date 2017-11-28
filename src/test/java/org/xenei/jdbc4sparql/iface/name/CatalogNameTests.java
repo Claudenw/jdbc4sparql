@@ -21,7 +21,7 @@ public class CatalogNameTests {
 		assertNull(catalogName.getColumn());
 		assertNull(catalogName.getTable());
 		assertEquals("catalog", catalogName.getDBName());
-		assertEquals("catalog", catalogName.getSPARQLName());
+		assertEquals("catalog", catalogName.getSPARQLName( catalogName.getDefaultSegments()));
 		assertEquals("catalog", catalogName.getShortName());
 	}
 
@@ -33,7 +33,7 @@ public class CatalogNameTests {
 		assertNull(catalogName.getColumn());
 		assertNull(catalogName.getTable());
 		assertEquals("catalog", catalogName.getDBName());
-		assertEquals("catalog", catalogName.getSPARQLName());
+		assertEquals("catalog", catalogName.getSPARQLName(catalogName.getDefaultSegments()));
 		assertEquals("catalog", catalogName.getShortName());
 	}
 
@@ -47,7 +47,7 @@ public class CatalogNameTests {
 		assertNull(catalogName.getColumn());
 		assertNull(catalogName.getTable());
 		assertEquals("catalog", catalogName.getDBName());
-		assertEquals("catalog", catalogName.getSPARQLName());
+		assertEquals("catalog", catalogName.getSPARQLName(catalogName.getDefaultSegments()));
 		assertEquals("catalog", catalogName.getShortName());
 
 	}
@@ -83,7 +83,7 @@ public class CatalogNameTests {
 		assertNull(catalogName.getColumn());
 		assertNull(catalogName.getTable());
 		assertEquals("", catalogName.getDBName());
-		assertEquals("", catalogName.getSPARQLName());
+		assertEquals("", catalogName.getSPARQLName(catalogName.getDefaultSegments()));
 		assertEquals("", catalogName.getShortName());
 	}
 
@@ -95,7 +95,7 @@ public class CatalogNameTests {
 		assertNull(catalogName.getColumn());
 		assertNull(catalogName.getTable());
 		assertEquals("", catalogName.getDBName());
-		assertEquals("", catalogName.getSPARQLName());
+		assertEquals("", catalogName.getSPARQLName(catalogName.getDefaultSegments()));
 		assertEquals("", catalogName.getShortName());
 	}
 

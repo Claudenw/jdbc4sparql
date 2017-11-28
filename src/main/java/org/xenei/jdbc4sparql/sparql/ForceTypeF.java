@@ -3,6 +3,7 @@ package org.xenei.jdbc4sparql.sparql;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xenei.jdbc4sparql.iface.TypeConverter;
+import org.xenei.jdbc4sparql.iface.name.NameSegments;
 import org.xenei.jdbc4sparql.sparql.items.QueryColumnInfo;
 
 import java.util.List;
@@ -47,7 +48,7 @@ public class ForceTypeF extends CheckTypeF {
 	}
 
 	public static ElementBind getBinding(final QueryColumnInfo columnInfo) {		
-	    Var replace = Var.alloc( columnInfo.getName().getSPARQLName());
+	    Var replace = Var.alloc( columnInfo.getName().getSPARQLName( NameSegments.COLUMN));
 		return new ElementBind(replace, getFunction(columnInfo));
 	}
 

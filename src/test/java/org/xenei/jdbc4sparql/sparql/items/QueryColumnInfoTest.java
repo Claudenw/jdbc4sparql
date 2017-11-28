@@ -79,7 +79,7 @@ public class QueryColumnInfoTest {
 
 	@Test
 	public void testGetVar() {
-		assertEquals(GUIDObject.asVar( columnName), columnInfo.getVar());
+		assertEquals(GUIDObject.asVar( columnName), columnInfo.getGUIDVar());
 	}
 
 	@Test

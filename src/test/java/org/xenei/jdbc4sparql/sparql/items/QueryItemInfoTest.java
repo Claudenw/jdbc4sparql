@@ -72,7 +72,7 @@ public class QueryItemInfoTest {
 
 	@Test
 	public void testGetVar() {
-		assertEquals(GUIDObject.asVar(itemName), itemInfo.getVar());
+		assertEquals(GUIDObject.asVar(itemName), itemInfo.getGUIDVar());
 	}
 
 	@Test

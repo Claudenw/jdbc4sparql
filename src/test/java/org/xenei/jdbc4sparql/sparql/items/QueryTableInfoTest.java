@@ -85,7 +85,7 @@ public class QueryTableInfoTest {
 
 	@Test
 	public void testGetVar() {
-		assertEquals(GUIDObject.asVar(tableName), tableInfo.getVar());
+		assertEquals(GUIDObject.asVar(tableName), tableInfo.getGUIDVar());
 	}
 
 	@Test
@@ -112,8 +112,8 @@ public class QueryTableInfoTest {
 		when(column.getName()).thenReturn(columnName);
 
 		final QueryColumnInfo columnInfo = tableInfo.addColumnToQuery(column);
-		assertEquals(column.getName().getSPARQLName(), columnInfo.getName()
-				.getSPARQLName());
+		assertEquals(column.getName().getSPARQLName(column.getName().getUsedSegments()), columnInfo.getName()
+				.getSPARQLName(columnInfo.getName().getUsedSegments()));
 	}
 
 	@Test
@@ -130,8 +130,8 @@ public class QueryTableInfoTest {
 
 		final QueryColumnInfo columnInfo = tableInfo.addColumnToQuery(column,
 				columnName2, true);
-		assertEquals(columnName2.getSPARQLName(), columnInfo.getName()
-				.getSPARQLName());
+		assertEquals(columnName2.getSPARQLName(columnName2.getUsedSegments()), columnInfo.getName()
+				.getSPARQLName(columnInfo.getName().getUsedSegments()));
 
 	}
 
@@ -146,8 +146,8 @@ public class QueryTableInfoTest {
 
 		final QueryColumnInfo columnInfo = tableInfo.addColumnToQuery(column,
 				true);
-		assertEquals(column.getName().getSPARQLName(), columnInfo.getName()
-				.getSPARQLName());
+		assertEquals(column.getName().getSPARQLName(column.getName().getUsedSegments()), columnInfo.getName()
+				.getSPARQLName(columnInfo.getName().getUsedSegments()));
 	}
 
 	@Test

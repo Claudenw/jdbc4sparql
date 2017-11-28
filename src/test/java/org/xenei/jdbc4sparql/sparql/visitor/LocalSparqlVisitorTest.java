@@ -249,7 +249,7 @@ public class LocalSparqlVisitorTest extends AbstractSparqlVisitorTest {
 		Assert.assertEquals(columnNames.length, vLst.size());
 		for (final ColumnName cn : columnNames) {
 
-			Assert.assertTrue("missing " + cn.getSPARQLName(), vLst.contains(GUIDObject.asVar(cn)));
+			Assert.assertTrue("missing " + cn.getSPARQLName(cn.getDefaultSegments()), vLst.contains(GUIDObject.asVar(cn)));
 		}
 
 		final Expr expr = ((ElementFilter) results.get(ElementFilter.class).lst.get(2)).getExpr();

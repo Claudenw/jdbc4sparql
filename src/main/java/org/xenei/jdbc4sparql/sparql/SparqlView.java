@@ -31,6 +31,7 @@ import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.TableDef;
 import org.xenei.jdbc4sparql.iface.name.ColumnName;
+import org.xenei.jdbc4sparql.iface.name.NameSegments;
 import org.xenei.jdbc4sparql.iface.name.TableName;
 import org.xenei.jdbc4sparql.impl.AbstractTable;
 import org.xenei.jdbc4sparql.impl.NameUtils;
@@ -86,7 +87,7 @@ public class SparqlView extends AbstractTable {
 
 		@Override
 		public String getSPARQLName() {
-			return columnInfo.getName().getSPARQLName();
+			return columnInfo.getName().getSPARQLName( NameSegments.COLUMN);
 		}
 
 		@Override
@@ -163,7 +164,6 @@ public class SparqlView extends AbstractTable {
 	@Override
 	public List<Column> getColumnList() {
 		if (columns == null) {
-			builder.getResultColumns().forEach( qci -> System.out.println( "debug: "+qci ));//
 			columns = WrappedIterator
 					.create(builder.getResultColumns().iterator())
 					.mapWith(new Function<QueryColumnInfo, Column>() {

@@ -130,8 +130,7 @@ public class NumberFunctionTests extends AbstractJ4SSetup {
 	@Test
 	public void testFloorFunction() throws Exception {
 		final List<Integer> lst = new ArrayList<Integer>();
-		final ResultSet rset = stmt
-				.executeQuery("select floor( DoubleCol ) From fooTable");
+		final ResultSet rset = stmt.executeQuery("select floor( DoubleCol ) From fooTable");
 		final ResultSetMetaData rsm = rset.getMetaData();
 		Assert.assertEquals(1, rsm.getColumnCount());
 		while (rset.next()) {

@@ -88,7 +88,7 @@ public class ColumnNameTests {
 		assertEquals(table, columnName.getTable());
 		assertEquals(column, columnName.getColumn());
 		assertEquals(DBName, columnName.getDBName());
-		assertEquals(SPARQLName, columnName.getSPARQLName());
+		assertEquals(SPARQLName, columnName.getSPARQLName( columnName.getDefaultSegments()));
 		assertEquals(column, columnName.getShortName());
 	}
 
@@ -209,7 +209,7 @@ public class ColumnNameTests {
 		assertEquals(table, columnName.getTable());
 		assertEquals(column, columnName.getColumn());
 		assertEquals(DBName, columnName.getDBName());
-		assertEquals(SPARQLName, columnName.getSPARQLName());
+		assertEquals(SPARQLName, columnName.getSPARQLName(columnName.getDefaultSegments()));
 		assertEquals(column, columnName.getShortName());
 
 	}

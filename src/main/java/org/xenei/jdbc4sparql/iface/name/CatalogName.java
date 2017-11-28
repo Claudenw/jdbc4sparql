@@ -78,4 +78,11 @@ public class CatalogName extends ItemName {
 	public CatalogName clone(final NameSegments segs) {
 		return new CatalogName(this);
 	}
+
+	@Override
+	public NameSegments getDefaultSegments() {
+		return NameSegments.CATALOG;
+	}
+	
+	
 }

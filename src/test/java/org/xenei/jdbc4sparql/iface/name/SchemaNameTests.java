@@ -65,7 +65,7 @@ public class SchemaNameTests {
 		Assert.assertNull(schemaName.getTable());
 		Assert.assertNull(schemaName.getColumn());
 		Assert.assertEquals(DBName, schemaName.getDBName());
-		Assert.assertEquals(SPARQLName, schemaName.getSPARQLName());
+		Assert.assertEquals(SPARQLName, schemaName.getSPARQLName(schemaName.getUsedSegments()));
 		Assert.assertEquals(schema, schemaName.getShortName());
 
 	}
@@ -77,7 +77,7 @@ public class SchemaNameTests {
 		Assert.assertNull(schemaName.getTable());
 		Assert.assertNull(schemaName.getColumn());
 		Assert.assertEquals(DBName, schemaName.getDBName());
-		Assert.assertEquals(SPARQLName, schemaName.getSPARQLName());
+		Assert.assertEquals(SPARQLName, schemaName.getSPARQLName(schemaName.getUsedSegments()));
 		Assert.assertEquals(schema, schemaName.getShortName());
 
 	}

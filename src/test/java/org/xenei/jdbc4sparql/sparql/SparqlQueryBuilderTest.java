@@ -714,7 +714,7 @@ public class SparqlQueryBuilderTest {
 		assertEquals(1, cols.size());
 
 		ColumnName alias = new ColumnName( catalog.getShortName(),VirtualTable.NAME,VirtualTable.NAME, "alias");
-		assertEquals( GUIDObject.asVarName(alias), cols.get(0).getVar().getName());
+		assertEquals( GUIDObject.asVarName(alias), cols.get(0).getGUIDVar().getName());
 		final Column col = cols.get(0).getColumn();
 		assertTrue(col instanceof FunctionColumn);
 		final ColumnDef cd = col.getColumnDef();
@@ -1065,8 +1065,8 @@ public class SparqlQueryBuilderTest {
 		builder.setAllColumns();
 		// reset for size
 		final QueryColumnInfo columnInfo = builder.getColumn(n);
-		assertEquals(colName.getSPARQLName(), columnInfo.getName()
-				.getSPARQLName());
+		assertEquals(colName.getSPARQLName(colName.getUsedSegments()), columnInfo.getName()
+				.getSPARQLName(columnInfo.getName().getUsedSegments()));
 		assertEquals(column, columnInfo.getColumn());
 
 	}

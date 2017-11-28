@@ -82,7 +82,7 @@ implements NamedObject<N>, GUIDObject {
 	 * @return The variable based on the column GUID.
 	 */
 	public Var getVar() {
-		return GUIDObject.asVar(this.name);
+		return Var.alloc( getName().getSPARQLName( getName().getDefaultSegments()));
 	}
 
 	@Override

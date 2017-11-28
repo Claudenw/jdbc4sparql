@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -135,6 +136,11 @@ public class SparqlQueryBuilder {
 	// perhaps this should store column so that tables may be checked in case
 	// tables are added to the query later. But I don't think so.
 	private final List<ColumnName> columnsInUsing;
+	
+	/*
+	 * A node mapping created during build() call
+	 */
+	private NodeMapper nodeMapper;
 
 	// columns indexed by var.
 	// private final List<Column> columnsInResult;
@@ -461,11 +467,11 @@ public class SparqlQueryBuilder {
 	public void addVar(final Expr expr, final ColumnName name) {
 		checkBuilt();
 		final QueryColumnInfo columnInfo = infoSet.getColumn(name);
-		if (!query.getProjectVars().contains(columnInfo.getVar())) {
+		if (!query.getProjectVars().contains(columnInfo.getGUIDVar())) {
 			if (LOG.isDebugEnabled()) {
 				SparqlQueryBuilder.LOG.debug("Adding {} as {}", expr, name);
 			}
-			query.addResultVar(columnInfo.getVar(), expr);
+			query.addResultVar(columnInfo.getGUIDVar(), expr);
 			query.getResultVars();
 		}
 	}
@@ -486,7 +492,7 @@ public class SparqlQueryBuilder {
 
 		final QueryColumnInfo columnInfo = addColumn(columnName, false);
 		getTable(columnName.getTableName()).addDataFilter(columnInfo);
-		query.addResultVar(columnInfo.getVar());
+		query.addResultVar(columnInfo.getGUIDVar());
 		query.getResultVars();
 	}
 
@@ -512,43 +518,25 @@ public class SparqlQueryBuilder {
 				}
 			
 		/* change the variable names in groupBy */
-				ChangeToProjectVars transformer = new ChangeToProjectVars();
+				nodeMapper = new NodeMapper();
 				
 
 			    // replace result values
+				nodeMapper.map( query.getProject() );
 				
-				Map<Var,Expr> map = query.getProject().getExprs();
-				List<Var> varLst = query.getProject().getVars();
-				for (int i=0;i<varLst.size();i++)
-				{
-					Var v = varLst.get(i);
-					Var r = transformer.transform( v );
-					if (!v.equals(r))
-					{
-						varLst.set( i, r );
-						if (map.containsKey( v ))
-						{
-							map.put( r, map.get(v));
-							map.remove( v );
-						}
-					}
-				}
-				
-				// replace Expression values in projected expressions.
-				query.getProject().getExprs().values().forEach( transformer );
 				
 				
 				// replace Group by Expression values
-				query.getGroupBy().getExprs().values().forEach( transformer );
+				nodeMapper.map( query.getGroupBy() );
 				
 				// replace having expression
-				query.getHavingExprs().forEach( transformer );
+				nodeMapper.map( query.getHavingExprs() );			
 				
 				// replace orderby expressions 
 				List<SortCondition> lsc = query.getOrderBy();
 				if (lsc != null)
 				{
-					lsc.forEach( sc -> sc.expression = sc.expression.applyNodeTransform( transformer ));
+					lsc.forEach( sc -> sc.expression = sc.expression.applyNodeTransform( nodeMapper ));
 				}
 				
 
@@ -557,134 +545,6 @@ public class SparqlQueryBuilder {
 			
 			query.setQueryPattern(e);
 
-			
-
-//				// create a copy of the query so that we can verify that it is
-//				// good.
-//				final Query serviceCall = query.cloneQuery();
-//				final VarExprList vars = serviceCall.getProject();
-//				// reset the serviceCall select vars
-//				//  protected VarExprList projectVars = new VarExprList() ;
-//				try {
-//					Field f = Query.class.getDeclaredField("projectVars");
-//					f.setAccessible(true);
-//					f.set( serviceCall,  new VarExprList() );
-//				} catch (NoSuchFieldException e2) {
-//					throw new IllegalStateException( e2.getMessage(),e2);
-//				} catch (SecurityException e2) {
-//					throw new IllegalStateException( e2.getMessage(),e2);
-//				} catch (IllegalAccessException e2) {
-//					throw new IllegalStateException( e2.getMessage(),e2);
-//				}
-//				
-//				
-//				final ElementService service = new ElementService(
-//						catalog.getServiceNode(), new ElementSubQuery(
-//								serviceCall), false);
-//				final Query newResult = new Query();
-//				newResult.setQuerySelectType();
-//				final ElementGroup filterGroup = SparqlQueryBuilder
-//						.getElementGroup(newResult);
-//				filterGroup.addElement(service);
-//				final ElementGroup typeGroup = new ElementGroup();
-//				typeGroup.addElement(filterGroup);
-//				infoSet.setUseGUID(false); // we are now building complete set.
-//				// create the service call
-//				// make sure we project all vars for the filters.
-//				final Collection<QueryColumnInfo> typeFilters = new HashSet<QueryColumnInfo>();
-//				final Collection<QueryColumnInfo> dataFilters = new HashSet<QueryColumnInfo>();
-//				final Collection<QueryColumnInfo> columnsInQuery = new ArrayList<QueryColumnInfo>();
-//				for (final Var v : vars.getVars()) {
-//					final QueryColumnInfo colInfo = infoSet
-//							.findColumnByGUIDVar(v.getName());
-//					if (colInfo == null)
-//					{
-//						// may be a variable associated with a function
-//						if (vars.getExpr(v) != null)
-//						{
-//							newResult.addResultVar(v, vars.getExpr(v));
-//						}
-//						else
-//						{
-//							throw new IllegalStateException( String.format("can not find column %s", v));
-//						}
-//					}
-//					else
-//					{
-//						columnsInQuery.add( colInfo );
-//						newResult.addResultVar(colInfo.getVar());
-//					}		
-//				}
-//
-//				// add the columns to the query.
-//				// the columns are named by GUID in the query.
-//				boolean firstTable = true;
-//				for (final QueryTableInfo tableInfo : infoSet.getTables()) {
-//					// add the data type filters
-//					for (final Column tblCol : tableInfo.getTable().getColumnList())
-//					{
-//						QueryColumnInfo columnInfo = new QueryColumnInfo(tblCol);
-//						typeFilters.add( columnInfo );
-//						serviceCall.addResultVar(columnInfo.getGUIDVar());	
-//					}
-//					// add the binds
-//					for (QueryColumnInfo colInfo : columnsInQuery)
-//					{
-//						if(colInfo.getBaseColumnInfo().getName().getTableName().equals( tableInfo.getName() ))
-//						{
-//							if (firstTable || ! this.columnsInUsing.contains(colInfo.getName().getShortName()))
-//							{
-//								dataFilters.add( colInfo );
-//							}
-//						}
-//					}
-//					
-//					try {
-//						QueryTableInfo.addTypeFilters(infoSet, typeFilters,
-//								dataFilters, tableInfo.getJoinElements(),
-//								filterGroup, typeGroup);
-//					} catch (final SQLDataException e1) {
-//						throw new IllegalStateException(e1.getMessage(), e1);
-//					}
-//					dataFilters.clear();
-//					typeFilters.clear();	
-//					firstTable = false;
-//				}
-//
-//				// add equality check into service Call
-//				for (final String columnName : columnsInUsing) {
-//					QueryColumnInfo first = null;
-//					Expr expr = null;
-//
-//					for (final QueryColumnInfo columnInfo : infoSet
-//							.listColumns(new SearchName(null, null, null,
-//									columnName))) {
-//						if (first == null) {
-//							first = columnInfo;
-//						}
-//						else {
-//							final E_Equals eq = new E_Equals(
-//									new ExprVar(first.getGUIDVar()),
-//									new ExprVar(columnInfo.getGUIDVar()));
-//							if (expr == null) {
-//								expr = eq;
-//							}
-//							else {
-//								expr = new E_LogicalAnd(expr, eq);
-//							}
-//						}
-//
-//					}
-//					if (expr != null) {
-//						if (LOG.isDebugEnabled()) {
-//							LOG.debug("Adding filter: {}", expr);
-//						}
-//						((ElementGroup)serviceCall.getQueryPattern()).addElementFilter(new ElementFilter(expr));
-//					}
-//				}
-//
-//				newResult.setQueryPattern(typeGroup);
-//				query = newResult;
 			}
 			isBuilt = true;
 			if (LOG.isDebugEnabled()) {
@@ -768,6 +628,10 @@ public class SparqlQueryBuilder {
 	}
 
 	public QueryColumnInfo getColumn(final Var v) {
+		if (isBuilt)
+		{
+			return nodeMapper.getColumn( v );
+		}
 		return infoSet.findColumnByGUID(v);
 	}
 
@@ -835,8 +699,14 @@ public class SparqlQueryBuilder {
 		return expr;
 	}
 
+	/**
+	 * Register a function with the infoSet.
+	 * @param funcName the name of the function.
+	 * @param type the SQL return type for the function
+	 * @return the QueryColumnInfo for the function.
+	 */
 	public QueryColumnInfo registerFunction(final ColumnName funcName,
-			final int type) throws SQLException {
+			final int type) {
 		QueryColumnInfo retval = infoSet.findColumn(funcName);
 		if (retval == null) {
 			retval = registerFunctionColumn(funcName, type);
@@ -935,7 +805,7 @@ public class SparqlQueryBuilder {
 		// anything left needs to be added
 
 		for (final QueryColumnInfo columnInfo : colInfoList) {
-			query.addResultVar(columnInfo.getVar());
+			query.addResultVar(columnInfo.getGUIDVar());
 		}
 	}
 
@@ -1058,39 +928,85 @@ public class SparqlQueryBuilder {
 		return infoSet.getSegments();
 	}
 	
-	private class ChangeToProjectVars implements NodeTransform, Consumer<Expr>
+	private class NodeMapper implements NodeTransform
 	{
-		Map<Node,Var> vars = new HashMap<Node,Var>();
+		Map<Node,QueryColumnInfo> vars = new HashMap<Node,QueryColumnInfo>();
 		
-		ChangeToProjectVars()
+		NodeMapper()
 		{
-			
-			for (Var v : query.getProjectVars() )
+			VarExprList varExpLst = query.getProject();
+			for (Var v : varExpLst.getVars() )
 			{
-				QueryColumnInfo qci = infoSet.findColumnByGUID( v );		
-				vars.put(v.asNode(), Var.alloc(qci.getName().getSPARQLName()));
-			}
+				vars.put( v.asNode(), infoSet.findColumnByGUID( v ));
+				Expr exp = varExpLst.getExpr(v);
+				if (exp != null)
+				{
+					exp.applyNodeTransform( new NodeTransform( ) {
 
+						@Override
+						public Node apply(Node t) {
+							if (t.isVariable())
+							{
+								QueryColumnInfo qci = infoSet.findColumnByGUID( Var.alloc( t.getName() ));
+								if (qci == null)
+								{
+									LOG.info( String.format("Can not find %s in infoSet columns -- will not map it", t));
+								} else {
+									vars.put( t,  qci );
+								}
+							}
+							return t;
+						}});
+				}
+			}
 		}
 	
+		/*
+		 * get the column info for a column named var.
+		 */
+		private QueryColumnInfo getColumn( Var v )
+		{
+			return vars.values().stream().filter( qci -> qci.getVar().equals( v )).findFirst().orElse(null);
+		}
 
 		public Var transform(Var t) {
-			Var retval = vars.get(t.asNode());
-			return retval==null?t:retval;
+			QueryColumnInfo retval = vars.get(t.asNode());
+			return retval==null?t:retval.getVar();
 		}
 		
 		@Override
 		public Node apply(Node t) {
-			Var retval = vars.get(t);
-			return retval==null?t:retval.asNode();
+			QueryColumnInfo retval = vars.get(t);
+			return retval==null?t:retval.getVar().asNode();
 		}
 
 
-		@Override
-		public void accept(Expr ex) {
-			if (ex != null) {
-				ex.applyNodeTransform(this);
+		public void map(VarExprList vel) {
+			for (int i=0;i<vel.getVars().size();i++)
+			{
+				Var v = vel.getVars().get(i);
+				Var r = nodeMapper.transform( v );
+				if (!v.equals(r))
+				{
+					vel.getVars().set( i, r );
+					if (vel.getExprs().containsKey( v ))
+					{
+						Expr exp = vel.getExprs().get(v);
+						exp = exp.applyNodeTransform(nodeMapper);
+						vel.getExprs().put( r, exp);
+						vel.getExprs().remove( v );
+					}
+				}
+			}
+
+		}
+		
+		public void map(List<Expr> exprLst) {
+			for (int i=0;i<exprLst.size();i++)
+			{
+				exprLst.set(i, exprLst.get(i).applyNodeTransform(this));
 			}
 		}
+		
 	}
 }

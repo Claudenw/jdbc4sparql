@@ -103,6 +103,11 @@ public abstract class ItemName implements GUIDObject {
 			return WILD;
 		}
 
+		@Override
+		public NameSegments getDefaultSegments() {
+			return NameSegments.WILD;
+		}
+		
 	};
 
 	/**
@@ -309,8 +314,8 @@ public abstract class ItemName implements GUIDObject {
 	 *
 	 * @return
 	 */
-	public String getSPARQLName() {
-		return createName(NameUtils.SPARQL_DOT);
+	public String getSPARQLName(NameSegments segs) {
+		return createName(NameUtils.SPARQL_DOT, segs);
 	}
 
 	/**
@@ -416,6 +421,8 @@ public abstract class ItemName implements GUIDObject {
 				((ItemName) o).getGUID().equals(getGUID()) : false;
 	}
 
+	public abstract NameSegments getDefaultSegments();
+	
 	/**
 	 * Clone this name but change the segments being used.
 	 *
