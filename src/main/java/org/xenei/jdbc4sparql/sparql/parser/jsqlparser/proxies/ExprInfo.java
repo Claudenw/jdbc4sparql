@@ -8,6 +8,12 @@ import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlExprVisitor.ExprColu
 
 import org.apache.jena.sparql.expr.Expr;
 
+/**
+ * An annotated expression that contains the set of columns contained in the expression.
+ *
+ * This class is used to create a dynamic proxy to the expression so that it can function as 
+ * the expression where ever the expression is needed in the system.
+ */
 public interface ExprInfo extends NamedObject<ColumnName>, Expr {
 	public Set<ExprColumn> getColumns();
 

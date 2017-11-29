@@ -525,7 +525,6 @@ public class SparqlQueryBuilder {
 				nodeMapper.map( query.getProject() );
 				
 				
-				
 				// replace Group by Expression values
 				nodeMapper.map( query.getGroupBy() );
 				
@@ -538,6 +537,10 @@ public class SparqlQueryBuilder {
 				{
 					lsc.forEach( sc -> sc.expression = sc.expression.applyNodeTransform( nodeMapper ));
 				}
+				
+				// fixup aggregators
+				nodeMapper.map( query.getAggregators() );
+			
 				
 
 			// renumber the Bnodes.
@@ -1001,10 +1004,10 @@ public class SparqlQueryBuilder {
 
 		}
 		
-		public void map(List<Expr> exprLst) {
+		public <T extends Expr> void map(List<T> exprLst) {
 			for (int i=0;i<exprLst.size();i++)
 			{
-				exprLst.set(i, exprLst.get(i).applyNodeTransform(this));
+				exprLst.set(i, (T)exprLst.get(i).applyNodeTransform(this));
 			}
 		}
 		

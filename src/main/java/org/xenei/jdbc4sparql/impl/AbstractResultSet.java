@@ -48,6 +48,10 @@ import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.TypeConverter;
 import org.xenei.jdbc4sparql.iface.name.ColumnName;
+import org.xenei.jdbc4sparql.iface.name.ItemNameMatcher;
+import org.xenei.jdbc4sparql.impl.virtual.VirtualCatalog;
+import org.xenei.jdbc4sparql.impl.virtual.VirtualSchema;
+import org.xenei.jdbc4sparql.impl.virtual.VirtualTable;
 
 public abstract class AbstractResultSet implements ResultSet {
 	private final Table table;
@@ -293,7 +297,8 @@ public abstract class AbstractResultSet implements ResultSet {
 	}
 
 	private int getColumnIndex(final String columnLabel) throws SQLException {
-		ColumnName cn = new ColumnName( "","","",columnLabel );
+		ColumnName cn = new ColumnName( VirtualCatalog.NAME, VirtualSchema.NAME, VirtualTable.NAME, columnLabel);
+		cn = ItemNameMatcher.get( columnNameIdx.keySet(), cn, cn.getUsedSegments());		
 		final int i = columnNameIdx.get(cn);// table.getColumnIndex(columnLabel);
 		if (i < 0) {
 			throw new SQLException(String.format(

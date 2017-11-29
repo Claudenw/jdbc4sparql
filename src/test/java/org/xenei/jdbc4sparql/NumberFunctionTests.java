@@ -8,6 +8,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.jena.query.DatasetFactory;
+import org.apache.jena.query.Query;
+import org.apache.jena.query.QueryExecution;
+import org.apache.jena.query.QueryExecutionFactory;
+import org.apache.jena.query.QueryFactory;
+import org.apache.jena.query.QuerySolution;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdfconnection.RDFConnection;
+import org.apache.jena.rdfconnection.RDFConnectionFactory;
+import org.apache.jena.sparql.engine.PlanOp;
+import org.apache.jena.sparql.engine.QueryExecutionBase;
 import org.apache.log4j.Level;
 import org.junit.Assert;
 import org.junit.Before;
@@ -206,9 +218,8 @@ public class NumberFunctionTests extends AbstractJ4SSetup {
 
 	@Test
 	public void testSumFunction() throws Exception {
-
 		final ResultSet rset = stmt
-				.executeQuery("select sum( IntCol ) From fooTable");
+				.executeQuery("select  sum( IntCol )  From fooTable");
 		final ResultSetMetaData rsm = rset.getMetaData();
 		Assert.assertEquals(1, rsm.getColumnCount());
 		rset.next();

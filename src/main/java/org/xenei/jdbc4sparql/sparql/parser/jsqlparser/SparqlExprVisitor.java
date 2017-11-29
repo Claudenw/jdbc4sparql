@@ -686,6 +686,12 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 		public void setUsed(final boolean used) {
 			this.used = used;
 		}
+		
+		@Override
+		public String toString()
+		{
+			return String.format( "AliasInfo[%s]", StringUtils.isBlank(alias)?"Undefined":alias);
+		}
 	}
 
 }

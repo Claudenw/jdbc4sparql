@@ -79,13 +79,10 @@ import org.xenei.jena.entities.EntityManager;
 import org.xenei.jena.entities.EntityManagerFactory;
 import org.xenei.jena.entities.MissingAnnotation;
 
-//import org.apache.jena.rdf.model.Model;
-//import org.apache.jena.rdf.model.ResIterator;
-//import org.apache.jena.rdf.model.Resource;
-//import org.apache.jena.rdf.model.ResourceFactory;
-//import org.apache.jena.util.iterator.WrappedIterator;
-//import org.apache.jena.vocabulary.RDF;
-
+/**
+ * The JDBC 4 Sparql SQLConnection implementation.
+ *
+ */
 public class J4SConnection implements Connection {
 	private Properties clientInfo;
 	private final J4SUrl url;

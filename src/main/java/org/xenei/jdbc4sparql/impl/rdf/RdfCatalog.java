@@ -25,6 +25,8 @@ import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.rdfconnection.RDFConnection;
 import org.apache.jena.rdfconnection.RDFConnectionFactory;
 import org.apache.jena.sparql.core.Quad;
+import org.apache.jena.sparql.engine.PlanOp;
+import org.apache.jena.sparql.engine.QueryExecutionBase;
 import org.apache.jena.sparql.syntax.ElementNamedGraph;
 import org.apache.jena.util.iterator.WrappedIterator;
 import org.apache.jena.vocabulary.RDFS;
@@ -293,15 +295,9 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 			query.setQueryPattern(ge);
 		}
 		
-		
-		connection.fetchDataset().listNames().forEachRemaining( n -> System.out.println( "name: "+n));
-		connection.fetch().write( System.out, "TURTLE" );
-		
-		System.out.println( " ENTITY Manager" );
-		getEntityManager().getConnection().fetchDataset().listNames().forEachRemaining( n -> System.out.println( "entity name: "+n));
-		getEntityManager().getConnection().fetch().write( System.out, "TURTLE" );
-		
+			
 		final QueryExecution qexec = connection.query(query);
+//		System.out.println( ((PlanOp)((QueryExecutionBase) qexec).getPlan()).getOp());
 		try {
 			final ResultSet rs = qexec.execSelect();
 			final List<QuerySolution> retval = WrappedIterator.create(rs)
