@@ -25,6 +25,7 @@ import org.xenei.jdbc4sparql.LoggingConfig;
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.name.ColumnName;
 import org.xenei.jdbc4sparql.iface.name.GUIDObject;
+import org.xenei.jdbc4sparql.iface.name.ItemName;
 import org.xenei.jdbc4sparql.iface.name.TableName;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
@@ -215,10 +216,10 @@ abstract public class AbstractSparqlParserTest {
 		return retval;
 	}
 	
-	protected void verifyVars(final List<Var> vars, final GUIDObject[] names) {
+	protected void verifyVars(final List<Var> vars, final ItemName[] names) {
 		assertEquals(names.length, vars.size());
 		for (int i = 0; i < names.length; i++) {
-			assertEquals(GUIDObject.asVar(names[i]), vars.get(i));
+			assertEquals(names[i].getSPARQLName(names[i].getUsedSegments()), vars.get(i).getName());
 		}
 	}
 

@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import org.apache.jena.util.iterator.ExtendedIterator;
 import org.apache.jena.util.iterator.WrappedIterator;
+import org.xenei.jdbc4sparql.iface.NameSegments;
 
 public class ItemNameMatcher {
 

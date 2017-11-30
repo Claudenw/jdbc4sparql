@@ -24,9 +24,9 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.xenei.jdbc4sparql.iface.NameSegments;
 import org.xenei.jdbc4sparql.iface.name.ColumnName;
 import org.xenei.jdbc4sparql.iface.name.GUIDObject;
-import org.xenei.jdbc4sparql.iface.name.NameSegments;
 import org.xenei.jdbc4sparql.impl.NameUtils;
 import org.xenei.jdbc4sparql.impl.virtual.VirtualSchema;
 import org.xenei.jdbc4sparql.impl.virtual.VirtualTable;
@@ -50,14 +50,15 @@ public class LocalSparqlVisitorTest extends AbstractSparqlVisitorTest {
 
 	@Test
 	public void testInnerJoinParse() throws Exception {
-		final Var[] colNames = { GUIDObject.asVar(FOO_TABLE_NAME.getColumnName("StringCol")),
-				GUIDObject.asVar(FOO_TABLE_NAME.getColumnName("NullableStringCol")),
-				GUIDObject.asVar(FOO_TABLE_NAME.getColumnName("IntCol")),
-				GUIDObject.asVar(FOO_TABLE_NAME.getColumnName("NullableIntCol")),
-				GUIDObject.asVar(BAR_TABLE_NAME.getColumnName("BarStringCol")),
-				GUIDObject.asVar(BAR_TABLE_NAME.getColumnName("BarNullableStringCol")),
-				GUIDObject.asVar(BAR_TABLE_NAME.getColumnName("BarIntCol")),
-				GUIDObject.asVar(BAR_TABLE_NAME.getColumnName("NullableIntCol")) };
+		final Var[] colNames = { 
+				Var.alloc(FOO_TABLE_NAME.getColumnName("StringCol").getSPARQLName( NameSegments.COLUMN)),
+				Var.alloc(FOO_TABLE_NAME.getColumnName("NullableStringCol").getSPARQLName( NameSegments.COLUMN)),
+				Var.alloc(FOO_TABLE_NAME.getColumnName("IntCol").getSPARQLName( NameSegments.COLUMN)),
+				Var.alloc(FOO_TABLE_NAME.getColumnName("NullableIntCol").getSPARQLName( NameSegments.COLUMN)),
+				Var.alloc(BAR_TABLE_NAME.getColumnName("BarStringCol").getSPARQLName( NameSegments.COLUMN)),
+				Var.alloc(BAR_TABLE_NAME.getColumnName("BarNullableStringCol").getSPARQLName( NameSegments.COLUMN)),
+				Var.alloc(BAR_TABLE_NAME.getColumnName("BarIntCol").getSPARQLName( NameSegments.COLUMN)),
+				Var.alloc(BAR_TABLE_NAME.getColumnName("NullableIntCol").getSPARQLName( NameSegments.COLUMN)) };
 
 		final Query q = getQuery("SELECT * FROM foo inner join bar using (NullableIntCol)");
 
@@ -103,19 +104,19 @@ public class LocalSparqlVisitorTest extends AbstractSparqlVisitorTest {
 
 		Assert.assertEquals(1, q.getProject().size());
 		Assert.assertEquals(1, q.getProjectVars().size());
-//		Assert.assertEquals(GUIDObject.asVar(FOO_TABLE_NAME.getColumnName("bar")),
-//		q.getProjectVars().get(0));
-		ColumnName cn = new ColumnName( CATALOG_NAME, VirtualSchema.NAME, VirtualTable.NAME, "bar" );
-		Assert.assertEquals(GUIDObject.asVar(cn), q.getProjectVars().get(0));
+		
+		ColumnName expected = new ColumnName( CATALOG_NAME, VirtualSchema.NAME, VirtualTable.NAME, "bar" );
+		String expectedName = expected.getSPARQLName( NameSegments.COLUMN);
+		Assert.assertEquals(expectedName, q.getProjectVars().get(0).getName());
 
 	}
 
 	@Test
 	public void testNoColParse() throws Exception {
-		final Var[] colNames = { GUIDObject.asVar(FOO_TABLE_NAME.getColumnName("StringCol")),
-				GUIDObject.asVar(FOO_TABLE_NAME.getColumnName("NullableStringCol")),
-				GUIDObject.asVar(FOO_TABLE_NAME.getColumnName("IntCol")),
-				GUIDObject.asVar(FOO_TABLE_NAME.getColumnName("NullableIntCol")) };
+		final Var[] colNames = { Var.alloc(FOO_TABLE_NAME.getColumnName("StringCol").getSPARQLName( NameSegments.COLUMN)),
+Var.alloc(FOO_TABLE_NAME.getColumnName("NullableStringCol").getSPARQLName( NameSegments.COLUMN)),
+Var.alloc(FOO_TABLE_NAME.getColumnName("IntCol").getSPARQLName( NameSegments.COLUMN)),
+Var.alloc(FOO_TABLE_NAME.getColumnName("NullableIntCol").getSPARQLName( NameSegments.COLUMN)) };
 
 		final Query q = getQuery("SELECT * FROM foo");
 		tests.put(ElementBind.class, 4);
@@ -126,7 +127,7 @@ public class LocalSparqlVisitorTest extends AbstractSparqlVisitorTest {
 		final List<Var> vLst = q.getProjectVars();
 		Assert.assertEquals(4, vLst.size());
 		for (final Var v : vLst) {
-			Assert.assertTrue(Arrays.asList(colNames).contains(v));
+			Assert.assertTrue("Missing :"+v, Arrays.asList(colNames).contains(v));
 		}
 
 		for (final Element el : results.get(ElementBind.class).lst) {
@@ -144,14 +145,16 @@ public class LocalSparqlVisitorTest extends AbstractSparqlVisitorTest {
 		tests.put(ElementOptional.class, 2);
 		results = validate(q, tests);
 
-		ColumnName strCol = new ColumnName(CATALOG_NAME, SCHEMA_NAME, "foo", "StringCol");
+		ColumnName expected = new ColumnName(CATALOG_NAME, SCHEMA_NAME, "foo", "StringCol");
+		String expectedName = expected.getSPARQLName( NameSegments.COLUMN);
+	
 		final List<Var> vLst = q.getProjectVars();
 		Assert.assertEquals(1, vLst.size());
-		Assert.assertEquals(GUIDObject.asVar(strCol), vLst.get(0));
+		Assert.assertEquals(expectedName, vLst.get(0).getName());
 
 		// 1 required column
 		final ElementBind eb = (ElementBind) results.get(ElementBind.class).lst.get(0);
-		Assert.assertEquals(GUIDObject.asVar(strCol), eb.getVar());
+		Assert.assertEquals(expectedName, eb.getVar().getName());
 	}
 
 	@Test
@@ -163,13 +166,17 @@ public class LocalSparqlVisitorTest extends AbstractSparqlVisitorTest {
 		tests.put(ElementOptional.class, 2);
 		results = validate(q, tests);
 
-		ColumnName barName = new ColumnName(CATALOG_NAME, SCHEMA_NAME, "foo", "bar");
+		ColumnName expected = new ColumnName(CATALOG_NAME, SCHEMA_NAME, "foo", "bar");
+		String expectedName = expected.getSPARQLName( NameSegments.COLUMN);
+
+		
 		final List<Var> vLst = q.getProjectVars();
 		Assert.assertEquals(1, vLst.size());
-		Assert.assertEquals(GUIDObject.asVar(barName), vLst.get(0));
+		Assert.assertEquals(expectedName, vLst.get(0).getName());
 
 		final ElementBind eb = (ElementBind) results.get(ElementBind.class).lst.get(0);
-		Assert.assertEquals(GUIDObject.asVar(barName), eb.getVar());
+		Assert.assertEquals(expectedName, eb.getVar().getName());
+	
 	}
 
 	@Test
@@ -184,19 +191,21 @@ public class LocalSparqlVisitorTest extends AbstractSparqlVisitorTest {
 		// 1 required column
 
 		final ElementBind eb = (ElementBind) results.get(ElementBind.class).lst.get(0);
-		ColumnName strgCol = new ColumnName(CATALOG_NAME, SCHEMA_NAME, "foo", "StringCol");
-		Assert.assertEquals(GUIDObject.asVar(strgCol), eb.getVar());
+		ColumnName expected = new ColumnName(CATALOG_NAME, SCHEMA_NAME, "foo", "StringCol");
+		String expectedName = expected.getSPARQLName( NameSegments.COLUMN);
+
+		Assert.assertEquals(expectedName, eb.getVar().getName());
 
 		// should be the last one
 		final Expr expr = ((ElementFilter) results.get(ElementFilter.class).lst.get(1)).getExpr();
 		Assert.assertTrue(expr instanceof E_NotEquals);
 		final E_NotEquals expr2 = (E_NotEquals) expr;
-		Assert.assertEquals(GUIDObject.asVarName(strgCol), ((ExprVar) (expr2.getArg1())).getVarName());
+		Assert.assertEquals(GUIDObject.asVarName(expected), ((ExprVar) (expr2.getArg1())).getVarName());
 		Assert.assertEquals("baz", ((NodeValueString) (expr2.getArg2())).asString());
 
 		final List<Var> vLst = q.getProjectVars();
 		Assert.assertEquals(1, vLst.size());
-		Assert.assertEquals(GUIDObject.asVar(strgCol), vLst.get(0));
+		Assert.assertEquals(expectedName, vLst.get(0).getName());
 
 	}
 
@@ -209,21 +218,23 @@ public class LocalSparqlVisitorTest extends AbstractSparqlVisitorTest {
 		tests.put(ElementOptional.class, 2);
 		tests.put(ElementPathBlock.class, 5);
 		results = validate(q, tests);
+		
+		ColumnName expected = new ColumnName(CATALOG_NAME, SCHEMA_NAME, "bar", "StringCol");
+		String expectedName = expected.getSPARQLName( NameSegments.COLUMN);
 
 		final List<Var> vLst = q.getProjectVars();
 		Assert.assertEquals(1, vLst.size());
-		Assert.assertEquals(GUIDObject.asVar(new ColumnName(CATALOG_NAME, SCHEMA_NAME, "bar", "StringCol")),
-				vLst.get(0));
+		
+		Assert.assertEquals(expectedName, vLst.get(0).getName());
 
 		final ElementBind eb = (ElementBind) results.get(ElementBind.class).lst.get(0);
-		Assert.assertEquals(GUIDObject.asVar(new ColumnName(CATALOG_NAME, SCHEMA_NAME, "bar", "StringCol")),
-				eb.getVar());
+		Assert.assertEquals(expectedName, eb.getVar().getName());
 
 		// should be the last one
 		final Expr expr = ((ElementFilter) results.get(ElementFilter.class).lst.get(1)).getExpr();
 		Assert.assertTrue(expr instanceof E_NotEquals);
 		final E_NotEquals expr2 = (E_NotEquals) expr;
-		Assert.assertEquals(GUIDObject.asVarName(new ColumnName(CATALOG_NAME, SCHEMA_NAME, "bar", "StringCol")),
+		Assert.assertEquals(GUIDObject.asVarName(expected),
 				((ExprVar) (expr2.getArg1())).getVarName());
 		Assert.assertEquals("baz", ((NodeValueString) (expr2.getArg2())).asString());
 
@@ -248,8 +259,9 @@ public class LocalSparqlVisitorTest extends AbstractSparqlVisitorTest {
 		final List<Var> vLst = q.getProjectVars();
 		Assert.assertEquals(columnNames.length, vLst.size());
 		for (final ColumnName cn : columnNames) {
-
-			Assert.assertTrue("missing " + cn.getSPARQLName(cn.getDefaultSegments()), vLst.contains(GUIDObject.asVar(cn)));
+			String expectedName = cn.getSPARQLName(cn.getDefaultSegments());
+			Var v = Var.alloc( expectedName );
+			Assert.assertTrue("missing " + expectedName, vLst.contains(v));
 		}
 
 		final Expr expr = ((ElementFilter) results.get(ElementFilter.class).lst.get(2)).getExpr();

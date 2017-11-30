@@ -8,6 +8,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.xenei.jdbc4sparql.iface.NameSegments;
 import org.xenei.jdbc4sparql.impl.NameUtils;
 
 public class ItemNameTest {

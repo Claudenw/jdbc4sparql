@@ -1,9 +1,8 @@
 package org.xenei.jdbc4sparql.sparql.items;
 
 import org.xenei.jdbc4sparql.iface.Column;
+import org.xenei.jdbc4sparql.iface.NameSegments;
 import org.xenei.jdbc4sparql.iface.name.ColumnName;
-import org.xenei.jdbc4sparql.iface.name.NameSegments;
-
 import org.apache.jena.sparql.core.Var;
 
 /**
@@ -123,14 +122,12 @@ public class QueryColumnInfo extends QueryItemInfo<Column, ColumnName> {
 	public String toString() {
 		StringBuilder sb = new StringBuilder("QueryColumnInfo[");
 	
+		sb.append( getName() );
 		if (isAlias())
 		{
-			sb.append( String.format( "%s alias for %s", aliasFor.getName(), getName()));
+			sb.append( " alias for ").append( aliasFor.getName());
 		}
-		else
-		{
-			sb.append( getName() );
-		}
+		
 		return sb.append("]").toString();
 	}
 

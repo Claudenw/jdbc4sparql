@@ -167,7 +167,7 @@ public class ConfigBuilder {
 		final File outfile = File.createTempFile("cfgmtd", ".trig");
 		final FileOutputStream fos2 = new FileOutputStream(outfile);
 		System.out.println("Writing metadata to " + outfile.getCanonicalPath());
-		Dataset ds = connection.getDatasetProducer().getMetaDataEntityManager().getConnection().fetchDataset();
+		Dataset ds = connection.getDatasetProducer().getMetaConnection().fetchDataset();
 		RDFDataMgr.write(fos2, ds, Lang.TRIG);		
 
 		metaData.getColumns(null, null, null, null);

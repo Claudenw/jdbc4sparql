@@ -114,14 +114,14 @@ public interface DatasetProducer {
 
 	public static final String LOCAL_PREFIX = "/local";
 
-	public void addLocalDataModel(final String modelName, Model model);
+//	public void addLocalDataModel(final String modelName, Model model);
+	public RDFConnection getLocalConnection();
 
 	/**
 	 * Close the datasets in preparation for shutdown.
 	 */
 	public void close();
 
-	public EntityManager getLocalDataEntityManager(final String modelName);
 
 	/**
 	 * Get or construct the local dataset.
@@ -132,7 +132,7 @@ public interface DatasetProducer {
 
 	public EntityManager getMetaDataEntityManager();
 	public EntityManager getMetaDataEntityManager(final String modelName);
-
+	public RDFConnection getMetaConnection();
 
 	public Properties getProperties();
 

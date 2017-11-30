@@ -14,10 +14,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.ColumnDef;
+import org.xenei.jdbc4sparql.iface.NameSegments;
 import org.xenei.jdbc4sparql.iface.name.ColumnName;
 import org.xenei.jdbc4sparql.iface.name.GUIDObject;
 import org.xenei.jdbc4sparql.iface.name.ItemName;
-import org.xenei.jdbc4sparql.iface.name.NameSegments;
 import org.xenei.jdbc4sparql.impl.NameUtils;
 
 import org.apache.jena.sparql.core.Var;
@@ -45,27 +45,27 @@ public class QueryColumnInfoTest {
 
 	@Test
 	public void testSegments() {
-		assertEquals("C:false S:true T:true C:true", columnInfo.getSegments()
+		assertEquals("FTTT", columnInfo.getSegments()
 				.toString());
 		assertEquals("schema.table.column", columnInfo.getName().getDBName());
 		columnInfo.setSegments(NameSegments.CATALOG);
-		assertEquals("C:true S:false T:false C:true", columnInfo.getSegments()
+		assertEquals("TFFT", columnInfo.getSegments()
 				.toString());
 		assertEquals("catalog.schema.table.column", columnInfo.getName().getDBName());
 		columnInfo.setSegments(NameSegments.SCHEMA);
-		assertEquals("C:false S:true T:true C:true", columnInfo.getSegments()
+		assertEquals("FTTT", columnInfo.getSegments()
 				.toString());
 		assertEquals("schema.table.column", columnInfo.getName().getDBName());
 		columnInfo.setSegments(NameSegments.TABLE);
-		assertEquals("C:false S:true T:true C:true", columnInfo.getSegments()
+		assertEquals("FTTT", columnInfo.getSegments()
 				.toString());
 		assertEquals("schema.table.column", columnInfo.getName().getDBName());
 		columnInfo.setSegments(NameSegments.FFTF);
-		assertEquals("C:false S:false T:true C:true", columnInfo.getSegments()
+		assertEquals("FFTT", columnInfo.getSegments()
 				.toString());
 		assertEquals("table.column", columnInfo.getName().getDBName());
 		columnInfo.setSegments(NameSegments.TTTF);
-		assertEquals("C:true S:true T:true C:true", columnInfo.getSegments()
+		assertEquals("TTTT", columnInfo.getSegments()
 				.toString());
 		assertEquals("catalog.schema.table.column", columnInfo.getName().getDBName());
 

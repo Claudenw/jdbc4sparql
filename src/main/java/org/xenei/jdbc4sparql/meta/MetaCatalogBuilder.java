@@ -42,20 +42,24 @@ import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 
+/**
+ * Builds catalogs in the meta data system
+ *
+ */
 public class MetaCatalogBuilder {
 	public static Catalog getInstance(final DatasetProducer dsProducer) {
-		final EntityManager model = dsProducer
+		final EntityManager entityManager = dsProducer
 				.getMetaDataEntityManager(MetaCatalogBuilder.LOCAL_NAME);
 		final RdfCatalog cat = new RdfCatalog.Builder()
 		.setName(MetaCatalogBuilder.LOCAL_NAME)
-		.setLocalConnection(dsProducer.getMetaDataEntityManager().getConnection())
+		.setLocalConnection(dsProducer.getMetaConnection())
 		.setGraphName( ResourceFactory.createResource(Quad.unionGraph.getURI()) )
-		.build(model);
+		.build(entityManager);
 
 		final RdfSchema schema = new RdfSchema.Builder().setCatalog(cat)
-				.setName(MetaCatalogBuilder.SCHEMA_NAME).build(model);
+				.setName(MetaCatalogBuilder.SCHEMA_NAME).build(entityManager);
 		// populate the catalog
-		new MetaCatalogBuilder(schema, model).build();
+		new MetaCatalogBuilder(schema, entityManager).build();
 
 		return cat;
 	}

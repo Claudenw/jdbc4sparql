@@ -222,7 +222,7 @@ public class J4SDatabaseMetaDataQueryTests {
 				// +eol+
 				"";
 		final Query q = QueryFactory.create(queryStr);
-		final QueryExecution qexec = dp.getLocalDataEntityManager(null).getConnection().query(q);
+		final QueryExecution qexec = dp.getLocalConnection().query(q);
 		try {
 			final List<QuerySolution> retval = WrappedIterator.create(
 					qexec.execSelect()).toList();
@@ -288,7 +288,7 @@ public class J4SDatabaseMetaDataQueryTests {
 		final Catalog cat = MetaCatalogBuilder.getInstance(dp);
 
 		if (J4SDatabaseMetaDataQueryTests.LOG.isDebugEnabled()) {
-			Dataset ds = dp.getLocalDataEntityManager(null).getConnection().fetchDataset();
+			Dataset ds = dp.getLocalConnection().fetchDataset();
 			RDFDataMgr.write(new FileOutputStream("/tmp/cat.trig"), ds, Lang.TRIG);
 		}
 		catalogs.put(cat.getName().getShortName(), cat);

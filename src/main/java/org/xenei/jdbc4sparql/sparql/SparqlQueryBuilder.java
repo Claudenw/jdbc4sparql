@@ -40,12 +40,14 @@ import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.Key;
 import org.xenei.jdbc4sparql.iface.KeySegment;
+import org.xenei.jdbc4sparql.iface.NameSegments;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.name.ColumnName;
 import org.xenei.jdbc4sparql.iface.name.FQName;
+import org.xenei.jdbc4sparql.iface.name.GUIDObject;
 import org.xenei.jdbc4sparql.iface.name.ItemName;
-import org.xenei.jdbc4sparql.iface.name.NameSegments;
+import org.xenei.jdbc4sparql.iface.name.ItemNameMatcher;
 import org.xenei.jdbc4sparql.iface.name.TableName;
 import org.xenei.jdbc4sparql.impl.NameUtils;
 import org.xenei.jdbc4sparql.impl.virtual.VirtualCatalog;
@@ -277,7 +279,7 @@ public class SparqlQueryBuilder {
 
 	public QueryColumnInfo addColumnToQuery(final ColumnName cName,
 			final boolean optional) {
-		cName.setUsedSegments(getSegments());
+		cName.setUsedSegments(getColumnSegments());
 		final QueryColumnInfo columnInfo = infoSet.scanTablesForColumn(cName);
 		if (columnInfo == null) {
 			throw new IllegalArgumentException(String.format(
@@ -496,6 +498,23 @@ public class SparqlQueryBuilder {
 		query.getResultVars();
 	}
 
+	/**
+	 * Adds the the expression as a variable to the query. As a variable the
+	 * result will be returned from the query.
+	 *
+	 * @param columnInfo
+	 *            The query column to add
+	 * @throws SQLException
+	 */
+	public void addVar(final QueryColumnInfo columnInfo) {
+		if (LOG.isDebugEnabled()) {
+			SparqlQueryBuilder.LOG.debug("Adding Var {}", columnInfo.getName());
+		}
+		checkBuilt();
+
+		query.addResultVar(GUIDObject.asVar(columnInfo.getName()));
+		query.getResultVars();
+	}
 	
 	/**
 	 * Get the SPARQL query.
@@ -783,7 +802,7 @@ public class SparqlQueryBuilder {
 		// find shortest name without name collision. skipping columns in using.
 		NameSegments segs = NameSegments.FFFT;
 		for (final QueryColumnInfo columnInfo : colInfoList) {
-			if (!columnsInUsing.contains(columnInfo.getName().getShortName())) {
+			if (! ItemNameMatcher.contains(columnsInUsing, columnInfo.getName(), NameSegments.FFFT)) {
 				//SearchName sn = new SearchName(columnInfo.getName(), segs);
 				while ((colInfoList.count(columnInfo.getName(), segs) > 1)
 						&& !segs.isCatalog()) {
@@ -927,7 +946,7 @@ public class SparqlQueryBuilder {
 		}
 	}
 
-	public NameSegments getSegments() {
+	public NameSegments getColumnSegments() {
 		return infoSet.getSegments();
 	}
 	
@@ -992,18 +1011,23 @@ public class SparqlQueryBuilder {
 				if (!v.equals(r))
 				{
 					vel.getVars().set( i, r );
-					if (vel.getExprs().containsKey( v ))
+				}
+				if (vel.getExprs().containsKey( v ))
+				{
+					Expr exp = vel.getExprs().get(v);
+					exp = exp.applyNodeTransform(nodeMapper);
+					vel.getExprs().put( r, exp);
+					if (!v.equals(r))
 					{
-						Expr exp = vel.getExprs().get(v);
-						exp = exp.applyNodeTransform(nodeMapper);
-						vel.getExprs().put( r, exp);
 						vel.getExprs().remove( v );
 					}
 				}
+			
 			}
 
 		}
 		
+		@SuppressWarnings("unchecked")
 		public <T extends Expr> void map(List<T> exprLst) {
 			for (int i=0;i<exprLst.size();i++)
 			{

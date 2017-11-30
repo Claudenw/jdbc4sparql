@@ -26,8 +26,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.xenei.jdbc4sparql.LoggingConfig;
 import org.xenei.jdbc4sparql.iface.Catalog;
+import org.xenei.jdbc4sparql.iface.NameSegments;
 import org.xenei.jdbc4sparql.iface.name.ColumnName;
 import org.xenei.jdbc4sparql.iface.name.GUIDObject;
+import org.xenei.jdbc4sparql.iface.name.ItemName;
 import org.xenei.jdbc4sparql.iface.name.TableName;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
@@ -63,7 +65,9 @@ import org.apache.jena.sparql.syntax.ElementPathBlock;
 public class SparqlParserTest extends AbstractSparqlParserTest {
 	
 	private final ColumnName var0 = virtualTableName.getColumnName("var0");
+	private final String varName = var0.getSPARQLName( NameSegments.COLUMN);
 	private final ColumnName arg = virtualTableName.getColumnName("arg");
+	private final String argName = arg.getSPARQLName( NameSegments.COLUMN);
 	
 	@Test
 	public void testCatalogFunctionSelect() throws Exception {
@@ -81,7 +85,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 				fooTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
 		tests.clear();
-		assertEquals(GUIDObject.asVar(var0), query.getProjectVars().get(0));
+		assertEquals(Var.alloc( varName ), query.getProjectVars().get(0));
 	}
 	
 	@Test
@@ -96,7 +100,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 				fooTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
 		tests.clear();
-		assertEquals(GUIDObject.asVar(arg), query.getProjectVars().get(0));
+		assertEquals(Var.alloc( argName ), query.getProjectVars().get(0));
 	}
 
 	@Test
@@ -114,7 +118,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 				fooTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
 		tests.clear();
-		assertEquals( GUIDObject.asVar(var0), query.getProjectVars().get(0));
+		assertEquals( Var.alloc( varName ), query.getProjectVars().get(0));
 	}
 
 	@Test
@@ -130,7 +134,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 				fooTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
 		tests.clear();
-		assertEquals(GUIDObject.asVar(arg), query.getProjectVars().get(0));
+		assertEquals(Var.alloc( argName ), query.getProjectVars().get(0));
 	}
 
 	@Test
@@ -189,7 +193,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 				fooTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
 		tests.clear();
-		assertEquals( GUIDObject.asVar(var0), query.getProjectVars().get(0));
+		assertEquals( Var.alloc( varName ), query.getProjectVars().get(0));
 	}
 
 	@Test
@@ -205,7 +209,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 				fooTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
 		tests.clear();
-		assertEquals(GUIDObject.asVar(arg), query.getProjectVars().get(0));
+		assertEquals(Var.alloc( argName ), query.getProjectVars().get(0));
 	}
 
 	@Test
@@ -224,7 +228,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 				fooTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
 		tests.clear();
-		assertEquals( GUIDObject.asVar(var0), query.getProjectVars().get(0));
+		assertEquals( Var.alloc( varName ), query.getProjectVars().get(0));
 	}
 
 	@Test
@@ -239,7 +243,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 				fooTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
 		tests.clear();
-		assertEquals(GUIDObject.asVar(arg), query.getProjectVars().get(0));
+		assertEquals(Var.alloc( argName ), query.getProjectVars().get(0));
 	}
 
 	@Test
@@ -258,7 +262,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 				fooTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
 		tests.clear();
-		assertEquals( GUIDObject.asVar(var0), query.getProjectVars().get(0));
+		assertEquals( Var.alloc( varName ), query.getProjectVars().get(0));
 	}
 
 	@Test
@@ -274,7 +278,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 				fooTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
 		tests.clear();
-		assertEquals(GUIDObject.asVar(arg), query.getProjectVars().get(0));
+		assertEquals(Var.alloc( argName ), query.getProjectVars().get(0));
 	}
 
 	@Test
@@ -290,7 +294,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 				fooTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
 		tests.clear();
-		assertEquals( GUIDObject.asVar(var0), query.getProjectVars().get(0));
+		assertEquals( Var.alloc( varName ), query.getProjectVars().get(0));
 	}
 
 	@Test
@@ -305,7 +309,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 				fooTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
 		tests.clear();
-		assertEquals(GUIDObject.asVar(arg), query.getProjectVars().get(0));
+		assertEquals(Var.alloc( argName ), query.getProjectVars().get(0));
 	}
 
 	@Test
@@ -324,7 +328,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 				fooTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
 		tests.clear();
-		assertEquals( GUIDObject.asVar(var0), query.getProjectVars().get(0));
+		assertEquals( Var.alloc( varName ), query.getProjectVars().get(0));
 	}
 
 	@Test
@@ -340,7 +344,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 				fooTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
 		tests.clear();
-		assertEquals(GUIDObject.asVar(arg), query.getProjectVars().get(0));
+		assertEquals(Var.alloc( argName ), query.getProjectVars().get(0));
 	}
 
 	@Test
@@ -355,7 +359,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 				fooTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
 		tests.clear();
-		assertEquals( GUIDObject.asVar(var0), query.getProjectVars().get(0));
+		assertEquals( Var.alloc( varName ), query.getProjectVars().get(0));
 	}
 
 	@Test
@@ -371,7 +375,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 				fooTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
 		tests.clear();
-		assertEquals(GUIDObject.asVar(arg), query.getProjectVars().get(0));
+		assertEquals(Var.alloc( argName ), query.getProjectVars().get(0));
 	}
 
 	@Test
@@ -390,7 +394,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 				fooTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
 		tests.clear();
-		assertEquals( GUIDObject.asVar(var0), query.getProjectVars().get(0));
+		assertEquals( Var.alloc( varName ), query.getProjectVars().get(0));
 	}
 
 	@Test
@@ -405,7 +409,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 				fooTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
 		tests.clear();
-		assertEquals(GUIDObject.asVar(arg), query.getProjectVars().get(0));
+		assertEquals(Var.alloc( argName ), query.getProjectVars().get(0));
 	}
 
 	@Test
@@ -565,7 +569,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 				fooTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
 		tests.clear();
-		assertEquals( GUIDObject.asVar(var0), query.getProjectVars().get(0));
+		assertEquals( Var.alloc( varName ), query.getProjectVars().get(0));
 	}
 
 	@Test
@@ -581,7 +585,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 				fooTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
 		tests.clear();
-		assertEquals(GUIDObject.asVar(arg), query.getProjectVars().get(0));
+		assertEquals(Var.alloc( argName ), query.getProjectVars().get(0));
 	}
 
 	@Test
@@ -600,7 +604,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 				fooTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
 		tests.clear();
-		assertEquals( GUIDObject.asVar(var0), query.getProjectVars().get(0));
+		assertEquals( Var.alloc( varName ), query.getProjectVars().get(0));
 	}
 
 	@Test
@@ -615,7 +619,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 				fooTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
 		tests.clear();
-		assertEquals(GUIDObject.asVar(arg), query.getProjectVars().get(0));
+		assertEquals(Var.alloc( argName ), query.getProjectVars().get(0));
 	}
 
 	@Test
@@ -634,7 +638,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 				fooTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
 		tests.clear();
-		assertEquals( GUIDObject.asVar(var0), query.getProjectVars().get(0));
+		assertEquals( Var.alloc( varName ), query.getProjectVars().get(0));
 	}
 
 	@Test
@@ -649,7 +653,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 				fooTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
 		tests.clear();
-		assertEquals(GUIDObject.asVar(arg), query.getProjectVars().get(0));
+		assertEquals(Var.alloc( argName ), query.getProjectVars().get(0));
 	}
 
 	@Test
@@ -665,7 +669,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 				fooTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
 		tests.clear();
-		assertEquals( GUIDObject.asVar(var0), query.getProjectVars().get(0));
+		assertEquals( Var.alloc( varName ), query.getProjectVars().get(0));
 	}
 
 	@Test
@@ -681,7 +685,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 				fooTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
 		tests.clear();
-		assertEquals(GUIDObject.asVar(arg), query.getProjectVars().get(0));
+		assertEquals(Var.alloc( argName ), query.getProjectVars().get(0));
 	}
 
 	@Test
@@ -700,7 +704,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 				fooTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
 		tests.clear();
-		assertEquals( GUIDObject.asVar(var0), query.getProjectVars().get(0));
+		assertEquals( Var.alloc( varName ), query.getProjectVars().get(0));
 	}
 
 	@Test
@@ -716,7 +720,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 				fooTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
 		tests.clear();	
-		assertEquals(GUIDObject.asVar(arg), query.getProjectVars().get(0));
+		assertEquals(Var.alloc( argName ), query.getProjectVars().get(0));
 	}
 
 	@Test
@@ -735,7 +739,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 				fooTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
 		tests.clear();
-		assertEquals( GUIDObject.asVar(var0), query.getProjectVars().get(0));
+		assertEquals( Var.alloc( varName ), query.getProjectVars().get(0));
 	}
 
 	@Test
@@ -750,7 +754,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 				fooTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
 		tests.clear();
-		assertEquals(GUIDObject.asVar(arg), query.getProjectVars().get(0));
+		assertEquals(Var.alloc( argName ), query.getProjectVars().get(0));
 	}
 
 	@Test
@@ -769,7 +773,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 				fooTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
 		tests.clear();
-		assertEquals( GUIDObject.asVar(var0), query.getProjectVars().get(0));
+		assertEquals( Var.alloc( varName ), query.getProjectVars().get(0));
 	}
 
 	@Test
@@ -784,7 +788,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 				fooTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
 		tests.clear();
-		assertEquals(GUIDObject.asVar(arg), query.getProjectVars().get(0));
+		assertEquals(Var.alloc( argName ), query.getProjectVars().get(0));
 	}
 
 	@Test
@@ -803,7 +807,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 				fooTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
 		tests.clear();
-		assertEquals( GUIDObject.asVar(var0), query.getProjectVars().get(0));
+		assertEquals( Var.alloc( varName ), query.getProjectVars().get(0));
 	}
 
 	@Test
@@ -818,7 +822,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 				fooTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
 		tests.clear();
-		assertEquals(GUIDObject.asVar(arg), query.getProjectVars().get(0));
+		assertEquals(Var.alloc( argName ), query.getProjectVars().get(0));
 	}
 
 	@Test
@@ -837,7 +841,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 				fooTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
 		tests.clear();
-		assertEquals( GUIDObject.asVar(var0), query.getProjectVars().get(0));
+		assertEquals( Var.alloc( varName ), query.getProjectVars().get(0));
 	}
 
 	@Test
@@ -852,7 +856,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 				fooTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
 		tests.clear();
-		assertEquals(GUIDObject.asVar(arg), query.getProjectVars().get(0));
+		assertEquals(Var.alloc( argName ), query.getProjectVars().get(0));
 	}
 
 	@Test
@@ -871,7 +875,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 				fooTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
 		tests.clear();
-		assertEquals(GUIDObject.asVar(var0), query.getProjectVars().get(0));
+		assertEquals(Var.alloc( varName ), query.getProjectVars().get(0));
 	}
 
 	@Test
@@ -886,7 +890,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 				fooTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
 		tests.clear();
-		assertEquals(GUIDObject.asVar(arg), query.getProjectVars().get(0));
+		assertEquals(Var.alloc( argName ), query.getProjectVars().get(0));
 	}
 
 	
@@ -1548,7 +1552,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		verifyBinds(results.get(ElementBind.class), vars);
 		tests.clear();
 		assertEquals(1, query.getProjectVars().size());
-		assertEquals( GUIDObject.asVar(var0), query.getProjectVars().get(0));
+		assertEquals( Var.alloc( varName ), query.getProjectVars().get(0));
 	}
 	
 	@Test
@@ -1564,7 +1568,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		verifyBinds(results.get(ElementBind.class), vars);
 		tests.clear();
 		assertEquals(1, query.getProjectVars().size());
-		assertEquals(GUIDObject.asVar(arg), query.getProjectVars().get(0));
+		assertEquals(Var.alloc( argName ), query.getProjectVars().get(0));
 	}
 
 	// query = getQuery("SELECT IntCol > 5  FROM foo");
@@ -1690,7 +1694,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		verifyBinds(results.get(ElementBind.class), vars);
 		tests.clear();
 		assertEquals(1, query.getProjectVars().size());
-		assertEquals( GUIDObject.asVar(var0), query.getProjectVars().get(0));
+		assertEquals( Var.alloc( varName ), query.getProjectVars().get(0));
 	}
 
 	@Test
@@ -1706,7 +1710,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		verifyBinds(results.get(ElementBind.class), vars);
 		tests.clear();
 		assertEquals(1, query.getProjectVars().size());
-		assertEquals(GUIDObject.asVar(arg), query.getProjectVars().get(0));
+		assertEquals(Var.alloc( argName ), query.getProjectVars().get(0));
 	}
 
 	// query = getQuery("SELECT IntCol > 2.3 FROM foo");
@@ -1942,7 +1946,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		verifyBinds(results.get(ElementBind.class), vars);
 		tests.clear();
 		assertEquals(1, query.getProjectVars().size());
-		assertEquals( GUIDObject.asVar(var0), query.getProjectVars().get(0));
+		assertEquals( Var.alloc( varName ), query.getProjectVars().get(0));
 	}
 
 	@Test
@@ -1958,7 +1962,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		verifyBinds(results.get(ElementBind.class), vars);
 		tests.clear();
 		assertEquals(1, query.getProjectVars().size());
-		assertEquals(GUIDObject.asVar(arg), query.getProjectVars().get(0));
+		assertEquals(Var.alloc( argName ), query.getProjectVars().get(0));
 	}
 
 	// query = getQuery("SELECT IntCol <> 5 FROM foo");
@@ -2079,7 +2083,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		verifyBinds(results.get(ElementBind.class), vars);
 		tests.clear();
 		assertEquals(1, query.getProjectVars().size());
-		assertEquals( GUIDObject.asVar(var0), query.getProjectVars().get(0));
+		assertEquals( Var.alloc( varName ), query.getProjectVars().get(0));
 	}
 	
 	@Test
@@ -2095,7 +2099,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		verifyBinds(results.get(ElementBind.class), vars);
 		tests.clear();
 		assertEquals(1, query.getProjectVars().size());
-		assertEquals(GUIDObject.asVar(arg), query.getProjectVars().get(0));
+		assertEquals(Var.alloc( argName ), query.getProjectVars().get(0));
 	}
 
 	// query =
@@ -2136,8 +2140,8 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 	public void testMultipleAnonymousFunctionSelect() throws Exception {
 
 		final List<String> colNames = new ArrayList<String>();
-		colNames.add( GUIDObject.asVarName(var0));
-		colNames.add( GUIDObject.asVarName(virtualTableName.getColumnName("var1")));
+		colNames.add( varName );
+		colNames.add( virtualTableName.getColumnName("var1").getSPARQLName( NameSegments.COLUMN));
 	
 
 		query = getQuery("SELECT Catalog(), Version() FROM foo");
@@ -2172,7 +2176,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
-		verifyVars(query.getProjectVars(), new GUIDObject[] { fooTableName.getColumnName( "StringCol"),
+		verifyVars(query.getProjectVars(), new ItemName[] { fooTableName.getColumnName( "StringCol"),
 				fooTableName.getColumnName( "NullableStringCol" ),
 				fooTableName.getColumnName( "IntCol" ),
 				fooTableName.getColumnName( "NullableIntCol" ),
@@ -2198,7 +2202,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
-		verifyVars(query.getProjectVars(), new GUIDObject[] { fooTableName.getColumnName( "StringCol"),
+		verifyVars(query.getProjectVars(), new ItemName[] { fooTableName.getColumnName( "StringCol"),
 				fooTableName.getColumnName( "NullableStringCol" ),
 				fooTableName.getColumnName( "IntCol" ),
 				fooTableName.getColumnName( "NullableIntCol" ),
@@ -2218,7 +2222,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
-		verifyVars(query.getProjectVars(), new GUIDObject[] { fooTableName.getColumnName( "StringCol"),
+		verifyVars(query.getProjectVars(), new ItemName[] { fooTableName.getColumnName( "StringCol"),
 				fooTableName.getColumnName( "NullableStringCol" ),
 				fooTableName.getColumnName( "IntCol" ),
 				fooTableName.getColumnName( "NullableIntCol" ),
@@ -2238,7 +2242,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				barTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
-		verifyVars(query.getProjectVars(), new GUIDObject[] { barTableName.getColumnName( "StringCol"),
+		verifyVars(query.getProjectVars(), new ItemName[] { barTableName.getColumnName( "StringCol"),
 				barTableName.getColumnName( "NullableStringCol" ),
 				barTableName.getColumnName( "IntCol" ),
 				barTableName.getColumnName( "NullableIntCol" ),
@@ -2265,7 +2269,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				barTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
-		verifyVars(query.getProjectVars(), new GUIDObject[] { barTableName.getColumnName( "StringCol"),
+		verifyVars(query.getProjectVars(), new ItemName[] { barTableName.getColumnName( "StringCol"),
 				barTableName.getColumnName( "NullableStringCol" ),
 				barTableName.getColumnName( "IntCol" ),
 				barTableName.getColumnName( "NullableIntCol" ),
@@ -2286,7 +2290,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				barTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
-		verifyVars(query.getProjectVars(), new GUIDObject[] { barTableName.getColumnName( "StringCol"),
+		verifyVars(query.getProjectVars(), new ItemName[] { barTableName.getColumnName( "StringCol"),
 				barTableName.getColumnName( "NullableStringCol" ),
 				barTableName.getColumnName( "IntCol" ),
 				barTableName.getColumnName( "NullableIntCol" ),
@@ -2305,7 +2309,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
-		verifyVars(query.getProjectVars(), new GUIDObject[] {
+		verifyVars(query.getProjectVars(), new ItemName[] {
 			RQD_NAME
 		});
 		tests.clear();
@@ -2323,7 +2327,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 				fooTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
 		ColumnName argName = fooTableName.getColumnName("arg");
-		verifyVars(query.getProjectVars(), new GUIDObject[] {
+		verifyVars(query.getProjectVars(), new ItemName[] {
 			argName
 		});
 		tests.clear();
@@ -2342,7 +2346,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
-		verifyVars(query.getProjectVars(), new GUIDObject[] {
+		verifyVars(query.getProjectVars(), new ItemName[] {
 				RQD_NAME
 			});
 		tests.clear();
@@ -2363,7 +2367,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 				fooTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
 		ColumnName argName = fooTableName.getColumnName("arg");
-		verifyVars(query.getProjectVars(), new GUIDObject[] {
+		verifyVars(query.getProjectVars(), new ItemName[] {
 			argName
 		});
 		tests.clear();
@@ -2382,7 +2386,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
-		verifyVars(query.getProjectVars(), new GUIDObject[] {
+		verifyVars(query.getProjectVars(), new ItemName[] {
 				RQD_NAME
 			});
 		tests.clear();
@@ -2402,7 +2406,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 				fooTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
 		ColumnName argName = fooTableName.getColumnName("arg");
-		verifyVars(query.getProjectVars(), new GUIDObject[] {
+		verifyVars(query.getProjectVars(), new ItemName[] {
 			argName
 		});
 		tests.clear();
@@ -2421,7 +2425,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 				barTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
 		ColumnName colName = new ColumnName(CATALOG_NAME, SCHEMA_NAME, "bar", RQD);
-		verifyVars(query.getProjectVars(), new GUIDObject[] {
+		verifyVars(query.getProjectVars(), new ItemName[] {
 			colName
 		});
 		tests.clear();
@@ -2439,7 +2443,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 				barTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
 		ColumnName colName = new ColumnName(CATALOG_NAME, SCHEMA_NAME, "bar", "arg");
-		verifyVars(query.getProjectVars(), new GUIDObject[] {
+		verifyVars(query.getProjectVars(), new ItemName[] {
 			colName
 		});
 		tests.clear();
@@ -2459,7 +2463,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 				barTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
 		ColumnName colName = new ColumnName(CATALOG_NAME, SCHEMA_NAME, "bar", RQD);
-		verifyVars(query.getProjectVars(), new GUIDObject[] {
+		verifyVars(query.getProjectVars(), new ItemName[] {
 			colName
 		});
 		tests.clear();
@@ -2480,7 +2484,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 				barTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
 		ColumnName colName = new ColumnName(CATALOG_NAME, SCHEMA_NAME, "bar", "arg");
-		verifyVars(query.getProjectVars(), new GUIDObject[] {
+		verifyVars(query.getProjectVars(), new ItemName[] {
 			colName
 		});
 		tests.clear();
@@ -2501,7 +2505,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 				barTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
 		ColumnName colName = new ColumnName(CATALOG_NAME, SCHEMA_NAME, "bar", RQD);
-		verifyVars(query.getProjectVars(), new GUIDObject[] {
+		verifyVars(query.getProjectVars(), new ItemName[] {
 			colName
 		});
 		tests.clear();
@@ -2522,7 +2526,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 				barTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
 		ColumnName colName = new ColumnName(CATALOG_NAME, SCHEMA_NAME, "bar", "arg");
-		verifyVars(query.getProjectVars(), new GUIDObject[] {
+		verifyVars(query.getProjectVars(), new ItemName[] {
 			colName
 		});
 		tests.clear();
@@ -2540,7 +2544,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
-		verifyVars(query.getProjectVars(), new GUIDObject[] {
+		verifyVars(query.getProjectVars(), new ItemName[] {
 			OPT_NAME
 		});
 		tests.clear();
@@ -2559,7 +2563,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 				fooTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
 		ColumnName colName = fooTableName.getColumnName("arg");
-		verifyVars(query.getProjectVars(), new GUIDObject[] {
+		verifyVars(query.getProjectVars(), new ItemName[] {
 			colName
 		});
 		tests.clear();
@@ -2579,7 +2583,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
-		verifyVars(query.getProjectVars(), new GUIDObject[] {
+		verifyVars(query.getProjectVars(), new ItemName[] {
 			OPT_NAME
 		});
 		tests.clear();
@@ -2600,7 +2604,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 				fooTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
 		ColumnName colName = fooTableName.getColumnName("arg");
-		verifyVars(query.getProjectVars(), new GUIDObject[] {
+		verifyVars(query.getProjectVars(), new ItemName[] {
 			colName
 		});
 		tests.clear();
@@ -2620,7 +2624,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				fooTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
-		verifyVars(query.getProjectVars(), new GUIDObject[] {
+		verifyVars(query.getProjectVars(), new ItemName[] {
 			OPT_NAME
 		});
 		tests.clear();
@@ -2641,7 +2645,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 				fooTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
 		ColumnName colName = fooTableName.getColumnName("arg");
-		verifyVars(query.getProjectVars(), new GUIDObject[] {
+		verifyVars(query.getProjectVars(), new ItemName[] {
 			colName
 		});
 		tests.clear();
@@ -2659,7 +2663,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		tests.put(ElementOptional.class, 5);
 		tests.put(ElementPathBlock.class, 10);
 		results = validate(query, tests);
-		verifyVars(query.getProjectVars(), new GUIDObject[] {
+		verifyVars(query.getProjectVars(), new ItemName[] {
 				fooTableName.getColumnName("IntCol"), barTableName.getColumnName("BarIntCol")
 			});
 	}
@@ -3465,7 +3469,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				barTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
-		verifyVars(query.getProjectVars(), new GUIDObject[] {
+		verifyVars(query.getProjectVars(), new ItemName[] {
 			barTableName.getColumnName(OPT)
 		});
 		tests.clear();
@@ -3483,7 +3487,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				barTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
-		verifyVars(query.getProjectVars(), new GUIDObject[] {
+		verifyVars(query.getProjectVars(), new ItemName[] {
 				barTableName.getColumnName("arg")
 		});
 		tests.clear();
@@ -3503,7 +3507,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				barTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
-		verifyVars(query.getProjectVars(), new GUIDObject[] {
+		verifyVars(query.getProjectVars(), new ItemName[] {
 				barTableName.getColumnName(OPT)
 		});
 		tests.clear();
@@ -3523,7 +3527,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				barTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
-		verifyVars(query.getProjectVars(), new GUIDObject[] {
+		verifyVars(query.getProjectVars(), new ItemName[] {
 				barTableName.getColumnName("arg")
 		});
 		tests.clear();
@@ -3543,7 +3547,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				barTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
-		verifyVars(query.getProjectVars(), new GUIDObject[] {
+		verifyVars(query.getProjectVars(), new ItemName[] {
 				barTableName.getColumnName(OPT)
 		});
 		tests.clear();
@@ -3563,7 +3567,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 		vars = verifyTable(results.get(ElementPathBlock.class),
 				barTableName);
 		verifyBinds(results.get(ElementBind.class), vars);
-		verifyVars(query.getProjectVars(), new GUIDObject[] {
+		verifyVars(query.getProjectVars(), new ItemName[] {
 				barTableName.getColumnName("arg")
 		});
 		tests.clear();
@@ -3573,7 +3577,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 	// @Test
 	// public void testInnerJoin() throws Exception {
 	// final String fmt = "%s" + NameUtils.SPARQL_DOT + "%s";
-	// final GUIDObject[] colNames = {
+	// final ItemName[] colNames = {
 	// String.format(fmt, "foo", "StringCol"),
 	// String.format(fmt, "foo", "NullableStringCol"),
 	// String.format(fmt, "foo", "IntCol"), "NullableIntCol",
@@ -3629,7 +3633,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 	//
 	// @Test
 	// public void testNoColParse() throws Exception {
-	// final GUIDObject[] colNames = {
+	// final ItemName[] colNames = {
 	// "StringCol", "NullableStringCol", "IntCol", "NullableIntCol"
 	// };
 	// final Query q = getQuery( "SELECT * FROM foo");
@@ -3765,7 +3769,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 	//
 	// @Test
 	// public void testTwoTableJoin() throws Exception {
-	// final GUIDObject[] columnNames = {
+	// final ItemName[] columnNames = {
 	// "foo" + NameUtils.SPARQL_DOT + "IntCol",
 	// "foo" + NameUtils.SPARQL_DOT + "StringCol",
 	// "foo" + NameUtils.SPARQL_DOT + "NullableStringCol",
@@ -3865,7 +3869,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 	// @Test
 	// public void testFullRetrieval() throws ClassNotFoundException,
 	// SQLException {
-	// final GUIDObject[][] results = {
+	// final ItemName[][] results = {
 	// { "[StringCol]=FooString",
 	// "[NullableStringCol]=FooNullableFooString",
 	// "[NullableIntCol]=6", "[IntCol]=5",
@@ -3933,7 +3937,7 @@ public class SparqlParserTest extends AbstractSparqlParserTest {
 	// */
 	// @Test
 	// public void testSelectAllTableAlias() throws Exception {
-	// final GUIDObject[][] results = {
+	// final ItemName[][] results = {
 	// { "[StringCol]=FooString",
 	// "[NullableStringCol]=FooNullableFooString",
 	// "[NullableIntCol]=6", "[IntCol]=5",

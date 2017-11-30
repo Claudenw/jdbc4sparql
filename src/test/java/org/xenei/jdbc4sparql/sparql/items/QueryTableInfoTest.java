@@ -15,11 +15,11 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.xenei.jdbc4sparql.iface.Column;
+import org.xenei.jdbc4sparql.iface.NameSegments;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.name.ColumnName;
 import org.xenei.jdbc4sparql.iface.name.GUIDObject;
 import org.xenei.jdbc4sparql.iface.name.ItemName;
-import org.xenei.jdbc4sparql.iface.name.NameSegments;
 import org.xenei.jdbc4sparql.iface.name.TableName;
 import org.xenei.jdbc4sparql.impl.NameUtils;
 import org.xenei.jdbc4sparql.sparql.QueryInfoSet;
@@ -51,27 +51,27 @@ public class QueryTableInfoTest {
 
 	@Test
 	public void testSegments() {
-		assertEquals("C:false S:true T:true C:false", tableInfo.getSegments()
+		assertEquals("FTTF", tableInfo.getSegments()
 				.toString());
 		assertEquals("schema.table", tableInfo.getName().getDBName());
 		tableInfo.setSegments(NameSegments.CATALOG);
-		assertEquals("C:true S:false T:true C:false", tableInfo.getSegments()
+		assertEquals("TFTF", tableInfo.getSegments()
 				.toString());
 		assertEquals("catalog.schema.table", tableInfo.getName().getDBName());
 		tableInfo.setSegments(NameSegments.SCHEMA);
-		assertEquals("C:false S:true T:true C:false", tableInfo.getSegments()
+		assertEquals("FTTF", tableInfo.getSegments()
 				.toString());
 		assertEquals("schema.table", tableInfo.getName().getDBName());
 		tableInfo.setSegments(NameSegments.TABLE);
-		assertEquals("C:false S:true T:true C:false", tableInfo.getSegments()
+		assertEquals("FTTF", tableInfo.getSegments()
 				.toString());
 		assertEquals("schema.table", tableInfo.getName().getDBName());
 		tableInfo.setSegments(NameSegments.FFTT);
-		assertEquals("C:false S:false T:true C:false", tableInfo.getSegments()
+		assertEquals("FFTF", tableInfo.getSegments()
 				.toString());
 		assertEquals("table", tableInfo.getName().getDBName());
 		tableInfo.setSegments(NameSegments.TTTT);
-		assertEquals("C:true S:true T:true C:false", tableInfo.getSegments()
+		assertEquals("TTTF", tableInfo.getSegments()
 				.toString());
 		assertEquals("catalog.schema.table", tableInfo.getName().getDBName());
 

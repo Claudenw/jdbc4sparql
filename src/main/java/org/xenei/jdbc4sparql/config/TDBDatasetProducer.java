@@ -23,222 +23,105 @@ import org.xenei.jdbc4sparql.impl.AbstractDatasetProducer;
 import org.xenei.jena.entities.EntityManager;
 import org.xenei.jena.entities.impl.EntityManagerImpl;
 import org.apache.jena.query.Dataset;
+import org.apache.jena.rdfconnection.RDFConnection;
+import org.apache.jena.rdfconnection.RDFConnectionFactory;
 import org.apache.jena.tdb.TDBFactory;
 import org.apache.jena.tdb.transaction.DatasetGraphTransaction;
 
 public class TDBDatasetProducer extends AbstractDatasetProducer {
-	private final Lock metaDataLock = new ReentrantLock();
-	private boolean metaDataLoaded = false;
-	private final File metaDir;
+	
+	private final Config cfg;
 
-	private final Lock localDataLock = new ReentrantLock();
-	private boolean localDataLoaded = false;
-	private final File localDir;
+	private static class Config extends AbstractDatasetProducer.Configuration {
+		private final Logger log = LoggerFactory
+				.getLogger(Config.class);
+		public final File metaDir = new File(System.getProperty("java.io.tmpdir"), UUID
+				.randomUUID().toString());
+		public File localDir = new File(System.getProperty("java.io.tmpdir"), UUID
+				.randomUUID().toString());
+		
+		
+		Config(Properties properties)
+		{
+			metaDataset = TDBFactory.createDataset(metaDir.getAbsolutePath());				
+			localDataset = TDBFactory.createDataset(localDir.getAbsolutePath());		
+		}
+		
+		Config(Properties properties, ZipInputStream zis) throws FileExistsException,
+		IOException
+		{
+			readFiles(zis);
+			metaDataset = TDBFactory.createDataset(metaDir.getAbsolutePath());				
+			localDataset = TDBFactory.createDataset(localDir.getAbsolutePath());	
+		}
+		
+		private void readFiles(final ZipInputStream zis) throws FileExistsException,
+				IOException {
+			localDir.mkdirs();
+			metaDir.mkdirs();
+			ZipEntry e = zis.getNextEntry();
+			File dir = null;
+			String prefix = null;
+			while (e != null) {
+				String name = e.getName();
 
-	private final Logger log = LoggerFactory
-			.getLogger(TDBDatasetProducer.class);
+				if (name.startsWith( DatasetProducer.META_PREFIX))
+				{
+					prefix = DatasetProducer.META_PREFIX;
+					dir = metaDir;
+				} else if (name.startsWith( DatasetProducer.LOCAL_PREFIX))
+				{
+					prefix = DatasetProducer.LOCAL_PREFIX;
+					dir = localDir;
+				} else {
+					prefix = null;
+					dir = null;
+				}
+				if (prefix == null) {
+					log.warn("skipping " + e.getName() + " files in configuration");
+				}
+				else {
+					final int prefixLen = prefix.length() + 1;
+					File f = null;
+					f = new File(dir, name.substring(prefixLen));
 
+					if (!f.createNewFile()) {
+						throw new FileExistsException(f.getName());
+					}
+					final FileOutputStream fos = new FileOutputStream(f);
+					try {
+						IOUtils.copy(zis, fos);
+					} finally {
+						IOUtils.closeQuietly(fos);
+						zis.closeEntry();
+					}
+				}
+				e = zis.getNextEntry();
+			}
+		}
+
+
+	}
+	
+	public TDBDatasetProducer(Config cfg) {
+		super( cfg );
+		this.cfg = cfg;
+	}
+		
 	public TDBDatasetProducer(final Properties properties) {
-		super(properties, null, null);
-		metaDir = new File(System.getProperty("java.io.tmpdir"), UUID
-				.randomUUID().toString());
-		this.metaMgr = new EntityManagerImpl( TDBFactory.createDataset(metaDir.getAbsolutePath()) );		
-		metaDataLoaded = true;
-		localDir = new File(System.getProperty("java.io.tmpdir"), UUID
-				.randomUUID().toString());
-		this.localMgr = new EntityManagerImpl( TDBFactory.createDataset(localDir.getAbsolutePath()));
-		localDataLoaded = true;
+		this(new Config( properties ));		
 	}
 
 	public TDBDatasetProducer(final Properties properties,
 			final ZipInputStream zis) throws IOException {
-		super(properties, null, null);
-		metaDir = new File(System.getProperty("java.io.tmpdir"), UUID
-				.randomUUID().toString());
-		localDir = new File(System.getProperty("java.io.tmpdir"), UUID
-				.randomUUID().toString());
-		load(zis);
-		// zis.close(); closed in another thread
+		this(new Config( properties, zis ));		
 	}
 
 	@Override
 	public void close() {
 		super.close();
-		FileUtils.deleteQuietly(metaDir);
-		FileUtils.deleteQuietly(localDir);
+		FileUtils.deleteQuietly(cfg.metaDir);
+		FileUtils.deleteQuietly(cfg.localDir);
 	}
 
-	@Override
-	public EntityManager getLocalEntityManager() {
-		if (!localDataLoaded) {
-			localDataLock.lock();
-			try {
-				// if synchronized was captured then data is loaded
-				if (!localDataLoaded) {
-					throw new IllegalStateException(
-							"Local data should be loaded");
-				}
-			} finally {
-				localDataLock.unlock();
-			}
-		}
-		return super.getLocalEntityManager();
-	}
-
-	
-	@Override
-	public EntityManager getMetaDataEntityManager() {
-		if (!metaDataLoaded) {
-			metaDataLock.lock();
-			try {
-				// if lock was captured then data is loaded
-				if (!metaDataLoaded) {
-					throw new IllegalStateException("Metadata should be loaded");
-				}
-			} finally {
-				metaDataLock.unlock();
-
-			}
-		}
-		return super.getMetaDataEntityManager();
-	}
-
-	@Override
-	public void load(final ZipInputStream zis) throws IOException {
-		final CountDownLatch latch = new CountDownLatch(1);
-		new Thread(null, new Runnable() {
-
-			@Override
-			public void run() {
-				try {
-					threadLoad(latch, zis);
-				} finally {
-					IOUtils.closeQuietly(zis);
-				}
-
-			}
-		}, "loadingThread").start();
-		// allow other thread to get started
-
-		try {
-			latch.await();
-		} catch (final InterruptedException e) {
-			log.info("Load pause interrupted", e);
-		}
-	}
-
-	private ZipEntry readFiles(final ZipInputStream zis, ZipEntry e,
-			final String prefix, final File dir) throws FileExistsException,
-			IOException {
-		if ((e == null) || !e.getName().startsWith(prefix)) {
-			log.warn("No " + prefix + " files in configuration");
-		}
-		else {
-			final int prefixLen = prefix.length() + 1;
-			String name = null;
-			File f = null;
-			while ((e != null) && e.getName().startsWith(prefix)) {
-				name = e.getName();
-				f = new File(dir, name.substring(prefixLen));
-
-				if (!f.createNewFile()) {
-					throw new FileExistsException(f.getName());
-				}
-				final FileOutputStream fos = new FileOutputStream(f);
-				try {
-					IOUtils.copy(zis, fos);
-				} finally {
-					IOUtils.closeQuietly(fos);
-					zis.closeEntry();
-				}
-				e = zis.getNextEntry();
-			}
-		}
-		return e;
-	}
-
-	private void saveDir(final ZipOutputStream out, final File dir,
-			final String pth) throws IOException {
-		for (final File f : dir.listFiles()) {
-			final String nm = String.format("%s/%s", pth, f.getName());
-			if (f.isDirectory()) {
-				saveDir(out, f, nm);
-			}
-			else {
-				final ZipEntry e = new ZipEntry(nm);
-				out.putNextEntry(e);
-				try {
-					final FileInputStream fis = new FileInputStream(f);
-					try {
-						IOUtils.copy(fis, out);
-					} finally {
-						IOUtils.closeQuietly(fis);
-					}
-				} finally {
-					out.closeEntry();
-				}
-			}
-		}
-	}
-
-//	@Override
-//	protected void saveLocal(final ZipOutputStream out) throws IOException {
-//		localDataLock.lock();
-//		try {
-//			localDataLoaded = false;
-//			
-//			((DatasetGraphTransaction) (localData.asDatasetGraph())).sync();
-//			saveDir(out, localDir, DatasetProducer.LOCAL_PREFIX);
-//			localDataLoaded = true;
-//		} finally {
-//			localDataLock.unlock();
-//		}
-//	}
-//
-//	@Override
-//	protected void saveMeta(final ZipOutputStream out) throws IOException {
-//		metaDataLock.lock();
-//		try {
-//			metaDataLoaded = false;
-//			((DatasetGraphTransaction) (metaData.asDatasetGraph())).sync();
-//			saveDir(out, metaDir, DatasetProducer.META_PREFIX);
-//			metaDataLoaded = true;
-//		} finally {
-//			metaDataLock.unlock();
-//		}
-//	}
-
-	private void threadLoad(final CountDownLatch latch, final ZipInputStream zis) {
-
-		localDataLock.lock();
-		try {
-			ZipEntry e = null;
-			metaDataLock.lock();
-			try {
-				latch.countDown(); // release the calling thread
-				metaDir.mkdirs();
-				e = readFiles(zis, zis.getNextEntry(),
-						DatasetProducer.META_PREFIX, metaDir);
-				this.metaMgr = new EntityManagerImpl( TDBFactory.createDataset(metaDir.getAbsolutePath()) );						
-				metaDataLoaded = true;
-			} catch (final Exception e1) { // must catch here as when we unlock
-				// app may stop on failure.
-				log.error("Error reading meta data stream", e1);
-				return;
-			} finally {
-				metaDataLock.unlock();
-			}
-			localDir.mkdirs();
-			e = readFiles(zis, e, DatasetProducer.LOCAL_PREFIX, localDir);
-			this.localMgr = new EntityManagerImpl( TDBFactory.createDataset(localDir.getAbsolutePath()));
-			localDataLoaded = true;
-		} catch (final Exception e1) { // must catch here as when we unlock app
-			// may stop on failure.
-			log.error("Error reading local data stream", e1);
-			return;
-		} finally {
-			localDataLock.unlock();
-		}
-
-	}
 }

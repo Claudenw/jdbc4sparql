@@ -236,8 +236,9 @@ ResourceWrapper {
 	@Override
 	public SchemaName getName() {
 		if (schemaName == null) {
+			String localName = getLocalSchemaName();
 			schemaName = new SchemaName(getCatalog().getShortName(),
-					getLocalSchemaName());
+					localName );
 		}
 		return schemaName;
 	}

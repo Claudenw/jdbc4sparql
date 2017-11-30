@@ -27,6 +27,7 @@ import java.util.TreeSet;
 
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.Key;
+import org.xenei.jdbc4sparql.iface.NameSegments;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.name.TableName;
 
@@ -183,6 +184,11 @@ public class DataTable extends AbstractWrappedTable {
 
 	public boolean isEmpty() {
 		return data.isEmpty();
+	}
+
+	@Override
+	public NameSegments getColumnSegments() {
+		return getTable().getColumnSegments();
 	}
 
 }

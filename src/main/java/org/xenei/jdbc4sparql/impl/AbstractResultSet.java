@@ -298,7 +298,7 @@ public abstract class AbstractResultSet implements ResultSet {
 
 	private int getColumnIndex(final String columnLabel) throws SQLException {
 		ColumnName cn = new ColumnName( VirtualCatalog.NAME, VirtualSchema.NAME, VirtualTable.NAME, columnLabel);
-		cn = ItemNameMatcher.get( columnNameIdx.keySet(), cn, cn.getUsedSegments());		
+		cn = ItemNameMatcher.get( columnNameIdx.keySet(), cn, table.getColumnSegments());		
 		final int i = columnNameIdx.get(cn);// table.getColumnIndex(columnLabel);
 		if (i < 0) {
 			throw new SQLException(String.format(

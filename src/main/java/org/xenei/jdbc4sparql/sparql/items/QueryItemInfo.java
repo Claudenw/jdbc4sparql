@@ -1,9 +1,8 @@
 package org.xenei.jdbc4sparql.sparql.items;
 
+import org.xenei.jdbc4sparql.iface.NameSegments;
 import org.xenei.jdbc4sparql.iface.name.GUIDObject;
 import org.xenei.jdbc4sparql.iface.name.ItemName;
-import org.xenei.jdbc4sparql.iface.name.NameSegments;
-
 import org.apache.jena.sparql.core.Var;
 
 /**

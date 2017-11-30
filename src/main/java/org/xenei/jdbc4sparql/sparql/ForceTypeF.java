@@ -2,8 +2,8 @@ package org.xenei.jdbc4sparql.sparql;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xenei.jdbc4sparql.iface.NameSegments;
 import org.xenei.jdbc4sparql.iface.TypeConverter;
-import org.xenei.jdbc4sparql.iface.name.NameSegments;
 import org.xenei.jdbc4sparql.sparql.items.QueryColumnInfo;
 
 import java.util.List;

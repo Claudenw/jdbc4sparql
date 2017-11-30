@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.NameFilter;
+import org.xenei.jdbc4sparql.iface.NameSegments;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.name.TableName;
@@ -370,6 +371,11 @@ ResourceWrapper {
 			this.type = type;
 			return this;
 		}
+
+		@Override
+		public NameSegments getColumnSegments() {
+			return NameSegments.FFFT;
+		}
 	}
 
 	private static Logger LOG = LoggerFactory.getLogger(RdfTable.class);
@@ -625,5 +631,10 @@ ResourceWrapper {
 	@Override
 	public String toString() {
 		return getName().toString();
+	}
+	
+	@Override
+	public NameSegments getColumnSegments() {
+		return NameSegments.FFFT;
 	}
 }

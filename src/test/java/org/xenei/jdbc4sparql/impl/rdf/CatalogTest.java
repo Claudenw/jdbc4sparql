@@ -46,7 +46,6 @@ public class CatalogTest {
 		dataConnection = RDFConnectionFactory.connect( dataset );
 		catalog = new RdfCatalog.Builder().setName("testCatalog")
 				.setLocalConnection(dataConnection).build( entityManager );
-		System.out.println("GHellop");
 	}
 
 	@After

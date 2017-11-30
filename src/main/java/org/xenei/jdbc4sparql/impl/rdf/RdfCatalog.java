@@ -427,8 +427,13 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 	
 	public Resource getResource( String uri )
 	{		
-		ConstructBuilder sb = new ConstructBuilder().addConstruct( "?s", "?p", "?o")
-				.addGraph( graphName, new ConstructBuilder().addWhere( "?s", "?p", "?o") );
+		Node n = NodeFactory.createURI(uri);
+		ConstructBuilder sb = new ConstructBuilder().addConstruct( n, "?p", "?o");
+		if (graphName != null) {
+				sb.addGraph( graphName, new ConstructBuilder().addWhere( n, "?p", "?o") );
+		} else {
+			sb.addWhere( n, "?p", "?o");
+		}
 		Model m = getLocalConnection().queryConstruct(sb.build());
 		return m.createResource(uri);
 	}

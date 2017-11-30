@@ -30,12 +30,12 @@ import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.ColumnDef;
 import org.xenei.jdbc4sparql.iface.Key;
 import org.xenei.jdbc4sparql.iface.KeySegment;
+import org.xenei.jdbc4sparql.iface.NameSegments;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.name.CatalogName;
 import org.xenei.jdbc4sparql.iface.name.ColumnName;
 import org.xenei.jdbc4sparql.iface.name.GUIDObject;
-import org.xenei.jdbc4sparql.iface.name.NameSegments;
 import org.xenei.jdbc4sparql.iface.name.SchemaName;
 import org.xenei.jdbc4sparql.iface.name.TableName;
 import org.xenei.jdbc4sparql.impl.NameUtils;
@@ -431,7 +431,7 @@ public class SparqlQueryBuilderTest {
 		query.getQueryPattern().visit(extractor);
 		final List<Element> lst = extractor.getExtracted();
 		assertEquals(1, lst.size());
-		assertEquals(GUIDObject.asVarName(alias), ((ElementBind) lst.get(0)).getVar().getName());
+		assertEquals(alias.getSPARQLName(NameSegments.COLUMN), ((ElementBind) lst.get(0)).getVar().getName());
 	}
 
 	@Test
@@ -820,23 +820,23 @@ public class SparqlQueryBuilderTest {
 	}
 
 	@Test
-	public void testGetSegments() {
-		NameSegments s = builder.getSegments();
+	public void testGetColumnSegments() {
+		NameSegments s = builder.getColumnSegments();
 		assertNotNull(s);
 		assertEquals(NameSegments.ALL, s);
 
 		builder.addTable(table, tName, false);
-		s = builder.getSegments();
+		s = builder.getColumnSegments();
 		assertNotNull(s);
 		assertEquals(NameSegments.ALL, s);
 
 		builder.addColumnToQuery(colName, false);
-		s = builder.getSegments();
+		s = builder.getColumnSegments();
 		assertNotNull(s);
 		assertEquals(NameSegments.ALL, s);
 
 		builder.setSegmentCount();
-		s = builder.getSegments();
+		s = builder.getColumnSegments();
 		assertNotNull(s);
 		assertEquals(NameSegments.FFFT, s);
 

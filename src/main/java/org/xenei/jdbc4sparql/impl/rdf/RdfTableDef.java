@@ -21,6 +21,7 @@ import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFList;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.Statement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -224,6 +225,7 @@ ResourceWrapper {
 			final Resource resource = getResource();
 			final Property p = resource.getModel().createProperty(
 					ResourceBuilder.getFQName(getEntityManager(), RdfColumnDef.class));
+				
 			final List<RDFNode> resLst = resource.getRequiredProperty(p)
 					.getResource().as(RDFList.class).asJavaList();
 			for (final RDFNode n : resLst) {

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.xenei.jdbc4sparql.iface.Column;
+import org.xenei.jdbc4sparql.iface.NameSegments;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.TableDef;
@@ -110,6 +111,11 @@ public class VirtualTable extends AbstractTable {
 	@Override
 	public boolean hasQuerySegments() {
 		return false;
+	}
+
+	@Override
+	public NameSegments getColumnSegments() {
+		return NameSegments.FFFT;
 	}
 
 }

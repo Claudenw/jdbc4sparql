@@ -13,8 +13,8 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.xenei.jdbc4sparql.iface.NameSegments;
 import org.xenei.jdbc4sparql.iface.name.ItemName;
-import org.xenei.jdbc4sparql.iface.name.NameSegments;
 
 public class QueryItemCollectionTest {
 

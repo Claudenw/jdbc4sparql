@@ -1,4 +1,6 @@
-package org.xenei.jdbc4sparql.iface.name;
+package org.xenei.jdbc4sparql.iface;
+
+import org.xenei.jdbc4sparql.iface.name.FQName;
 
 /**
  * An immutable bitmap of name segments to be displayed.

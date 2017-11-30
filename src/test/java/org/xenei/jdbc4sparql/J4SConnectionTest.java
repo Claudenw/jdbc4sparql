@@ -35,7 +35,7 @@ public class J4SConnectionTest {
 		url = new J4SUrl("jdbc:j4s?catalog=local&type=turtle:"
 				+ fUrl.toExternalForm());
 		properties = new Properties();
-		properties.setProperty("DatasetProducer",
+		properties.setProperty(J4SPropertyNames.DATASET_PRODUCER,
 				"org.xenei.jdbc4sparql.config.MemDatasetProducer");
 	}
 
@@ -582,6 +582,7 @@ public class J4SConnectionTest {
 					e.getMessage());
 		}
 		connection.setCatalog(MetaCatalogBuilder.LOCAL_NAME);
+		
 		connection.setSchema(MetaCatalogBuilder.SCHEMA_NAME);
 		Assert.assertEquals(MetaCatalogBuilder.SCHEMA_NAME,
 				connection.getSchema());

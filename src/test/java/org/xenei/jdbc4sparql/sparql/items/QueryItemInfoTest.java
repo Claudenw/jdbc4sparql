@@ -8,9 +8,9 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.xenei.jdbc4sparql.iface.NameSegments;
 import org.xenei.jdbc4sparql.iface.name.GUIDObject;
 import org.xenei.jdbc4sparql.iface.name.ItemName;
-import org.xenei.jdbc4sparql.iface.name.NameSegments;
 import org.xenei.jdbc4sparql.impl.NameUtils;
 
 import org.apache.jena.sparql.core.Var;
@@ -42,24 +42,24 @@ public class QueryItemInfoTest {
 
 	@Test
 	public void testSegments() {
-		assertEquals("C:true S:true T:true C:true", itemInfo.getSegments()
+		assertEquals("TTTT", itemInfo.getSegments()
 				.toString());
 		assertEquals("catalog.schema.table.column", itemInfo.getName()
 				.getDBName());
 		itemInfo.setSegments(NameSegments.CATALOG);
-		assertEquals("C:true S:false T:false C:false", itemInfo.getSegments()
+		assertEquals("TFFF", itemInfo.getSegments()
 				.toString());
 		assertEquals("catalog", itemInfo.getName().getDBName());
 		itemInfo.setSegments(NameSegments.SCHEMA);
-		assertEquals("C:false S:true T:false C:false", itemInfo.getSegments()
+		assertEquals("FTFF", itemInfo.getSegments()
 				.toString());
 		assertEquals("schema", itemInfo.getName().getDBName());
 		itemInfo.setSegments(NameSegments.TABLE);
-		assertEquals("C:false S:true T:true C:false", itemInfo.getSegments()
+		assertEquals("FTTF", itemInfo.getSegments()
 				.toString());
 		assertEquals("schema.table", itemInfo.getName().getDBName());
 		itemInfo.setSegments(NameSegments.COLUMN);
-		assertEquals("C:false S:true T:true C:true", itemInfo.getSegments()
+		assertEquals("FTTT", itemInfo.getSegments()
 				.toString());
 		assertEquals("schema.table.column", itemInfo.getName().getDBName());
 	}

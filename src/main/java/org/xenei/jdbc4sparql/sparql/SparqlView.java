@@ -27,11 +27,11 @@ import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.ColumnDef;
 import org.xenei.jdbc4sparql.iface.NameFilter;
+import org.xenei.jdbc4sparql.iface.NameSegments;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.TableDef;
 import org.xenei.jdbc4sparql.iface.name.ColumnName;
-import org.xenei.jdbc4sparql.iface.name.NameSegments;
 import org.xenei.jdbc4sparql.iface.name.TableName;
 import org.xenei.jdbc4sparql.impl.AbstractTable;
 import org.xenei.jdbc4sparql.impl.NameUtils;
@@ -230,6 +230,11 @@ public class SparqlView extends AbstractTable {
 	@Override
 	public boolean hasQuerySegments() {
 		return false;
+	}
+
+	@Override
+	public NameSegments getColumnSegments() {
+		return builder.getColumnSegments();
 	}
 
 }

@@ -39,14 +39,13 @@ public class MetaCatalogValuesTests {
 	private SparqlParser parser;
 	private DatasetProducer dpProducer;
 	private RdfCatalog catalog;
-	private SelectBuilder innerSelectBuilder = new SelectBuilder().addPrefix("rdf","http://www.w3.org/1999/02/22-rdf-syntax-ns#")
+	private SelectBuilder selectBuilder = new SelectBuilder().addPrefix("rdf","http://www.w3.org/1999/02/22-rdf-syntax-ns#")
+			.addVar( "?tbl").addVar( "?colName")
 			.addWhere( "?tbl", RDF.type, "<http://org.xenei.jdbc4sparql/entity/Table>")
 			.addWhere( "?tbl", "<http://www.w3.org/2000/01/rdf-schema#label>", "?lbl")
 			.addWhere( "?tbl", "<http://org.xenei.jdbc4sparql/entity/Table#column>", "?list")
 			.addWhere( "?list", "rdf:rest*/rdf:first", "?column")
 			.addWhere( "?column", "<http://www.w3.org/2000/01/rdf-schema#label>", "?colName" );
-	private SelectBuilder selectBuilder = new SelectBuilder().addVar( "?tbl").addVar( "?colName")
-			.addGraph( "<http://org.xenei.jdbc4sparql/entity/Catalog/instance/NMETADATA>", innerSelectBuilder);
 
 
 	@Before
@@ -348,7 +347,7 @@ public class MetaCatalogValuesTests {
 		selectBuilder.setVar( "?lbl", tblName);
 		final Query query = selectBuilder.build();	
 		
-		final QueryExecution qexec = dpProducer.getMetaDataEntityManager().getConnection().query(query);
+		final QueryExecution qexec = dpProducer.getMetaDataEntityManager().execute(query);
 				
 		try {
 			final ResultSet results = qexec.execSelect();

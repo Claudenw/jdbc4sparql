@@ -135,11 +135,11 @@ public interface Table extends NamedObject<TableName> {
 	String getType();
 
 	/**
-	 * Return true if this column has querySegments. Most columns do, however,
-	 * some function columns do not.
 	 *
-	 * @return
+	 * @return true if this table has querySegments. Most tables do.
 	 */
 	public boolean hasQuerySegments();
+	
+	public NameSegments getColumnSegments();
 
 }

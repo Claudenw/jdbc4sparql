@@ -1,8 +1,8 @@
 package org.xenei.jdbc4sparql.sparql.items;
 
 
+import org.xenei.jdbc4sparql.iface.NameSegments;
 import org.xenei.jdbc4sparql.iface.name.ItemName;
-import org.xenei.jdbc4sparql.iface.name.NameSegments;
 
 public class DummyItemName extends ItemName {
 	
