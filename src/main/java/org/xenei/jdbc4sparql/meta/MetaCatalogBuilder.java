@@ -47,20 +47,20 @@ import org.apache.jena.vocabulary.RDFS;
  *
  */
 public class MetaCatalogBuilder {
-	public static Catalog getInstance(final DatasetProducer dsProducer) {
+	public static RdfCatalog getInstance(final DatasetProducer dsProducer) {
 		final EntityManager entityManager = dsProducer
 				.getMetaDataEntityManager(MetaCatalogBuilder.LOCAL_NAME);
 		final RdfCatalog cat = new RdfCatalog.Builder()
 		.setName(MetaCatalogBuilder.LOCAL_NAME)
 		.setLocalConnection(dsProducer.getMetaConnection())
-		.setGraphName( ResourceFactory.createResource(Quad.unionGraph.getURI()) )
+		.setGraphName( ResourceFactory.createResource(MetaCatalogBuilder.LOCAL_NAME) )
 		.build(entityManager);
 
 		final RdfSchema schema = new RdfSchema.Builder().setCatalog(cat)
 				.setName(MetaCatalogBuilder.SCHEMA_NAME).build(entityManager);
 		// populate the catalog
 		new MetaCatalogBuilder(schema, entityManager).build();
-
+		entityManager.sync();
 		return cat;
 	}
 
@@ -165,21 +165,21 @@ public class MetaCatalogBuilder {
 
 	private final ResourceBuilder resourceBuilder;
 
-	private MetaCatalogBuilder(final RdfSchema schema, final EntityManager model) {
+	private MetaCatalogBuilder(final RdfSchema schema, final EntityManager entityManager) {
 		this.schema = schema;
-		this.entityManager = model;
-		resourceBuilder = new ResourceBuilder(model);
+		this.entityManager = entityManager;
+		resourceBuilder = new ResourceBuilder(entityManager);
 		nonNullString = MetaCatalogBuilder.getNonNullStringBuilder().build(
-				model);
-		nullableString = MetaCatalogBuilder.getNullStringBuilder().build(model);
-		nonNullInt = MetaCatalogBuilder.getNonNullIntBuilder().build(model);
-		nullableInt = MetaCatalogBuilder.getNullIntBuilder().build(model);
-		nonNullShort = MetaCatalogBuilder.getNonNullShortBuilder().build(model);
-		nullableShort = MetaCatalogBuilder.getNullShortBuilder().build(model);
+				entityManager);
+		nullableString = MetaCatalogBuilder.getNullStringBuilder().build(entityManager);
+		nonNullInt = MetaCatalogBuilder.getNonNullIntBuilder().build(entityManager);
+		nullableInt = MetaCatalogBuilder.getNullIntBuilder().build(entityManager);
+		nonNullShort = MetaCatalogBuilder.getNonNullShortBuilder().build(entityManager);
+		nullableShort = MetaCatalogBuilder.getNullShortBuilder().build(entityManager);
 		nullableBoolean = MetaCatalogBuilder.getNullBooleanBuilder().build(
-				model);
+				entityManager);
 		nonNullBoolean = MetaCatalogBuilder.getNonNullBooleanBuilder().build(
-				model);
+				entityManager);
 	}
 
 	private void addAttributesTable() {

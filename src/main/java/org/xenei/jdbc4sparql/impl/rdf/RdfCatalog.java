@@ -79,6 +79,7 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 		public Builder(final RdfCatalog catalog) throws MalformedURLException {
 			this();
 			setName(catalog.getShortName());
+			setGraphName( catalog.getGraphName() );
 			if (catalog.getSparqlEndpoint() != null) {
 				setSparqlEndpoint(new URL(catalog.getSparqlEndpoint()));
 			}
@@ -87,13 +88,16 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 			}
 		}
 
-		public RdfCatalog build(EntityManager entityManager) {
+		public RdfCatalog build(EntityManager em) {
 
-			if (entityManager == null) {
+			if (em == null) {
 				throw new IllegalArgumentException("EntityManager may not be null");
 			}
 			
 			checkBuildState();
+			graphName = graphName==null?ResourceFactory.createResource(Quad.defaultGraphIRI.getURI()):graphName;
+			EntityManager entityManager = em.getNamedManager( graphName.asNode() );
+			
 			final Class<?> typeClass = RdfCatalog.class;
 			final String fqName = getFQName(entityManager);
 			final ResourceBuilder builder = new ResourceBuilder( entityManager);
@@ -105,8 +109,7 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 			}
 			else {
 				catalog = builder.getResource(fqName, typeClass);
-				catalog.addLiteral(RDFS.label, shortName);
-				catalog.addProperty( VOID.rootResource, graphName==null?ResourceFactory.createResource(Quad.defaultGraphIRI.getURI()):graphName);
+
 				
 				if (sparqlEndpoint != null) {
 					catalog.addProperty(
@@ -125,9 +128,13 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 
 			// create RdfCatalog object from graph object
 			try {
-				final RdfCatalog retval = entityManager.read(catalog,
+				final RdfCatalog retval = entityManager.getNamedManager(graphName.asNode()).read(catalog,
 						RdfCatalog.class);
 
+				catalog.removeAll( RDFS.label);
+				catalog.addLiteral(RDFS.label, shortName);
+				catalog.removeAll( VOID.rootResource);
+				catalog.addProperty( VOID.rootResource, graphName==null?ResourceFactory.createResource(Quad.defaultGraphIRI.getURI()):graphName);
 				retval.getResource().getModel().register(retval.new ChangeListener());
 				
 				retval.connection = connection;

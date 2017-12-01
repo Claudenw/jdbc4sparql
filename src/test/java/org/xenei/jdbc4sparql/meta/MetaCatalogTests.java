@@ -8,6 +8,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.xenei.jdbc4sparql.config.MemDatasetProducer;
+import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.DatasetProducer;
 
 import org.apache.jena.query.Query;
@@ -19,7 +20,7 @@ import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Literal;
 
 public class MetaCatalogTests {
-	private DatasetProducer dpProducer;
+	private Catalog catalog;
 	private final String queryString = "PREFIX  rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> "
 			+ "SELECT ?tbl ?colName  WHERE {  ?tbl a <http://org.xenei.jdbc4sparql/entity/Table> ;"
 			+ "<http://www.w3.org/2000/01/rdf-schema#label> '%s' ;"
@@ -30,13 +31,13 @@ public class MetaCatalogTests {
 
 	@Before
 	public void setup() {
-		dpProducer = new MemDatasetProducer();
-		MetaCatalogBuilder.getInstance(dpProducer);
+		
+		catalog = MetaCatalogBuilder.getInstance(new MemDatasetProducer());
 	}
 
 	@After
 	public void tearDown() throws Exception {
-		dpProducer.close();
+		catalog.close();
 	}
 
 	@Test
@@ -289,23 +290,16 @@ public class MetaCatalogTests {
 		final Query query = QueryFactory.create(String.format(queryString,
 				tblName));
 	
-		final QueryExecution qexec = dpProducer.getMetaDataEntityManager().execute(query);
+		List<QuerySolution> lst = catalog.executeLocalQuery(query);
 		
-		try {
-			final ResultSet results = qexec.execSelect();
-
-			for (; results.hasNext();) {
-				count++;
-				final QuerySolution soln = results.nextSolution();
+			for (QuerySolution soln : lst) {
 				final Literal l = soln.getLiteral("colName");
 				Assert.assertTrue(l.getString() + " is missing",
 						names.contains(l.getString()));
 			}
-			Assert.assertEquals(names.size(), count);
+			Assert.assertEquals(names.size(), lst.size());
 
-		} finally {
-			qexec.close();
-		}
+		 
 	}
 
 }
