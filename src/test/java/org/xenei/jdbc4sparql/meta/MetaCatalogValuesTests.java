@@ -52,8 +52,8 @@ public class MetaCatalogValuesTests {
 	public void setup() throws FileNotFoundException, IOException {
 		LoggingConfig.setConsole(Level.DEBUG);
 		LoggingConfig.setRootLogger(Level.INFO);
-		// LoggingConfig.setLogger("org.xenei.jdbc4sparql.sparql", Level.DEBUG);
-		LoggingConfig.setLogger("org.apache.jena.", Level.INFO);
+		LoggingConfig.setLogger("org.xenei.jdbc4sparql.sparql", Level.DEBUG);
+		//LoggingConfig.setLogger("org.apache.jena.", Level.INFO);
 		LoggingConfig.setLogger("org.xenei.jdbc4sparql", Level.INFO);
 
 		catalogs = new HashMap<String, Catalog>();
@@ -343,27 +343,19 @@ public class MetaCatalogValuesTests {
 
 	private void verifyNames(final String tblName, final String[] colNames) {
 		final List<String> names = Arrays.asList(colNames);
-		int count = 0;
 		selectBuilder.setVar( "?lbl", tblName);
 		final Query query = selectBuilder.build();	
 		
-		final QueryExecution qexec = dpProducer.getMetaDataEntityManager().execute(query);
+		List<QuerySolution> lst = catalog.executeLocalQuery(query);
 				
-		try {
-			final ResultSet results = qexec.execSelect();
-
-			for (; results.hasNext();) {
-				count++;
-				final QuerySolution soln = results.nextSolution();
+		for( QuerySolution soln : lst ) {
 				final Literal l = soln.getLiteral("colName");
 				Assert.assertTrue(l.getString() + " is missing",
 						names.contains(l.getString()));
 			}
-			Assert.assertEquals(names.size(), count);
+			Assert.assertEquals(names.size(), lst.size());
 
-		} finally {
-			qexec.close();
-		}
+		
 	}
 
 	@Test

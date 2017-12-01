@@ -17,6 +17,7 @@ import org.apache.jena.rdf.model.RDFList;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.shared.Lock;
 import org.apache.jena.vocabulary.RDFS;
 import org.slf4j.Logger;
@@ -476,6 +477,9 @@ ResourceWrapper {
 			final Property p = model.createProperty(
 					ResourceBuilder.getNamespace(getEntityManager(), RdfTable.class), "column");
 
+			Statement stmt = tbl.getRequiredProperty(p);
+			Resource r = stmt.getResource();
+			r.listProperties().forEachRemaining( s -> System.out.println( s )); //DEBUG
 			final List<RDFNode> resLst = tbl.getRequiredProperty(p)
 					.getResource().as(RDFList.class).asJavaList();
 			for (final RDFNode n : resLst) {
