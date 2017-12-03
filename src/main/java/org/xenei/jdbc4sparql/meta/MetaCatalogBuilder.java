@@ -47,6 +47,12 @@ import org.apache.jena.vocabulary.RDFS;
  *
  */
 public class MetaCatalogBuilder {
+	
+	/**
+	 * Get an instance of the meta catalog on a Dataset producer. 
+	 * @param dsProducer the producer to get the catalog on.
+	 * @return the RdfCatalog.
+	 */
 	public static RdfCatalog getInstance(final DatasetProducer dsProducer) {
 		final EntityManager entityManager = dsProducer
 				.getMetaDataEntityManager(MetaCatalogBuilder.LOCAL_NAME);
@@ -57,9 +63,9 @@ public class MetaCatalogBuilder {
 		.build(entityManager);
 
 		final RdfSchema schema = new RdfSchema.Builder().setCatalog(cat)
-				.setName(MetaCatalogBuilder.SCHEMA_NAME).build(entityManager);
+				.setName(MetaCatalogBuilder.SCHEMA_NAME).build();
 		// populate the catalog
-		new MetaCatalogBuilder(schema, entityManager).build();
+		new MetaCatalogBuilder(schema).build();
 		entityManager.sync();
 		return cat;
 	}
@@ -165,12 +171,11 @@ public class MetaCatalogBuilder {
 
 	private final ResourceBuilder resourceBuilder;
 
-	private MetaCatalogBuilder(final RdfSchema schema, final EntityManager entityManager) {
+	private MetaCatalogBuilder(final RdfSchema schema) {
 		this.schema = schema;
-		this.entityManager = entityManager;
-		resourceBuilder = new ResourceBuilder(entityManager);
-		nonNullString = MetaCatalogBuilder.getNonNullStringBuilder().build(
-				entityManager);
+		entityManager = schema.getEntityManager();
+		resourceBuilder = new ResourceBuilder(schema.getEntityManager());
+		nonNullString = MetaCatalogBuilder.getNonNullStringBuilder().build(entityManager);
 		nullableString = MetaCatalogBuilder.getNullStringBuilder().build(entityManager);
 		nonNullInt = MetaCatalogBuilder.getNonNullIntBuilder().build(entityManager);
 		nullableInt = MetaCatalogBuilder.getNullIntBuilder().build(entityManager);
@@ -224,7 +229,7 @@ public class MetaCatalogBuilder {
 		.setColumn(17, "SCOPE_CATALOG").setColumn(18, "SCOPE_SCHEMA")
 		.setColumn(19, "SCOPE_TABLE").setColumn(20, "SOURCE_DATA_TYPE");
 		setNull(builder);
-		builder.build(entityManager);
+		builder.build();
 	}
 
 	private void addBestRowTable() {
@@ -260,7 +265,7 @@ public class MetaCatalogBuilder {
 		.setColumn(2, "DATA_TYPE").setColumn(3, "TYPE_NAME")
 		.setColumn(4, "COLUMN_SIZE").setColumn(5, "BUFFER_LENGTH")
 		.setColumn(6, "DECIMAL_DIGITS").setColumn(7, "PSEUDO_COLUMN");
-		setNull(builder).build(entityManager);
+		setNull(builder).build();
 	}
 
 	private void addCatalogsTable() {
@@ -287,7 +292,7 @@ public class MetaCatalogBuilder {
 		builder.getColumn(0)
 		.addQuerySegment(makeQS("%1$s", RDFS.label, "%2$s"))
 		.setRemarks(MetaCatalogBuilder.REMARK);
-		builder.build(entityManager);
+		builder.build();
 	}
 
 	private void addClientInfoTable() {
@@ -312,7 +317,7 @@ public class MetaCatalogBuilder {
 		.setColumn(1, "MAX_LEN").setColumn(2, "DEFAULT_VALUE")
 		.setColumn(3, "DESCRIPTION");
 
-		setNull(builder).build(entityManager);
+		setNull(builder).build();
 	}
 
 	private void addColumnPriviligesTable() {
@@ -347,7 +352,7 @@ public class MetaCatalogBuilder {
 		.setColumn(4, "GRANTOR").setColumn(5, "GRANTEE")
 		.setColumn(6, "PRIVILEGE").setColumn(7, "IS_GRANTABLE");
 
-		setNull(builder).build(entityManager);
+		setNull(builder).build();
 
 	}
 
@@ -552,7 +557,7 @@ public class MetaCatalogBuilder {
 								"BIND( if( " + vInc + ", 'YES', 'NO') as %2$s)")
 								.setRemarks(MetaCatalogBuilder.REMARK);
 
-		builder.build(entityManager);
+		builder.build();
 	}
 
 	private void addExportedKeysTable() {
@@ -604,7 +609,7 @@ public class MetaCatalogBuilder {
 		.setColumn(10, "DELETE_RULE").setColumn(11, "FK_NAME")
 		.setColumn(12, "PK_NAME").setColumn(13, "DEFERRABILITY");
 
-		setNull(builder).build(entityManager);
+		setNull(builder).build();
 	}
 
 	private void addFunctionColumnsTable() {
@@ -661,7 +666,7 @@ public class MetaCatalogBuilder {
 		.setColumn(14, "ORDINAL_POSITION").setColumn(15, "IS_NULLABLE")
 		.setColumn(16, "SPECIFIC_NAME");
 
-		setNull(builder).build(entityManager);
+		setNull(builder).build();
 
 	}
 
@@ -701,7 +706,7 @@ public class MetaCatalogBuilder {
 		.setColumn(2, "FUNCTION_NAME").setColumn(3, "REMARKS")
 		.setColumn(4, "FUNCTION_TYPE").setColumn(5, "SPECIFIC_NAME");
 
-		setNull(builder).build(entityManager);
+		setNull(builder).build();
 
 	}
 
@@ -754,7 +759,7 @@ public class MetaCatalogBuilder {
 		.setColumn(10, "DELETE_RULE").setColumn(11, "FK_NAME")
 		.setColumn(12, "PK_NAME").setColumn(13, "DEFERRABILITY");
 
-		setNull(builder).build(entityManager);
+		setNull(builder).build();
 	}
 
 	private void addIndexInfoTable() {
@@ -800,7 +805,7 @@ public class MetaCatalogBuilder {
 		.setColumn(10, "CARDINALITY").setColumn(11, "PAGES")
 		.setColumn(12, "FILTER_CONDITION");
 
-		setNull(builder).build(entityManager);
+		setNull(builder).build();
 
 	}
 
@@ -829,7 +834,7 @@ public class MetaCatalogBuilder {
 		.setColumn(2, "TABLE_NAME").setColumn(3, "COLUMN_NAME")
 		.setColumn(4, "KEY_SEQ").setColumn(5, "PK_NAME");
 
-		setNull(builder).build(entityManager);
+		setNull(builder).build();
 	}
 
 	private void addProcedureColumnsTable() {
@@ -892,7 +897,7 @@ public class MetaCatalogBuilder {
 		.setColumn(17, "ORDINAL_POSITION").setColumn(18, "IS_NULLABLE")
 		.setColumn(19, "SPECIFIC_NAME");
 
-		setNull(builder).build(entityManager);
+		setNull(builder).build();
 
 	}
 
@@ -937,7 +942,7 @@ public class MetaCatalogBuilder {
 		.setColumn(6, "REMARKS").setColumn(7, "PROCEDURE_TYPE")
 		.setColumn(8, "SPECIFIC_NAME");
 
-		setNull(builder).build(entityManager);
+		setNull(builder).build();
 
 	}
 
@@ -980,7 +985,7 @@ public class MetaCatalogBuilder {
 		builder.getColumn(1).addQuerySegment(makeQS(vCat, RDFS.label, "%2$s"))
 		.setRemarks(MetaCatalogBuilder.REMARK);
 
-		builder.build(entityManager);
+		builder.build();
 	}
 
 	private void addSuperTablesTable() {
@@ -1024,7 +1029,7 @@ public class MetaCatalogBuilder {
 		.setRemarks(MetaCatalogBuilder.REMARK);
 
 		setNull(builder.getColumn(3));
-		builder.build(entityManager);
+		builder.build();
 
 	}
 
@@ -1047,7 +1052,7 @@ public class MetaCatalogBuilder {
 		.setColumn(3, "SUPERTYPE_CAT").setColumn(4, "SUPERTYPE_SCHEM")
 		.setColumn(5, "SUPERTYPE_NAME");
 
-		setNull(builder).build(entityManager);
+		setNull(builder).build();
 	}
 
 	private void addTablePrivilegesTable() {
@@ -1089,7 +1094,7 @@ public class MetaCatalogBuilder {
 		.setColumn(4, "GRANTEE").setColumn(5, "PRIVILEGE")
 		.setColumn(6, "IS_GRANTABLE");
 
-		setNull(builder).build(entityManager);
+		setNull(builder).build();
 	}
 
 	private void addTablesTable() {
@@ -1175,7 +1180,7 @@ public class MetaCatalogBuilder {
 		for (int i = 5; i < 10; i++) {
 			setNull(builder.getColumn(i));
 		}
-		builder.build(entityManager);
+		builder.build();
 
 	}
 
@@ -1205,7 +1210,7 @@ public class MetaCatalogBuilder {
 				makeQS("%1$s", resourceBuilder.getProperty(
 						RdfTable.class, "type"), "%2$s"))
 						.setRemarks(MetaCatalogBuilder.REMARK);
-		builder.build(entityManager);
+		builder.build();
 	}
 
 	private void addTypeInfoTableTable() {
@@ -1247,7 +1252,7 @@ public class MetaCatalogBuilder {
 		.setColumn(16, "SQL_DATETIME_SUB")
 		.setColumn(17, "NUM_PREC_RADIX");
 
-		setNull(builder).build(entityManager);
+		setNull(builder).build();
 	}
 
 	private void addUDTTable() {
@@ -1288,7 +1293,7 @@ public class MetaCatalogBuilder {
 		.setColumn(4, "DATA_TYPE").setColumn(5, "REMARKS")
 		.setColumn(6, "BASE_TYPE");
 
-		setNull(builder).build(entityManager);
+		setNull(builder).build();
 
 	}
 
@@ -1314,7 +1319,7 @@ public class MetaCatalogBuilder {
 		.setColumn(5, "BUFFER_LENGTH").setColumn(6, "DECIMAL_DIGITS")
 		.setColumn(7, "PSEUDO_COLUMN");
 
-		setNull(builder).build(entityManager);
+		setNull(builder).build();
 	}
 
 	private void addXrefTable() {
@@ -1365,7 +1370,7 @@ public class MetaCatalogBuilder {
 		.setColumn(10, "DELETE_RULE").setColumn(11, "FK_NAME")
 		.setColumn(12, "PK_NAME").setColumn(13, "DEFERRABILITY");
 
-		setNull(builder).build(entityManager);
+		setNull(builder).build();
 	}
 
 	public void build() {

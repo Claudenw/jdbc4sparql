@@ -59,9 +59,19 @@ ResourceWrapper {
 			return this;
 		}
 
-		public RdfColumn build(final EntityManager entityManager) {
+		public RdfColumn build() {
 			checkBuildState();
-
+			EntityManager entityManager = null;
+			if (table instanceof RdfTable.Builder) {
+				entityManager = ((RdfTable.Builder) table).getSchema().getEntityManager();
+			}
+			else if (table instanceof RdfTable) {
+				entityManager = ((RdfTable) table).getEntityManager();
+			}
+			else {
+				throw new IllegalArgumentException(
+						"table not an rdf table or builder");
+			}
 			final ResourceBuilder builder = new ResourceBuilder(entityManager);
 
 			Resource column = null;
@@ -97,7 +107,7 @@ ResourceWrapper {
 				RdfColumn retval = entityManager.read(column, typeClass);
 				RdfTable tbl = null;
 				if (table instanceof RdfTable.Builder) {
-					tbl = ((RdfTable.Builder) table).build(entityManager);
+					tbl = ((RdfTable.Builder) table).build();
 				}
 				else if (table instanceof RdfTable) {
 					tbl = (RdfTable) table;

@@ -2,11 +2,13 @@ package org.xenei.jdbc4sparql.impl.rdf;
 
 import java.util.List;
 
+import static org.mockito.Mockito.*;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
+
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.NameFilter;
 import org.xenei.jdbc4sparql.iface.name.SchemaName;
@@ -29,18 +31,20 @@ public class TableBuilderTest {
 	@Before
 	public void setUp() throws Exception {
 		model = ModelFactory.createDefaultModel();
-		mgr = new EntityManagerImpl( model );
+		mgr = EntityManagerFactory.create( model );
 		final RdfTableDef.Builder builder = new RdfTableDef.Builder()
 				.addColumnDef(
 						RdfColumnDef.Builder.getStringBuilder().build( mgr ))
 				.addColumnDef(
 						RdfColumnDef.Builder.getIntegerBuilder().build( mgr ));
 		tableDef = builder.build( mgr );
-		mockSchema = Mockito.mock(RdfSchema.class);
-		Mockito.when(mockSchema.getResource()).thenReturn(
+		mockSchema = mock(RdfSchema.class);
+		when(mockSchema.getResource()).thenReturn(
 				model.createResource("http://example.com/mockSchema"));
-		Mockito.when(mockSchema.getName()).thenReturn(
+		when(mockSchema.getName()).thenReturn(
 				new SchemaName("catalog", "schema"));
+		when(mockSchema.getEntityManager()).thenReturn(mgr);
+		
 	}
 
 	@After
@@ -54,7 +58,7 @@ public class TableBuilderTest {
 				.setTableDef(tableDef).setName("table")
 				.setColumn(0, "StringCol").setColumn(1, "IntCol")
 				.setSchema(mockSchema).setType("testing Table");
-		final RdfTable table = builder.build( mgr );
+		final RdfTable table = builder.build(  );
 
 		Assert.assertEquals(2, table.getColumnCount());
 		Assert.assertEquals("table", table.getName().getShortName());
@@ -64,7 +68,7 @@ public class TableBuilderTest {
 		Assert.assertEquals("StringCol", c.getName().getShortName());
 		Assert.assertFalse(nf.hasNext());
 
-		EntityManagerFactory.getEntityManager();
+		EntityManagerFactory.create();
 
 		final Property p = model.createProperty(
 				ResourceBuilder.getNamespace(mgr,RdfTable.class), "column");

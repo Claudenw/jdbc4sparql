@@ -10,6 +10,7 @@ import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.meta.MetaCatalogBuilder;
 import org.xenei.jena.entities.EntityManager;
+import org.xenei.jena.entities.EntityManagerFactory;
 import org.xenei.jena.entities.impl.EntityManagerImpl;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -23,7 +24,7 @@ public class CatalogBuilderTest {
 	@Before
 	public void setUp() throws Exception {
 		model = ModelFactory.createDefaultModel();
-		entityManager = new EntityManagerImpl(model);
+		entityManager = EntityManagerFactory.create(model);
 		schemaBldr = new RdfSchema.Builder().setName("testSchema");
 	}
 
@@ -43,7 +44,7 @@ public class CatalogBuilderTest {
 		Assert.assertEquals(0, catalog.getSchemas().size());
 		schemaBldr.setCatalog(catalog);
 
-		schemaBldr.build(entityManager);
+		schemaBldr.build();
 
 		Assert.assertNotNull(catalog.getSchemas());
 		Assert.assertEquals(1, catalog.getSchemas().size());
@@ -69,7 +70,7 @@ public class CatalogBuilderTest {
 
 		final RdfCatalog catalog = builder.build(entityManager);
 
-		schemaBldr.setCatalog(catalog).build(entityManager);
+		schemaBldr.setCatalog(catalog).build();
 
 		Assert.assertNotNull(catalog.findSchemas("testSchema"));
 
@@ -83,7 +84,7 @@ public class CatalogBuilderTest {
 
 		final RdfCatalog catalog = builder.build(entityManager);
 
-		schemaBldr.setCatalog(catalog).build(entityManager);
+		schemaBldr.setCatalog(catalog).build();
 
 		Assert.assertNotNull(catalog.getSchema("testSchema"));
 
@@ -103,7 +104,7 @@ public class CatalogBuilderTest {
 
 		schemaBldr.setCatalog(catalog);
 
-		schemaBldr.build(entityManager);
+		schemaBldr.build();
 
 		schemas = catalog.getSchemas();
 		Assert.assertNotNull(schemas);

@@ -36,6 +36,7 @@ import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlParserImpl;
 import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlVisitor;
 import org.xenei.jdbc4sparql.utils.ElementExtractor;
 import org.xenei.jena.entities.EntityManager;
+import org.xenei.jena.entities.EntityManagerFactory;
 import org.xenei.jena.entities.impl.EntityManagerImpl;
 import org.apache.jena.graph.Node;
 import org.apache.jena.query.DatasetFactory;
@@ -85,13 +86,13 @@ abstract public class AbstractSparqlVisitorTest {
 
 		model = ModelFactory.createDefaultModel();
 		RDFConnection connection = RDFConnectionFactory.connect( DatasetFactory.create(model) );
-		EntityManager mgr = new EntityManagerImpl( connection );
+		EntityManager mgr = EntityManagerFactory.create( connection );
 		catalog = new RdfCatalog.Builder().setLocalConnection(connection)
 				.setName(CATALOG_NAME).build(mgr);
 		catalogs.put(catalog.getShortName(), catalog);
 
 		schema = new RdfSchema.Builder().setCatalog(catalog)
-				.setName(SCHEMA_NAME).build( mgr );
+				.setName(SCHEMA_NAME).build( );
 
 		// create the foo table
 		final RdfTableDef tableDef = new RdfTableDef.Builder()
@@ -119,7 +120,7 @@ abstract public class AbstractSparqlVisitorTest {
 				"%1$s <http://example.com/two> %2$s . ");
 		bldr.getColumn(3).addQuerySegment(
 				"%1$s <http://example.com/three> %2$s .");
-		bldr.build( mgr );
+		bldr.build( );
 
 		bldr = new RdfTable.Builder().setTableDef(tableDef)
 				.setColumn(0, "BarStringCol")
@@ -137,7 +138,7 @@ abstract public class AbstractSparqlVisitorTest {
 				"%1$s <http://example.com/two> %2$s . ");
 		bldr.getColumn(3).addQuerySegment(
 				"%1$s <http://example.com/three> %2$s . ");
-		bldr.build( mgr );
+		bldr.build( );
 		tableName = bldr.getName();
 		parser = new SparqlParserImpl();
 		sv = new SparqlVisitor(catalogs, parser, catalog, schema);

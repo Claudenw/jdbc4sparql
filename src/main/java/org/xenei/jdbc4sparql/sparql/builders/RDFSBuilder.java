@@ -243,7 +243,7 @@ public class RDFSBuilder implements SchemaBuilder {
 							"%s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <%s> .",
 							"%1$s", baseR.getURI())).setName(getName(baseR))
 							.setRemarks(getComment(baseR));
-			retval.add(builder.build(entityManager));
+			retval.add(builder.build());
 		}
 		return retval;
 	}

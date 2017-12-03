@@ -170,7 +170,7 @@ public class SparqlView extends AbstractTable {
 
 						@Override
 						public Column apply(final QueryColumnInfo o) {
-							return new RenamedColumn(o);
+							return o==null?null:new RenamedColumn(o);
 						}
 					}).toList();
 		}

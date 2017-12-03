@@ -176,7 +176,7 @@ public class SimpleBuilder implements SchemaBuilder {
 							"created by " + SimpleBuilder.BUILDER_NAME);
 					i++;
 				}
-				retval.add(tblBuilder.build(entityManager));
+				retval.add(tblBuilder.build());
 			}
 		}
 		return retval;

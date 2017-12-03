@@ -78,8 +78,9 @@ ResourceWrapper {
 			return this;
 		}
 
-		public RdfTable build(final EntityManager entityManager) {
+		public RdfTable build() {
 			checkBuildState();
+			EntityManager entityManager = schema.getEntityManager();
 			final String fqName = getFQName(entityManager);
 			final ResourceBuilder builder = new ResourceBuilder(entityManager);
 
@@ -120,7 +121,7 @@ ResourceWrapper {
 				RDFList lst = null;
 				for (final RdfColumn.Builder bldr : columns) {
 					bldr.setTable(retval);
-					final RdfColumn col = bldr.build(entityManager);
+					final RdfColumn col = bldr.build();
 					if (retval.columns == null) {
 						retval.columns = new ArrayList<Column>();
 					}
@@ -279,7 +280,7 @@ ResourceWrapper {
 		}
 
 		@Override
-		public Schema getSchema() {
+		public RdfSchema getSchema() {
 			return schema;
 		}
 
@@ -603,7 +604,7 @@ ResourceWrapper {
 		if (superTableDef != null) {
 			final Builder tableBuilder = new Builder().setTableDef(
 					superTableDef).setSchema(getSchema());
-			return tableBuilder.build(getEntityManager());
+			return tableBuilder.build();
 		}
 		return null;
 	}

@@ -421,41 +421,6 @@ public class SparqlQueryBuilder {
 
 	}
 
-	/**
-	 * Adds the the expression as a variable to the query. As a variable the
-	 * result will be returned from the query.
-	 *
-	 * @param expr
-	 *            The expression that defines the variable
-	 * @param name
-	 *            the alias for the expression, if null no alias is used.
-	 */
-	public void addVar(final Expr expr, final String name) {
-		if (LOG.isDebugEnabled()) {
-			SparqlQueryBuilder.LOG.debug("Adding Var {} as {}", expr, name);
-		}
-		checkBuilt();
-		final NodeValue nv = expr.getConstant();
-		if ((name != null) || (nv == null) || !nv.asNode().isVariable()) {
-			final String s = StringUtils.defaultString(expr.getVarName());
-			if (StringUtils.isNotEmpty(s)
-					&& s.equals(StringUtils.defaultIfBlank(name, s))) {
-				query.addResultVar(s);
-			}
-			else {
-				if (name != null) {
-					query.addResultVar(name, expr);
-				}
-				else {
-					query.addResultVar(nv.asNode());
-				}
-			}
-		}
-		else {
-			query.addResultVar(nv.asNode());
-		}
-		query.getResultVars();
-	}
 
 	/**
 	 * Adds the the expression as a variable to the query. As a variable the
@@ -988,7 +953,7 @@ public class SparqlQueryBuilder {
 		 */
 		private QueryColumnInfo getColumn( Var v )
 		{
-			return vars.values().stream().filter( qci -> qci.getVar().equals( v )).findFirst().orElse(null);
+			return vars.values().stream().filter( qci -> qci != null && qci.getVar().equals( v )).findFirst().orElse(null);
 		}
 
 		public Var transform(Var t) {

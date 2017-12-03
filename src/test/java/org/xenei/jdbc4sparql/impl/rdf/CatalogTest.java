@@ -40,7 +40,7 @@ public class CatalogTest {
 	@Before
 	public void setUp() throws Exception {
 		model = ModelFactory.createDefaultModel();
-		entityManager = new EntityManagerImpl( model );
+		entityManager = EntityManagerFactory.create( model );
 		dataset = DatasetFactory.create();
 			
 		dataConnection = RDFConnectionFactory.connect( dataset );
@@ -158,10 +158,10 @@ public class CatalogTest {
 	public void testFindSchemas() throws Exception {
 
 		new RdfSchema.Builder().setName("testSchema1").setCatalog(catalog)
-				.build( entityManager );
+				.build();
 
 		new RdfSchema.Builder().setName("testSchema2").setCatalog(catalog)
-				.build( entityManager );
+				.build();
 
 		NameFilter<Schema> schemas = catalog.findSchemas(null);
 		Assert.assertEquals(2, schemas.toList().size());
@@ -211,7 +211,7 @@ public class CatalogTest {
 		Assert.assertNull(catalog.getSchema("testSchema2"));
 
 		new RdfSchema.Builder().setName("testSchema1").setCatalog(catalog)
-				.build( entityManager );
+				.build();
 
 		Assert.assertNull(catalog.getSchema(null));
 		Assert.assertNull(catalog.getSchema(""));
@@ -223,7 +223,7 @@ public class CatalogTest {
 		Assert.assertNull(catalog.getSchema("testSchema2"));
 
 		new RdfSchema.Builder().setName("testSchema2").setCatalog(catalog)
-				.build( entityManager );
+				.build(  );
 
 		Assert.assertNull(catalog.getSchema(null));
 		Assert.assertNull(catalog.getSchema(""));
@@ -259,7 +259,7 @@ public class CatalogTest {
 		Assert.assertEquals(0, schemas.size());
 
 		new RdfSchema.Builder().setName("testSchema1").setCatalog(catalog)
-				.build( entityManager );
+				.build(  );
 		names.add("testSchema1");
 		schemas = catalog.getSchemas();
 		Assert.assertEquals(1, schemas.size());
@@ -269,7 +269,7 @@ public class CatalogTest {
 		}
 
 		new RdfSchema.Builder().setName("testSchema2").setCatalog(catalog)
-				.build( entityManager );
+				.build( );
 		names.add("testSchema2");
 		schemas = catalog.getSchemas();
 		Assert.assertEquals(2, schemas.size());

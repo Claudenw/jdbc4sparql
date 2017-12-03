@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
@@ -45,8 +46,9 @@ ResourceWrapper {
 
 		private final Set<Table> tables = new HashSet<Table>();
 
-		public RdfSchema build(final EntityManager entityManager) {
+		public RdfSchema build() {
 			checkBuildState();
+			EntityManager entityManager = catalog.getEntityManager();
 			final Class<?> typeClass = RdfSchema.class;
 			final String fqName = getFQName(entityManager);
 			final ResourceBuilder builder = new ResourceBuilder(entityManager);
@@ -237,6 +239,12 @@ ResourceWrapper {
 	public SchemaName getName() {
 		if (schemaName == null) {
 			String localName = getLocalSchemaName();
+			if (localName == null)
+			{
+				localName = getLocalSchemaName();
+				getResource().listProperties().forEachRemaining( stmt -> System.out.println( stmt ));
+			}
+			System.out.println( "LocalName: "+localName);
 			schemaName = new SchemaName(getCatalog().getShortName(),
 					localName );
 		}

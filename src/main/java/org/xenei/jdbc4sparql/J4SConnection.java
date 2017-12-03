@@ -221,13 +221,13 @@ public class J4SConnection implements Connection {
 			schemaName = schemaName.replace("^[A-Z0-9a-z]", "_");
 
 			// get the model for the catalog name.
-			final EntityManager metaDataModel = dsProducer.getMetaDataEntityManager(getCatalog());
+			final EntityManager metaDataMgr = dsProducer.getMetaDataEntityManager(getCatalog());
 
 			// if a SPARQL endpoint the driver URL has the endpoint URL.
 			if (url.getType().equals(J4SUrl.TYPE_SPARQL)) {
 				catalog = new RdfCatalog.Builder()
 				.setSparqlEndpoint(url.getEndpoint().toURL())
-				.setName(getCatalog()).build(metaDataModel);
+				.setName(getCatalog()).build(metaDataMgr);
 			}
 			else {
 				Dataset ds = DatasetFactory.create();
@@ -236,11 +236,11 @@ public class J4SConnection implements Connection {
 				
 				RDFConnection connection = RDFConnectionFactory.connect(ds);
 				catalog = new RdfCatalog.Builder().setLocalConnection(connection)
-						.setName(getCatalog()).build(metaDataModel);
+						.setName(getCatalog()).build(metaDataMgr);
 			}
 
 			final RdfSchema schema = new RdfSchema.Builder()
-			.setCatalog(catalog).setName(schemaName).build(metaDataModel);
+			.setCatalog(catalog).setName(schemaName).build();
 
 			catalogMap.put(catalog.getName().getShortName(), catalog);
 
@@ -249,6 +249,7 @@ public class J4SConnection implements Connection {
 					schema.addTables(table);
 				}
 			}
+			metaDataMgr.sync();
 		}
 
 	}

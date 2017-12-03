@@ -622,26 +622,6 @@ public class SparqlQueryBuilderTest {
 	}
 
 	@Test
-	public void testAddVar_Expr_String() throws Exception {
-		final Query query = getQuery();
-		assertEquals(0, query.getProjectVars().size());
-
-		final Expr expr = new E_UUID();
-		builder.addVar(expr, "foo");
-
-		final List<Var> vLst = query.getProjectVars();
-		assertEquals(1, vLst.size());
-		assertEquals(Var.alloc("foo"), vLst.get(0));
-
-		final VarExprList eLst = query.getProject();
-		assertEquals(1, eLst.size());
-		final Var v = eLst.getVars().get(0);
-		final Expr e = eLst.getExpr(v);
-		assertEquals(expr, e);
-		assertEquals(Var.alloc("foo"), v);
-	}
-
-	@Test
 	public void testAddVar_Expr_ColumnName() throws Exception {
 		final Query query = getQuery();
 		assertEquals(0, query.getProjectVars().size());

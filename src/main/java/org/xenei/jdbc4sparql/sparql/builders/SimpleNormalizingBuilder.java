@@ -174,7 +174,7 @@ public class SimpleNormalizingBuilder extends SimpleBuilder {
 				i++;
 			}
 
-			tableSet.add(tblBuilder.build(entityManager));
+			tableSet.add(tblBuilder.build());
 		}
 
 	}
@@ -294,7 +294,7 @@ public class SimpleNormalizingBuilder extends SimpleBuilder {
 		.setRemarks(
 				"created by " + SimpleNormalizingBuilder.BUILDER_NAME);
 
-		return tblBuilder.build(entityManager);
+		return tblBuilder.build();
 	}
 
 	protected boolean multipleCardinality(final RdfCatalog catalog,

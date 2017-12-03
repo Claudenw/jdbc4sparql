@@ -21,6 +21,7 @@ import org.xenei.jdbc4sparql.iface.DatasetProducer;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.utils.NoCloseZipInputStream;
 import org.xenei.jena.entities.EntityManager;
+import org.xenei.jena.entities.EntityManagerFactory;
 import org.xenei.jena.entities.impl.EntityManagerImpl;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.graph.NodeFactory;
@@ -76,7 +77,7 @@ abstract public class AbstractDatasetProducer implements DatasetProducer {
 
 	protected AbstractDatasetProducer(final Configuration cfg) {
 		this.properties = cfg.config;
-		this.metaMgr = new EntityManagerImpl( cfg.metaDataset );
+		this.metaMgr = EntityManagerFactory.create( cfg.metaDataset );
 		this.localConnection = RDFConnectionFactory.connect( cfg.localDataset );
 		this.metaConnection = RDFConnectionFactory.connect( cfg.metaDataset );
 	}
