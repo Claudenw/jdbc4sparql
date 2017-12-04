@@ -136,7 +136,7 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 			final String alias) {
 		this.builder = builder;
 		this.optionalColumns = optionalColumns;
-		this.alias = new AliasInfo(alias, aliasRequired);
+		this.alias = new AliasInfo(alias, aliasRequired, java.sql.Types.VARCHAR);
 		stack = new Stack<Expr>();
 		columns = new HashSet<ExprColumn>();
 	}
@@ -187,22 +187,26 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 		biExpr.getLeftExpression().accept(this);
 	}
 
-	private AliasInfo getAlias() {
+	private AliasInfo getAlias( int type ) {
 		if (alias.isUsed()) {
 			return alias;
 		}
 		// must copy default alias not calculated alias.
 		final AliasInfo retval = new AliasInfo(alias.alias,
-				alias.isAliasRequired());
+				alias.isAliasRequired(), type);
 		alias.setUsed(true);
 		alias.aliasRequired = false;
 		return retval;
 	}
 
-	private Expr processAlias(final Expr expr, final AliasInfo alias) {
-		if (alias.isAliasRequired()) {
+	private Expr processAlias(final Expr expr, final AliasInfo aliasInfo) {
+		if (aliasInfo.isAliasRequired()) {
 			final ColumnName cName = new ColumnName(builder.getCatalogName(),
-					VirtualSchema.NAME, VirtualTable.NAME, alias.getAlias());
+					VirtualSchema.NAME, VirtualTable.NAME, aliasInfo.getAlias());
+			if (builder.findColumn(cName) == null)
+			{
+				builder.registerFunction(cName, aliasInfo.getType());
+			}
 			return ExprInfoFactory.getInstance(expr, columns, cName);
 
 		}
@@ -214,7 +218,7 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 		if (LOG.isDebugEnabled()) {
 			logVisit("Addition", addition);
 		}
-		final AliasInfo exprAlias = getAlias();
+		final AliasInfo exprAlias = getAlias(java.sql.Types.NUMERIC);
 		process(addition);
 		stack.push(processAlias(new E_Add(stack.pop(), stack.pop()), exprAlias));
 	}
@@ -229,7 +233,7 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 		if (LOG.isDebugEnabled()) {
 			logVisit("And", andExpression);
 		}
-		final AliasInfo exprAlias = getAlias();
+		final AliasInfo exprAlias = getAlias(java.sql.Types.BOOLEAN);
 		process(andExpression);
 		stack.push(processAlias(new E_LogicalAnd(stack.pop(), stack.pop()),
 				exprAlias));
@@ -245,7 +249,7 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 		if (LOG.isDebugEnabled()) {
 			logVisit("Between", between);
 		}
-		final AliasInfo exprAlias = getAlias();
+		final AliasInfo exprAlias = getAlias(java.sql.Types.BOOLEAN);
 		between.getBetweenExpressionEnd().accept(this);
 		between.getBetweenExpressionStart().accept(this);
 		between.getLeftExpression().accept(this);
@@ -308,7 +312,7 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 			}
 		}
 		tableInfo = builder.getTable(columnInfo.getName().getTableName());
-		final AliasInfo exprAlias = getAlias();
+		final AliasInfo exprAlias = getAlias(columnInfo.getColumn().getColumnDef().getType());
 		if (exprAlias.isAliasRequired() && !exprAlias.isUsed()) {
 			final ColumnName aliasName = ColumnName.getNameInstance(
 					columnInfo.getName(), exprAlias.getAlias());
@@ -336,7 +340,7 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 		}
 		final String val = dateValue.getValue().toString();
 		final Node n = NodeFactory.createLiteral(val, XSDDatatype.XSDdate);
-		stack.push(processAlias(new NodeValueDT(val, n), getAlias()));
+		stack.push(processAlias(new NodeValueDT(val, n), getAlias(java.sql.Types.DATE)));
 	}
 
 	@Override
@@ -344,7 +348,7 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 		if (LOG.isDebugEnabled()) {
 			logVisit("Division", division);
 		}
-		final AliasInfo exprAlias = getAlias();
+		final AliasInfo exprAlias = getAlias( java.sql.Types.NUMERIC);
 		process(division);
 		stack.push(processAlias(new E_Divide(stack.pop(), stack.pop()),
 				exprAlias));
@@ -356,7 +360,7 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 			logVisit("DoubleValue", doubleValue);
 		}
 		stack.push(processAlias(new NodeValueDouble(doubleValue.getValue()),
-				getAlias()));
+				getAlias(java.sql.Types.DOUBLE)));
 	}
 
 	@Override
@@ -364,7 +368,7 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 		if (LOG.isDebugEnabled()) {
 			logVisit("EqualsTo", equalsTo);
 		}
-		final AliasInfo exprAlias = getAlias();
+		final AliasInfo exprAlias = getAlias(java.sql.Types.BOOLEAN);
 		process(equalsTo);
 		stack.push(processAlias(new E_Equals(stack.pop(), stack.pop()),
 				exprAlias));
@@ -383,7 +387,7 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 		final StandardFunctionHandler sfh = new StandardFunctionHandler(builder);
 		try {
 
-			final Expr exprInfo = sfh.handle(function, getAlias());
+			final Expr exprInfo = sfh.handle(function, getAlias(java.sql.Types.VARCHAR));
 			stack.push(exprInfo);
 		} catch (final SQLException e) {
 			throw new UnsupportedOperationException(String.format(
@@ -397,7 +401,7 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 		if (LOG.isDebugEnabled()) {
 			logVisit("GreaterThan", greaterThan);
 		}
-		final AliasInfo exprAlias = getAlias();
+		final AliasInfo exprAlias = getAlias(java.sql.Types.BOOLEAN);
 		process(greaterThan);
 		stack.push(processAlias(new E_GreaterThan(stack.pop(), stack.pop()),
 				exprAlias));
@@ -408,7 +412,7 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 		if (LOG.isDebugEnabled()) {
 			logVisit("GreaterThanEquals", greaterThanEquals);
 		}
-		final AliasInfo exprAlias = getAlias();
+		final AliasInfo exprAlias = getAlias(java.sql.Types.BOOLEAN);
 		process(greaterThanEquals);
 		stack.push(processAlias(
 				new E_GreaterThanOrEqual(stack.pop(), stack.pop()), exprAlias));
@@ -419,7 +423,7 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 		if (LOG.isDebugEnabled()) {
 			logVisit("InExpression", inExpression);
 		}
-		final AliasInfo exprAlias = getAlias();
+		final AliasInfo exprAlias = getAlias(java.sql.Types.BOOLEAN);
 		final SparqlItemsListVisitor listVisitor = new SparqlItemsListVisitor(
 				builder);
 		inExpression.getItemsList().accept(listVisitor);
@@ -439,7 +443,7 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 		if (LOG.isDebugEnabled()) {
 			logVisit("isNull", isNullExpression);
 		}
-		final AliasInfo exprAlias = getAlias();
+		final AliasInfo exprAlias = getAlias(java.sql.Types.BOOLEAN);
 		isNullExpression.getLeftExpression().accept(this);
 		ExprFunction func = null;
 		final Expr expr = stack.pop();
@@ -472,7 +476,7 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 		if (LOG.isDebugEnabled()) {
 			logVisit("LikeExpression", likeExpression);
 		}
-		final AliasInfo exprAlias = getAlias();
+		final AliasInfo exprAlias = getAlias(java.sql.Types.BOOLEAN);
 		process(likeExpression);
 		final Expr left = stack.pop();
 		final Expr right = stack.pop();
@@ -499,7 +503,7 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 			logVisit("Long", longValue);
 		}
 		stack.push(processAlias(new NodeValueInteger(longValue.getValue()),
-				getAlias()));
+				getAlias(java.sql.Types.INTEGER)));
 	}
 
 	@Override
@@ -512,7 +516,7 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 		if (LOG.isDebugEnabled()) {
 			logVisit("MinorThan", minorThan);
 		}
-		final AliasInfo exprAlias = getAlias();
+		final AliasInfo exprAlias = getAlias(java.sql.Types.BOOLEAN);
 		process(minorThan);
 		stack.push(processAlias(new E_LessThan(stack.pop(), stack.pop()),
 				exprAlias));
@@ -523,7 +527,7 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 		if (LOG.isDebugEnabled()) {
 			logVisit("MinorThanEquals", minorThanEquals);
 		}
-		final AliasInfo exprAlias = getAlias();
+		final AliasInfo exprAlias = getAlias(java.sql.Types.BOOLEAN);
 		process(minorThanEquals);
 		stack.push(processAlias(
 				new E_LessThanOrEqual(stack.pop(), stack.pop()), exprAlias));
@@ -534,7 +538,7 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 		if (LOG.isDebugEnabled()) {
 			logVisit("Multiplication", multiplication);
 		}
-		final AliasInfo exprAlias = getAlias();
+		final AliasInfo exprAlias = getAlias(java.sql.Types.NUMERIC);
 		process(multiplication);
 		stack.push(processAlias(new E_Multiply(stack.pop(), stack.pop()),
 				exprAlias));
@@ -545,7 +549,7 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 		if (LOG.isDebugEnabled()) {
 			logVisit("Not Equals", notEqualsTo);
 		}
-		final AliasInfo exprAlias = getAlias();
+		final AliasInfo exprAlias = getAlias(java.sql.Types.BOOLEAN);
 		process(notEqualsTo);
 		stack.push(processAlias(new E_NotEquals(stack.pop(), stack.pop()),
 				exprAlias));
@@ -565,7 +569,7 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 		if (LOG.isDebugEnabled()) {
 			logVisit("Or Expression", orExpression);
 		}
-		final AliasInfo exprAlias = getAlias();
+		final AliasInfo exprAlias = getAlias(java.sql.Types.BOOLEAN);
 		process(orExpression);
 		stack.push(processAlias(new E_LogicalOr(stack.pop(), stack.pop()),
 				exprAlias));
@@ -585,7 +589,7 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 			logVisit("String Value", stringValue);
 		}
 		stack.push(processAlias(new NodeValueString(stringValue.getValue()),
-				getAlias()));
+				getAlias(java.sql.Types.VARCHAR)));
 	}
 
 	@Override
@@ -598,7 +602,7 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 		if (LOG.isDebugEnabled()) {
 			logVisit("Subtraction", subtraction);
 		}
-		final AliasInfo exprAlias = getAlias();
+		final AliasInfo exprAlias = getAlias(java.sql.Types.NUMERIC);
 		process(subtraction);
 		stack.push(processAlias(new E_Subtract(stack.pop(), stack.pop()),
 				exprAlias));
@@ -612,7 +616,7 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 		final String parts[] = timestampValue.getValue().toString().split(" ");
 		final String val = String.format("%sT%s", parts[0], parts[1]);
 		final Node n = NodeFactory.createLiteral(val, XSDDatatype.XSDdateTime);
-		stack.push(processAlias(new NodeValueDT(val, n), getAlias()));
+		stack.push(processAlias(new NodeValueDT(val, n), getAlias(java.sql.Types.TIMESTAMP_WITH_TIMEZONE)));
 	}
 
 	@Override
@@ -622,7 +626,7 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 		}
 		final String val = timeValue.getValue().toString();
 		final Node n = NodeFactory.createLiteral(val, XSDDatatype.XSDtime);
-		stack.push(processAlias(new NodeValueDT(val, n), getAlias()));
+		stack.push(processAlias(new NodeValueDT(val, n), getAlias(java.sql.Types.TIME)));
 	}
 
 	@Override
@@ -657,11 +661,13 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 		private String alias;
 		private boolean aliasRequired;
 		private boolean used;
+		private final int type;
 
-		public AliasInfo(final String alias, final boolean aliasRequired) {
+		public AliasInfo(final String alias, final boolean aliasRequired, final int type) {
 			this.alias = alias;
 			this.aliasRequired = aliasRequired;
 			this.used = false;
+			this.type = type;
 		}
 
 		public String getAlias() {
@@ -671,6 +677,11 @@ public class SparqlExprVisitor implements ExpressionVisitor {
 			return alias;
 		}
 
+		public int getType()
+		{
+			return type;
+		}
+		
 		public boolean isAliasRequired() {
 			return aliasRequired;
 		}

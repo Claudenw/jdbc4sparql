@@ -57,7 +57,7 @@ public class SystemFunctionHandlerTests {
 		handler = new SystemFunctionHandler(builder);
 		final SparqlExprVisitor visitor = new SparqlExprVisitor(builder, false,
 				false);
-		alias = visitor.new AliasInfo("Alias", false);
+		alias = visitor.new AliasInfo("Alias", false, java.sql.Types.VARCHAR);
 	}
 
 	@Test

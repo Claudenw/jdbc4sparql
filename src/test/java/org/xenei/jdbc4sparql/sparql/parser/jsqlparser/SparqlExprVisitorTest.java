@@ -235,6 +235,9 @@ public class SparqlExprVisitorTest {
 				"testCol");
 		final org.xenei.jdbc4sparql.iface.Column column = mock(org.xenei.jdbc4sparql.iface.Column.class);
 		when(column.getName()).thenReturn(columnName);
+		final org.xenei.jdbc4sparql.iface.ColumnDef columnDef = mock(org.xenei.jdbc4sparql.iface.ColumnDef.class);
+		when(column.getColumnDef()).thenReturn( columnDef );
+		when(columnDef.getType()).thenReturn( java.sql.Types.VARCHAR );
 
 		columnInfo = new QueryColumnInfo(column);
 

@@ -93,7 +93,9 @@ public class NumericFunctionHandlerTests {
 				"testCol");
 		final org.xenei.jdbc4sparql.iface.Column column = mock(org.xenei.jdbc4sparql.iface.Column.class);
 		when(column.getName()).thenReturn(columnName);
-
+		final org.xenei.jdbc4sparql.iface.ColumnDef columnDef = mock(org.xenei.jdbc4sparql.iface.ColumnDef.class);
+		when(column.getColumnDef()).thenReturn( columnDef );
+		when(columnDef.getType()).thenReturn( java.sql.Types.NUMERIC );
 		columnInfo = new QueryColumnInfo(column);
 
 		queryInfoSet = new QueryInfoSet();
@@ -126,7 +128,7 @@ public class NumericFunctionHandlerTests {
 
 		final SparqlExprVisitor visitor = new SparqlExprVisitor(queryBuilder,
 				false, false);
-		alias = visitor.new AliasInfo("Alias", false);
+		alias = visitor.new AliasInfo("Alias", false, java.sql.Types.VARCHAR);
 		func = new Function();
 		handler = new NumericFunctionHandler(queryBuilder);
 		lst2 = new ArrayList<Expression>();

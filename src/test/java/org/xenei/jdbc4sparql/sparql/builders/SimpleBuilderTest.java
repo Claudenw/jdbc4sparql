@@ -158,7 +158,7 @@ public class SimpleBuilderTest {
 					// rs.getBinaryStream("NullableIntCol"));
 				}
 			}
-			Assert.assertTrue(foundNull);
+			Assert.assertTrue( "Missing null for table "+tbl.getName().getFQName(),foundNull);
 
 		}
 	}

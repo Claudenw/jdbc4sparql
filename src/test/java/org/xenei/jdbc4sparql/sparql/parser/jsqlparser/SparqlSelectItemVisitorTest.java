@@ -23,6 +23,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.Column;
+import org.xenei.jdbc4sparql.iface.ColumnDef;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.name.CatalogName;
@@ -142,6 +143,10 @@ public class SparqlSelectItemVisitorTest {
 		columnName = tableName.getColumnName("testCol");
 		final Column column = mock(Column.class);
 		when(column.getName()).thenReturn(columnName);
+		final ColumnDef columnDef = mock(ColumnDef.class);
+		when(column.getColumnDef()).thenReturn( columnDef );
+		when(columnDef.getType()).thenReturn( java.sql.Types.VARCHAR );
+
 		when(table.getColumn(eq("testCol"))).thenReturn(column);
 		colList.add(column);
 

@@ -77,7 +77,7 @@ public class StringFunctionHandlerTests {
 		expressionList = new ExpressionList(lst2);
 		final SparqlExprVisitor visitor = new SparqlExprVisitor(builder, false,
 				false);
-		alias = visitor.new AliasInfo("Alias", false);
+		alias = visitor.new AliasInfo("Alias", false, java.sql.Types.VARCHAR);
 	}
 
 	@Test

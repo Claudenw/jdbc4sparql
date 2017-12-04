@@ -534,6 +534,27 @@ public class SparqlQueryBuilder {
         return catalogs.get( catalog );
     }
 
+    /**
+	 * Find the column in the query. Returns null if not found.
+	 *
+	 * @param name
+	 *            The column Name to search for.
+	 * @return columnInfo for column or null if not found.
+	 */
+	public QueryColumnInfo findColumn(final ColumnName name) {
+		return infoSet.findColumn(name);
+	}
+    /**
+	 * Retrieves the column form the list of query columns.
+	 *
+	 * Uses the match algorithm.
+	 *
+	 * @param name
+	 *            The name to retrieve
+	 * @return The column info for the named column
+	 * @throws IllegalArgumentException
+	 *             if the column is not found
+	 */
     public QueryColumnInfo getColumn(final ColumnName cName) {
         return infoSet.getColumn( cName );
     }
