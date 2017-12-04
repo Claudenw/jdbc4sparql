@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
+import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 

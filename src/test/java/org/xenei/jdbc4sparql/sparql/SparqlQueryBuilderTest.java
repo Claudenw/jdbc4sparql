@@ -40,6 +40,7 @@ import org.xenei.jdbc4sparql.iface.name.SchemaName;
 import org.xenei.jdbc4sparql.iface.name.TableName;
 import org.xenei.jdbc4sparql.impl.NameUtils;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
+import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
 import org.xenei.jdbc4sparql.impl.virtual.VirtualCatalog;
 import org.xenei.jdbc4sparql.impl.virtual.VirtualTable;
 import org.xenei.jdbc4sparql.sparql.items.QueryColumnInfo;
@@ -85,7 +86,7 @@ public class SparqlQueryBuilderTest {
 	private Catalog catalog;
 	private CatalogName catName;
 
-	private Schema schema;
+	private RdfSchema schema;
 	private SchemaName sName;
 
 	private Table table;
@@ -119,7 +120,7 @@ public class SparqlQueryBuilderTest {
 		vCat = new VirtualCatalog();
 		catalogs.put(VirtualCatalog.NAME, vCat);
 
-		schema = mock(Schema.class);
+		schema = mock(RdfSchema.class);
 		when(schema.getName()).thenReturn(sName);
 
 		table = mock(Table.class);
@@ -169,7 +170,7 @@ public class SparqlQueryBuilderTest {
 		final Map<String, Catalog> catalogs = new HashMap<String, Catalog>();
 		catalogs.put("TestCatalog", catalog);
 
-		final Schema schema = mock(Schema.class);
+		final RdfSchema schema = mock(RdfSchema.class);
 		when(schema.getName()).thenReturn(sName);
 
 		final Table table = mock(Table.class);

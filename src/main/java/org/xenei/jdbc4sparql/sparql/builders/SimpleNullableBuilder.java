@@ -23,6 +23,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.xenei.jdbc4sparql.iface.QExecutor;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfColumnDef;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTableDef;
@@ -49,8 +50,8 @@ public class SimpleNullableBuilder extends SimpleBuilder {
 			final RdfTableDef.Builder tableDefBuilder, final Resource tName,
 			final String tableQuerySegment) {
 		final Map<String, String> colNames = new LinkedHashMap<String, String>();
-		final List<QuerySolution> solns = catalog.executeQuery(String.format(
-				SimpleBuilder.COLUMN_QUERY, tName));
+		final List<QuerySolution> solns = QExecutor.asList( QExecutor.execute( catalog.getExecutor(), String.format(
+				SimpleBuilder.COLUMN_QUERY, tName)));
 
 		for (final QuerySolution soln : solns) {
 			final RdfColumnDef.Builder builder = new RdfColumnDef.Builder();

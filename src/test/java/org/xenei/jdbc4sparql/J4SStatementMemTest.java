@@ -17,7 +17,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.xenei.jdbc4sparql.iface.Catalog;
-
+import org.xenei.jdbc4sparql.iface.QExecutor;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QueryExecutionFactory;
@@ -94,7 +94,7 @@ public class J4SStatementMemTest extends AbstractJ4SStatementTest {
 		Field f = J4SStatement.class.getDeclaredField("catalog");
 		f.setAccessible(true);
 		Catalog c = (Catalog) f.get(stmt);
-		List<QuerySolution> lst = c.executeLocalQuery(query);
+		List<QuerySolution> lst = QExecutor.asList(c.getLocalExecutor().execute(query));
 		System.out.println( "yeah");
 		
 	}

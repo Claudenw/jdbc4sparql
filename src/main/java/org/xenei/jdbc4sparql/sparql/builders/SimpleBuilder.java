@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
+import org.xenei.jdbc4sparql.iface.QExecutor;
 import org.xenei.jdbc4sparql.iface.TypeConverter;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfColumnDef;
@@ -68,8 +69,8 @@ public class SimpleBuilder implements SchemaBuilder {
 			final RdfTableDef.Builder tableDefBuilder, final Resource tName,
 			final String tableQuerySegment) {
 		final Map<String, String> colNames = new LinkedHashMap<String, String>();
-		final List<QuerySolution> solns = catalog.executeQuery(String.format(
-				SimpleBuilder.COLUMN_QUERY, tName));
+		final List<QuerySolution> solns = QExecutor.asList( QExecutor.execute( catalog.getExecutor(), String.format(
+				SimpleBuilder.COLUMN_QUERY, tName)));
 
 		for (final QuerySolution soln : solns) {
 			final RdfColumnDef.Builder builder = new RdfColumnDef.Builder();
@@ -105,7 +106,7 @@ public class SimpleBuilder implements SchemaBuilder {
 				"SELECT distinct ?col WHERE { %s %s }",
 				String.format(tableQS, "?tbl"),
 				String.format(columnQS, "?tbl", "?col"));
-		final List<QuerySolution> results = catalog.executeQuery(queryStr);
+		final List<QuerySolution> results = QExecutor.asList(QExecutor.execute( catalog.getExecutor(),queryStr));
 
 		final Iterator<Integer> iter = WrappedIterator.create(
 				results.iterator()).mapWith(new Function<QuerySolution, Integer>() {
@@ -139,8 +140,8 @@ public class SimpleBuilder implements SchemaBuilder {
 		final RdfCatalog catalog = schema.getCatalog();
 		final EntityManager entityManager = schema.getEntityManager();
 		final HashSet<RdfTable> retval = new HashSet<RdfTable>();
-		final List<QuerySolution> solns = catalog
-				.executeQuery(SimpleBuilder.TABLE_QUERY);
+		final List<QuerySolution> solns = QExecutor.asList( QExecutor.execute( catalog.getExecutor(),
+		        SimpleBuilder.TABLE_QUERY));
 		for (final QuerySolution soln : solns) {
 			final Resource tName = soln.getResource("tName");
 			final RdfTableDef.Builder builder = new RdfTableDef.Builder();

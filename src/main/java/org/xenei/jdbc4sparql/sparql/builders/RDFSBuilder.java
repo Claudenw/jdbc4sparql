@@ -184,7 +184,7 @@ public class RDFSBuilder implements SchemaBuilder {
 	public Set<RdfTable> getTables(final RdfSchema schema) {
 		final RdfCatalog catalog = schema.getCatalog();
 		final InfModel rdfsOntology = ModelFactory.createRDFSModel(catalog
-				.getLocalConnection().fetch( catalog.getGraphName().getURI()));
+				.getLocalConnection().fetch( catalog.getWriteGraph().getURI()));
 
 		// we have to build the table defs piece by piece
 		final EntityManager entityManager = schema.getEntityManager();

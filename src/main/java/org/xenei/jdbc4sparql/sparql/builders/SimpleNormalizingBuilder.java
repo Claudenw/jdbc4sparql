@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
+import org.xenei.jdbc4sparql.iface.QExecutor;
 import org.xenei.jdbc4sparql.iface.TypeConverter;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 import org.xenei.jdbc4sparql.impl.rdf.RdfColumnDef;
@@ -75,8 +76,8 @@ public class SimpleNormalizingBuilder extends SimpleBuilder {
 			final RdfTableDef.Builder tableDefBuilder, final Resource tName,
 			final String tableQuerySegment) {
 		final Map<String, String> colNames = new LinkedHashMap<String, String>();
-		final List<QuerySolution> solns = catalog.executeQuery(String.format(
-				SimpleNormalizingBuilder.COLUMN_QUERY, tName));
+		final List<QuerySolution> solns = QExecutor.asList( QExecutor.execute( catalog.getExecutor(), String.format(
+				SimpleNormalizingBuilder.COLUMN_QUERY, tName)));
 
 		colNames.put("id", SimpleNormalizingBuilder.ID_COLUMN_SEGMENT);
 
@@ -186,7 +187,7 @@ public class SimpleNormalizingBuilder extends SimpleBuilder {
 				"SELECT distinct ?col WHERE { %s %s }",
 				String.format(tableQS, "?tbl"),
 				String.format(columnQS, "?tbl", "?col"));
-		final List<QuerySolution> results = catalog.executeQuery(queryStr);
+		final List<QuerySolution> results = QExecutor.asList(QExecutor.execute( catalog.getExecutor(), queryStr));
 
 		final Iterator<Integer> iter = WrappedIterator.create(
 				results.iterator()).mapWith(new Function<QuerySolution, Integer>() {
@@ -224,8 +225,8 @@ public class SimpleNormalizingBuilder extends SimpleBuilder {
 		// FIXME does this need a scale?
 		idColumnDef = colBuilder.build(schema.getEntityManager());
 		final HashSet<RdfTable> retval = new HashSet<RdfTable>();
-		final List<QuerySolution> solns = catalog
-				.executeQuery(SimpleNormalizingBuilder.TABLE_QUERY);
+		final List<QuerySolution> solns = QExecutor.asList( QExecutor.execute( catalog.getExecutor(),
+		        SimpleNormalizingBuilder.TABLE_QUERY));
 		for (final QuerySolution soln : solns) {
 			buildTable(retval, catalog, schema, soln.getResource("tName"));
 		}
@@ -305,7 +306,7 @@ public class SimpleNormalizingBuilder extends SimpleBuilder {
 				String.format(columnQS, "?tbl", "?col"));
 
 		return WrappedIterator
-				.create(catalog.executeQuery(queryStr).iterator())
+				.create(QExecutor.execute( catalog.getExecutor(),queryStr).execSelect())
 				.filterKeep(new Filter<QuerySolution>() {
 
 					@Override

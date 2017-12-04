@@ -117,7 +117,7 @@ public class SparqlStatement implements Statement {
 	public ResultSet executeQuery(final String query) throws SQLException {
 		final SparqlQueryBuilder builder = parser.parse(catalogs, catalog,
 				schema, query);
-		return new SparqlView(builder).getResultSet();
+		return new SparqlView(builder, catalog.getLocalExecutor()).getResultSet();
 	}
 
 	@Override

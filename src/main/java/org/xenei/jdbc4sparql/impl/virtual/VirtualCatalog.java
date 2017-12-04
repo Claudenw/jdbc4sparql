@@ -8,10 +8,12 @@ import java.util.Set;
 
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.NameFilter;
+import org.xenei.jdbc4sparql.iface.QExecutor;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.name.CatalogName;
 
 import org.apache.jena.query.Query;
+import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QuerySolution;
 
 /**
@@ -42,7 +44,7 @@ public class VirtualCatalog implements Catalog {
 	}
 
 	@Override
-	public List<QuerySolution> executeLocalQuery(final Query query) {
+	public QExecutor getLocalExecutor() {
 		return null;
 	}
 

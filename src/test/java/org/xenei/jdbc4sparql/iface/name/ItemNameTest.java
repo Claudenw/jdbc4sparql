@@ -242,14 +242,9 @@ public class ItemNameTest {
 						itemName2 = new ColumnName(itemName,
 								NameSegments.getInstance(catalogFlg, schemaFlg,
 										tableFlg, columnFlg));
-						if (catalogFlg && schemaFlg && tableFlg && columnFlg) {
 							assertEquals(itemName, itemName2);
 							assertEquals(itemName2, itemName);
-						}
-						else {
-							assertNotEquals(itemName, itemName2);
-							assertNotEquals(itemName2, itemName);
-						}
+						
 						assertEquals(itemName.hashCode(), itemName2.hashCode());
 					}
 				}

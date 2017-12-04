@@ -31,6 +31,7 @@ import org.xenei.jdbc4sparql.iface.name.GUIDObject;
 import org.xenei.jdbc4sparql.iface.name.SchemaName;
 import org.xenei.jdbc4sparql.iface.name.TableName;
 import org.xenei.jdbc4sparql.impl.NameUtils;
+import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
 import org.xenei.jdbc4sparql.impl.virtual.VirtualCatalog;
 import org.xenei.jdbc4sparql.sparql.QueryInfoSet;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
@@ -75,7 +76,7 @@ public class SparqlSelectItemVisitorTest {
 	private Catalog catalog;
 
 	private CatalogName catalogName;
-	private Schema schema;
+	private RdfSchema schema;
 
 	private SchemaName schemaName;
 
@@ -129,7 +130,7 @@ public class SparqlSelectItemVisitorTest {
 		catalogs.put("testCatalog", catalog);
 		catalogs.put(VirtualCatalog.NAME, new VirtualCatalog());
 
-		schema = mock(Schema.class);
+		schema = mock(RdfSchema.class);
 		schemaName = catalogName.getSchemaName("testSchema");
 		when(schema.getName()).thenReturn(schemaName);
 

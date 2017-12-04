@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.Column;
 import org.xenei.jdbc4sparql.iface.ColumnDef;
+import org.xenei.jdbc4sparql.iface.QExecutor;
 import org.xenei.jdbc4sparql.iface.NameFilter;
 import org.xenei.jdbc4sparql.iface.NameSegments;
 import org.xenei.jdbc4sparql.iface.Schema;
@@ -35,15 +36,17 @@ import org.xenei.jdbc4sparql.iface.name.ColumnName;
 import org.xenei.jdbc4sparql.iface.name.TableName;
 import org.xenei.jdbc4sparql.impl.AbstractTable;
 import org.xenei.jdbc4sparql.impl.NameUtils;
+import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
 import org.xenei.jdbc4sparql.impl.virtual.VirtualCatalog;
 import org.xenei.jdbc4sparql.impl.virtual.VirtualSchema;
 import org.xenei.jdbc4sparql.sparql.items.QueryColumnInfo;
-
+import org.apache.jena.query.Query;
+import org.apache.jena.query.QueryExecution;
 import org.apache.jena.util.iterator.Map1;
 import org.apache.jena.util.iterator.WrappedIterator;
 
-public class SparqlView extends AbstractTable {
-	class RenamedColumn implements Column {
+public class SparqlView extends AbstractTable implements QExecutor {
+	private class RenamedColumn implements Column {
 
 		QueryColumnInfo columnInfo;
 
@@ -121,12 +124,13 @@ public class SparqlView extends AbstractTable {
 	private final Schema schema;
 	private final TableName name;
 	private final SparqlQueryBuilder builder;
+	private final QExecutor executor;
 
 	private List<Column> columns;
 
 	public static final String NAME_SPACE = "http://org.xenei.jdbc4sparql/vocab#View";
 
-	public SparqlView(final SparqlQueryBuilder builder) {
+	public SparqlView(final SparqlQueryBuilder builder, QExecutor executor) {
 		if (LOG.isDebugEnabled()) {
 			SparqlView.LOG.debug(builder.toString());
 		}
@@ -134,6 +138,7 @@ public class SparqlView extends AbstractTable {
 		final Catalog catalog = builder.getCatalog(VirtualCatalog.NAME);
 		this.schema = catalog.getSchema(VirtualSchema.NAME);
 		this.name = schema.getName().getTableName(NameUtils.createUUIDName());
+		this.executor = executor;
 	}
 
 	@Override
@@ -193,7 +198,7 @@ public class SparqlView extends AbstractTable {
 	}
 
 	public SparqlResultSet getResultSet() throws SQLException {
-		return new SparqlResultSet(this, builder.build());
+		return new SparqlResultSet(this, builder.build(), executor);
 	}
 
 	@Override
@@ -236,5 +241,10 @@ public class SparqlView extends AbstractTable {
 	public NameSegments getColumnSegments() {
 		return builder.getColumnSegments();
 	}
+
+    @Override
+    public QueryExecution execute(Query query) {
+        return executor.execute(  query );
+    }
 
 }

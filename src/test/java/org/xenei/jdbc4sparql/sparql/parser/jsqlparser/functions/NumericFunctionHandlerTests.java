@@ -26,6 +26,7 @@ import org.xenei.jdbc4sparql.iface.name.CatalogName;
 import org.xenei.jdbc4sparql.iface.name.ColumnName;
 import org.xenei.jdbc4sparql.iface.name.SchemaName;
 import org.xenei.jdbc4sparql.iface.name.TableName;
+import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
 import org.xenei.jdbc4sparql.impl.virtual.VirtualCatalog;
 import org.xenei.jdbc4sparql.sparql.QueryInfoSet;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
@@ -74,7 +75,7 @@ public class NumericFunctionHandlerTests {
 	private Catalog catalog;
 	private CatalogName catalogName;
 
-	private Schema schema;
+	private RdfSchema schema;
 	private SchemaName schemaName;
 
 	private AliasInfo alias;
@@ -112,7 +113,7 @@ public class NumericFunctionHandlerTests {
 		catalogs.put("testCatalog", catalog);
 		catalogs.put(VirtualCatalog.NAME, new VirtualCatalog());
 
-		schema = mock(Schema.class);
+		schema = mock(RdfSchema.class);
 		schemaName = catalogName.getSchemaName("testSchema");
 		when(schema.getName()).thenReturn(schemaName);
 

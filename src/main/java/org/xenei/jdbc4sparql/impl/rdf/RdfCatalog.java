@@ -20,6 +20,7 @@ import org.apache.jena.query.QuerySolution;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.rdfconnection.RDFConnection;
@@ -35,6 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.NameFilter;
+import org.xenei.jdbc4sparql.iface.QExecutor;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.name.CatalogName;
 import org.xenei.jena.entities.EntityManager;
@@ -68,7 +70,8 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 		private RDFConnection connection;
 		private URL sparqlEndpoint;
 		private String shortName;
-		private Resource graphName;
+		private Resource writeGraph;
+		private Resource readGraph;
 		
 
 		private final Set<Schema> schemas = new HashSet<Schema>();
@@ -79,7 +82,7 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 		public Builder(final RdfCatalog catalog) throws MalformedURLException {
 			this();
 			setName(catalog.getShortName());
-			setGraphName( catalog.getGraphName() );
+			setWriteGraph( catalog.getWriteGraph() );
 			if (catalog.getSparqlEndpoint() != null) {
 				setSparqlEndpoint(new URL(catalog.getSparqlEndpoint()));
 			}
@@ -95,8 +98,9 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 			}
 			
 			checkBuildState();
-			graphName = graphName==null?ResourceFactory.createResource(Quad.defaultGraphIRI.getURI()):graphName;
-			EntityManager entityManager = em.getNamedManager( graphName.asNode() );
+			writeGraph = writeGraph==null?ResourceFactory.createResource(Quad.defaultGraphIRI.getURI()):writeGraph;
+			EntityManager entityManager = em.getNamedManager( writeGraph.asNode() );
+			readGraph = readGraph==null?writeGraph:readGraph;
 			
 			final Class<?> typeClass = RdfCatalog.class;
 			final String fqName = getFQName(entityManager);
@@ -128,13 +132,17 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 
 			// create RdfCatalog object from graph object
 			try {
-				final RdfCatalog retval = entityManager.getNamedManager(graphName.asNode()).read(catalog,
+				final RdfCatalog retval = entityManager.getNamedManager(writeGraph.asNode()).read(catalog,
 						RdfCatalog.class);
 
 				catalog.removeAll( RDFS.label);
 				catalog.addLiteral(RDFS.label, shortName);
 				catalog.removeAll( VOID.rootResource);
-				catalog.addProperty( VOID.rootResource, graphName==null?ResourceFactory.createResource(Quad.defaultGraphIRI.getURI()):graphName);
+				catalog.addProperty( VOID.rootResource, writeGraph);
+				Property p = entityManager.getSubjectInfo(RdfCatalog.class).getPredicateProperty("getReadGraph");
+				catalog.removeAll( p );
+				catalog.addProperty( p, readGraph );
+				
 				retval.getResource().getModel().register(retval.new ChangeListener());
 				
 				retval.connection = connection;
@@ -176,7 +184,7 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 		}
 
 		@Override
-		public List<QuerySolution> executeLocalQuery(final Query query) {
+		public QExecutor getLocalExecutor() {
 			throw new UnsupportedOperationException();
 		}
 
@@ -214,11 +222,15 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 			return this;
 		}
 				
-		public Builder setGraphName(final Resource graphName) {
-			this.graphName = graphName;
+		public Builder setWriteGraph(final Resource graphName) {
+			this.writeGraph = graphName;
 			return this;
 		}
 
+		public Builder setReadGraph(final Resource graphName) {
+			this.readGraph = graphName;
+			return this;
+		}
 		public Builder setName(final String name) {
 			this.shortName = StringUtils.defaultString(name);
 			return this;
@@ -269,7 +281,7 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 
 	// the model that contains the sparql data.
 	private RDFConnection connection;
-	private Node graphName;
+	//private Node graphName;
 	private Set<Schema> schemaList;
 
 	private static Logger LOG = LoggerFactory.getLogger(RdfCatalog.class);
@@ -293,58 +305,38 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 	 * @return The list of QuerySolutions.
 	 */
 	@Override
-	public List<QuerySolution> executeLocalQuery(final Query query) {
+	public QExecutor getLocalExecutor() {
 		
-		Resource graphName = getGraphName();
-		if ( ! graphName.asNode().equals( Quad.defaultGraphIRI))
-		{
-			ElementNamedGraph ge = new ElementNamedGraph( getGraphName().asNode(), query.getQueryPattern() );
-			query.setQueryPattern(ge);
-		}
+	    return new QExecutor() {
+
+            @Override
+            public QueryExecution execute(Query query) {
+                Resource graphName = getReadGraph();
+                if ( ! graphName.asNode().equals( Quad.defaultGraphIRI))
+                {
+                    ElementNamedGraph ge = new ElementNamedGraph( graphName.asNode(), query.getQueryPattern() );
+                    query.setQueryPattern(ge);
+                }
+                    
+                return connection.query(query);
+            }
+	        
+	    };
 		
-			
-		final QueryExecution qexec = connection.query(query);
-//		System.out.println( ((PlanOp)((QueryExecutionBase) qexec).getPlan()).getOp());
-		try {
-			final ResultSet rs = qexec.execSelect();
-			final List<QuerySolution> retval = WrappedIterator.create(rs)
-					.toList();
-			return retval;
-		} catch (final Exception e) {
-			RdfCatalog.LOG.error(
-					"Error executing local query: " + e.getMessage(), e);
-			throw e;
-		} finally {
-			qexec.close();
-		}
+		
 	}
 
 	/**
-	 * Execute a jena query against the data.
-	 *
-	 * @param query
-	 *            The query to execute.
-	 * @return The list of QuerySolutions.
+	 * @return The QExecutor against the data.
 	 */
-	public List<QuerySolution> executeQuery(final Query query) {
-		QueryExecution qexec =connection.query(query);
-		
-		try {
-			return WrappedIterator.create(qexec.execSelect()).toList();
-		} finally {
-			qexec.close();
-		}
-	}
+	public QExecutor getExecutor() {
+	    return new QExecutor() {
 
-	/**
-	 * Execute a query against the data.
-	 *
-	 * @param queryStr
-	 *            The query as a string.
-	 * @return The list of QuerySolutions.
-	 */
-	public List<QuerySolution> executeQuery(final String queryStr) {
-		return executeQuery(QueryFactory.create(queryStr));
+            @Override
+            public QueryExecution execute(Query query) {
+                return connection.query(query);
+            }};
+
 	}
 
 	@Override
@@ -427,13 +419,18 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 	}
 
 	@Predicate( impl=true, namespace = VOID.NS, name = "rootResource" )
-	public Resource getGraphName() {
+	public Resource getWriteGraph() {
 		throw new EntityManagerRequiredException();
 	}
 	
+	@Predicate( impl=true )
+	public Resource getReadGraph() {
+		throw new EntityManagerRequiredException();
+	}
 	
 	public Resource getResource( String uri )
 	{		
+		Resource graphName = getWriteGraph();
 		Node n = NodeFactory.createURI(uri);
 		ConstructBuilder sb = new ConstructBuilder().addConstruct( n, "?p", "?o");
 		if (graphName != null) {

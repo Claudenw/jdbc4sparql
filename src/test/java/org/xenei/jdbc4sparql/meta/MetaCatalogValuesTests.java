@@ -17,6 +17,7 @@ import org.xenei.jdbc4sparql.LoggingConfig;
 import org.xenei.jdbc4sparql.config.MemDatasetProducer;
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.DatasetProducer;
+import org.xenei.jdbc4sparql.iface.QExecutor;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
@@ -346,7 +347,7 @@ public class MetaCatalogValuesTests {
 		selectBuilder.setVar( "?lbl", tblName);
 		final Query query = selectBuilder.build();	
 		
-		List<QuerySolution> lst = catalog.executeLocalQuery(query);
+		List<QuerySolution> lst = QExecutor.asList(catalog.getLocalExecutor().execute(query));
 				
 		for( QuerySolution soln : lst ) {
 				final Literal l = soln.getLiteral("colName");
@@ -752,8 +753,8 @@ public class MetaCatalogValuesTests {
 		final Table table = schema.getTable(MetaCatalogBuilder.COLUMNS_TABLE);
 
 		final Query query = QueryFactory.create(queryString);
-		final List<QuerySolution> results = table.getCatalog()
-				.executeLocalQuery(query);
+		final List<QuerySolution> results = QExecutor.asList(table.getCatalog()
+		        .getLocalExecutor().execute(query));
 		System.out.println(results.size());
 		for (final QuerySolution soln : results) {
 			System.out.println(soln);

@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
+import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 import org.xenei.jdbc4sparql.sparql.SparqlView;
 import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
@@ -127,7 +128,7 @@ public class J4SStatement implements Statement {
 			resultSet = executeShow(parts);
 		}
 		else {
-			final SparqlView view = new SparqlView(parse(sql));
+			final SparqlView view = new SparqlView(parse(sql),catalog.getExecutor());
 			resultSet = view.getResultSet();
 			resultSet.setFetchDirection(getFetchDirection());
 		}
@@ -339,7 +340,11 @@ public class J4SStatement implements Statement {
 	}
 
 	public SparqlQueryBuilder parse(final String sql) throws SQLException {
-		return parser.parse(connection.getCatalogs(), catalog, schema, sql);
+	    if (schema instanceof RdfSchema)
+	    {
+		return parser.parse(connection.getCatalogs(), catalog, (RdfSchema)schema, sql);
+	    }
+	    throw new IllegalStateException( "parse() called on non RDFSchema");
 	}
 
 	@Override

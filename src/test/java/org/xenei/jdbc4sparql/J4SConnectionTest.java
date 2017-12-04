@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
 
+import org.apache.log4j.Level;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -29,6 +30,12 @@ public class J4SConnectionTest {
 
 	@Before
 	public void setUp() throws Exception {
+		LoggingConfig.setConsole(Level.DEBUG);
+		LoggingConfig.setRootLogger(Level.INFO);
+		LoggingConfig.setLogger("org.apache.jena.", Level.INFO);
+		LoggingConfig.setLogger("org.xenei.jdbc4sparql", Level.DEBUG);
+		LoggingConfig.setLogger("org.xenei.jena", Level.DEBUG);
+
 		driver = new J4SDriver();
 		final URL fUrl = J4SConnectionTest.class
 				.getResource("./J4SDriverTest.ttl");

@@ -10,6 +10,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.xenei.jdbc4sparql.iface.NameFilter;
+import org.xenei.jdbc4sparql.iface.QExecutor;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jena.entities.EntityManager;
 import org.xenei.jena.entities.EntityManagerFactory;
@@ -90,7 +91,7 @@ public class CatalogTest {
 		final String qry = "Select * WHERE { ?s ?p ?o }";
 		final Query query = QueryFactory.create(qry);
 
-		List<QuerySolution> lqs = catalog.executeLocalQuery(query);
+		List<QuerySolution> lqs = QExecutor.asList(  catalog.getLocalExecutor().execute( query));
 		lqs.forEach( lq -> System.out.println( lq ));
 		Assert.assertEquals(2, lqs.size());
 
@@ -105,7 +106,7 @@ public class CatalogTest {
 				.setSparqlEndpoint(new URL("http://example.com"))
 				.setLocalConnection(dataConnection).build( entityManager );
 
-		lqs = cat3.executeLocalQuery(query);
+		lqs = QExecutor.asList(cat3.getLocalExecutor().execute(query));
 		Assert.assertEquals(2, lqs.size());
 
 		/*
@@ -129,7 +130,7 @@ public class CatalogTest {
 		final String qry = "Select * WHERE { ?s ?p ?o }";
 		final Query query = QueryFactory.create(qry);
 
-		final List<QuerySolution> lqs = catalog.executeQuery(query);
+		final List<QuerySolution> lqs = QExecutor.asList(catalog.getLocalExecutor().execute(query));
 		Assert.assertEquals(2, lqs.size());
 
 		new RdfCatalog.Builder().setName("testCatalog2")
@@ -147,7 +148,7 @@ public class CatalogTest {
 
 		final String query = "Select * WHERE { ?s ?p ?o }";
 
-		final List<QuerySolution> lqs = catalog.executeQuery(query);
+		final List<QuerySolution> lqs = QExecutor.asList( QExecutor.execute( catalog.getLocalExecutor(),query));
 		Assert.assertEquals(2, lqs.size());
 
 		new RdfCatalog.Builder().setName("testCatalog2")

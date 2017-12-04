@@ -11,6 +11,7 @@ import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.query.Query;
+import org.apache.jena.query.QueryExecution;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFList;
@@ -24,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.Column;
+import org.xenei.jdbc4sparql.iface.QExecutor;
 import org.xenei.jdbc4sparql.iface.NameFilter;
 import org.xenei.jdbc4sparql.iface.NameSegments;
 import org.xenei.jdbc4sparql.iface.Schema;
@@ -45,7 +47,7 @@ import org.xenei.jena.entities.annotations.Subject;
 
 
 @Subject(namespace = "http://org.xenei.jdbc4sparql/entity/Table#")
-public class RdfTable extends RdfNamespacedObject implements Table,
+public class RdfTable extends RdfNamespacedObject implements Table, QExecutor,
 ResourceWrapper {
 	public static class Builder implements Table {
 		public static RdfTable fixupSchema(EntityManager entityManager, final RdfSchema schema,
@@ -388,6 +390,11 @@ ResourceWrapper {
 	private TableName tableName;
 
 	@Override
+	public QueryExecution execute( Query query ) {
+	    return getEntityManager().execute( query );
+	}
+	
+	@Override
 	public void delete() {
 		final Resource tbl = getResource();
 		final Model model = tbl.getModel();
@@ -575,7 +582,7 @@ ResourceWrapper {
 	
 	public SparqlResultSet getResultSet(final Map<String, Catalog> catalogs,
 			final SparqlParser parser) throws SQLException {
-		return new SparqlResultSet(this, getQuery(catalogs, parser));
+		return new SparqlResultSet(this, getQuery(catalogs, parser), this);
 	}
 
 	@Override

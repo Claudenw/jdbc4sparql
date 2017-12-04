@@ -31,6 +31,8 @@ import org.apache.commons.discovery.resource.classes.DiscoverClasses;
 import org.apache.commons.discovery.resource.names.DiscoverServiceNames;
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.Schema;
+import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
+import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 
 import org.apache.jena.query.Query;
@@ -228,7 +230,7 @@ public interface SparqlParser {
 	 * @return The SparqlQueryBuilder.
 	 * @throws SQLException
 	 */
-	SparqlQueryBuilder parse(Map<String, Catalog> catalogs, Catalog catalog,
+	SparqlQueryBuilder parse(Map<String, Catalog> catalogs, RdfCatalog catalog,
 			Schema schema, String sqlQuery) throws SQLException;
 
 }

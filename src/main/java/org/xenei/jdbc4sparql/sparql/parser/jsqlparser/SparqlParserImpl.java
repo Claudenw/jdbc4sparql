@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
+import org.xenei.jdbc4sparql.impl.rdf.RdfSchema;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.functions.NumericFunctionHandler;
@@ -84,7 +85,7 @@ public class SparqlParserImpl implements SparqlParser {
 
 	@Override
 	public SparqlQueryBuilder parse(final Map<String, Catalog> catalogs,
-			final Catalog catalog, final Schema schema, final String sqlQuery)
+			final RdfCatalog catalog, final Schema schema, final String sqlQuery)
 					throws SQLException {
 		if (LOG.isDebugEnabled()) {
 			SparqlParserImpl.LOG.debug("catalog: '{}' parsing SQL: {}",

@@ -17,6 +17,8 @@
  */
 package org.xenei.jdbc4sparql;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -25,6 +27,9 @@ import java.sql.SQLException;
 import java.util.Iterator;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.jena.query.Query;
+import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFDataMgr;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xenei.jdbc4sparql.iface.Catalog;
@@ -237,7 +242,17 @@ public class J4SDatabaseMetaData implements DatabaseMetaData {
 			final SparqlQueryBuilder sqb = parser.parse(
 					connection.getCatalogs(), table.getCatalog(),
 					table.getSchema(), query.toString()).setKey(table.getKey());
-			return new SparqlResultSet(table, sqb.build());
+			try {
+				RDFDataMgr.write(new FileOutputStream( "/tmp/columns.trig"),table.getEntityManager().getConnection().fetchDataset(), Lang.TRIG );
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			Query q = sqb.build();
+			table.getEntityManager().execute( q ).execSelect().forEachRemaining( qs -> System.out.println(  qs ) );
+			
+			return new SparqlResultSet(table, sqb.build(),table);
 		}
 		else {
 			return table.getResultSet(connection.getCatalogs(), parser);
@@ -623,7 +638,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData {
 			final SparqlQueryBuilder sqb = parser.parse(
 					connection.getCatalogs(), table.getCatalog(),
 					table.getSchema(), query.toString()).setKey(table.getKey());
-			return new SparqlResultSet(table, sqb.build());
+			return new SparqlResultSet(table, sqb.build(), table);
 		}
 		else {
 			return table.getResultSet(connection.getCatalogs(), parser);
@@ -787,7 +802,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData {
 			final SparqlQueryBuilder sqb = parser.parse(
 					connection.getCatalogs(), table.getCatalog(),
 					table.getSchema(), query.toString()).setKey(table.getKey());
-			return new SparqlResultSet(table, sqb.build());
+			return new SparqlResultSet(table, sqb.build(), table);
 		}
 		else {
 			return table.getResultSet(connection.getCatalogs(), parser);

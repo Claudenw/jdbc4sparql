@@ -10,7 +10,7 @@ import org.junit.Test;
 import org.xenei.jdbc4sparql.config.MemDatasetProducer;
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.DatasetProducer;
-
+import org.xenei.jdbc4sparql.iface.QExecutor;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QueryExecutionFactory;
@@ -289,8 +289,8 @@ public class MetaCatalogTests {
 		int count = 0;
 		final Query query = QueryFactory.create(String.format(queryString,
 				tblName));
-	
-		List<QuerySolution> lst = catalog.executeLocalQuery(query);
+		
+		List<QuerySolution> lst = QExecutor.asList(catalog.getLocalExecutor().execute(query));
 		
 			for (QuerySolution soln : lst) {
 				final Literal l = soln.getLiteral("colName");

@@ -22,6 +22,7 @@ import java.util.Set;
 
 import org.apache.jena.graph.Node;
 import org.apache.jena.query.Query;
+import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QuerySolution;
 import org.xenei.jdbc4sparql.iface.name.CatalogName;
 import org.xenei.jdbc4sparql.sparql.items.NamedObject;
@@ -34,14 +35,13 @@ public interface Catalog extends NamedObject<CatalogName> {
 	public void close();
 
 	/**
-	 * Execute the query against the local Model.
+	 * Return an executor against the local Model.
 	 *
 	 * This is used to execute queries built by the query builder.
 	 *
-	 * @param query
-	 * @return The list of QuerySolutions.
+	 * @return The QExecutor object
 	 */
-	public List<QuerySolution> executeLocalQuery(final Query query);
+	public QExecutor getLocalExecutor();
 
 	/**
 	 * Return the list of schemas that have names matching the pattern if name

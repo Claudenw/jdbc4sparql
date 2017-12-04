@@ -19,6 +19,7 @@ package org.xenei.jdbc4sparql.sparql;
 
 import java.sql.SQLException;
 
+import org.xenei.jdbc4sparql.iface.QExecutor;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.TypeConverter;
 import org.xenei.jdbc4sparql.impl.ListResultSet;
@@ -27,13 +28,14 @@ import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryFactory;
 import org.apache.jena.query.QuerySolution;
 import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.util.iterator.WrappedIterator;
 
 public class SparqlResultSet extends ListResultSet {
 	private final Query query;
 
-	public SparqlResultSet(final Table table, final Query query)
+	public SparqlResultSet(final Table table, final Query query, final QExecutor qExec)
 			throws SQLException {
-		super(table.getCatalog().executeLocalQuery(query), table);
+		super(WrappedIterator.create( qExec.execute(query).execSelect()).toList(), table);
 		this.query = query;	
 	}
 

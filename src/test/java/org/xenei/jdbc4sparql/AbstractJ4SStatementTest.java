@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.xenei.jdbc4sparql.iface.QExecutor;
 import org.xenei.jdbc4sparql.meta.MetaCatalogBuilder;
 
 import org.apache.jena.query.Query;
@@ -218,8 +219,8 @@ public abstract class AbstractJ4SStatementTest extends AbstractJ4SSetup {
 		final String queryString = "SELECT (count(*) as ?x) where { ?fooTable <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.com/jdbc4sparql#fooTable> }";
 		final Query query = QueryFactory.create(queryString);
 
-		final List<QuerySolution> lqs = ((J4SConnection) conn).getCatalogs()
-				.get(conn.getCatalog()).executeLocalQuery(query);
+		final List<QuerySolution> lqs = QExecutor.asList(((J4SConnection) conn).getCatalogs()
+				.get(conn.getCatalog()).getLocalExecutor().execute( query));
 		Assert.assertEquals(1, lqs.size());
 		final QuerySolution qs = lqs.get(0);
 		Assert.assertEquals(3, qs.get("x").asLiteral().getValue());

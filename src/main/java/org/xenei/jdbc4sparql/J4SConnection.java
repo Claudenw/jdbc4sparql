@@ -438,7 +438,7 @@ public class J4SConnection implements Connection {
 					
 				}
 				builder.setLocalConnection( dsProducer.getLocalConnection());
-				builder.setGraphName( ResourceFactory.createResource(em.getModelName().getURI()) );
+				builder.setWriteGraph( ResourceFactory.createResource(em.getModelName().getURI()) );
 				cat = builder.build(entityManager);
 
 				catalogMap.put(cat.getName().getShortName(), cat);
@@ -633,20 +633,6 @@ public class J4SConnection implements Connection {
 			if (cat == null) {
 				throw new SQLException(String.format(
 						"Catalog '%s' was not found", getCatalog()));
-			}
-			
-//			try {
-//				RDFDataMgr.write( new FileOutputStream( "/tmp/schema.trig"), ((RdfCatalog)cat).getEntityManager().getConnection().fetchDataset(), Lang.TRIG) ;
-//			} catch (FileNotFoundException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-//			
-			try {
-				RDFDataMgr.write( new FileOutputStream( "/tmp/model.ttl"), ((RdfCatalog)cat).getResource().getModel(), Lang.TURTLE) ;
-			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			}
 			
 			final Schema schem = cat.getSchema(schema);
