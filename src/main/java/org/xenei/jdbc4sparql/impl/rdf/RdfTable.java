@@ -485,9 +485,6 @@ ResourceWrapper {
 			final Property p = model.createProperty(
 					ResourceBuilder.getNamespace(getEntityManager(), RdfTable.class), "column");
 
-			Statement stmt = tbl.getRequiredProperty(p);
-			Resource r = stmt.getResource();
-			r.listProperties().forEachRemaining( s -> System.out.println( s )); //DEBUG
 			final List<RDFNode> resLst = tbl.getRequiredProperty(p)
 					.getResource().as(RDFList.class).asJavaList();
 			for (final RDFNode n : resLst) {

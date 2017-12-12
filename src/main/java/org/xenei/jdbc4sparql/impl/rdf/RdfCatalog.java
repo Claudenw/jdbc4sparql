@@ -2,6 +2,7 @@ package org.xenei.jdbc4sparql.impl.rdf;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -74,7 +75,7 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 		private Resource readGraph;
 		
 
-		private final Set<Schema> schemas = new HashSet<Schema>();
+		//private final Set<Schema> schemas = new HashSet<Schema>();
 
 		public Builder() {
 		}
@@ -99,7 +100,7 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 			
 			checkBuildState();
 			writeGraph = writeGraph==null?ResourceFactory.createResource(Quad.defaultGraphIRI.getURI()):writeGraph;
-			EntityManager entityManager = em.getNamedManager( writeGraph.asNode() );
+			EntityManager entityManager = em;//.getNamedManager( writeGraph.asNode() );
 			readGraph = readGraph==null?writeGraph:readGraph;
 			
 			final Class<?> typeClass = RdfCatalog.class;
@@ -121,19 +122,18 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 							sparqlEndpoint.toExternalForm());
 				}
 
-				for (final Schema scm : schemas) {
-					if (scm instanceof ResourceWrapper) {
-						catalog.addProperty(
-								builder.getProperty(typeClass, "schema"),
-								((ResourceWrapper) scm).getResource());
-					}
-				}
+//				for (final Schema scm : schemas) {
+//					if (scm instanceof ResourceWrapper) {
+//						catalog.addProperty(
+//								builder.getProperty(typeClass, "schema"),
+//								((ResourceWrapper) scm).getResource());
+//					}
+//				}
 			}
 
 			// create RdfCatalog object from graph object
 			try {
-				final RdfCatalog retval = entityManager.getNamedManager(writeGraph.asNode()).read(catalog,
-						RdfCatalog.class);
+				final RdfCatalog retval = entityManager.read(catalog, RdfCatalog.class);
 
 				catalog.removeAll( RDFS.label);
 				catalog.addLiteral(RDFS.label, shortName);
@@ -154,10 +154,10 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 						retval.connection = RDFConnectionFactory.connect(DatasetFactory.create());
 					}
 				}
-				if (LOG.isDebugEnabled())
-				{
-					retval.getResource().listProperties().forEachRemaining( stmt -> LOG.debug( "build result: "+stmt ));
-				}
+//				if (LOG.isDebugEnabled())
+//				{
+//					retval.getResource().listProperties().forEachRemaining( stmt -> LOG.debug( "build result: "+stmt ));
+//				}
 				return retval;
 			} catch (final MissingAnnotation e) {
 				RdfCatalog.LOG.error(
@@ -190,7 +190,7 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 
 		@Override
 		public NameFilter<Schema> findSchemas(final String schemaNamePattern) {
-			return new NameFilter<Schema>(schemaNamePattern, schemas);
+			return new NameFilter<Schema>(schemaNamePattern, getSchemas());
 		}
 
 		private String getFQName(EntityManager mgr) {
@@ -214,7 +214,7 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 
 		@Override
 		public Set<Schema> getSchemas() {
-			return schemas;
+			return Collections.emptySet();
 		}
 
 		public Builder setLocalConnection(final RDFConnection connection) {

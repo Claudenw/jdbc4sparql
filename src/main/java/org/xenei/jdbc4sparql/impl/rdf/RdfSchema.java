@@ -1,14 +1,22 @@
 package org.xenei.jdbc4sparql.impl.rdf;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.UUID;
 
 import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.query.QueryFactory;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.shared.Lock;
 import org.apache.jena.vocabulary.RDFS;
 import org.slf4j.Logger;
@@ -44,8 +52,12 @@ ResourceWrapper {
 		private String name;
 		private RdfCatalog catalog;
 
-		private final Set<Table> tables = new HashSet<Table>();
+		//private final Set<Table> tables = new HashSet<Table>();
 
+		/**
+		 * Build the schema
+		 * @return the built RDF Schema.
+		 */
 		public RdfSchema build() {
 			checkBuildState();
 			EntityManager entityManager = catalog.getEntityManager();
@@ -60,30 +72,21 @@ ResourceWrapper {
 			else {
 				schema = builder.getResource(fqName, typeClass);
 				schema.addLiteral(RDFS.label, name);
-
-				for (final Table tbl : tables) {
-					if (tbl instanceof ResourceWrapper) {
-						schema.addProperty(
-								builder.getProperty(typeClass, "table"),
-								((ResourceWrapper) tbl).getResource());
-					}
-				}
 			}
 
 			try {
 				RdfSchema retval = entityManager.read(schema, RdfSchema.class);
 				retval = Builder.fixupCatalog(entityManager,catalog, retval);
 				retval.getResource().getModel().register(retval.new ChangeListener());
-				if (LOG.isDebugEnabled())
-				{
-					retval.getResource().listProperties().forEachRemaining( stmt -> LOG.debug( "build result: "+stmt ));
-				}
 				return retval;
 			} catch (final MissingAnnotation e) {
 				throw new RuntimeException(e);
 			}
 		}
 
+		/**
+		 * Verify that the builder is in a proper state to create a schema.
+		 */
 		private void checkBuildState() {
 			if (name == null) {
 				throw new IllegalStateException("Name must be set");
@@ -97,7 +100,7 @@ ResourceWrapper {
 
 		@Override
 		public NameFilter<Table> findTables(final String tableNamePattern) {
-			return new NameFilter<Table>(tableNamePattern, tables);
+			return new NameFilter<Table>(tableNamePattern, getTables());
 		}
 
 		@Override
@@ -130,7 +133,7 @@ ResourceWrapper {
 
 		@Override
 		public Set<Table> getTables() {
-			return tables;
+			return Collections.emptySet();
 		}
 
 		public Builder setCatalog(final RdfCatalog catalog) {
@@ -239,12 +242,6 @@ ResourceWrapper {
 	public SchemaName getName() {
 		if (schemaName == null) {
 			String localName = getLocalSchemaName();
-			if (localName == null)
-			{
-				localName = getLocalSchemaName();
-				getResource().listProperties().forEachRemaining( stmt -> System.out.println( stmt ));
-			}
-			System.out.println( "LocalName: "+localName);
 			schemaName = new SchemaName(getCatalog().getShortName(),
 					localName );
 		}

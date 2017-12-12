@@ -19,6 +19,7 @@ import org.apache.xerces.util.XMLChar;
 import org.xenei.jdbc4sparql.J4SPropertyNames;
 import org.xenei.jdbc4sparql.iface.DatasetProducer;
 import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
+import org.xenei.jdbc4sparql.meta.MetaCatalogBuilder;
 import org.xenei.jdbc4sparql.utils.NoCloseZipInputStream;
 import org.xenei.jena.entities.EntityManager;
 import org.xenei.jena.entities.EntityManagerFactory;
@@ -76,10 +77,11 @@ abstract public class AbstractDatasetProducer implements DatasetProducer {
 	}
 
 	protected AbstractDatasetProducer(final Configuration cfg) {
-		this.properties = cfg.config;
-		this.metaMgr = EntityManagerFactory.create( cfg.metaDataset );
+		this.properties = cfg.config;		
 		this.localConnection = RDFConnectionFactory.connect( cfg.localDataset );
 		this.metaConnection = RDFConnectionFactory.connect( cfg.metaDataset );
+		this.metaMgr = EntityManagerFactory.create( metaConnection ).getNamedManager( 
+		        NodeFactory.createURI( MetaCatalogBuilder.LOCAL_NAME ) );
 	}
 	
 	@Override

@@ -47,22 +47,29 @@ import org.xenei.jdbc4sparql.sparql.SparqlResultSet;
 import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 import org.xenei.jdbc4sparql.sparql.parser.jsqlparser.SparqlParserImpl;
 
+/**
+ * Metadata about the connection.
+ *
+ */
 public class J4SDatabaseMetaData implements DatabaseMetaData {
 	private final J4SConnection connection;
 	private final J4SDriver driver;
 	private final Catalog metaCatalog;
 	private final Schema metaSchema;
-	// private final Map<String, Catalog> catalogs;
 	private static Logger LOG = LoggerFactory
 			.getLogger(J4SDatabaseMetaData.class);
 	private final SparqlParser parser = new SparqlParserImpl();
 
+	/**
+	 * Constructor.
+	 * @param connection the J4SConnection to use.
+	 * @param driver the J4SDriver to use.
+	 */
 	public J4SDatabaseMetaData(final J4SConnection connection,
 			final J4SDriver driver) {
 		this.connection = connection;
 		this.driver = driver;
-		// this.catalogs = new HashMap<String,
-		// Catalog>(connection.getCatalogs());
+
 		metaCatalog = connection.getCatalogs().get(
 				MetaCatalogBuilder.LOCAL_NAME);
 		metaSchema = metaCatalog.getSchema(MetaCatalogBuilder.SCHEMA_NAME);
@@ -242,15 +249,6 @@ public class J4SDatabaseMetaData implements DatabaseMetaData {
 			final SparqlQueryBuilder sqb = parser.parse(
 					connection.getCatalogs(), table.getCatalog(),
 					table.getSchema(), query.toString()).setKey(table.getKey());
-			try {
-				RDFDataMgr.write(new FileOutputStream( "/tmp/columns.trig"),table.getEntityManager().getConnection().fetchDataset(), Lang.TRIG );
-			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
-			Query q = sqb.build();
-			table.getEntityManager().execute( q ).execSelect().forEachRemaining( qs -> System.out.println(  qs ) );
 			
 			return new SparqlResultSet(table, sqb.build(),table);
 		}

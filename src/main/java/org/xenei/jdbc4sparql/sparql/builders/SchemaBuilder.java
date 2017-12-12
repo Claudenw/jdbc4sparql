@@ -61,6 +61,11 @@ import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
  * </p>
  */
 public interface SchemaBuilder {
+    
+    /**
+     * Utilities for SchemaBuilders
+     *
+     */
 	public static class Util {
 
 		public static SchemaBuilder getBuilder(final String name) {

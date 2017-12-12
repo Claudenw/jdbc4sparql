@@ -11,6 +11,8 @@ import org.xenei.jdbc4sparql.config.MemDatasetProducer;
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.DatasetProducer;
 import org.xenei.jdbc4sparql.iface.QExecutor;
+import org.xenei.jdbc4sparql.iface.Schema;
+import org.xenei.jdbc4sparql.iface.Table;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QueryExecutionFactory;
@@ -282,6 +284,20 @@ public class MetaCatalogTests {
 				"DELETE_RULE", "FK_NAME", "PK_NAME", "DEFERRABILITY"
 		};
 		verifyNames(MetaCatalogBuilder.XREF_TABLE, names);
+	}
+	
+	@Test
+	public void testNames() {
+	    // just verify that all names are retrievable
+	    String s = "Cataog: "+catalog.getName();
+	    for (Schema schema : catalog.getSchemas())
+	    {
+	        s = "  Schema: "+schema.getName();
+	        for (Table table : schema.getTables())
+	        {
+	            s = "    Table: "+table.getName();
+	        }
+	    }
 	}
 
 	private void verifyNames(final String tblName, final String[] colNames) {
