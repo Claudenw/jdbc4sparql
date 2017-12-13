@@ -54,8 +54,7 @@ public class J4SStatementMemTest extends AbstractJ4SStatementTest {
 		conn.setAutoCommit(false);
 		stmt = conn.createStatement();
 		// This is here to generate the zip file for reading config
-//		 ((J4SConnection)conn).saveConfig( new
-//		 java.io.File("/tmp/J4SStatementTest.zip"));
+		((J4SConnection)conn).saveConfig( new java.io.File("/tmp/J4SStatementTest.zip"));
 	}
 
 	@After

@@ -127,20 +127,9 @@ abstract public class AbstractDatasetProducer implements DatasetProducer {
 		return metaMgr;
 	}
 
-//	/**
-//	 * Retrieve the model that is the union of all models in the data set.
-//	 *
-//	 * @return
-//	 */
-//	@Override
-//	public EntityManager getMetaDatasetUnionConnection() {
-//		return getMetaEntityManager("urn:x-arq:UnionGraph");//.getConnection()
-//			//	.fetch("urn:x-arq:UnionGraph");
-//	}
-
-	private EntityManager getEntityManager(final EntityManager dataset, final String modelName) {
-		//final String name = AbstractDatasetProducer.getModelURI(localConnection, modelName);
-		return dataset.getNamedManager(NodeFactory.createURI(modelName));
+	private EntityManager getEntityManager(final EntityManager entityManager, final String modelName) {
+		final String name = AbstractDatasetProducer.getModelURI(entityManager, modelName);
+		return entityManager.getNamedManager(NodeFactory.createURI( name ));
 	}
 
 	@Override
@@ -150,7 +139,7 @@ abstract public class AbstractDatasetProducer implements DatasetProducer {
 
 	@Override
 	public Iterator<String> listMetaDataNames() {
-		SelectBuilder sb = new SelectBuilder().addVar( "?g" )
+		SelectBuilder sb = new SelectBuilder().setDistinct( true ).addVar( "?g" )
 				.addGraph( "?g", new SelectBuilder().addWhere( "?s", "?p", "?o").setLimit(1));
 		ResultSet rs = metaConnection.query( sb.build() ).execSelect();
 		return WrappedIterator.create(rs).mapWith( qs -> qs.getResource("g").getURI());
@@ -187,7 +176,7 @@ abstract public class AbstractDatasetProducer implements DatasetProducer {
 			final RDFConnection connection, final String prefix) {
 		if (e.getName().equals(createFN(prefix))) {
 			Dataset ds = DatasetFactory.create();
-			RDFDataMgr.read(ds, new NoCloseZipInputStream(zis),
+			RDFDataMgr.read(ds, new NoCloseZipInputStream(zis), "",
 					format.getLang());
 			connection.putDataset(ds);
 		}

@@ -87,11 +87,17 @@ public class SQLDisplay {
 	 * @throws JSQLParserException
 	 */
 	public static void main(final String[] args) throws Exception {
-		// String sqlQuery = "Select MAX(foo) as junk from tbl";
-		// CCJSqlParserManager parserManager = new CCJSqlParserManager();
-		// final Statement stmt = parserManager.parse(new StringReader(
-		// sqlQuery));
-		// System.out.println( stmt.toString() );
+	    DRIVER = args[0];
+	    URL = args[1];
+	    if (args.length>2)
+	    {
+	        USERNAME=args[2];
+	        if (args.length>3)
+	        {
+	            PASSWORD = args[3];
+	        }
+	    }
+
 		SQLDisplay.listSystemFunctions();
 		SQLDisplay.listStringFunctions();
 		SQLDisplay.listNumericFunctions();
@@ -111,16 +117,15 @@ public class SQLDisplay {
 		}
 	}
 
-	private static final String DRIVER = "com.mysql.jdbc.Driver";
+	private static String DRIVER;
 
-	private static final String URL = "jdbc:mysql://127.0.0.1/test";
+	private static String URL;
 
-	private static final String USERNAME = "claude";
+	private static String USERNAME = "";
 
-	private static final String PASSWORD = "";
+	private static String PASSWORD = "";
 
 	public SQLDisplay() {
-		// TODO Auto-generated constructor stub
 	}
 
 }

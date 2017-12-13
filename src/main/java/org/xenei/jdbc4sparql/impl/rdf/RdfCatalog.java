@@ -40,6 +40,7 @@ import org.xenei.jdbc4sparql.iface.NameFilter;
 import org.xenei.jdbc4sparql.iface.QExecutor;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.name.CatalogName;
+import org.xenei.jdbc4sparql.impl.AbstractDatasetProducer;
 import org.xenei.jena.entities.EntityManager;
 import org.xenei.jena.entities.EntityManagerFactory;
 import org.xenei.jena.entities.EntityManagerRequiredException;
@@ -71,8 +72,8 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 		private RDFConnection connection;
 		private URL sparqlEndpoint;
 		private String shortName;
-		private Resource writeGraph;
-		private Resource readGraph;
+		private String writeGraph;
+		private String readGraph;
 		
 
 		//private final Set<Schema> schemas = new HashSet<Schema>();
@@ -83,7 +84,7 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 		public Builder(final RdfCatalog catalog) throws MalformedURLException {
 			this();
 			setName(catalog.getShortName());
-			setWriteGraph( catalog.getWriteGraph() );
+			setWriteGraph( catalog.getWriteGraph().getURI() );
 			if (catalog.getSparqlEndpoint() != null) {
 				setSparqlEndpoint(new URL(catalog.getSparqlEndpoint()));
 			}
@@ -92,15 +93,14 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 			}
 		}
 
-		public RdfCatalog build(EntityManager em) {
+		public RdfCatalog build(EntityManager entityManager) {
 
-			if (em == null) {
+			if (entityManager == null) {
 				throw new IllegalArgumentException("EntityManager may not be null");
 			}
 			
 			checkBuildState();
-			writeGraph = writeGraph==null?ResourceFactory.createResource(Quad.defaultGraphIRI.getURI()):writeGraph;
-			EntityManager entityManager = em;//.getNamedManager( writeGraph.asNode() );
+			writeGraph = writeGraph==null?Quad.defaultGraphIRI.getURI():writeGraph;
 			readGraph = readGraph==null?writeGraph:readGraph;
 			
 			final Class<?> typeClass = RdfCatalog.class;
@@ -122,13 +122,6 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 							sparqlEndpoint.toExternalForm());
 				}
 
-//				for (final Schema scm : schemas) {
-//					if (scm instanceof ResourceWrapper) {
-//						catalog.addProperty(
-//								builder.getProperty(typeClass, "schema"),
-//								((ResourceWrapper) scm).getResource());
-//					}
-//				}
 			}
 
 			// create RdfCatalog object from graph object
@@ -138,10 +131,12 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 				catalog.removeAll( RDFS.label);
 				catalog.addLiteral(RDFS.label, shortName);
 				catalog.removeAll( VOID.rootResource);
-				catalog.addProperty( VOID.rootResource, writeGraph);
+				String graphName = AbstractDatasetProducer.getModelURI(entityManager, writeGraph);
+				catalog.addProperty( VOID.rootResource, graphName);
 				Property p = entityManager.getSubjectInfo(RdfCatalog.class).getPredicateProperty("getReadGraph");
 				catalog.removeAll( p );
-				catalog.addProperty( p, readGraph );
+				graphName = AbstractDatasetProducer.getModelURI(entityManager, readGraph);
+				catalog.addProperty( p, ResourceFactory.createResource( graphName ) );
 				
 				retval.getResource().getModel().register(retval.new ChangeListener());
 				
@@ -154,10 +149,7 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 						retval.connection = RDFConnectionFactory.connect(DatasetFactory.create());
 					}
 				}
-//				if (LOG.isDebugEnabled())
-//				{
-//					retval.getResource().listProperties().forEachRemaining( stmt -> LOG.debug( "build result: "+stmt ));
-//				}
+
 				return retval;
 			} catch (final MissingAnnotation e) {
 				RdfCatalog.LOG.error(
@@ -222,13 +214,13 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 			return this;
 		}
 				
-		public Builder setWriteGraph(final Resource graphName) {
+		public Builder setWriteGraph(final String graphName) {
 			this.writeGraph = graphName;
 			return this;
 		}
 
-		public Builder setReadGraph(final Resource graphName) {
-			this.readGraph = graphName;
+		public Builder setReadGraph(final String graphName) {
+		    this.readGraph = graphName;
 			return this;
 		}
 		public Builder setName(final String name) {
@@ -245,7 +237,6 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 		public String getShortName() {
 			return getName().getCatalog();
 		}
-
 
 	}
 

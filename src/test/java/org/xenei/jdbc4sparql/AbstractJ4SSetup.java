@@ -22,7 +22,7 @@ public abstract class AbstractJ4SSetup {
 
 	protected List<String> getColumnNames(final String table)
 			throws SQLException {
-		final ResultSet rs = conn.getMetaData().getColumns(conn.getCatalog(),
+	    final ResultSet rs = conn.getMetaData().getColumns(conn.getCatalog(),
 				conn.getSchema(), table, null);
 		final List<String> colNames = new ArrayList<String>();
 		while (rs.next()) {

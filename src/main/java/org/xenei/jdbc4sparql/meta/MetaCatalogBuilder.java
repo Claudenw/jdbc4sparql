@@ -61,8 +61,8 @@ public class MetaCatalogBuilder {
         final EntityManager entityManager = dsProducer.getMetaDataEntityManager( MetaCatalogBuilder.LOCAL_NAME );
         final RdfCatalog cat = new RdfCatalog.Builder().setName( MetaCatalogBuilder.LOCAL_NAME )
                 .setLocalConnection( dsProducer.getMetaConnection() )
-                .setWriteGraph( ResourceFactory.createResource( MetaCatalogBuilder.LOCAL_NAME ) )
-                .setReadGraph( ResourceFactory.createResource( Quad.unionGraph.getURI() ) ).build( entityManager );
+                .setWriteGraph(  MetaCatalogBuilder.LOCAL_NAME  )
+                .setReadGraph( Quad.unionGraph.getURI() ).build( entityManager );
 
         final RdfSchema schema = new RdfSchema.Builder().setCatalog( cat ).setName( MetaCatalogBuilder.SCHEMA_NAME )
                 .build();

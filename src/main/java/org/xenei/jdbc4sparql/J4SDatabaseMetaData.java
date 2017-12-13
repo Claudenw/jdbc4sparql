@@ -28,14 +28,19 @@ import java.util.Iterator;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.query.Query;
+import org.apache.jena.query.QueryExecution;
+import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.sparql.core.Quad;
+import org.apache.jena.sparql.syntax.ElementNamedGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xenei.jdbc4sparql.iface.Catalog;
 import org.xenei.jdbc4sparql.iface.Key;
 import org.xenei.jdbc4sparql.iface.KeySegment;
 import org.xenei.jdbc4sparql.iface.NameFilter;
+import org.xenei.jdbc4sparql.iface.QExecutor;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.TableDef;
@@ -59,6 +64,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData {
 	private static Logger LOG = LoggerFactory
 			.getLogger(J4SDatabaseMetaData.class);
 	private final SparqlParser parser = new SparqlParserImpl();
+	private final QExecutor qExec;
 
 	/**
 	 * Constructor.
@@ -69,7 +75,14 @@ public class J4SDatabaseMetaData implements DatabaseMetaData {
 			final J4SDriver driver) {
 		this.connection = connection;
 		this.driver = driver;
-
+		qExec = new QExecutor() { 
+		    @Override
+            public QueryExecution execute(Query query) {
+                ElementNamedGraph ge = new ElementNamedGraph( Quad.unionGraph, query.getQueryPattern() );
+                query.setQueryPattern(ge);
+               return connection.getDatasetProducer().getMetaConnection().query(query);
+		    }
+		};
 		metaCatalog = connection.getCatalogs().get(
 				MetaCatalogBuilder.LOCAL_NAME);
 		metaSchema = metaCatalog.getSchema(MetaCatalogBuilder.SCHEMA_NAME);
@@ -175,7 +188,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData {
 		final RdfTable table = (RdfTable) metaSchema
 				.getTable(MetaCatalogBuilder.CATALOGS_TABLE);
 
-		return table.getResultSet(connection.getCatalogs(), parser);
+		return table.getResultSet(connection.getCatalogs(), parser, qExec);
 	}
 
 	@Override
@@ -250,10 +263,10 @@ public class J4SDatabaseMetaData implements DatabaseMetaData {
 					connection.getCatalogs(), table.getCatalog(),
 					table.getSchema(), query.toString()).setKey(table.getKey());
 			
-			return new SparqlResultSet(table, sqb.build(),table);
+			return new SparqlResultSet(table, sqb.build(), qExec);
 		}
 		else {
-			return table.getResultSet(connection.getCatalogs(), parser);
+			return table.getResultSet(connection.getCatalogs(), parser, qExec);
 		}
 	}
 
@@ -636,10 +649,10 @@ public class J4SDatabaseMetaData implements DatabaseMetaData {
 			final SparqlQueryBuilder sqb = parser.parse(
 					connection.getCatalogs(), table.getCatalog(),
 					table.getSchema(), query.toString()).setKey(table.getKey());
-			return new SparqlResultSet(table, sqb.build(), table);
+			return new SparqlResultSet(table, sqb.build(), qExec);
 		}
 		else {
-			return table.getResultSet(connection.getCatalogs(), parser);
+			return table.getResultSet(connection.getCatalogs(), parser,qExec);
 		}
 	}
 
@@ -800,10 +813,10 @@ public class J4SDatabaseMetaData implements DatabaseMetaData {
 			final SparqlQueryBuilder sqb = parser.parse(
 					connection.getCatalogs(), table.getCatalog(),
 					table.getSchema(), query.toString()).setKey(table.getKey());
-			return new SparqlResultSet(table, sqb.build(), table);
+			return new SparqlResultSet(table, sqb.build(), qExec);
 		}
 		else {
-			return table.getResultSet(connection.getCatalogs(), parser);
+			return table.getResultSet(connection.getCatalogs(), parser, qExec);
 		}
 	}
 
@@ -811,7 +824,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData {
 	public ResultSet getTableTypes() throws SQLException {
 		return ((RdfTable) metaSchema
 				.getTable(MetaCatalogBuilder.TABLE_TYPES_TABLE)).getResultSet(
-						connection.getCatalogs(), parser);
+						connection.getCatalogs(), parser, qExec);
 	}
 
 	@Override
@@ -824,7 +837,7 @@ public class J4SDatabaseMetaData implements DatabaseMetaData {
 	public ResultSet getTypeInfo() throws SQLException {
 		return ((RdfTable) metaSchema
 				.getTable(MetaCatalogBuilder.TYPEINFO_TABLE)).getResultSet(
-						connection.getCatalogs(), parser);
+						connection.getCatalogs(), parser, qExec);
 	}
 
 	@Override

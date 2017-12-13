@@ -138,13 +138,6 @@ public interface DatasetProducer {
 
 	public Iterator<String> listMetaDataNames();
 
-	/**
-	 * Get or construct the meta dataset.
-	 *
-	 * @return the meta dataset.
-	 */
-	// public Dataset getMetaDataset();
-
 	public void save(File f) throws IOException, FileNotFoundException;
 
 	public void save(final OutputStream out) throws IOException;

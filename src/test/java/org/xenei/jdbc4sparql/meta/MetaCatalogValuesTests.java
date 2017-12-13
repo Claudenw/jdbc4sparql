@@ -281,9 +281,9 @@ public class MetaCatalogValuesTests {
 		verifyNames(MetaCatalogBuilder.TABLES_TABLE, names);
 
 		final Schema schema = catalog.getSchema(MetaCatalogBuilder.SCHEMA_NAME);
-		final Table table = schema.getTable(MetaCatalogBuilder.TABLES_TABLE);
-		final SparqlResultSet rs = ((RdfTable) table).getResultSet(catalogs,
-				parser);
+		final RdfTable table = (RdfTable) schema.getTable(MetaCatalogBuilder.TABLES_TABLE);
+		final SparqlResultSet rs = table.getResultSet(catalogs,
+				parser, table);
 		Assert.assertTrue(rs.first());
 		while (!rs.isAfterLast()) {
 			rs.next();

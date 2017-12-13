@@ -207,9 +207,7 @@ public class J4SConnection implements Connection {
             ClassNotFoundException, MissingAnnotation, SQLException {
         // if this is a config file just read the file.
         if (url.getType().equals( J4SUrl.TYPE_CONFIG )) {
-            loadConfig( url.getEndpoint().toURL() );
-           
-
+            loadConfig( url.getEndpoint().toURL() );           
         } else {
             // otherwise we have to read the data and parse the input.
             dsProducer = DatasetProducer.Loader.load( properties );
@@ -244,12 +242,11 @@ public class J4SConnection implements Connection {
             if (url.getType().equals( J4SUrl.TYPE_SPARQL )) {
                 catalog = new RdfCatalog.Builder().setSparqlEndpoint( url.getEndpoint().toURL() )
                         .setName( getCatalog() ).build( metaDataMgr );
-            } else {
+            } else {                
                 Dataset ds = DatasetFactory.create();
                 RDFDataMgr.read( ds, url.getEndpoint().toURL().openStream(), url.getLang() );
-
-                RDFConnection connection = RDFConnectionFactory.connect( ds );
-                catalog = new RdfCatalog.Builder().setLocalConnection( connection ).setName( getCatalog() )
+                dsProducer.getLocalConnection().putDataset( ds );                
+                catalog = new RdfCatalog.Builder().setLocalConnection( dsProducer.getLocalConnection() ).setName( getCatalog() )
                         .build( metaDataMgr );
             }
 
@@ -423,7 +420,7 @@ public class J4SConnection implements Connection {
         // create the catalogs
         final Resource catType = ResourceFactory
                 .createResource( ResourceBuilder.getFQName( dsProducer.getMetaDataEntityManager(), RdfCatalog.class ) );
-        Query q = new SelectBuilder().addVar( "?s" ).addWhere( "?s", RDF.type, catType ).build();
+        Query q = new SelectBuilder().setDistinct( true ).addVar( "?s" ).addWhere( "?s", RDF.type, catType ).build();
         final List<String> names = WrappedIterator.create( dsProducer.listMetaDataNames() ).toList();
 
         for (final String name : names) {
@@ -444,7 +441,7 @@ public class J4SConnection implements Connection {
 
                 }
                 builder.setLocalConnection( dsProducer.getLocalConnection() );
-                builder.setWriteGraph( ResourceFactory.createResource( em.getModelName().getURI() ) );
+                builder.setWriteGraph( em.getModelName().getURI() );
                 cat = builder.build( entityManager );
 
                 catalogMap.put( cat.getName().getShortName(), cat );

@@ -578,8 +578,8 @@ ResourceWrapper {
 	}
 	
 	public SparqlResultSet getResultSet(final Map<String, Catalog> catalogs,
-			final SparqlParser parser) throws SQLException {
-		return new SparqlResultSet(this, getQuery(catalogs, parser), this);
+			final SparqlParser parser, QExecutor qExec) throws SQLException {
+		return new SparqlResultSet(this, getQuery(catalogs, parser), qExec);
 	}
 
 	@Override

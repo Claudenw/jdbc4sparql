@@ -93,7 +93,7 @@ public class SimpleBuilderTest {
 		};
 		for (final RdfTable tbl : tables) {
 			// schema.addTables(tbl);
-			final ResultSet rs = tbl.getResultSet(catalogs, parser);
+			final ResultSet rs = tbl.getResultSet(catalogs, parser, tbl);
 			int count = 0;
 			while (rs.next()) {
 				count++;
@@ -126,7 +126,7 @@ public class SimpleBuilderTest {
 
 		final Set<RdfTable> tables = builder.getTables(schema);
 		for (final RdfTable tbl : tables) {
-			final ResultSet rs = tbl.getResultSet(catalogs, parser);
+			final ResultSet rs = tbl.getResultSet(catalogs, parser, tbl);
 			boolean foundNull = false;
 			while (rs.next() && !foundNull) {
 				rs.getString("NullableIntCol");
