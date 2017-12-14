@@ -80,8 +80,9 @@ abstract public class AbstractDatasetProducer implements DatasetProducer {
 		this.properties = cfg.config;		
 		this.localConnection = RDFConnectionFactory.connect( cfg.localDataset );
 		this.metaConnection = RDFConnectionFactory.connect( cfg.metaDataset );
-		this.metaMgr = EntityManagerFactory.create( metaConnection ).getNamedManager( 
-		        NodeFactory.createURI( MetaCatalogBuilder.LOCAL_NAME ) );
+		EntityManager entityManager = EntityManagerFactory.create( metaConnection );
+		final String name = AbstractDatasetProducer.getModelURI(entityManager, MetaCatalogBuilder.LOCAL_NAME);
+		this.metaMgr = entityManager.getNamedManager( NodeFactory.createURI( name ) );
 	}
 	
 	@Override

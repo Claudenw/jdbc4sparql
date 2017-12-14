@@ -41,6 +41,7 @@ import org.xenei.jdbc4sparql.iface.name.ItemName;
 import org.xenei.jdbc4sparql.iface.name.ItemNameMatcher;
 import org.xenei.jdbc4sparql.iface.name.TableName;
 import org.xenei.jdbc4sparql.impl.NameUtils;
+import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 import org.xenei.jdbc4sparql.impl.virtual.VirtualCatalog;
 import org.xenei.jdbc4sparql.impl.virtual.VirtualSchema;
 import org.xenei.jdbc4sparql.impl.virtual.VirtualTable;
@@ -511,6 +512,7 @@ public class SparqlQueryBuilder {
 
         for (final Schema schema : catalog.findSchemas( name.getSchema() )) {
             for (final Table table : schema.findTables( name.getTable() )) {
+                ((RdfTable)table).getResource().listProperties().forEachRemaining( stmt -> System.out.println(  stmt  ) );
                 tables.add( table );
             }
         }
