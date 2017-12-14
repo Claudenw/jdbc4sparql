@@ -287,10 +287,10 @@ public class J4SDatabaseMetaDataQueryTests {
 		dp = new MemDatasetProducer();
 		final Catalog cat = MetaCatalogBuilder.getInstance(dp);
 
-		if (J4SDatabaseMetaDataQueryTests.LOG.isDebugEnabled()) {
-			Dataset ds = dp.getLocalConnection().fetchDataset();
-			RDFDataMgr.write(new FileOutputStream("/tmp/cat.trig"), ds, Lang.TRIG);
-		}
+//		if (J4SDatabaseMetaDataQueryTests.LOG.isDebugEnabled()) {
+//			Dataset ds = dp.getLocalConnection().fetchDataset();
+//			RDFDataMgr.write(new FileOutputStream("/tmp/cat.trig"), ds, Lang.TRIG);
+//		}
 		catalogs.put(cat.getName().getShortName(), cat);
 		metadata = new J4SDatabaseMetaData(connection, driver);
 	}

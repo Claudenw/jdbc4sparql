@@ -128,7 +128,7 @@ public class J4SStatement implements Statement {
 			resultSet = executeShow(parts);
 		}
 		else {
-			final SparqlView view = new SparqlView(parse(sql),catalog.getExecutor());
+			final SparqlView view = new SparqlView(parse(sql),catalog.getLocalExecutor());
 			resultSet = view.getResultSet();
 			resultSet.setFetchDirection(getFetchDirection());
 		}

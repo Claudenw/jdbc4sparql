@@ -435,7 +435,12 @@ public class J4SConnection implements Connection {
             while (ri.hasNext()) {
                 RdfCatalog cat = entityManager.read( ri.next(), RdfCatalog.class );
                 final RdfCatalog.Builder builder = new RdfCatalog.Builder( cat );
-                builder.setLocalConnection( dsProducer.getLocalConnection() );               
+                if (MetaCatalogBuilder.LOCAL_NAME.equals( cat.getShortName()))
+                {
+                    builder.setLocalConnection( dsProducer.getMetaConnection() );
+                } else {
+                    builder.setLocalConnection( dsProducer.getLocalConnection() );
+                }
                 cat = builder.build( entityManager );
 
                 catalogMap.put( cat.getName().getShortName(), cat );
