@@ -512,7 +512,6 @@ public class SparqlQueryBuilder {
 
         for (final Schema schema : catalog.findSchemas( name.getSchema() )) {
             for (final Table table : schema.findTables( name.getTable() )) {
-                ((RdfTable)table).getResource().listProperties().forEachRemaining( stmt -> System.out.println(  stmt  ) );
                 tables.add( table );
             }
         }

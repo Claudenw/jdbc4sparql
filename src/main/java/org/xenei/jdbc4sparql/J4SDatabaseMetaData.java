@@ -79,8 +79,9 @@ public class J4SDatabaseMetaData implements DatabaseMetaData {
 		    @Override
             public QueryExecution execute(Query query) {
                 ElementNamedGraph ge = new ElementNamedGraph( Quad.unionGraph, query.getQueryPattern() );
-                query.setQueryPattern(ge);
-               return connection.getDatasetProducer().getMetaConnection().query(query);
+                Query q2=(Query)query.clone();
+                q2.setQueryPattern(ge);
+               return connection.getDatasetProducer().getMetaConnection().query(q2);
 		    }
 		};
 		metaCatalog = connection.getCatalogs().get(
