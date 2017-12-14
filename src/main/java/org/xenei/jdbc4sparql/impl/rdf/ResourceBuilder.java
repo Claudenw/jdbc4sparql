@@ -39,8 +39,17 @@ public class ResourceBuilder {
 		this.entityManager = entityManager;
 	}
 
+	/**
+	 * Get a property.
+	 * 
+	 * The namespace is retrieved from the class Subject annotation.
+	 * 
+	 * @param typeClass The class that the property is associated with.
+	 * @param localName the local name for the property.
+	 * @return the property.
+	 */
 	public Property getProperty(final Class<?> typeClass, final String localName) {
-		return getResource( ResourceBuilder.getNamespace(entityManager, typeClass)+localName, typeClass ).as( Property.class );
+		return entityManager.createResource( ResourceBuilder.getNamespace(entityManager, typeClass)+localName ).as( Property.class );
 	}
 
 	/**

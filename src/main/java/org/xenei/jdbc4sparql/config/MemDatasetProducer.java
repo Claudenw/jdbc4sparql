@@ -6,7 +6,7 @@ import java.util.Properties;
 import java.util.zip.ZipInputStream;
 
 import org.xenei.jdbc4sparql.impl.AbstractDatasetProducer;
-
+import org.xenei.jdbc4sparql.impl.AbstractDatasetProducer.Configuration;
 import org.apache.jena.graph.compose.MultiUnion;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
@@ -31,7 +31,6 @@ public class MemDatasetProducer extends AbstractDatasetProducer {
 
 	public MemDatasetProducer(final Properties props, final ZipInputStream zis)
 			throws IOException {
-		this(props);
-		load(zis);
+		super(load(props, zis));
 	}
 }

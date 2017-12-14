@@ -71,6 +71,10 @@ public interface Catalog extends NamedObject<CatalogName> {
 	 */
 	Set<Schema> getSchemas();
 
+	/**
+	 * Get the short name for the catalog.
+	 * @return the short name of the catalog.
+	 */
 	String getShortName();
 
 }

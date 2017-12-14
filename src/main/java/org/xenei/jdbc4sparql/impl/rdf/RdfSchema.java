@@ -39,7 +39,12 @@ import org.xenei.jena.entities.annotations.Subject;
 @Subject(namespace = "http://org.xenei.jdbc4sparql/entity/Schema#")
 public class RdfSchema extends RdfNamespacedObject implements Schema,
 ResourceWrapper {
+    
+    /**
+     * Builder for RDFSchema objects
+     */
 	public static class Builder implements Schema {
+	    
 		public static RdfSchema fixupCatalog(EntityManager mgr,final RdfCatalog catalog,
 				final RdfSchema schema) {
 			schema.catalog = catalog;

@@ -9,7 +9,9 @@ import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.ConstructBuilder;
+import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.DatasetFactory;
@@ -75,9 +77,6 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 		private String writeGraph;
 		private String readGraph;
 		
-
-		//private final Set<Schema> schemas = new HashSet<Schema>();
-
 		public Builder() {
 		}
 
@@ -93,8 +92,8 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 			}
 		}
 
-		public RdfCatalog build(EntityManager entityManager) {
-
+		public RdfCatalog build(EntityManager entityManager) {		           
+            
 			if (entityManager == null) {
 				throw new IllegalArgumentException("EntityManager may not be null");
 			}
@@ -104,9 +103,11 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 			readGraph = readGraph==null?writeGraph:readGraph;
 			
 			final Class<?> typeClass = RdfCatalog.class;
+						
 			final String fqName = getFQName(entityManager);
+			
 			final ResourceBuilder builder = new ResourceBuilder( entityManager);
-
+			
 			// create catalog graph resource
 			Resource catalog = null;
 			if (builder.hasResource(fqName)) {
@@ -127,18 +128,20 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 			// create RdfCatalog object from graph object
 			try {
 				final RdfCatalog retval = entityManager.read(catalog, RdfCatalog.class);
-
-				catalog.removeAll( RDFS.label);
+				
+	            catalog.removeAll( RDFS.label);
 				catalog.addLiteral(RDFS.label, shortName);
 				catalog.removeAll( VOID.rootResource);
 				String graphName = AbstractDatasetProducer.getModelURI(entityManager, writeGraph);
-				catalog.addProperty( VOID.rootResource, graphName);
+				catalog.addProperty( VOID.rootResource, ResourceFactory.createResource(graphName));
+				
 				Property p = entityManager.getSubjectInfo(RdfCatalog.class).getPredicateProperty("getReadGraph");
 				catalog.removeAll( p );
 				graphName = AbstractDatasetProducer.getModelURI(entityManager, readGraph);
 				catalog.addProperty( p, ResourceFactory.createResource( graphName ) );
 				
-				retval.getResource().getModel().register(retval.new ChangeListener());
+				ChangeListener cl = retval.new ChangeListener();	
+				retval.getResource().getModel().register( cl );
 				
 				retval.connection = connection;
 				if (connection== null) {
@@ -149,14 +152,14 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 						retval.connection = RDFConnectionFactory.connect(DatasetFactory.create());
 					}
 				}
-
+				
 				return retval;
 			} catch (final MissingAnnotation e) {
 				RdfCatalog.LOG.error(
 						String.format("Error building %s: %s", shortName,
 								e.getMessage()), e);
 				throw new RuntimeException(e);
-			}
+			}						
 
 		}
 

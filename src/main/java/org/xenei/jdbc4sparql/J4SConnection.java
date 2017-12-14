@@ -47,6 +47,7 @@ import java.util.Properties;
 import java.util.concurrent.Executor;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
@@ -245,11 +246,14 @@ public class J4SConnection implements Connection {
             } else {                
                 Dataset ds = DatasetFactory.create();
                 RDFDataMgr.read( ds, url.getEndpoint().toURL().openStream(), url.getLang() );
-                dsProducer.getLocalConnection().putDataset( ds );                
+                dsProducer.getLocalConnection().putDataset( ds );             
                 catalog = new RdfCatalog.Builder().setLocalConnection( dsProducer.getLocalConnection() ).setName( getCatalog() )
                         .build( metaDataMgr );
+
             }
 
+    
+            
             // builder adds schema to catalog           
             final RdfSchema schema = new RdfSchema.Builder().setCatalog( catalog ).setName( schemaName ).build();
 
@@ -420,28 +424,18 @@ public class J4SConnection implements Connection {
         // create the catalogs
         final Resource catType = ResourceFactory
                 .createResource( ResourceBuilder.getFQName( dsProducer.getMetaDataEntityManager(), RdfCatalog.class ) );
-        Query q = new SelectBuilder().setDistinct( true ).addVar( "?s" ).addWhere( "?s", RDF.type, catType ).build();
+        Query q = new SelectBuilder().addVar( "?s" ).addWhere( "?s", RDF.type, catType ).build();
         final List<String> names = WrappedIterator.create( dsProducer.listMetaDataNames() ).toList();
 
         for (final String name : names) {
             final EntityManager entityManager = dsProducer.getMetaDataEntityManager( name );
-
+  
             final Iterator<Resource> ri = WrappedIterator.create( entityManager.execute( q ).execSelect() )
                     .mapWith( qs -> qs.getResource( "s" ) );
             while (ri.hasNext()) {
                 RdfCatalog cat = entityManager.read( ri.next(), RdfCatalog.class );
                 final RdfCatalog.Builder builder = new RdfCatalog.Builder( cat );
-                EntityManager em = null;
-                if (AbstractDatasetProducer
-                        .getModelURI( dsProducer.getMetaDataEntityManager(), MetaCatalogBuilder.LOCAL_NAME )
-                        .equals( name )) {
-                    em = dsProducer.getMetaDataEntityManager();
-                } else {
-                    em = dsProducer.getMetaDataEntityManager( name );
-
-                }
-                builder.setLocalConnection( dsProducer.getLocalConnection() );
-                builder.setWriteGraph( em.getModelName().getURI() );
+                builder.setLocalConnection( dsProducer.getLocalConnection() );               
                 cat = builder.build( entityManager );
 
                 catalogMap.put( cat.getName().getShortName(), cat );

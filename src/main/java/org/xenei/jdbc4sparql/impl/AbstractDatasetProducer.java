@@ -99,7 +99,7 @@ abstract public class AbstractDatasetProducer implements DatasetProducer {
 		metaConnection.close();
 	}
 
-	private String createFN(final String prefix) {
+	private static String createFN(final String prefix, RDFFormat format) {
 		return String.format("%s.%s", prefix, format.getLang()
 				.getFileExtensions().get(0));
 	}
@@ -151,11 +151,13 @@ abstract public class AbstractDatasetProducer implements DatasetProducer {
 	 * @param zis
 	 * @throws IOException
 	 */
-	protected void load(final ZipInputStream zis) throws IOException {
+	protected static Configuration load(Properties props, final ZipInputStream zis) throws IOException {
+	    Configuration cfg = new Configuration();
+	    cfg.config = props;
 		ZipEntry e = zis.getNextEntry();
-
+		
 		if (e.getName().startsWith(DatasetProducer.META_PREFIX)) {
-			loadMeta(zis, e);
+			cfg.metaDataset = loadMeta(zis, e);
 		}
 		else {
 			throw new IllegalStateException("Entry must start with "
@@ -163,40 +165,36 @@ abstract public class AbstractDatasetProducer implements DatasetProducer {
 		}
 		e = zis.getNextEntry();
 		if (e.getName().startsWith(DatasetProducer.LOCAL_PREFIX)) {
-			loadLocal(zis, e);
+			cfg.localDataset = loadLocal(zis, e);
 		}
 		else {
 			throw new IllegalStateException("Entry must start with "
 					+ DatasetProducer.LOCAL_PREFIX);
 		}
-
+		return cfg;
 	}
 
-	private void loadDataset(final ZipInputStream zis, final ZipEntry e,
-			final RDFConnection connection, final String prefix) {
-		if (e.getName().equals(createFN(prefix))) {
+	private static Dataset loadDataset(final ZipInputStream zis, final ZipEntry e,
+			final String prefix, RDFFormat format) {
+	    String fn = createFN(prefix, format);
+		if (e.getName().equals(fn)) {
 			Dataset ds = DatasetFactory.create();
 			RDFDataMgr.read(ds, new NoCloseZipInputStream(zis), "",
 					format.getLang());
-			connection.putDataset(ds);
+			return ds;
 		}
 		else {
 			throw new IllegalArgumentException("Entry name must be "
-					+ createFN(prefix));
+					+ fn);
 		}
 	}
-
-	private void loadDataset(final ZipInputStream zis, final ZipEntry e,
-			final EntityManager em, final String prefix) {
-		loadDataset( zis, e, metaConnection, prefix );
-	}
 	
-	protected void loadLocal(final ZipInputStream zis, final ZipEntry e) {
-		loadDataset(zis, e, localConnection, DatasetProducer.LOCAL_PREFIX);
+	protected static Dataset loadLocal(final ZipInputStream zis, final ZipEntry e) {
+		return loadDataset(zis, e, DatasetProducer.LOCAL_PREFIX, RDFFormat.TRIG);
 	}
 
-	protected void loadMeta(final ZipInputStream zis, final ZipEntry e) {
-		loadDataset(zis, e, metaMgr, DatasetProducer.META_PREFIX);
+	protected static Dataset loadMeta(final ZipInputStream zis, final ZipEntry e) {
+		return loadDataset(zis, e, DatasetProducer.META_PREFIX, RDFFormat.TRIG);
 	}
 
 	@Override
@@ -228,7 +226,7 @@ abstract public class AbstractDatasetProducer implements DatasetProducer {
 
 	private void saveDataset(final ZipOutputStream out, final RDFConnection connection,
 			final String prefix) throws IOException {
-		final ZipEntry e = new ZipEntry(createFN(prefix));
+		final ZipEntry e = new ZipEntry(createFN(prefix, format));
 		out.putNextEntry(e);		
 		RDFDataMgr.write(out, connection.fetchDataset(), format);
 		out.closeEntry();
