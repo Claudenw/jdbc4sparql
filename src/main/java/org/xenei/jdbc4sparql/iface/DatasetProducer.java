@@ -13,12 +13,10 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdfconnection.RDFConnection;
 import org.xenei.jdbc4sparql.J4SPropertyNames;
 import org.xenei.jena.entities.EntityManager;
 
-//import org.apache.jena.rdf.model.Model;
 
 /**
  * Interface that defines the dataset producer.
@@ -31,6 +29,11 @@ import org.xenei.jena.entities.EntityManager;
  * requested and return the same dataset on all subsequent calls.
  */
 public interface DatasetProducer {
+    
+    /**
+     * A class to load the data set from a standard stored repository.
+     *
+     */
 	public static class Loader {
 		public static DatasetProducer load(final Properties props)
 				throws IOException {
@@ -61,6 +64,13 @@ public interface DatasetProducer {
 			}
 		}
 
+		/**
+		 * Load the producer with the properties and the specified zip input stream
+		 * @param properties the properties for the producer
+		 * @param url the URL of the zip file containing the values.
+		 * @return the configured dataset producer.
+		 * @throws IOException on error.
+		 */
 		public static DatasetProducer load(final Properties properties,
 				final URL url) throws IOException {
 			final ZipInputStream zis = new ZipInputStream(url.openStream());
@@ -109,12 +119,24 @@ public interface DatasetProducer {
 		}
 	}
 
+	/**
+	 * The entry name for the properties in the zip file.
+	 */
 	public static final String PROPERTIES_ENTRY_NAME = "/META_INF/properties.txt";
+	/**
+	 * The entry prefix for meta data.
+	 */
 	public static final String META_PREFIX = "/meta";
 
+	/**
+	 * The entry prefix for local data.
+	 */
 	public static final String LOCAL_PREFIX = "/local";
 
-//	public void addLocalDataModel(final String modelName, Model model);
+	/**
+	 * Get the connection to the local data.
+	 * @return the local data connection.
+	 */
 	public RDFConnection getLocalConnection();
 
 	/**
@@ -124,21 +146,52 @@ public interface DatasetProducer {
 
 
 	/**
-	 * Get or construct the local dataset.
-	 *
-	 * @return the local dataset
+	 * Get an EntityManager on the default metadata dataset.
+	 * @return an EntityManager.
 	 */
-	// public Dataset getLocalDataset();
-
 	public EntityManager getMetaDataEntityManager();
-	public EntityManager getMetaDataEntityManager(final String modelName);
+	
+	/**
+     * Get an EntityManager on the specified metadata dataset.
+     * @param datasetName the name of the dataset to retrieve.  This is a named graph in the metadata dataset.
+     * @return an EntityManager.
+     */
+    public EntityManager getMetaDataEntityManager(final String datasetName);
+    
+    /**
+     * Get the connection the metadata dataset.
+     * @return the metadata connection.
+     */
 	public RDFConnection getMetaConnection();
 
+	/**
+	 * @return The properties this producer was created with.
+	 */
 	public Properties getProperties();
 
+	/**
+	 * @return an iterator over the names of the graphs in the metadata dataset.
+	 */
 	public Iterator<String> listMetaDataNames();
 
-	public void save(File f) throws IOException, FileNotFoundException;
+	/**
+	 * Save this producer to the specified file.
+	 * 
+	 * Dataset producer is saved as a zip file containing properties, local and metadata.
+	 * 
+	 * @param file The file to save to.
+	 * @throws IOException on output error.
+	 * @throws FileNotFoundException if file can not be created.
+	 */
+	public void save(File file) throws IOException, FileNotFoundException;
 
+	/**
+	 * Save this producer to the spcified output stream.
+	 * 
+     * Dataset producer is streamed as a zip file containing properties, local and metadata.
+     * 
+	 * @param out the output stream to send the producer to.
+	 * @throws IOException on output error.
+	 */
 	public void save(final OutputStream out) throws IOException;
 }

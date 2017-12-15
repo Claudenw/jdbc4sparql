@@ -76,7 +76,8 @@ public class SimpleNormalizingBuilder extends SimpleBuilder {
 			final RdfTableDef.Builder tableDefBuilder, final Resource tName,
 			final String tableQuerySegment) {
 		final Map<String, String> colNames = new LinkedHashMap<String, String>();
-		final List<QuerySolution> solns = QExecutor.asList( QExecutor.execute( catalog.getExecutor(), String.format(
+		QExecutor qExec = catalog.getExecutor();
+		final List<QuerySolution> solns = QExecutor.asList( qExec, QExecutor.execute( qExec, String.format(
 				SimpleNormalizingBuilder.COLUMN_QUERY, tName)));
 
 		colNames.put("id", SimpleNormalizingBuilder.ID_COLUMN_SEGMENT);
@@ -187,7 +188,8 @@ public class SimpleNormalizingBuilder extends SimpleBuilder {
 				"SELECT distinct ?col WHERE { %s %s }",
 				String.format(tableQS, "?tbl"),
 				String.format(columnQS, "?tbl", "?col"));
-		final List<QuerySolution> results = QExecutor.asList(QExecutor.execute( catalog.getExecutor(), queryStr));
+		QExecutor qExec = catalog.getExecutor();
+		final List<QuerySolution> results = QExecutor.asList(qExec, QExecutor.execute( qExec, queryStr));
 
 		final Iterator<Integer> iter = WrappedIterator.create(
 				results.iterator()).mapWith(new Function<QuerySolution, Integer>() {
@@ -225,7 +227,8 @@ public class SimpleNormalizingBuilder extends SimpleBuilder {
 		// FIXME does this need a scale?
 		idColumnDef = colBuilder.build(schema.getEntityManager());
 		final HashSet<RdfTable> retval = new HashSet<RdfTable>();
-		final List<QuerySolution> solns = QExecutor.asList( QExecutor.execute( catalog.getExecutor(),
+		QExecutor qExec = catalog.getExecutor();
+        final List<QuerySolution> solns = QExecutor.asList( qExec,QExecutor.execute( qExec,
 		        SimpleNormalizingBuilder.TABLE_QUERY));
 		for (final QuerySolution soln : solns) {
 			buildTable(retval, catalog, schema, soln.getResource("tName"));

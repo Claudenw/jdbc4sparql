@@ -90,9 +90,8 @@ public class CatalogTest {
 
 		final String qry = "Select * WHERE { ?s ?p ?o }";
 		final Query query = QueryFactory.create(qry);
-
-		List<QuerySolution> lqs = QExecutor.asList(  catalog.getLocalExecutor().execute( query));
-		lqs.forEach( lq -> System.out.println( lq ));
+		QExecutor qExec = catalog.getLocalExecutor();
+		List<QuerySolution> lqs = QExecutor.asList( qExec, qExec.execute( query));
 		Assert.assertEquals(2, lqs.size());
 
 		/*
@@ -105,8 +104,9 @@ public class CatalogTest {
 				.setName("testCatalog2")
 				.setSparqlEndpoint(new URL("http://example.com"))
 				.setLocalConnection(dataConnection).build( entityManager );
-
-		lqs = QExecutor.asList(cat3.getLocalExecutor().execute(query));
+		QExecutor qExec3 = cat3.getLocalExecutor();
+        
+		lqs = QExecutor.asList(qExec3, qExec3.execute(query));
 		Assert.assertEquals(2, lqs.size());
 
 		/*
@@ -129,8 +129,8 @@ public class CatalogTest {
 		
 		final String qry = "Select * WHERE { ?s ?p ?o }";
 		final Query query = QueryFactory.create(qry);
-
-		final List<QuerySolution> lqs = QExecutor.asList(catalog.getLocalExecutor().execute(query));
+		QExecutor qExec = catalog.getLocalExecutor();
+        final List<QuerySolution> lqs = QExecutor.asList(qExec, qExec.execute(query));
 		Assert.assertEquals(2, lqs.size());
 
 		new RdfCatalog.Builder().setName("testCatalog2")
@@ -147,8 +147,8 @@ public class CatalogTest {
 		dataset.setDefaultModel(dataModel);
 
 		final String query = "Select * WHERE { ?s ?p ?o }";
-
-		final List<QuerySolution> lqs = QExecutor.asList( QExecutor.execute( catalog.getLocalExecutor(),query));
+		QExecutor qExec = catalog.getLocalExecutor();
+		final List<QuerySolution> lqs = QExecutor.asList( qExec, QExecutor.execute( qExec,query));
 		Assert.assertEquals(2, lqs.size());
 
 		new RdfCatalog.Builder().setName("testCatalog2")

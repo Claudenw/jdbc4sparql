@@ -2,10 +2,17 @@ package org.xenei.jdbc4sparql;
 
 import java.net.URL;
 import java.sql.SQLException;
+import java.util.Map;
 import java.util.Properties;
 
+import org.apache.jena.query.Dataset;
+import org.apache.jena.query.ReadWrite;
+import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFDataMgr;
 import org.junit.After;
 import org.junit.Before;
+import org.xenei.jdbc4sparql.iface.Catalog;
+import org.xenei.jdbc4sparql.impl.rdf.RdfCatalog;
 
 public class J4SStatementTDBTestFromConfig extends AbstractJ4SStatementTest {
 

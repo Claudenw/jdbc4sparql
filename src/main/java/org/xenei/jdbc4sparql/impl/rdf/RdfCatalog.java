@@ -20,6 +20,7 @@ import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QueryExecutionFactory;
 import org.apache.jena.query.QueryFactory;
 import org.apache.jena.query.QuerySolution;
+import org.apache.jena.query.ReadWrite;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -43,6 +44,7 @@ import org.xenei.jdbc4sparql.iface.QExecutor;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.name.CatalogName;
 import org.xenei.jdbc4sparql.impl.AbstractDatasetProducer;
+import org.xenei.jdbc4sparql.impl.ConnectionQExecutor;
 import org.xenei.jena.entities.EntityManager;
 import org.xenei.jena.entities.EntityManagerFactory;
 import org.xenei.jena.entities.EntityManagerRequiredException;
@@ -301,7 +303,7 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 	@Override
 	public QExecutor getLocalExecutor() {
 		
-	    return new QExecutor() {
+	    return new ConnectionQExecutor(connection) {
 
             @Override
             public QueryExecution execute(Query query) {
@@ -324,12 +326,7 @@ public class RdfCatalog implements Catalog, ResourceWrapper {
 	 * @return The QExecutor against the data.
 	 */
 	public QExecutor getExecutor() {
-	    return new QExecutor() {
-
-            @Override
-            public QueryExecution execute(Query query) {
-                return connection.query(query);
-            }};
+	    return new ConnectionQExecutor(connection);
 
 	}
 

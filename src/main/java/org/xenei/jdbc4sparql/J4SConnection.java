@@ -52,6 +52,8 @@ import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.query.Query;
+import org.apache.jena.query.QueryExecution;
+import org.apache.jena.query.ReadWrite;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.ResIterator;
@@ -84,6 +86,7 @@ import org.xenei.jdbc4sparql.sparql.parser.SparqlParser;
 import org.xenei.jena.entities.EntityManager;
 import org.xenei.jena.entities.EntityManagerFactory;
 import org.xenei.jena.entities.MissingAnnotation;
+import org.xenei.jena.entities.impl.TransactionHolder;
 
 /**
  * The JDBC 4 Sparql SQLConnection implementation.
@@ -246,14 +249,12 @@ public class J4SConnection implements Connection {
             } else {                
                 Dataset ds = DatasetFactory.create();
                 RDFDataMgr.read( ds, url.getEndpoint().toURL().openStream(), url.getLang() );
-                dsProducer.getLocalConnection().putDataset( ds );             
+                dsProducer.getLocalConnection().loadDataset( ds );             
                 catalog = new RdfCatalog.Builder().setLocalConnection( dsProducer.getLocalConnection() ).setName( getCatalog() )
                         .build( metaDataMgr );
 
             }
 
-    
-            
             // builder adds schema to catalog           
             final RdfSchema schema = new RdfSchema.Builder().setCatalog( catalog ).setName( schemaName ).build();
 
@@ -416,6 +417,12 @@ public class J4SConnection implements Connection {
         return false;
     }
 
+    /**
+     * Load the data set producer from the specified URL
+     * @param url the url to load from.
+     * @throws IOException on IO error.
+     * @throws MissingAnnotation if an annotation is missing.
+     */
     private void loadConfig(final URL url) throws IOException, MissingAnnotation {
         // config specifies producer
         dsProducer = DatasetProducer.Loader.load( properties, url );
@@ -430,20 +437,29 @@ public class J4SConnection implements Connection {
         for (final String name : names) {
             final EntityManager entityManager = dsProducer.getMetaDataEntityManager( name );
   
-            final Iterator<Resource> ri = WrappedIterator.create( entityManager.execute( q ).execSelect() )
-                    .mapWith( qs -> qs.getResource( "s" ) );
-            while (ri.hasNext()) {
-                RdfCatalog cat = entityManager.read( ri.next(), RdfCatalog.class );
-                final RdfCatalog.Builder builder = new RdfCatalog.Builder( cat );
-                if (MetaCatalogBuilder.LOCAL_NAME.equals( cat.getShortName()))
-                {
-                    builder.setLocalConnection( dsProducer.getMetaConnection() );
-                } else {
-                    builder.setLocalConnection( dsProducer.getLocalConnection() );
+            TransactionHolder th = new TransactionHolder( entityManager.getConnection(),  ReadWrite.WRITE );
+            try (QueryExecution qe =entityManager.execute( q )) {
+                
+                List<Resource> lst = WrappedIterator.create( qe.execSelect() )
+                    .mapWith( qs -> qs.getResource( "s" ) ).toList();
+                for ( Resource resource : lst) {
+                    RdfCatalog cat = entityManager.read( resource, RdfCatalog.class );
+                    final RdfCatalog.Builder builder = new RdfCatalog.Builder( cat );
+                    if (MetaCatalogBuilder.LOCAL_NAME.equals( cat.getShortName()))
+                    {
+                        builder.setLocalConnection( dsProducer.getMetaConnection() );
+                    } else {
+                        builder.setLocalConnection( dsProducer.getLocalConnection() );
+                    }
+                    cat = builder.build( entityManager );
+    
+                    catalogMap.put( cat.getName().getShortName(), cat );
                 }
-                cat = builder.build( entityManager );
-
-                catalogMap.put( cat.getName().getShortName(), cat );
+                th.commit();
+            } catch (RuntimeException e)
+            {
+                th.abort();
+                throw e;
             }
         }
         if (catalogMap.get( MetaCatalogBuilder.LOCAL_NAME ) == null) {

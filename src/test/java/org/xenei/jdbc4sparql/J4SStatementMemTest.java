@@ -54,7 +54,7 @@ public class J4SStatementMemTest extends AbstractJ4SStatementTest {
 		conn.setAutoCommit(false);
 		stmt = conn.createStatement();
 		// This is here to generate the zip file for reading config
-		((J4SConnection)conn).saveConfig( new java.io.File("/tmp/J4SStatementTest.zip"));
+//		((J4SConnection)conn).saveConfig( new java.io.File("/tmp/J4SStatementTest.zip"));
 	}
 
 	@After
@@ -93,7 +93,8 @@ public class J4SStatementMemTest extends AbstractJ4SStatementTest {
 		Field f = J4SStatement.class.getDeclaredField("catalog");
 		f.setAccessible(true);
 		Catalog c = (Catalog) f.get(stmt);
-		List<QuerySolution> lst = QExecutor.asList(c.getLocalExecutor().execute(query));
+		QExecutor qExec = c.getLocalExecutor();
+		List<QuerySolution> lst = QExecutor.asList(qExec, qExec.execute(query));
 		System.out.println( "yeah");
 		
 	}

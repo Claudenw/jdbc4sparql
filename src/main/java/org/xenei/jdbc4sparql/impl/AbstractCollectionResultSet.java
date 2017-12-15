@@ -26,7 +26,6 @@ import org.xenei.jdbc4sparql.iface.Table;
 
 public abstract class AbstractCollectionResultSet extends AbstractResultSet {
 	private Collection<?> data;
-
 	private int position;
 
 	public AbstractCollectionResultSet(final Collection<?> rows,

@@ -50,7 +50,8 @@ public class SimpleNullableBuilder extends SimpleBuilder {
 			final RdfTableDef.Builder tableDefBuilder, final Resource tName,
 			final String tableQuerySegment) {
 		final Map<String, String> colNames = new LinkedHashMap<String, String>();
-		final List<QuerySolution> solns = QExecutor.asList( QExecutor.execute( catalog.getExecutor(), String.format(
+		QExecutor qExec = catalog.getExecutor();
+        final List<QuerySolution> solns = QExecutor.asList( qExec, QExecutor.execute( qExec, String.format(
 				SimpleBuilder.COLUMN_QUERY, tName)));
 
 		for (final QuerySolution soln : solns) {

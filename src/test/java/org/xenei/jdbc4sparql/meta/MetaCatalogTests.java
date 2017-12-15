@@ -305,8 +305,8 @@ public class MetaCatalogTests {
 		int count = 0;
 		final Query query = QueryFactory.create(String.format(queryString,
 				tblName));
-		
-		List<QuerySolution> lst = QExecutor.asList(catalog.getLocalExecutor().execute(query));
+		QExecutor qExec = catalog.getLocalExecutor();
+		List<QuerySolution> lst = QExecutor.asList(qExec, qExec.execute(query));
 		
 			for (QuerySolution soln : lst) {
 				final Literal l = soln.getLiteral("colName");

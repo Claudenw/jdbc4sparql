@@ -69,7 +69,8 @@ public class SimpleBuilder implements SchemaBuilder {
 			final RdfTableDef.Builder tableDefBuilder, final Resource tName,
 			final String tableQuerySegment) {
 		final Map<String, String> colNames = new LinkedHashMap<String, String>();
-		final List<QuerySolution> solns = QExecutor.asList( QExecutor.execute( catalog.getExecutor(), String.format(
+		QExecutor qExec = catalog.getExecutor();
+		final List<QuerySolution> solns = QExecutor.asList( qExec, QExecutor.execute( qExec, String.format(
 				SimpleBuilder.COLUMN_QUERY, tName)));
 
 		for (final QuerySolution soln : solns) {
@@ -106,7 +107,8 @@ public class SimpleBuilder implements SchemaBuilder {
 				"SELECT distinct ?col WHERE { %s %s }",
 				String.format(tableQS, "?tbl"),
 				String.format(columnQS, "?tbl", "?col"));
-		final List<QuerySolution> results = QExecutor.asList(QExecutor.execute( catalog.getExecutor(),queryStr));
+		QExecutor qExec = catalog.getExecutor();
+		final List<QuerySolution> results = QExecutor.asList(qExec, QExecutor.execute( qExec,queryStr));
 
 		final Iterator<Integer> iter = WrappedIterator.create(
 				results.iterator()).mapWith(new Function<QuerySolution, Integer>() {
@@ -140,7 +142,8 @@ public class SimpleBuilder implements SchemaBuilder {
 		final RdfCatalog catalog = schema.getCatalog();
 		final EntityManager entityManager = schema.getEntityManager();
 		final HashSet<RdfTable> retval = new HashSet<RdfTable>();
-		final List<QuerySolution> solns = QExecutor.asList( QExecutor.execute( catalog.getExecutor(),
+		QExecutor qExec = catalog.getExecutor();
+		final List<QuerySolution> solns = QExecutor.asList( qExec, QExecutor.execute( qExec,
 		        SimpleBuilder.TABLE_QUERY));
 		for (final QuerySolution soln : solns) {
 			final Resource tName = soln.getResource("tName");

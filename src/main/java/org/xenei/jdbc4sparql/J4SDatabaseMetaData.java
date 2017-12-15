@@ -44,6 +44,7 @@ import org.xenei.jdbc4sparql.iface.QExecutor;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.TableDef;
+import org.xenei.jdbc4sparql.impl.ConnectionQExecutor;
 import org.xenei.jdbc4sparql.impl.DataTable;
 import org.xenei.jdbc4sparql.impl.rdf.RdfTable;
 import org.xenei.jdbc4sparql.meta.MetaCatalogBuilder;
@@ -75,15 +76,17 @@ public class J4SDatabaseMetaData implements DatabaseMetaData {
 			final J4SDriver driver) {
 		this.connection = connection;
 		this.driver = driver;
-		qExec = new QExecutor() { 
+		qExec = new ConnectionQExecutor(connection.getDatasetProducer().getMetaConnection())
+		{ 
 		    @Override
             public QueryExecution execute(Query query) {
                 ElementNamedGraph ge = new ElementNamedGraph( Quad.unionGraph, query.getQueryPattern() );
                 Query q2=(Query)query.clone();
                 q2.setQueryPattern(ge);
-               return connection.getDatasetProducer().getMetaConnection().query(q2);
+               return super.execute( q2 );
 		    }
 		};
+		
 		metaCatalog = connection.getCatalogs().get(
 				MetaCatalogBuilder.LOCAL_NAME);
 		metaSchema = metaCatalog.getSchema(MetaCatalogBuilder.SCHEMA_NAME);

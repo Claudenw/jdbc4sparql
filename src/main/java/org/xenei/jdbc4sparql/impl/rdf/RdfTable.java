@@ -12,6 +12,7 @@ import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryExecution;
+import org.apache.jena.query.ReadWrite;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFList;
@@ -31,6 +32,7 @@ import org.xenei.jdbc4sparql.iface.NameSegments;
 import org.xenei.jdbc4sparql.iface.Schema;
 import org.xenei.jdbc4sparql.iface.Table;
 import org.xenei.jdbc4sparql.iface.name.TableName;
+import org.xenei.jdbc4sparql.impl.EntityManagerQExecutor;
 import org.xenei.jdbc4sparql.impl.NameUtils;
 import org.xenei.jdbc4sparql.sparql.SparqlQueryBuilder;
 import org.xenei.jdbc4sparql.sparql.SparqlResultSet;
@@ -388,13 +390,41 @@ ResourceWrapper {
 	private RdfSchema schema;
 	private SparqlQueryBuilder queryBuilder;
 	private TableName tableName;
+	private QExecutor qExec;
 
-	@Override
-	public QueryExecution execute( Query query ) {
-	    return getEntityManager().execute( query );
+	private QExecutor getQExec() {
+	    if (qExec == null)
+	    {
+	        qExec = new EntityManagerQExecutor(  getEntityManager() );
+	    }
+	    return qExec;
 	}
 	
-	@Override
+	public QueryExecution execute(Query query) {
+        return getQExec().execute( query );
+    }
+
+    public void begin(ReadWrite readWrite) {
+        getQExec().begin( readWrite );
+    }
+
+    public void commit() {
+        getQExec().commit();
+    }
+
+    public void abort() {
+        getQExec().abort();
+    }
+
+    public void end() {
+        getQExec().end();
+    }
+
+    public boolean isInTransaction() {
+        return getQExec().isInTransaction();
+    }
+
+    @Override
 	public void delete() {
 		final Resource tbl = getResource();
 		final Model model = tbl.getModel();
@@ -646,4 +676,6 @@ ResourceWrapper {
 	public NameSegments getColumnSegments() {
 		return NameSegments.FFFT;
 	}
+
+    
 }

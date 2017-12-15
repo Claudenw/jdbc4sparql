@@ -346,8 +346,8 @@ public class MetaCatalogValuesTests {
 		final List<String> names = Arrays.asList(colNames);
 		selectBuilder.setVar( "?lbl", tblName);
 		final Query query = selectBuilder.build();	
-		
-		List<QuerySolution> lst = QExecutor.asList(catalog.getLocalExecutor().execute(query));
+		QExecutor qExec = catalog.getLocalExecutor();
+		List<QuerySolution> lst = QExecutor.asList(qExec, qExec.execute(query));
 				
 		for( QuerySolution soln : lst ) {
 				final Literal l = soln.getLiteral("colName");
@@ -753,8 +753,8 @@ public class MetaCatalogValuesTests {
 		final Table table = schema.getTable(MetaCatalogBuilder.COLUMNS_TABLE);
 
 		final Query query = QueryFactory.create(queryString);
-		final List<QuerySolution> results = QExecutor.asList(table.getCatalog()
-		        .getLocalExecutor().execute(query));
+		QExecutor qExec = table.getCatalog().getLocalExecutor();
+		final List<QuerySolution> results = QExecutor.asList( qExec, qExec.execute(query));
 		System.out.println(results.size());
 		for (final QuerySolution soln : results) {
 			System.out.println(soln);

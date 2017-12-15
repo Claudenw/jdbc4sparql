@@ -219,8 +219,9 @@ public abstract class AbstractJ4SStatementTest extends AbstractJ4SSetup {
 		final String queryString = "SELECT (count(*) as ?x) where { ?fooTable <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.com/jdbc4sparql#fooTable> }";
 		final Query query = QueryFactory.create(queryString);
 
-		final List<QuerySolution> lqs = QExecutor.asList(((J4SConnection) conn).getCatalogs()
-				.get(conn.getCatalog()).getLocalExecutor().execute( query));
+		QExecutor qExec = ((J4SConnection) conn).getCatalogs()
+                .get(conn.getCatalog()).getLocalExecutor();
+		final List<QuerySolution> lqs = QExecutor.asList(qExec, qExec.execute( query));
 		Assert.assertEquals(1, lqs.size());
 		final QuerySolution qs = lqs.get(0);
 		Assert.assertEquals(3, qs.get("x").asLiteral().getValue());

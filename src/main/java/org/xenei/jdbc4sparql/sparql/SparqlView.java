@@ -42,6 +42,7 @@ import org.xenei.jdbc4sparql.impl.virtual.VirtualSchema;
 import org.xenei.jdbc4sparql.sparql.items.QueryColumnInfo;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryExecution;
+import org.apache.jena.query.ReadWrite;
 import org.apache.jena.util.iterator.Map1;
 import org.apache.jena.util.iterator.WrappedIterator;
 
@@ -242,9 +243,30 @@ public class SparqlView extends AbstractTable implements QExecutor {
 		return builder.getColumnSegments();
 	}
 
-    @Override
     public QueryExecution execute(Query query) {
-        return executor.execute(  query );
+        return executor.execute( query );
     }
+
+    public void begin(ReadWrite readWrite) {
+        executor.begin( readWrite );
+    }
+
+    public void commit() {
+        executor.commit();
+    }
+
+    public void abort() {
+        executor.abort();
+    }
+
+    public void end() {
+        executor.end();
+    }
+
+    public boolean isInTransaction() {
+        return executor.isInTransaction();
+    }
+
+    
 
 }
